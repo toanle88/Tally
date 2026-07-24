@@ -75,9 +75,9 @@ Creates the physical foundation for the modular monolith and frontend without pr
 
 ### Acceptance criteria
 
-- [ ] The repository root contains `cmd/`, `internal/`, and `web/`.
-- [ ] The Go API entry point is located at `cmd/api/main.go`.
-- [ ] Reusable API-shell HTTP behavior is located under `internal/platform/httpx/` or an equivalently narrow technical package under `internal/platform/`.
+- [x] The repository root contains `cmd/`, `internal/`, and `web/`.
+- [x] The Go API entry point is located at `cmd/api/main.go`.
+- [x] Reusable API-shell HTTP behavior is located under `internal/platform/httpx/` or an equivalently narrow technical package under `internal/platform/`.
 - [ ] The frontend application is located directly under `/web`; it is not nested inside a backend-only parent directory.
 - [ ] The root contains `README.md`, `.gitignore`, `go.mod`, and the selected root command manifest.
 - [ ] `go.mod` uses the confirmed canonical module path and a Go directive compatible with the approved Go `1.26.x` baseline.
