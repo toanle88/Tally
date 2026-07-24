@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Version | 1.0 |
-| Status | Passed — complete source and design traceability |
+| Status | Passed — complete source and design traceability; ADR-021 added |
 | Pack | Finance Solution/System Design v1.0 |
 
 ## 1. Source Baseline Manifest
@@ -41,6 +41,9 @@
 | ADR-018 | Defer a message broker | Accepted | Add Azure Service Bus only when independent deployment, external fan-out or measured throughput requires it. |
 | ADR-019 | Defer Redis and distributed caching | Accepted | Correctness and simplicity outweigh cache complexity until measured read load justifies it. |
 | ADR-020 | Use reporting-owned projections | Accepted | Protects authoritative write workloads and preserves source watermarks and rebuildability. |
+| ADR-021 | Use pnpm as the sole frontend package manager | Accepted | Standardizes reproducible frontend installation with a committed `web/pnpm-lock.yaml`, an exact pnpm version pinned in `web/package.json`, and `pnpm install --frozen-lockfile`; alternate frontend lockfiles are prohibited. |
+
+ADR-021 is limited to frontend dependency management. It does not change the approved Node.js, React, TypeScript, Vite, testing, modular-monolith, deployment, or finance-domain baselines.
 
 A change to an accepted ADR requires a superseding ADR, impact assessment and targeted/full review according to Section 10.
 
@@ -561,6 +564,6 @@ All 199 `FAC-*` acceptance scenarios remain authoritative in the Functional PRD 
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `7cf912b8ffc5f625f126cf99cb699f1977e5dea8543f415a3d465bb90b80cef6` |
-| Review status | Passed |
+| Verified body SHA-256 | `06cc75c4a6855cf6a853f54b1b16c9d02a744b2a3552f5f12e087068de798bab` |
+| Review status | Passed — targeted ADR-021 and traceability review |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; re-run the full suite for architecture, data ownership, security, recovery, or technology-baseline changes. |

@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Version | 1.0 |
-| Status | Consistency-verified technical specification baseline |
+| Status | Consistency-verified technical specification baseline — pnpm source-manifest refresh |
 
 ## 1. Source manifest
 
@@ -15,11 +15,11 @@
 | acceptance | 03_finance_functional_traceability_acceptance_v1.5.md | 1f511e2d699dc5ae2c83abe720d20d29c5eaa1683bb69d3e7f545099dad63f4e |
 | ux | finance_ux_workflow_specification_v1.0.md | 84761c9805b7e639ae9dab8fb3800f6e02d80c843ec86aac9e9057241c3501d5 |
 | nfr | finance_nonfunctional_requirements_v1.0.md | 52099bfa577d7682493e95702d82c8e1f8b23c1e038a7ad4a935815b10df3dbd |
-| sol1 | 01_solution_architecture_overview_v1.0.md | eccf07c9a5a17d631277a0ad4b49767c440999386cc1f49b019208cd54437a08 |
+| sol1 | 01_solution_architecture_overview_v1.0.md | f7e2f6044c92a98c8699152e1296eb57d891c1a6837b47c6c41ba161b8d6d26e |
 | sol2 | 02_application_module_design_v1.0.md | ddfda9ae43daf2212161fd340c6330cb06b2e964a780d81866e8513d6a213735 |
 | sol3 | 03_data_integration_architecture_v1.0.md | 06478bbb5c0f5e336c3fcd5d8b2398e17ac43fcaebc1e3b2245c02beb9b79719 |
 | sol4 | 04_security_deployment_operations_v1.0.md | 8f817895f37a129458c2632a72ad00b5ef1dbddbc9ef8ee25862236ec26b47ce |
-| sol5 | 05_architecture_traceability_decisions_v1.0.md | fbbdd612ee00498e16caac4d8fe543e8f763f443ca1ab2ed68ca79495892f8e3 |
+| sol5 | 05_architecture_traceability_decisions_v1.0.md | ddc4699943ebd17dc5000f0567c4ffb86ad9a34f7dd4adcf6120b135e2f34e7b |
 
 ## 2. Technical document map
 
@@ -718,6 +718,6 @@ All solution controls `ARC-ACC-001, ARC-API-001, ARC-AUD-001, ARC-CAP-001, ARC-C
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `85e012afff6a16b69be98002d54129fa50164e4f05a98f01ac881fdbb1630c85` |
-| Review status | Passed |
+| Verified body SHA-256 | `90c76bf47081b1367747d76c79a8469535a53ae7a722cac9de4428b8b95731b6` |
+| Review status | Passed — targeted source-manifest and pnpm consistency review |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; run the full suite for API, database, event, security, deployment, recovery, or technology-baseline changes. |

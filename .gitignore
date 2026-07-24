@@ -52,6 +52,8 @@ web/dist/
 web/coverage/
 web/.vite/
 web/*.local
+.pnpm-store/
+web/.pnpm-store/
 
 # JavaScript and frontend logs
 
