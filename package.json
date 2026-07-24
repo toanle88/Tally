@@ -1,0 +1,19 @@
+{
+  "name": "tally",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "build:api": "go build ./cmd/api",
+    "build:web": "pnpm -C web run build",
+    "build": "pnpm run build:api && pnpm run build:web",
+
+    "test:api": "go test ./...",
+    "test:web": "pnpm -C web run test",
+    "test": "pnpm run test:api && pnpm run test:web",
+
+    "check": "pnpm run test && pnpm run build",
+
+    "dev-api": "go run ./cmd/api",
+    "dev-web": "pnpm -C web run dev"
+  }
+}
