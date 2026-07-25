@@ -8,7 +8,7 @@ A modern double-entry accounting application for managing ledgers, vouchers, inv
 
 ## Architecture
 
-Tally is planned as a **modular monolith**: a single deployable Go application with enforced bounded-context module boundaries under `internal/`, and a React single-page application frontend. The architecture is specified in [`docs/specs/system_design/`](./docs/specs/system_design/).
+Tally uses a **modular-monolith** architecture: a single deployable Go application with enforced bounded-context module boundaries under `internal/`, and a React single-page application frontend. The architecture is specified in [`docs/specs/system_design/`](./docs/specs/system_design/).
 
 The target technology baseline (from the approved solution architecture):
 
@@ -34,48 +34,56 @@ The target technology baseline (from the approved solution architecture):
 .
 ├── cmd/
 │   └── api/
-│       └── main.go              # Go API entry point
+│       └── main.go                    # Go API entry point
 ├── internal/
 │   ├── .gitkeep
 │   └── platform/
 │       └── httpx/
-│           ├── health.go        # GET /health/live handler
-│           └── health_test.go   # Liveness test
+│           ├── health.go              # GET /health/live handler
+│           └── health_test.go         # Liveness test
 ├── web/
 │   ├── src/
-│   │   ├── main.tsx             # React entry point
-│   │   ├── App.tsx              # App shell (<h1>TALLY</h1>)
-│   │   ├── App.test.tsx         # Shell render test
-│   │   ├── App.css
+│   │   ├── app/
+│   │   │   ├── app.tsx                # App shell (<h1>TALLY</h1>)
+│   │   │   ├── app.css
+│   │   │   └── app.test.tsx           # Shell render test
+│   │   ├── main.tsx                   # React entry point
 │   │   ├── index.css
 │   │   └── test/
-│   │       └── setup.ts         # jest-dom matchers
+│   │       └── setup.ts               # jest-dom matchers
 │   ├── public/
-│   │   ├── favicon.svg
-│   │   └── icons.svg
+│   │   └── favicon.svg
 │   ├── index.html
 │   ├── vite.config.ts
-│   ├── tsconfig*.json
+│   ├── tsconfig.json
+│   ├── tsconfig.app.json
+│   ├── tsconfig.node.json
 │   ├── eslint.config.js
-│   └── package.json
+│   ├── package.json
+│   ├── .gitignore
+│   └── README.md                      # Vite scaffold notice (unused)
 ├── docs/
-│   ├── backlog/                 # User stories (DLV-PLAT-001)
-│   └── specs/                   # PRD, domain model, UX, NFR,
-│                                # system design, technical specs
-├── package.json                 # Root scripts
+│   ├── backlog/                       # User stories (DLV-PLAT-001), templates
+│   └── specs/                         # PRD, domain model, UX, NFR,
+│                                      # system design, technical specs
+├── .opencode/
+│   ├── commands/                      # review-branch-diff, update-readme
+│   └── skills/                        # review-current-branch-diff, update-readme
+├── package.json                       # Root scripts (pnpm@11.9.0)
 ├── pnpm-lock.yaml
-├── go.mod
+├── go.mod                             # Go 1.26.3, chi/v5 5.3.1
 ├── go.sum
+├── AGENTS.md
 ├── ROADMAP.md
-├── LICENSE                      # MIT
+├── LICENSE                            # MIT
 └── README.md
 ```
 
 **What exists today:**
 - Go API binary with a single endpoint: `GET /health/live` returns `{"status":"ok"}` with graceful shutdown.
-- React + Vite app shell that renders the TALLY heading.
+- React + Vite app shell that renders the TALLY heading (moved to `web/src/app/`).
 - Test infrastructure: Go tests via `go test`, frontend tests via Vitest + Testing Library.
-- Supporting config: TypeScript, ESLint, Vite, Go modules.
+- Supporting config: TypeScript, ESLint, Vite, Go modules, path alias (`@/`).
 
 **What is specified but not yet implemented:**
 - All 19 finance domain modules (GL, AP, AR, COA, etc.) — see [`docs/specs/system_design/02_application_module_design_v1.0.md`](./docs/specs/system_design/02_application_module_design_v1.0.md).
@@ -85,7 +93,7 @@ The target technology baseline (from the approved solution architecture):
 
 ## Planned Target Architecture
 
-The approved architecture defines 19 bounded-context modules under `internal/`, each following a consistent structure:
+The approved architecture defines 19 bounded-context modules under `internal/`, each following a consistent structure (planned):
 
 ```
 internal/<module>/
@@ -102,6 +110,22 @@ Cross-module rules (from the approved design):
 - No module imports another module's repository or adapter.
 - Cross-module calls use a published application interface or integration event.
 - Each module owns its PostgreSQL schema.
+
+---
+
+## Finance Rules
+
+TALLY enforces these design rules across all modules:
+
+- Never use binary floating point for money.
+- Posted or established financial records are immutable.
+- Correct established facts through reversal, adjustment, amendment, return, unapplication, replacement, or compensation.
+- Retriable state-changing operations require idempotency.
+- Integration events use the transactional outbox.
+- Material state changes require authorization and audit evidence.
+- Modules must not directly access another module's adapter or owned schema.
+- Shared technical packages must not contain capability-specific finance rules.
+- Avoid unnecessary abstractions and dependencies.
 
 ---
 
@@ -155,7 +179,7 @@ All commands are defined in the root [`package.json`](./package.json).
 
 ## Roadmap
 
-See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0 (engineering foundation) through M9 (full-system qualification). The current checkpoint is **DLV-PLAT-001** — monorepo foundation — with User Story 1 (monorepo structure) and User Story 2 (minimal Go API shell) complete. Stories 3–5 remain in progress.
+See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0 (engineering foundation) through M9 (full-system qualification). The current checkpoint is **DLV-PLAT-001** — monorepo foundation. User Stories 1 and 2 are complete; Stories 3–5 remain in progress.
 
 ---
 
