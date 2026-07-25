@@ -256,25 +256,25 @@ Directly proves the authoritative exit evidence: a clean clone builds and tests 
 
 ### Documentation acceptance criteria
 
-- [ ] `README.md` lists the required Go and Node.js major versions and the exact pinned pnpm version.
-- [ ] `README.md` documents clean-clone setup and frontend dependency installation.
-- [ ] The root command intents and their selected names are documented.
-- [ ] Local API and frontend startup are documented.
-- [ ] The API default `HTTP_ADDR` of `:8080` and the configured frontend development port behavior are documented.
-- [ ] `GET /health/live` and its limited liveness meaning are documented.
-- [ ] Commands for all Go and frontend tests are documented.
-- [ ] Story boundaries and explicit exclusions are documented.
-- [ ] PostgreSQL, Docker, migrations, OpenAPI, authentication, Azure, observability instrumentation, CI, and finance modules are not described as completed.
+- [x] `README.md` lists the required Go and Node.js major versions and the exact pinned pnpm version.
+- [x] `README.md` documents clean-clone setup and frontend dependency installation.
+- [x] The root command intents and their selected names are documented.
+- [x] Local API and frontend startup are documented.
+- [x] The API default `HTTP_ADDR` of `:8080` and the configured frontend development port behavior are documented.
+- [x] `GET /health/live` and its limited liveness meaning are documented.
+- [x] Commands for all Go and frontend tests are documented.
+- [x] Story boundaries and explicit exclusions are documented.
+- [x] PostgreSQL, Docker, migrations, OpenAPI, authentication, Azure, observability instrumentation, CI, and finance modules are not described as completed.
 
 ### Clean-clone verification criteria
 
-- [ ] A new clone can install frontend dependencies using `pnpm install --frozen-lockfile`.
-- [ ] The selected root verify-all command succeeds from the new clone.
-- [ ] The Go API can be started and its liveness endpoint returns HTTP `200`.
-- [ ] The React application can be started and displays the TALLY shell.
-- [ ] Verification does not require uncommitted source, pre-existing `node_modules`, pre-existing compiled binaries, credentials, a database, or a cloud resource.
-- [ ] Build caches may accelerate verification but are not required for success.
-- [ ] The evidence record includes commit identifier, operating system, Go version, Node.js version, pnpm version, commands executed, and final result.
+- [x] A new clone can install frontend dependencies using `pnpm install --frozen-lockfile`.
+- [x] The selected root verify-all command succeeds from the new clone.
+- [x] The Go API can be started and its liveness endpoint returns HTTP `200`.
+- [x] The React application can be started and displays the TALLY shell.
+- [x] Verification does not require uncommitted source, pre-existing `node_modules`, pre-existing compiled binaries, credentials, a database, or a cloud resource.
+- [x] Build caches may accelerate verification but are not required for success.
+- [x] The evidence record includes commit identifier, operating system, Go version, Node.js version, pnpm version, commands executed, and final result.
 
 ### Evidence record template
 
@@ -303,13 +303,13 @@ Directly proves the authoritative exit evidence: a clean clone builds and tests 
 
 `DLV-PLAT-001` is complete only when all five stories are complete and every condition below passes:
 
-- [ ] The clean repository contains a minimal Go API and React application.
-- [ ] Both applications build successfully.
-- [ ] Both applications have at least one deterministic test and all tests pass.
-- [ ] Shared root commands build, test, verify, and run the applications without silent omissions.
-- [ ] `GET /health/live` returns a safe process-liveness response.
-- [ ] Clean-clone setup and verification evidence are recorded.
-- [ ] No scope owned by a later delivery item has been implemented or claimed as complete.
+- [x] The clean repository contains a minimal Go API and React application.
+- [x] Both applications build successfully.
+- [x] Both applications have at least one deterministic test and all tests pass.
+- [x] Shared root commands build, test, verify, and run the applications without silent omissions.
+- [x] `GET /health/live` returns a safe process-liveness response.
+- [x] Clean-clone setup and verification evidence are recorded.
+- [x] No scope owned by a later delivery item has been implemented or claimed as complete.
 
 ## 11. Explicit exclusions and follow-on ownership
 
@@ -348,18 +348,18 @@ Functional requirement IDs, authoritative finance records, finance UX states, au
 
 This delivery item is done only when:
 
-- [ ] Every acceptance criterion in Sections 5–10 passes; none is silently deferred.
-- [ ] Required code, dependency manifests, lockfiles, tests, and documentation are complete.
-- [ ] Go build and tests pass.
-- [ ] Frontend dependency installation, tests, and production build pass.
-- [ ] The root verify-all command passes and its failure propagation is proven.
-- [ ] The clean-clone verification passes and evidence is attached or linked.
-- [ ] Documentation matches the versions, commands, ports, endpoint, and behavior actually implemented.
-- [ ] The implementation diff is reviewed against the modular-monolith and frontend capability boundaries.
-- [ ] No credentials, dependency directories, generated build output, test output, or local-only configuration are committed.
-- [ ] Traceability to the delivery item and applicable technical specifications is current.
-- [ ] No functional requirement, workflow, NFR qualification, adjacent delivery item, or M0 milestone is incorrectly marked complete.
-- [ ] No critical or high unresolved defect remains.
+- [x] Every acceptance criterion in Sections 5–10 passes; none is silently deferred.
+- [x] Required code, dependency manifests, lockfiles, tests, and documentation are complete.
+- [x] Go build and tests pass.
+- [x] Frontend dependency installation, tests, and production build pass.
+- [x] The root verify-all command passes and its failure propagation is proven.
+- [x] The clean-clone verification passes and evidence is attached or linked.
+- [x] Documentation matches the versions, commands, ports, endpoint, and behavior actually implemented.
+- [x] The implementation diff is reviewed against the modular-monolith and frontend capability boundaries.
+- [x] No credentials, dependency directories, generated build output, test output, or local-only configuration are committed.
+- [x] Traceability to the delivery item and applicable technical specifications is current.
+- [x] No functional requirement, workflow, NFR qualification, adjacent delivery item, or M0 milestone is incorrectly marked complete.
+- [x] No critical or high unresolved defect remains.
 
 ### General Definition-of-Done applicability
 

@@ -11,12 +11,12 @@
 
 - [ ] **M0 — Engineering foundation**
   - [ ] **EP-PLAT-001 — Engineering foundation**
-    - [ ] **DLV-PLAT-001 — Monorepo foundation**
+    - [x] **DLV-PLAT-001 — Monorepo foundation**
       - [x] **User Story 1 — Establish the monorepo structure**
       - [x] **User Story 2 — Provide a minimal Go API shell**
       - [x] **User Story 3 — Provide a minimal React application shell**
       - [x] **User Story 4 — Provide shared root commands**
-      - [ ] **User Story 5 — Document and prove clean-clone reproducibility**
+      - [x] **User Story 5 — Document and prove clean-clone reproducibility**
 
 ## Milestone and epic roadmap
 
@@ -154,3 +154,4 @@
 - Review pass 3: all five `DLV-PLAT-001` user stories are present.
 - Review pass 4: User Stories 1–4 are checked; Story 5 remains open.
 - Review pass 5: `DLV-PLAT-001`, `EP-PLAT-001`, and M0 remain open because their remaining child scope is incomplete.
+- Review pass 6: User Story 5 is checked. `DLV-PLAT-001`, `EP-PLAT-001`, and M0 remain open because their remaining child scope is incomplete.
