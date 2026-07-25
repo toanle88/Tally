@@ -6,6 +6,23 @@ A modern double-entry accounting application for managing ledgers, vouchers, inv
 
 ---
 
+## Shared root commands
+
+The shared commands below must be run from the repository root.
+
+### Prerequisites
+
+- Go 1.26.x
+- Node.js 24 LTS
+- pnpm using the exact version pinned in `web/package.json`
+- Frontend dependencies installed with:
+
+  ```bash
+  pnpm --dir web install --frozen-lockfile
+  ```
+
+---
+  
 ## Architecture
 
 Tally uses a **modular-monolith** architecture: a single deployable Go application with enforced bounded-context module boundaries under `internal/`, and a React single-page application frontend. The architecture is specified in [`docs/specs/system_design/`](./docs/specs/system_design/).
@@ -179,7 +196,7 @@ All commands are defined in the root [`package.json`](./package.json).
 
 ## Roadmap
 
-See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0 (engineering foundation) through M9 (full-system qualification). The current checkpoint is **DLV-PLAT-001** — monorepo foundation. User Stories 1 and 2 are complete; Stories 3–5 remain in progress.
+See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0 (engineering foundation) through M9 (full-system qualification). The current checkpoint is **DLV-PLAT-001** — monorepo foundation. User Stories 1–4 are complete; Story 5 remains in progress.
 
 ---
 

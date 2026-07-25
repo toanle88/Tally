@@ -228,15 +228,15 @@ The command names are an implementation choice. The names below are recommended 
 
 ### Acceptance criteria
 
-- [ ] Every required command intent can be invoked from the repository root.
-- [ ] The build-all command fails when either the Go build or frontend build fails.
-- [ ] The test-all command fails when either the Go tests or frontend tests fail.
-- [ ] The verify-all command runs the complete build-and-test sequence and returns a non-zero status when any required step fails.
-- [ ] No command reports success when the Go or frontend portion was skipped.
-- [ ] The API and frontend development commands start their applications independently.
-- [ ] The command mechanism does not add an unnecessary runtime or broad task-runner dependency.
-- [ ] Command names, prerequisites, working directory, and expected behavior are documented in `README.md`.
-- [ ] A controlled negative check proves that the verify-all command propagates a child failure.
+- [x] Every required command intent can be invoked from the repository root.
+- [x] The build-all command fails when either the Go build or frontend build fails.
+- [x] The test-all command fails when either the Go tests or frontend tests fail.
+- [x] The verify-all command runs the complete build-and-test sequence and returns a non-zero status when any required step fails.
+- [x] No command reports success when the Go or frontend portion was skipped.
+- [x] The API and frontend development commands start their applications independently.
+- [x] The command mechanism does not add an unnecessary runtime or broad task-runner dependency.
+- [x] Command names, prerequisites, working directory, and expected behavior are documented in `README.md`.
+- [x] A controlled negative check proves that the verify-all command propagates a child failure.
 
 ### Evidence
 

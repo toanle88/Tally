@@ -44,7 +44,11 @@ coverprofile.out
 
 go.work
 go.work.sum
+
+# Local Go build output
 /api
+/api.exe
+
 # Frontend dependencies and outputs
 
 node_modules/
