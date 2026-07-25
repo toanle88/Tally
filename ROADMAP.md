@@ -21,7 +21,7 @@
       - [x] **User Story 1 — Define safe local database configuration**
       - [x] **User Story 2 — Start and health-check PostgreSQL**
       - [x] **User Story 3 — Provide root database lifecycle commands**
-      - [ ] **User Story 4 — Orchestrate migration and deterministic seeding**
+      - [x] **User Story 4 — Orchestrate migration and deterministic seeding**
       - [ ] **User Story 5 — Reset and prove reproducibility**
 
 ## Milestone and epic roadmap
