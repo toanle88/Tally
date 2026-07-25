@@ -63,10 +63,14 @@ All commands must be run from the repository root.
 | Target | Description |
 |---|---|
 | `make db-up` | Start PostgreSQL and wait for healthy status |
-| `make db-wait` | Poll Docker health check up to 30 s |
+| `make db-wait` | Poll Docker health check up to 50 attempts, 1 s interval |
 | `make db-status` | Show container status (`docker compose ps postgres`) |
 | `make db-version` | Query `SHOW server_version` inside the container |
 | `make db-down` | Stop the PostgreSQL container |
+| `make db-migrate` | Apply Goose migrations (bootstrap schema, platform tables) |
+| `make db-seed` | Apply the committed synthetic seed data |
+| `make db-verify` | Verify migration status and seed checksum |
+| `make db-prepare` | Run db-migrate → db-seed → db-verify in order, stop on failure |
 
 ---
 
@@ -97,6 +101,10 @@ Run all database commands from the repository root.
 | `make db-shell` | Opens `psql` against the configured local database. |
 | `make db-version` | Prints the running PostgreSQL server version. |
 | `make db-down` | Stops the Compose environment while preserving the database volume. |
+| `make db-migrate` | Applies Goose migrations from `db/migrations/bootstrap` and `db/migrations/platform`. |
+| `make db-seed` | Applies the committed synthetic seed from `db/seeds/local/v1.sql` and records its checksum. |
+| `make db-verify` | Checks the recorded seed checksum and runs `goose status` on both migration directories. |
+| `make db-prepare` | Orchestrates wait → migrate → seed → verify in order; stops on first failure. |
 
 `make db-down` is non-destructive. It stops and removes the Compose
 container and network but retains the named PostgreSQL data volume.
@@ -105,10 +113,11 @@ The commands use the checked-in `compose.yaml` definition and the local
 configuration described above. Docker Engine and Docker Compose v2 must be
 available.
 
-Failures from Docker Compose, PostgreSQL health checks, and `psql` are
-returned as non-zero command results. These commands configure only the local
-learning environment; they do not establish production readiness, database
-migrations, finance schemas, Azure PostgreSQL, backup, or disaster recovery.
+Failures from Docker Compose, PostgreSQL health checks, `psql`, Goose
+migrations, and seed verification are returned as non-zero command results.
+These commands configure only the local learning environment; they do not
+establish production readiness, finance schemas, Azure PostgreSQL, backup, or
+disaster recovery.
 
 ---
 
@@ -126,7 +135,7 @@ The technology baseline (from the approved solution architecture):
 | Backend | Go 1.26 + chi/v5 5.3.1 | — |
 | Frontend | React 19, TypeScript, Vite | — |
 | Package manager | pnpm 11.9.0 | — |
-| Database | PostgreSQL 18 Docker Compose dev service | pgx + sqlc, migrations (Goose) |
+| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, seed/verify scripts | pgx + sqlc |
 | Styling | — | Tailwind CSS + daisyUI |
 | Client state | — | TanStack Query |
 | API contract | Single GET /health/live endpoint | REST/JSON + OpenAPI 3.1 |
@@ -142,12 +151,26 @@ The technology baseline (from the approved solution architecture):
 ├── cmd/
 │   └── api/
 │       └── main.go                    # Go API entry point, graceful shutdown
+├── db/
+│   ├── migrations/
+│   │   ├── bootstrap/
+│   │   │   └── 00001_create_platform_schema.sql
+│   │   └── platform/
+│   │       └── 00001_create_local_seed_manifest.sql
+│   └── seeds/
+│       └── local/
+│           └── v1.sql                 # Synthetic seed data
 ├── internal/
 │   ├── .gitkeep
 │   └── platform/
 │       └── httpx/
 │           ├── health.go              # GET /health/live handler
 │           └── health_test.go         # Liveness test
+├── scripts/
+│   └── db/
+│       ├── migrate.sh                 # Goose migration runner
+│       ├── seed.sh                    # Seed applier with checksum guard
+│       └── verify.sh                  # Migration status + seed checksum verification
 ├── web/
 │   ├── src/
 │   │   ├── app/
@@ -191,10 +214,10 @@ The technology baseline (from the approved solution architecture):
 │           └── SKILL.md
 ├── .env.example                       # Developer PostgreSQL config template
 ├── compose.yaml                       # PostgreSQL 18.4 dev service + health check
-├── Makefile                           # PostgreSQL lifecycle targets
+├── Makefile                           # PostgreSQL lifecycle + migration targets
 ├── package.json                       # Root scripts (pnpm@11.9.0)
 ├── pnpm-lock.yaml
-├── go.mod                             # Go 1.26.3, chi/v5 5.3.1
+├── go.mod                             # Go 1.26.3, chi/v5 5.3.1, goose/v3 3.27.1
 ├── go.sum
 ├── AGENTS.md
 ├── ROADMAP.md
@@ -212,13 +235,20 @@ The technology baseline (from the approved solution architecture):
 - Docker Compose PostgreSQL 18.4 development service with health check and
   `make` lifecycle commands (`db-up`, `db-wait`, `db-status`, `db-version`,
   `db-down`).
+- Goose v3.27.1 database migrations for the `platform` schema and
+  `local_seed_manifest` table, run via `make db-migrate`.
+- Versioned synthetic seed (`db/seeds/local/v1.sql`) with checksum-based
+  drift detection, run via `make db-seed`.
+- Migration and seed verification via `make db-verify`.
+- Orchestrated `make db-prepare` that runs wait → migrate → seed → verify
+  and stops on first failure.
 - Delivery planning artifacts: user stories, backlog templates, architecture
   and technical specifications.
 
 **What is specified but not yet implemented:**
 - All 19 finance domain modules (GL, AP, AR, COA, etc.) — see
   [`docs/specs/system_design/02_application_module_design_v1.0.md`](./docs/specs/system_design/02_application_module_design_v1.0.md).
-- App-level database access (pgx, sqlc), migrations (Goose).
+- App-level database access (pgx, sqlc).
 - OpenAPI specification, workers, authentication, authorization,
   observability, Terraform, Azure deployment, CI/CD.
 
