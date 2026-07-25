@@ -228,19 +228,19 @@ Proves “migrates and seeds” while preserving `DLV-PLAT-003` ownership.
 
 ### Acceptance criteria
 
-- [ ] All four intents run from repository root.
-- [ ] Migration refuses to report success when no real migration contract executed.
-- [ ] It uses the approved repository migration contract rather than a competing framework.
-- [ ] Seed input is committed, versioned, synthetic, and non-sensitive.
-- [ ] Seed input contains no real customer, vendor, employee, bank, payroll, tax, credential, or production data.
-- [ ] Seed input does not invent finance entities or facts before their owning delivery items.
-- [ ] Re-running seed establishes the same declared state without duplicate rows or unexplained differences.
-- [ ] Verification proves migration and seed state, not merely connectivity.
-- [ ] Prepare runs wait, migration, seed, and verification in that order.
-- [ ] Any migration, seed, or verification failure stops prepare and returns non-zero.
-- [ ] The commands work after normal stop/start and after reset.
-- [ ] No pgx repository, sqlc query, generated SQL, ORM, CI workflow, or drift-completion claim is added.
-- [ ] Traceability separates any same-chain `DLV-PLAT-003` work from this item.
+- [x] All four intents run from repository root.
+- [x] Migration refuses to report success when no real migration contract executed.
+- [x] It uses the approved repository migration contract rather than a competing framework.
+- [x] Seed input is committed, versioned, synthetic, and non-sensitive.
+- [x] Seed input contains no real customer, vendor, employee, bank, payroll, tax, credential, or production data.
+- [x] Seed input does not invent finance entities or facts before their owning delivery items.
+- [x] Re-running seed establishes the same declared state without duplicate rows or unexplained differences.
+- [x] Verification proves migration and seed state, not merely connectivity.
+- [x] Prepare runs wait, migration, seed, and verification in that order.
+- [x] Any migration, seed, or verification failure stops prepare and returns non-zero.
+- [x] The commands work after normal stop/start and after reset.
+- [x] No pgx repository, sqlc query, generated SQL, ORM, CI workflow, or drift-completion claim is added.
+- [x] Traceability separates any same-chain `DLV-PLAT-003` work from this item.
 
 ### Evidence
 

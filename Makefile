@@ -73,3 +73,16 @@ db-down:
 db-version:
 	docker compose exec $(DB_SERVICE) \
 		sh -c 'psql --username "$$POSTGRES_USER" --dbname "$$POSTGRES_DB" --tuples-only --no-align --command "SHOW server_version;"'
+
+.PHONY: db-migrate db-seed db-verify db-prepare
+
+db-migrate: db-wait
+	./scripts/db/migrate.sh
+
+db-seed: db-wait
+	./scripts/db/seed.sh
+
+db-verify: db-wait
+	./scripts/db/verify.sh
+
+db-prepare: db-migrate db-seed db-verify
