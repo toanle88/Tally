@@ -19,6 +19,15 @@ The shared commands below must be run from the repository root.
   pnpm --dir web install --frozen-lockfile
   ```
 
+### Start PostgreSQL
+
+Start the local PostgreSQL service and wait until its database-aware health
+check succeeds:
+
+```bash
+make db-up
+```
+
 ---
 
 ## Local PostgreSQL configuration

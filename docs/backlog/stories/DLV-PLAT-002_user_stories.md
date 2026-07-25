@@ -144,17 +144,17 @@ Creates a deterministic prerequisite for migration, seed, test, and development 
 
 ### Acceptance criteria
 
-- [ ] The service starts in detached mode through a documented command.
-- [ ] It defines a database-aware health check using the declared local database and user.
-- [ ] Health behavior has bounded interval, timeout, retries, and start period.
-- [ ] A wait command exits successfully only after health is established.
-- [ ] The wait path exits non-zero with useful diagnostics when health cannot be established within its bound.
-- [ ] Container startup failure is not reported as successful startup.
-- [ ] The server reports PostgreSQL `18.x`.
-- [ ] Stop/start without reset preserves named-volume state.
-- [ ] Startup requires no Azure, application process, authentication, or external provider.
-- [ ] Migration and seed are not hidden solely inside first-boot initialization.
-- [ ] API liveness semantics remain unchanged and `/health/ready` is not added.
+- [x] The service starts in detached mode through a documented command.
+- [x] It defines a database-aware health check using the declared local database and user.
+- [x] Health behavior has bounded interval, timeout, retries, and start period.
+- [x] A wait command exits successfully only after health is established.
+- [x] The wait path exits non-zero with useful diagnostics when health cannot be established within its bound.
+- [x] Container startup failure is not reported as successful startup.
+- [x] The server reports PostgreSQL `18.x`.
+- [x] Stop/start without reset preserves named-volume state.
+- [x] Startup requires no Azure, application process, authentication, or external provider.
+- [x] Migration and seed are not hidden solely inside first-boot initialization.
+- [x] API liveness semantics remain unchanged and `/health/ready` is not added.
 
 ### Evidence
 
