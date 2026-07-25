@@ -129,17 +129,17 @@ Establishes the API process boundary, selected router, composition root, and fir
 
 ### Acceptance criteria
 
-- [ ] `go build ./cmd/api` succeeds.
-- [ ] The API uses `net/http` with `chi`, without introducing a broader web framework.
-- [ ] `GET /health/live` returns HTTP `200 OK` and valid JSON.
-- [ ] The liveness response checks process liveness only and does not claim database or dependency readiness.
-- [ ] The liveness response exposes no secrets, environment contents, stack traces, or internal topology.
-- [ ] The liveness handler is implemented as reusable technical behavior under `internal/platform/`.
-- [ ] A deterministic Go test verifies the liveness handler status, content type, and response shape.
-- [ ] Invalid startup configuration and listen failures produce an explicit non-successful process outcome.
-- [ ] The API handles operating-system termination signals and attempts graceful shutdown with a bounded timeout.
-- [ ] The API starts and its tests pass without PostgreSQL, Docker, Azure, authentication, or external services.
-- [ ] `go test ./...` succeeds.
+- [x] `go build ./cmd/api` succeeds.
+- [x] The API uses `net/http` with `chi`, without introducing a broader web framework.
+- [x] `GET /health/live` returns HTTP `200 OK` and valid JSON.
+- [x] The liveness response checks process liveness only and does not claim database or dependency readiness.
+- [x] The liveness response exposes no secrets, environment contents, stack traces, or internal topology.
+- [x] The liveness handler is implemented as reusable technical behavior under `internal/platform/`.
+- [x] A deterministic Go test verifies the liveness handler status, content type, and response shape.
+- [x] Invalid startup configuration and listen failures produce an explicit non-successful process outcome.
+- [x] The API handles operating-system termination signals and attempts graceful shutdown with a bounded timeout.
+- [x] The API starts and its tests pass without PostgreSQL, Docker, Azure, authentication, or external services.
+- [x] `go test ./...` succeeds.
 
 `/health/ready` is not required by this item because database and migration compatibility do not yet exist. A later item must implement readiness without changing the approved liveness semantics.
 

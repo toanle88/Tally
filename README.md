@@ -155,7 +155,7 @@ All commands are defined in the root [`package.json`](./package.json).
 
 ## Roadmap
 
-See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0 (engineering foundation) through M9 (full-system qualification). The current checkpoint is **DLV-PLAT-001** — monorepo foundation — with User Story 1 (monorepo structure) complete and Stories 2–5 in progress.
+See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0 (engineering foundation) through M9 (full-system qualification). The current checkpoint is **DLV-PLAT-001** — monorepo foundation — with User Story 1 (monorepo structure) and User Story 2 (minimal Go API shell) complete. Stories 3–5 remain in progress.
 
 ---
 

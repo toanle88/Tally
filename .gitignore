@@ -44,7 +44,7 @@ coverprofile.out
 
 go.work
 go.work.sum
-
+/api
 # Frontend dependencies and outputs
 
 node_modules/
