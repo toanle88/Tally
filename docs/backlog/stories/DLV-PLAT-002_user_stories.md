@@ -262,28 +262,28 @@ Directly proves the complete exit evidence.
 
 ### Reset acceptance criteria
 
-- [ ] A clearly named reset command runs from repository root.
-- [ ] Documentation labels it destructive to the TALLY local database.
-- [ ] It removes only the TALLY Compose project’s declared disposable resources and database volume.
-- [ ] It does not run broad Docker pruning or delete unrelated containers, networks, images, or volumes.
-- [ ] It recreates PostgreSQL, waits for health, migrates, seeds, and verifies.
-- [ ] Any failed phase returns non-zero.
-- [ ] Success leaves PostgreSQL healthy in the declared migration and seed state.
-- [ ] Two complete reset runs produce the same declared verification result.
-- [ ] At least one verification begins with the prior TALLY database volume absent.
-- [ ] Verification requires no uncommitted file, prior volume, real credential, Azure, or external provider.
-- [ ] Image caches may improve speed but are not required for logical correctness.
+- [x] A clearly named reset command runs from repository root.
+- [x] Documentation labels it destructive to the TALLY local database.
+- [x] It removes only the TALLY Compose project’s declared disposable resources and database volume.
+- [x] It does not run broad Docker pruning or delete unrelated containers, networks, images, or volumes.
+- [x] It recreates PostgreSQL, waits for health, migrates, seeds, and verifies.
+- [x] Any failed phase returns non-zero.
+- [x] Success leaves PostgreSQL healthy in the declared migration and seed state.
+- [x] Two complete reset runs produce the same declared verification result.
+- [x] At least one verification begins with the prior TALLY database volume absent.
+- [x] Verification requires no uncommitted file, prior volume, real credential, Azure, or external provider.
+- [x] Image caches may improve speed but are not required for logical correctness.
 
 ### Documentation acceptance criteria
 
-- [ ] README documents Docker and Compose prerequisites.
-- [ ] README documents safe local configuration setup.
-- [ ] README documents all selected lifecycle, migration, seed, verify, and reset commands.
-- [ ] README documents host binding and port behavior.
-- [ ] README distinguishes ordinary stop from destructive reset.
-- [ ] README explains the `DLV-PLAT-002`/`DLV-PLAT-003` boundary.
-- [ ] README does not claim Azure PostgreSQL, HA, backup, DR, production NFRs, CI, authentication, finance schemas, or business modules complete.
-- [ ] A verification record is committed or linked.
+- [x] README documents Docker and Compose prerequisites.
+- [x] README documents safe local configuration setup.
+- [x] README documents all selected lifecycle, migration, seed, verify, and reset commands.
+- [x] README documents host binding and port behavior.
+- [x] README distinguishes ordinary stop from destructive reset.
+- [x] README explains the `DLV-PLAT-002`/`DLV-PLAT-003` boundary.
+- [x] README does not claim Azure PostgreSQL, HA, backup, DR, production NFRs, CI, authentication, finance schemas, or business modules complete.
+- [x] A verification record is committed or linked.
 
 ### Evidence record template
 
@@ -324,18 +324,18 @@ Directly proves the complete exit evidence.
 
 `DLV-PLAT-002` is complete only when all five stories and all conditions below pass:
 
-- [ ] One checked-in PostgreSQL `18.x` Compose service exists.
-- [ ] Effective configuration validates and contains no real committed secret.
-- [ ] PostgreSQL starts and becomes healthy within a bound.
-- [ ] Root lifecycle commands operate it and propagate failures.
-- [ ] A real migration executes against a fresh database.
-- [ ] A versioned synthetic seed executes deterministically.
-- [ ] Prepared-state verification proves more than connectivity.
-- [ ] Stop/start preserves ordinary local state.
-- [ ] Reset destroys only project-owned state.
-- [ ] Two reset-and-prepare runs produce the same declared result.
-- [ ] Clean-environment evidence is recorded.
-- [ ] No adjacent delivery item is falsely marked complete.
+- [x] One checked-in PostgreSQL `18.x` Compose service exists.
+- [x] Effective configuration validates and contains no real committed secret.
+- [x] PostgreSQL starts and becomes healthy within a bound.
+- [x] Root lifecycle commands operate it and propagate failures.
+- [x] A real migration executes against a fresh database.
+- [x] A versioned synthetic seed executes deterministically.
+- [x] Prepared-state verification proves more than connectivity.
+- [x] Stop/start preserves ordinary local state.
+- [x] Reset destroys only project-owned state.
+- [x] Two reset-and-prepare runs produce the same declared result.
+- [x] Clean-environment evidence is recorded.
+- [x] No adjacent delivery item is falsely marked complete.
 
 ## 12. Explicit exclusions and follow-on ownership
 
@@ -357,37 +357,37 @@ Directly proves the complete exit evidence.
 
 ## 13. Definition of Ready
 
-- [ ] Exact item, epic, milestone, deliverable, and exit evidence are identified.
-- [ ] The `DLV-PLAT-001` repository and root command surface are available or stable.
-- [ ] Docker Engine and Compose v2 have a setup path.
-- [ ] A reviewed PostgreSQL `18.x` image can be selected.
-- [ ] Local project/service/volume/binding/port/database/user/config choices can be recorded.
-- [ ] The `DLV-PLAT-002`/`DLV-PLAT-003` boundary is understood.
-- [ ] Minimum real migration, synthetic seed, and deterministic verification paths are available or scheduled in the same short chain.
-- [ ] Reset scope is limited to TALLY project resources.
-- [ ] Positive, negative, stop/start, rerun, reset, and clean-environment evidence is identified.
-- [ ] Five stories are small enough for one or a short chain of reviewable changes.
+- [x] Exact item, epic, milestone, deliverable, and exit evidence are identified.
+- [x] The `DLV-PLAT-001` repository and root command surface are available or stable.
+- [x] Docker Engine and Compose v2 have a setup path.
+- [x] A reviewed PostgreSQL `18.x` image can be selected.
+- [x] Local project/service/volume/binding/port/database/user/config choices can be recorded.
+- [x] The `DLV-PLAT-002`/`DLV-PLAT-003` boundary is understood.
+- [x] Minimum real migration, synthetic seed, and deterministic verification paths are available or scheduled in the same short chain.
+- [x] Reset scope is limited to TALLY project resources.
+- [x] Positive, negative, stop/start, rerun, reset, and clean-environment evidence is identified.
+- [x] Five stories are small enough for one or a short chain of reviewable changes.
 
 Finance requirements, authoritative finance records, UX states, authorization decisions, correction paths, business concurrency, and integration events are not applicable.
 
 ## 14. Definition of Done
 
-- [ ] Every criterion in Sections 6–11 passes; none is silently deferred.
-- [ ] Compose config, root commands, safe example config, verification logic, checks, and documentation are complete.
-- [ ] `docker compose config` passes.
-- [ ] PostgreSQL `18.x` starts and becomes healthy within the declared bound.
-- [ ] Normal stop/start preserves the volume.
-- [ ] Migration, seed, and verification pass on a fresh database.
-- [ ] Repeated seed establishes the same state without duplicates.
-- [ ] Reset passes twice with the same verification result.
-- [ ] Controlled startup/health and preparation failures propagate non-zero.
-- [ ] Clean-environment evidence is attached or linked.
-- [ ] Documentation matches actual image, commands, host/port behavior, reset scope, and verification method.
-- [ ] No real credential, production data, unrelated Docker resource, build output, or developer-specific config is committed.
-- [ ] The diff is reviewed against data ownership and adjacent-item boundaries.
-- [ ] Traceability is current.
-- [ ] No FR, GFR, workflow, NFR qualification, `DLV-PLAT-003`, adjacent item, or `M0` is falsely marked complete.
-- [ ] No critical or high unresolved defect remains.
+- [x] Every criterion in Sections 6–11 passes; none is silently deferred.
+- [x] Compose config, root commands, safe example config, verification logic, checks, and documentation are complete.
+- [x] `docker compose config` passes.
+- [x] PostgreSQL `18.x` starts and becomes healthy within the declared bound.
+- [x] Normal stop/start preserves the volume.
+- [x] Migration, seed, and verification pass on a fresh database.
+- [x] Repeated seed establishes the same state without duplicates.
+- [x] Reset passes twice with the same verification result.
+- [x] Controlled startup/health and preparation failures propagate non-zero.
+- [x] Clean-environment evidence is attached or linked.
+- [x] Documentation matches actual image, commands, host/port behavior, reset scope, and verification method.
+- [x] No real credential, production data, unrelated Docker resource, build output, or developer-specific config is committed.
+- [x] The diff is reviewed against data ownership and adjacent-item boundaries.
+- [x] Traceability is current.
+- [x] No FR, GFR, workflow, NFR qualification, `DLV-PLAT-003`, adjacent item, or `M0` is falsely marked complete.
+- [x] No critical or high unresolved defect remains.
 
 ### General Definition-of-Done applicability
 
