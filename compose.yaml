@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:18.4-bookworm
-
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${TALLY_DB_NAME:-tally_local}
       POSTGRES_USER: ${TALLY_DB_USER:-tally_local}
@@ -12,6 +12,17 @@ services:
 
     volumes:
       - postgres_data:/var/lib/postgresql
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready --username=$${POSTGRES_USER} --dbname=$${POSTGRES_DB}",
+        ]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+      start_period: 10s
 
 volumes:
   postgres_data:
