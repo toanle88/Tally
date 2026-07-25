@@ -1,81 +1,110 @@
 # Tally
 
-A modern double-entry accounting application for managing ledgers, vouchers, invoices, inventory, taxes, financial reports, and business transactions.
+A modern double-entry accounting application — currently in early engineering foundation phase.
 
 ---
 
-## Shared root commands
+## Prerequisites
 
-The shared commands below must be run from the repository root.
+- [Go](https://go.dev/dl/) 1.26.3 or later
+- [Node.js](https://nodejs.org/) 24 LTS or later
+- [pnpm](https://pnpm.io/installation) 11.9.0 (`corepack enable pnpm` or `npm install -g pnpm@11.9.0`)
+- [Docker Engine](https://docs.docker.com/engine/install/) and [Docker Compose v2](https://docs.docker.com/compose/)
 
-### Prerequisites
+---
 
-- Go 1.26.x
-- Node.js 24 LTS
-- pnpm using the exact version pinned in `web/package.json`
-- Frontend dependencies installed with:
-
-  ```bash
-  pnpm --dir web install --frozen-lockfile
-  ```
-
-### Start PostgreSQL
-
-Start the local PostgreSQL service and wait until its database-aware health
-check succeeds:
+## Getting Started
 
 ```bash
+# Install frontend dependencies
+pnpm --dir web install --frozen-lockfile
+
+# Start PostgreSQL (background, waits for health check)
 make db-up
+
+# Start the API server (listens on :8080 or $HTTP_ADDR)
+pnpm dev-api
+
+# Start the frontend dev server (separate terminal)
+pnpm dev-web
+
+# Run all checks (tests + build)
+pnpm check
 ```
 
----
-
-## Local PostgreSQL configuration
-
-TALLY uses one PostgreSQL 18 development service defined in the root
-`compose.yaml`.
-
-This configuration is for local learning and development only. It is not the
-production/reference Azure PostgreSQL architecture and makes no availability,
-backup, recovery, security, or performance qualification claim.
-
-The PostgreSQL port (`TALLY_DB_PORT`, default `5432`) is bound to `127.0.0.1`
-(localhost only) and is not accessible from other machines on the network.
-
-### Prerequisites
-
-- Docker Engine
-- Docker Compose v2
-
-### Configure
-
-Create your developer-specific configuration:
+Local PostgreSQL configuration is managed through `.env`:
 
 ```bash
 cp .env.example .env
 ```
 
 ---
-  
+
+## Project Commands
+
+### Root package.json scripts
+
+All commands must be run from the repository root.
+
+| Command | Description |
+|---|---|
+| `pnpm build` | Build both API and web |
+| `pnpm build:api` | `go build ./cmd/api` |
+| `pnpm build:web` | `tsc -b && vite build` (via `pnpm -C web run build`) |
+| `pnpm test` | Run all tests (API + web) |
+| `pnpm test:api` | `go test ./...` |
+| `pnpm test:web` | `vitest run` (via `pnpm -C web run test`) |
+| `pnpm check` | `pnpm run test && pnpm run build` |
+| `pnpm dev-api` | `go run ./cmd/api` |
+| `pnpm dev-web` | `vite` dev server (via `pnpm -C web run dev`) |
+
+### Makefile targets — PostgreSQL lifecycle
+
+| Target | Description |
+|---|---|
+| `make db-up` | Start PostgreSQL and wait for healthy status |
+| `make db-wait` | Poll Docker health check up to 30 s |
+| `make db-status` | Show container status (`docker compose ps postgres`) |
+| `make db-version` | Query `SHOW server_version` inside the container |
+| `make db-down` | Stop the PostgreSQL container |
+
+---
+
+## Local PostgreSQL
+
+A single PostgreSQL 18.4 (bookworm) development container is defined in
+[`compose.yaml`](./compose.yaml) with a database-aware health check.
+
+- Bound to `127.0.0.1:5432` (localhost only).
+- Data persists across restarts via a named volume.
+- Configured through environment variables in `.env`.
+- For local learning and development only — no production availability,
+  backup, recovery, or security qualification claim.
+
+See `.env.example` for the full set of configurable variables.
+
+---
+
 ## Architecture
 
-Tally uses a **modular-monolith** architecture: a single deployable Go application with enforced bounded-context module boundaries under `internal/`, and a React single-page application frontend. The architecture is specified in [`docs/specs/system_design/`](./docs/specs/system_design/).
+Tally uses a **modular-monolith** architecture: a single deployable Go
+application with enforced bounded-context module boundaries under
+`internal/`, and a React single-page application frontend. The architecture
+is specified in [`docs/specs/system_design/`](./docs/specs/system_design/).
 
-The target technology baseline (from the approved solution architecture):
+The technology baseline (from the approved solution architecture):
 
-| Area | Selection |
-|---|---|
-| Backend | Go 1.26 + chi router |
-| Frontend | React 19, TypeScript, Vite |
-| Package manager | pnpm (pinned `pnpm@11.9.0`) |
-| Database | PostgreSQL (planned) |
-| Database access | pgx + sqlc (planned) |
-| Migrations | Goose (planned) |
-| Styling | Tailwind CSS + daisyUI (planned) |
-| Client state | TanStack Query (planned) |
-| API contract | REST/JSON + OpenAPI 3.1 (planned) |
-| Infrastructure | Terraform + Azure (planned) |
-| CI/CD | GitHub Actions (planned) |
+| Area | Current | Planned |
+|---|---|---|
+| Backend | Go 1.26 + chi/v5 5.3.1 | — |
+| Frontend | React 19, TypeScript, Vite | — |
+| Package manager | pnpm 11.9.0 | — |
+| Database | PostgreSQL 18 Docker Compose dev service | pgx + sqlc, migrations (Goose) |
+| Styling | — | Tailwind CSS + daisyUI |
+| Client state | — | TanStack Query |
+| API contract | Single GET /health/live endpoint | REST/JSON + OpenAPI 3.1 |
+| Infrastructure | — | Terraform + Azure |
+| CI/CD | — | GitHub Actions |
 
 ---
 
@@ -85,7 +114,7 @@ The target technology baseline (from the approved solution architecture):
 .
 ├── cmd/
 │   └── api/
-│       └── main.go                    # Go API entry point
+│       └── main.go                    # Go API entry point, graceful shutdown
 ├── internal/
 │   ├── .gitkeep
 │   └── platform/
@@ -114,12 +143,28 @@ The target technology baseline (from the approved solution architecture):
 │   ├── .gitignore
 │   └── README.md                      # Vite scaffold notice (unused)
 ├── docs/
-│   ├── backlog/                       # User stories (DLV-PLAT-001), templates
+│   ├── backlog/                       # User stories (DLV-PLAT-001, DLV-PLAT-002)
+│   │   ├── epic-template.md
+│   │   ├── milestone-template.md
+│   │   ├── story-template.md
+│   │   └── stories/
+│   │       ├── DLV-PLAT-001_clean_clone_evidence.md
+│   │       ├── DLV-PLAT-001_user_stories.md
+│   │       └── DLV-PLAT-002_user_stories.md
 │   └── specs/                         # PRD, domain model, UX, NFR,
 │                                      # system design, technical specs
 ├── .opencode/
-│   ├── commands/                      # review-branch-diff, update-readme
-│   └── skills/                        # review-current-branch-diff, update-readme
+│   ├── commands/
+│   │   ├── review-branch-diff.md
+│   │   └── update-readme.md
+│   └── skills/
+│       ├── review-current-branch-diff/
+│       │   └── SKILL.md
+│       └── update-readme/
+│           └── SKILL.md
+├── .env.example                       # Developer PostgreSQL config template
+├── compose.yaml                       # PostgreSQL 18.4 dev service + health check
+├── Makefile                           # PostgreSQL lifecycle targets
 ├── package.json                       # Root scripts (pnpm@11.9.0)
 ├── pnpm-lock.yaml
 ├── go.mod                             # Go 1.26.3, chi/v5 5.3.1
@@ -131,20 +176,31 @@ The target technology baseline (from the approved solution architecture):
 ```
 
 **What exists today:**
-- Go API binary with a single endpoint: `GET /health/live` returns `{"status":"ok"}` with graceful shutdown.
-- React + Vite app shell that renders the TALLY heading (moved to `web/src/app/`).
-- Test infrastructure: Go tests via `go test`, frontend tests via Vitest + Testing Library.
+- Go API binary with a single endpoint: `GET /health/live` returns
+  `{"status":"ok"}` with graceful shutdown.
+- React + Vite app shell that renders the TALLY heading.
+- Test infrastructure: Go tests via `go test`, frontend tests via Vitest +
+  Testing Library.
 - Supporting config: TypeScript, ESLint, Vite, Go modules, path alias (`@/`).
+- Docker Compose PostgreSQL 18.4 development service with health check and
+  `make` lifecycle commands (`db-up`, `db-wait`, `db-status`, `db-version`,
+  `db-down`).
+- Delivery planning artifacts: user stories, backlog templates, architecture
+  and technical specifications.
 
 **What is specified but not yet implemented:**
-- All 19 finance domain modules (GL, AP, AR, COA, etc.) — see [`docs/specs/system_design/02_application_module_design_v1.0.md`](./docs/specs/system_design/02_application_module_design_v1.0.md).
-- Database, migrations, OpenAPI, workers, authentication, observability, Terraform, Azure deployment, CI/CD.
+- All 19 finance domain modules (GL, AP, AR, COA, etc.) — see
+  [`docs/specs/system_design/02_application_module_design_v1.0.md`](./docs/specs/system_design/02_application_module_design_v1.0.md).
+- App-level database access (pgx, sqlc), migrations (Goose).
+- OpenAPI specification, workers, authentication, authorization,
+  observability, Terraform, Azure deployment, CI/CD.
 
 ---
 
 ## Planned Target Architecture
 
-The approved architecture defines 19 bounded-context modules under `internal/`, each following a consistent structure (planned):
+The approved architecture defines 19 bounded-context modules under
+`internal/`, each following a consistent structure (planned):
 
 ```
 internal/<module>/
@@ -154,12 +210,16 @@ internal/<module>/
 └── adapters/        # postgres, HTTP mapping, integration-event mapping
 ```
 
-The planned modules are: `organization`, `gl`, `ap`, `ar`, `payroll`, `invoicing`, `payments`, `reporting`, `intercompany`, `revenue`, `fixedassets`, `multicurrency`, `fiscalperiod`, `coa`, `bankfeeds`, `tax`, `workflow`, `identity`, `audit`. None of these packages exist yet.
+The planned modules are: `organization`, `gl`, `ap`, `ar`, `payroll`,
+`invoicing`, `payments`, `reporting`, `intercompany`, `revenue`,
+`fixedassets`, `multicurrency`, `fiscalperiod`, `coa`, `bankfeeds`, `tax`,
+`workflow`, `identity`, `audit`. None of these packages exist yet.
 
 Cross-module rules (from the approved design):
 - Domain packages import only the Go standard library.
 - No module imports another module's repository or adapter.
-- Cross-module calls use a published application interface or integration event.
+- Cross-module calls use a published application interface or integration
+  event.
 - Each module owns its PostgreSQL schema.
 
 ---
@@ -170,67 +230,22 @@ TALLY enforces these design rules across all modules:
 
 - Never use binary floating point for money.
 - Posted or established financial records are immutable.
-- Correct established facts through reversal, adjustment, amendment, return, unapplication, replacement, or compensation.
+- Correct established facts through reversal, adjustment, amendment, return,
+  unapplication, replacement, or compensation.
 - Retriable state-changing operations require idempotency.
 - Integration events use the transactional outbox.
 - Material state changes require authorization and audit evidence.
 - Modules must not directly access another module's adapter or owned schema.
-- Shared technical packages must not contain capability-specific finance rules.
+- Shared technical packages must not contain capability-specific finance
+  rules.
 - Avoid unnecessary abstractions and dependencies.
-
----
-
-## Prerequisites
-
-- [Go](https://go.dev/dl/) 1.26.3 or later
-- [Node.js](https://nodejs.org/) 24 LTS or later
-- [pnpm](https://pnpm.io/installation) 11.9.0 (`corepack enable pnpm` or `npm install -g pnpm@11.9.0`)
-
----
-
-## Getting Started
-
-```bash
-# Clone the repository
-git clone https://github.com/toanle88/Tally.git
-cd Tally
-
-# Install frontend dependencies
-pnpm install
-
-# Run all checks (tests + build)
-pnpm check
-
-# Start the API server (listens on :8080 or $HTTP_ADDR)
-pnpm dev-api
-
-# Start the frontend dev server (in another terminal)
-pnpm dev-web
-```
-
----
-
-## Project Commands
-
-All commands are defined in the root [`package.json`](./package.json).
-
-| Command | Description |
-|---|---|
-| `pnpm build` | Build both API and web |
-| `pnpm build:api` | `go build ./cmd/api` |
-| `pnpm build:web` | `pnpm -C web run build` (tsc + vite) |
-| `pnpm test` | Run all tests (API + web) |
-| `pnpm test:api` | `go test ./...` |
-| `pnpm test:web` | `pnpm -C web run test` (vitest) |
-| `pnpm check` | `pnpm run test && pnpm run build` |
-| `pnpm dev-api` | `go run ./cmd/api` |
-| `pnpm dev-web` | `pnpm -C web run dev` (vite dev server) |
 
 ---
 
 ## Roadmap
 
-See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0 (engineering foundation) through M9 (full-system qualification).
+See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0
+(engineering foundation) through M9 (full-system qualification).
 
 ---
 
