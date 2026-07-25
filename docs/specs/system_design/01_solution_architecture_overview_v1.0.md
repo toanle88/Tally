@@ -4,7 +4,7 @@
 |---|---|
 | Version | 1.0 |
 | Baseline date | 2026-07-24 |
-| Status | Consistency-verified solution architecture baseline |
+| Status | Consistency-verified solution architecture baseline — pnpm package-manager revision |
 | Architecture style | Modular monolith |
 | Deployment intent | Local-first learning platform with an explicit production-qualification profile |
 | Source DDD | Finance DDD v3.1 |
@@ -60,6 +60,7 @@ The design is deliberately **cost-conscious for learning**. The local and Azure 
 | Database access | `pgx` + `sqlc` | Explicit SQL and generated typed access; no cross-schema repository access. |
 | Migrations | Goose | Ordered, reviewable schema migrations; expand/migrate/contract rollout discipline. |
 | Frontend runtime | Node.js 24 LTS | Build and test runtime only; no Node server in the production path. |
+| Frontend package manager | pnpm | Sole frontend package manager; commit `pnpm-lock.yaml`, pin the selected exact pnpm version in `package.json`, and use frozen-lockfile installation for reproducible clean clones and CI. |
 | Frontend | React 19.2 + TypeScript | SPA workspaces aligned to the UX specification. |
 | Build tooling | Vite 8 | Frontend development and production build. |
 | Styling | Tailwind CSS 4.x | CSS-first tokens and utilities. |
@@ -78,7 +79,7 @@ The design is deliberately **cost-conscious for learning**. The local and Azure 
 
 ### 3.1 Version policy
 
-- Runtime and framework **major versions** are selected here; patch versions are pinned by Go modules, `package-lock.json` and container digests.
+- Runtime and framework **major versions** are selected here; patch versions are pinned by Go modules, `pnpm-lock.yaml` and container digests. The selected exact pnpm version is pinned in the frontend `package.json`.
 - Security patches are adopted through automated dependency checks and a reviewed upgrade pull request.
 - PostgreSQL always runs a supported major and its current minor release.
 - A major-version upgrade requires compatibility tests, migration rehearsal and rollback evidence.
@@ -246,6 +247,8 @@ These references validate the selected service and framework capabilities as of 
 | Go release history | https://go.dev/doc/devel/release |
 | Node.js release schedule | https://nodejs.org/en/about/previous-releases |
 | React versions | https://react.dev/versions |
+| pnpm installation and version pinning | https://pnpm.io/installation |
+| pnpm frozen-lockfile installation | https://pnpm.io/cli/install |
 | PostgreSQL versioning policy | https://www.postgresql.org/support/versioning/ |
 | Azure Static Web Apps overview | https://learn.microsoft.com/en-us/azure/static-web-apps/overview |
 | Azure Container Apps scaling | https://learn.microsoft.com/en-us/azure/container-apps/scale-app |
@@ -265,6 +268,6 @@ These references validate the selected service and framework capabilities as of 
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `254f63ea0ee9141d93091f63505cad65f2f21c6a9a5080962d1e866e774fcaaf` |
-| Review status | Passed |
+| Verified body SHA-256 | `44e39bd0aa49fb2ecd792f378e8fd4721bb6d76c4144b9c4ee01b4c42b5d1808` |
+| Review status | Passed — targeted pnpm technology-baseline review |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; re-run the full suite for architecture, data ownership, security, recovery, or technology-baseline changes. |

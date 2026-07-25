@@ -6,8 +6,8 @@
 | Item type | Platform foundation item |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Milestone | `M0` — Engineering foundation |
-| Artifact version | 1.1 |
-| Review status | Passed — two review passes completed |
+| Artifact version | 1.2 |
+| Review status | Passed — three review passes completed; pnpm revision consistency-reviewed |
 | Delivery profile | Solo, part-time, local-first learning project |
 | Dependency position | No predecessor is identified for this item; its parent epic has no epic dependency. |
 | Authoritative deliverable | Create monorepo with Go API, React application and shared commands. |
@@ -34,17 +34,19 @@ This is an engineering foundation item, not product behavior. It completes no `F
 | Architecture | One-repository modular monolith; bounded-context boundaries remain explicit. |
 | Backend | Go `1.26.x`; `net/http` with `chi`; composition root at `cmd/api`. |
 | Frontend | Node.js `24 LTS`; React `19.2`; TypeScript; Vite `8`. |
+| Frontend package manager | pnpm only; commit `web/pnpm-lock.yaml`, pin the selected exact pnpm version through the `packageManager` field in `web/package.json`, and use frozen-lockfile installation for reproducibility. |
 | Frontend tests | Vitest and Testing Library for the application-shell test. MSW is not required until an API interaction needs it. |
 | Repository boundary | Reusable technical facilities belong under `internal/platform`; no finance bounded-context implementation is created by this item. |
 
-Patch versions and lockfile-resolved dependency versions are implementation evidence, not new architecture decisions.
+Patch versions and lockfile-resolved dependency versions are implementation evidence. The pnpm selection is authorized by `ADR-021`; the exact pnpm version remains an implementation pin recorded in `web/package.json`.
 
 ## 3. Required implementation inputs
 
 The item is not ready to start until these local implementation inputs are resolved:
 
 - canonical repository URL and Go module path;
-- root command mechanism, using the simplest option that does not add an unnecessary runtime or broad task-runner dependency; and
+- root command mechanism, using the simplest option that does not add an unnecessary runtime or broad task-runner dependency;
+- exact pnpm version to pin in `web/package.json`; and
 - frontend development-port behavior, using checked-in configuration when the Vite default is changed. The API uses the approved `HTTP_ADDR` default `:8080`.
 
 Do not invent a placeholder Go module path such as `example.com/...`.
@@ -75,17 +77,19 @@ Creates the physical foundation for the modular monolith and frontend without pr
 
 ### Acceptance criteria
 
-- [ ] The repository root contains `cmd/`, `internal/`, and `web/`.
-- [ ] The Go API entry point is located at `cmd/api/main.go`.
-- [ ] Reusable API-shell HTTP behavior is located under `internal/platform/httpx/` or an equivalently narrow technical package under `internal/platform/`.
-- [ ] The frontend application is located directly under `/web`; it is not nested inside a backend-only parent directory.
-- [ ] The root contains `README.md`, `.gitignore`, `go.mod`, and the selected root command manifest.
-- [ ] `go.mod` uses the confirmed canonical module path and a Go directive compatible with the approved Go `1.26.x` baseline.
-- [ ] `go.sum` is committed when the selected Go dependencies generate it.
-- [ ] npm is used for the frontend and `web/package-lock.json` is committed.
-- [ ] Local environment files, dependency directories, frontend build output, test output, and compiled binaries are ignored.
-- [ ] No finance bounded-context package, database artifact, event contract, generated API contract, or cloud resource is introduced.
-- [ ] Future repository areas remain absent until their owning delivery items require them.
+- [x] The repository root contains `cmd/`, `internal/`, and `web/`.
+- [x] The Go API entry point is located at `cmd/api/main.go`.
+- [x] Reusable API-shell HTTP behavior is located under `internal/platform/httpx/` or an equivalently narrow technical package under `internal/platform/`.
+- [x] The frontend application is located directly under `/web`; it is not nested inside a backend-only parent directory.
+- [x] The root contains `README.md`, `.gitignore`, `go.mod`, and the selected root command manifest.
+- [x] `go.mod` uses the confirmed canonical module path and a Go directive compatible with the approved Go `1.26.x` baseline.
+- [x] `go.sum` is committed when the selected Go dependencies generate it.
+- [x] pnpm is the sole frontend package manager and `web/pnpm-lock.yaml` is committed.
+- [x] `web/package.json` pins the selected exact pnpm version through its `packageManager` field.
+- [x] No npm, Yarn, or other frontend lockfile is committed.
+- [x] Local environment files, dependency directories, frontend build output, test output, and compiled binaries are ignored.
+- [x] No finance bounded-context package, database artifact, event contract, generated API contract, or cloud resource is introduced.
+- [x] Future repository areas remain absent until their owning delivery items require them.
 
 ### Expected minimum shape
 
@@ -98,6 +102,8 @@ Creates the physical foundation for the modular monolith and frontend without pr
 │   └── platform/
 │       └── httpx/
 ├── web/
+│   ├── package.json
+│   └── pnpm-lock.yaml
 ├── .gitignore
 ├── go.mod
 ├── README.md
@@ -167,13 +173,13 @@ Creates the frontend runtime and first deterministic component test while leavin
 ### Acceptance criteria
 
 - [ ] The frontend uses the approved Node.js `24 LTS`, React `19.2`, TypeScript, and Vite `8` baselines.
-- [ ] `npm ci` succeeds inside `/web` using the committed lockfile.
+- [ ] `pnpm install --frozen-lockfile` succeeds inside `/web` using the committed lockfile.
 - [ ] The application renders a minimal shell that identifies the product as TALLY.
 - [ ] Implemented source areas include `web/src/app/` and `web/src/test/`.
 - [ ] The structure remains compatible with later `routes`, `components`, `capabilities`, and `lib` areas without adding empty or speculative finance implementations.
 - [ ] A deterministic Vitest and Testing Library test proves that the application shell mounts and displays the TALLY identity.
 - [ ] The frontend test runs once in non-watch mode and exits with the correct process status.
-- [ ] `npm run build` succeeds with no TypeScript compilation errors.
+- [ ] `pnpm build` succeeds with no TypeScript compilation errors.
 - [ ] Unused Vite sample assets and demonstration code are removed.
 - [ ] Tailwind, daisyUI wrappers, TanStack Query, React Hook Form, Zod, TanStack Table, routing, and business-capability screens are not represented as completed.
 
@@ -181,7 +187,7 @@ Creates the frontend runtime and first deterministic component test while leavin
 
 ```text
 web/package.json
-web/package-lock.json
+web/pnpm-lock.yaml
 web/index.html
 web/tsconfig.json
 web/vite.config.ts
@@ -193,9 +199,9 @@ web/src/test/setup.ts
 
 ### Evidence
 
-- Output from `npm ci`.
+- Output from `pnpm install --frozen-lockfile`.
 - Output from the frontend non-watch test command.
-- Output from `npm run build`.
+- Output from `pnpm build`.
 - Local verification note or screenshot showing the TALLY application shell.
 
 ---
@@ -250,7 +256,7 @@ Directly proves the authoritative exit evidence: a clean clone builds and tests 
 
 ### Documentation acceptance criteria
 
-- [ ] `README.md` lists the required Go, Node.js, and npm major versions.
+- [ ] `README.md` lists the required Go and Node.js major versions and the exact pinned pnpm version.
 - [ ] `README.md` documents clean-clone setup and frontend dependency installation.
 - [ ] The root command intents and their selected names are documented.
 - [ ] Local API and frontend startup are documented.
@@ -262,13 +268,13 @@ Directly proves the authoritative exit evidence: a clean clone builds and tests 
 
 ### Clean-clone verification criteria
 
-- [ ] A new clone can install frontend dependencies using `npm ci`.
+- [ ] A new clone can install frontend dependencies using `pnpm install --frozen-lockfile`.
 - [ ] The selected root verify-all command succeeds from the new clone.
 - [ ] The Go API can be started and its liveness endpoint returns HTTP `200`.
 - [ ] The React application can be started and displays the TALLY shell.
 - [ ] Verification does not require uncommitted source, pre-existing `node_modules`, pre-existing compiled binaries, credentials, a database, or a cloud resource.
 - [ ] Build caches may accelerate verification but are not required for success.
-- [ ] The evidence record includes commit identifier, operating system, Go version, Node.js version, npm version, commands executed, and final result.
+- [ ] The evidence record includes commit identifier, operating system, Go version, Node.js version, pnpm version, commands executed, and final result.
 
 ### Evidence record template
 
@@ -279,7 +285,7 @@ Directly proves the authoritative exit evidence: a clean clone builds and tests 
 - Operating system:
 - Go version:
 - Node.js version:
-- npm version:
+- pnpm version:
 - Root command mechanism:
 - Commands executed:
   1.
@@ -398,7 +404,7 @@ The first review identified and corrected:
 
 ### Review pass 2 — Passed
 
-The final review passed all 44 structural and semantic checks covering:
+The second review passed all 44 structural and semantic checks covering:
 
 - exact delivery-item scope and exit evidence;
 - selected Go, HTTP, React, TypeScript, Node.js, and Vite baselines;
@@ -408,6 +414,17 @@ The final review passed all 44 structural and semantic checks covering:
 - Definition-of-Ready and Definition-of-Done applicability;
 - M0 quality-gate contribution without false completion claims; and
 - Markdown structure, evidence completeness, and internal consistency.
+
+### Review pass 3 — Passed
+
+The pnpm revision review confirmed:
+
+- `ADR-021` authorizes pnpm as the sole frontend package manager;
+- the solution architecture, story criteria, clean-clone commands, evidence template, and lockfile expectations agree;
+- `web/pnpm-lock.yaml` is committed and alternate frontend lockfiles are prohibited;
+- the exact pnpm version is pinned through the `packageManager` field in `web/package.json`;
+- frozen-lockfile installation is used for clean-clone and later CI reproducibility; and
+- no finance-domain, module-boundary, runtime, framework, testing, deployment, or adjacent-delivery-item behavior changed.
 
 **Final consistency result: PASS.**
 
@@ -420,7 +437,9 @@ The final review passed all 44 structural and semantic checks covering:
 - `01_backend_module_specifications_v1.0.md`
   - Repository layout and dependency rules.
 - `01_solution_architecture_overview_v1.0.md`
-  - Modular-monolith direction and selected Go/React technology baseline.
+  - Modular-monolith direction, selected Go/React technology baseline, and pnpm package-manager policy.
+- `05_architecture_traceability_decisions_v1.0.md`
+  - `ADR-021` authorizing pnpm as the sole frontend package manager.
 - `05_frontend_ui_technical_specifications_v1.0.md`
   - Approved frontend structure and capability boundary rule.
 - `08_observability_operations_specifications_v1.0.md`
