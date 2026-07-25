@@ -14,7 +14,7 @@
     - [ ] **DLV-PLAT-001 — Monorepo foundation**
       - [x] **User Story 1 — Establish the monorepo structure**
       - [x] **User Story 2 — Provide a minimal Go API shell**
-      - [ ] **User Story 3 — Provide a minimal React application shell**
+      - [x] **User Story 3 — Provide a minimal React application shell**
       - [ ] **User Story 4 — Provide shared root commands**
       - [ ] **User Story 5 — Document and prove clean-clone reproducibility**
 

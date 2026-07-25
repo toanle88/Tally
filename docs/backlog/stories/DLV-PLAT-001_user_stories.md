@@ -172,16 +172,16 @@ Creates the frontend runtime and first deterministic component test while leavin
 
 ### Acceptance criteria
 
-- [ ] The frontend uses the approved Node.js `24 LTS`, React `19.2`, TypeScript, and Vite `8` baselines.
-- [ ] `pnpm install --frozen-lockfile` succeeds inside `/web` using the committed lockfile.
-- [ ] The application renders a minimal shell that identifies the product as TALLY.
-- [ ] Implemented source areas include `web/src/app/` and `web/src/test/`.
-- [ ] The structure remains compatible with later `routes`, `components`, `capabilities`, and `lib` areas without adding empty or speculative finance implementations.
-- [ ] A deterministic Vitest and Testing Library test proves that the application shell mounts and displays the TALLY identity.
-- [ ] The frontend test runs once in non-watch mode and exits with the correct process status.
-- [ ] `pnpm build` succeeds with no TypeScript compilation errors.
-- [ ] Unused Vite sample assets and demonstration code are removed.
-- [ ] Tailwind, daisyUI wrappers, TanStack Query, React Hook Form, Zod, TanStack Table, routing, and business-capability screens are not represented as completed.
+- [x] The frontend uses the approved Node.js `24 LTS`, React `19.2`, TypeScript, and Vite `8` baselines.
+- [x] `pnpm install --frozen-lockfile` succeeds inside `/web` using the committed lockfile.
+- [x] The application renders a minimal shell that identifies the product as TALLY.
+- [x] Implemented source areas include `web/src/app/` and `web/src/test/`.
+- [x] The structure remains compatible with later `routes`, `components`, `capabilities`, and `lib` areas without adding empty or speculative finance implementations.
+- [x] A deterministic Vitest and Testing Library test proves that the application shell mounts and displays the TALLY identity.
+- [x] The frontend test runs once in non-watch mode and exits with the correct process status.
+- [x] `pnpm build` succeeds with no TypeScript compilation errors.
+- [x] Unused Vite sample assets and demonstration code are removed.
+- [x] Tailwind, daisyUI wrappers, TanStack Query, React Hook Form, Zod, TanStack Table, routing, and business-capability screens are not represented as completed.
 
 ### Likely files
 
