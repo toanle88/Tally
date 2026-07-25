@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:18.4-bookworm
+
+    environment:
+      POSTGRES_DB: ${TALLY_DB_NAME:-tally_local}
+      POSTGRES_USER: ${TALLY_DB_USER:-tally_local}
+      POSTGRES_PASSWORD: ${TALLY_DB_PASSWORD:?copy .env.example to .env and define TALLY_DB_PASSWORD}
+
+    ports:
+      - "127.0.0.1:${TALLY_DB_PORT:-5432}:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+volumes:
+  postgres_data:

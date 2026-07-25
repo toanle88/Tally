@@ -2,8 +2,6 @@
 
 A modern double-entry accounting application for managing ledgers, vouchers, invoices, inventory, taxes, financial reports, and business transactions.
 
-**Status:** Early development — monorepo foundation (M0) in progress. See [ROADMAP.md](./ROADMAP.md).
-
 ---
 
 ## Shared root commands
@@ -20,6 +18,33 @@ The shared commands below must be run from the repository root.
   ```bash
   pnpm --dir web install --frozen-lockfile
   ```
+
+---
+
+## Local PostgreSQL configuration
+
+TALLY uses one PostgreSQL 18 development service defined in the root
+`compose.yaml`.
+
+This configuration is for local learning and development only. It is not the
+production/reference Azure PostgreSQL architecture and makes no availability,
+backup, recovery, security, or performance qualification claim.
+
+The PostgreSQL port (`TALLY_DB_PORT`, default `5432`) is bound to `127.0.0.1`
+(localhost only) and is not accessible from other machines on the network.
+
+### Prerequisites
+
+- Docker Engine
+- Docker Compose v2
+
+### Configure
+
+Create your developer-specific configuration:
+
+```bash
+cp .env.example .env
+```
 
 ---
   
@@ -196,7 +221,7 @@ All commands are defined in the root [`package.json`](./package.json).
 
 ## Roadmap
 
-See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0 (engineering foundation) through M9 (full-system qualification). The current checkpoint is **DLV-PLAT-001** — monorepo foundation. All five User Stories under DLV-PLAT-001 are complete.
+See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0 (engineering foundation) through M9 (full-system qualification).
 
 ---
 
