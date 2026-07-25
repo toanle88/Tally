@@ -86,3 +86,12 @@ db-verify: db-wait
 	./scripts/db/verify.sh
 
 db-prepare: db-migrate db-seed db-verify
+
+.PHONY: db-reset
+
+db-reset:
+	@printf '%s\n' \
+		'WARNING: db-reset permanently deletes the TALLY local PostgreSQL database volume.'
+	docker compose down --volumes
+	$(MAKE) db-up
+	$(MAKE) db-prepare

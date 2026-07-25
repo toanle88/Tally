@@ -17,12 +17,12 @@
       - [x] **User Story 3 — Provide a minimal React application shell**
       - [x] **User Story 4 — Provide shared root commands**
       - [x] **User Story 5 — Document and prove clean-clone reproducibility**
-    - [-] **DLV-PLAT-002 — Docker Compose PostgreSQL development environment**
+    - [x] **DLV-PLAT-002 — Docker Compose PostgreSQL development environment**
       - [x] **User Story 1 — Define safe local database configuration**
       - [x] **User Story 2 — Start and health-check PostgreSQL**
       - [x] **User Story 3 — Provide root database lifecycle commands**
       - [x] **User Story 4 — Orchestrate migration and deterministic seeding**
-      - [ ] **User Story 5 — Reset and prove reproducibility**
+      - [x] **User Story 5 — Reset and prove reproducibility**
 
 ## Milestone and epic roadmap
 

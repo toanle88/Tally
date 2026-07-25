@@ -71,6 +71,7 @@ All commands must be run from the repository root.
 | `make db-seed` | Apply the committed synthetic seed data |
 | `make db-verify` | Verify migration status and seed checksum |
 | `make db-prepare` | Run db-migrate → db-seed → db-verify in order, stop on failure |
+| `make db-reset` | Destroy and recreate the PostgreSQL volume from scratch |
 
 ---
 
@@ -105,6 +106,7 @@ Run all database commands from the repository root.
 | `make db-seed` | Applies the committed synthetic seed from `db/seeds/local/v1.sql` and records its checksum. |
 | `make db-verify` | Checks the recorded seed checksum and runs `goose status` on both migration directories. |
 | `make db-prepare` | Orchestrates wait → migrate → seed → verify in order; stops on first failure. |
+| `make db-reset`   | Destroys the PostgreSQL volume (`docker compose down --volumes`), then runs `db-up` and `db-prepare`. Shows a warning before the destructive step. |
 
 `make db-down` is non-destructive. It stops and removes the Compose
 container and network but retains the named PostgreSQL data volume.
@@ -198,11 +200,13 @@ The technology baseline (from the approved solution architecture):
 │   │   ├── milestone-template.md
 │   │   ├── story-template.md
 │   │   └── stories/
-│   │       ├── DLV-PLAT-001_clean_clone_evidence.md
 │   │       ├── DLV-PLAT-001_user_stories.md
 │   │       └── DLV-PLAT-002_user_stories.md
-│   └── specs/                         # PRD, domain model, UX, NFR,
-│                                      # system design, technical specs
+│   ├── specs/                         # PRD, domain model, UX, NFR,
+│   │                                  # system design, technical specs
+│   └── verification/                  # Clean-clone and reproducibility evidence
+│       ├── DLV-PLAT-001_clean_clone_evidence.md
+│       └── DLV-PLAT-002_local-db-reproducibility.md
 ├── .opencode/
 │   ├── commands/
 │   │   ├── review-branch-diff.md
@@ -213,6 +217,7 @@ The technology baseline (from the approved solution architecture):
 │       └── update-readme/
 │           └── SKILL.md
 ├── .env.example                       # Developer PostgreSQL config template
+├── .gitattributes
 ├── compose.yaml                       # PostgreSQL 18.4 dev service + health check
 ├── Makefile                           # PostgreSQL lifecycle + migration targets
 ├── package.json                       # Root scripts (pnpm@11.9.0)
@@ -242,6 +247,11 @@ The technology baseline (from the approved solution architecture):
 - Migration and seed verification via `make db-verify`.
 - Orchestrated `make db-prepare` that runs wait → migrate → seed → verify
   and stops on first failure.
+- Destructive database reset (`make db-reset`) that warns, removes the volume,
+  and recreates everything via `db-up` and `db-prepare`.
+- Verification evidence: clean-clone reproducibility
+  (`docs/verification/DLV-PLAT-001_clean_clone_evidence.md`) and local-db
+  reproducibility (`docs/verification/DLV-PLAT-002_local-db-reproducibility.md`).
 - Delivery planning artifacts: user stories, backlog templates, architecture
   and technical specifications.
 
