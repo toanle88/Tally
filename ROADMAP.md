@@ -17,6 +17,12 @@
       - [x] **User Story 3 — Provide a minimal React application shell**
       - [x] **User Story 4 — Provide shared root commands**
       - [x] **User Story 5 — Document and prove clean-clone reproducibility**
+    - [-] **DLV-PLAT-002 — Docker Compose PostgreSQL development environment**
+      - [x] **User Story 1 — Define safe local database configuration**
+      - [ ] **User Story 2 — Start and health-check PostgreSQL**
+      - [ ] **User Story 3 — Provide root database lifecycle commands**
+      - [ ] **User Story 4 — Orchestrate migration and deterministic seeding**
+      - [ ] **User Story 5 — Reset and prove reproducibility**
 
 ## Milestone and epic roadmap
 
@@ -28,7 +34,7 @@
 
 - [ ] **EP-PLAT-001 — Engineering foundation**
   - Scope: Repository, Go/React applications, Docker Compose, migrations, sqlc, OpenAPI, testing and conventions.
-  - Current item: `DLV-PLAT-001` is in progress; User Story 1 is complete.
+  - Current item: `DLV-PLAT-002` — User Story 1 is complete; User Stories 2–5 remain open.
 - [ ] **EP-UX-001 — Shared UX and design system**
   - Scope: Tailwind, daisyUI abstractions, routing, forms, tables, accessibility and shared operational surfaces.
 - [ ] **EP-IAC-001 — Terraform and Azure learning environment**
@@ -155,3 +161,4 @@
 - Review pass 4: User Stories 1–4 are checked; Story 5 remains open.
 - Review pass 5: `DLV-PLAT-001`, `EP-PLAT-001`, and M0 remain open because their remaining child scope is incomplete.
 - Review pass 6: User Story 5 is checked. `DLV-PLAT-001`, `EP-PLAT-001`, and M0 remain open because their remaining child scope is incomplete.
+- Review pass 7: `DLV-PLAT-002` is added under `EP-PLAT-001`. User Story 1 is checked; User Stories 2–5 remain open. `EP-PLAT-001` and M0 remain open.

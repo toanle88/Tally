@@ -101,18 +101,18 @@ Establishes version, configuration, storage, and exposure rules before lifecycle
 
 ### Acceptance criteria
 
-- [ ] A Docker Compose file is committed at a documented repository path.
-- [ ] It defines one PostgreSQL development service and no unrelated infrastructure.
-- [ ] It uses PostgreSQL `18.x` through a reviewed pinned tag or immutable digest, not `latest`.
-- [ ] It declares one project-owned persistent volume.
-- [ ] Host exposure is limited to the developer machine by default; selected port behavior is documented.
-- [ ] Database name, username, port, and credential inputs are configurable without editing the Compose file.
-- [ ] A checked-in example configuration contains clearly non-production placeholders or local-only values.
-- [ ] Developer-specific configuration is ignored by Git.
-- [ ] No real credential, production hostname, Azure reference, or sensitive finance data is committed.
-- [ ] `docker compose config` succeeds with the documented setup.
-- [ ] No finance schema, table, migration, business record, outbox, or inbox is introduced.
-- [ ] README wording distinguishes this learning environment from production/reference architecture.
+- [x] A Docker Compose file is committed at a documented repository path.
+- [x] It defines one PostgreSQL development service and no unrelated infrastructure.
+- [x] It uses PostgreSQL `18.x` through a reviewed pinned tag or immutable digest, not `latest`.
+- [x] It declares one project-owned persistent volume.
+- [x] Host exposure is limited to the developer machine by default; selected port behavior is documented.
+- [x] Database name, username, port, and credential inputs are configurable without editing the Compose file.
+- [x] A checked-in example configuration contains clearly non-production placeholders or local-only values.
+- [x] Developer-specific configuration is ignored by Git.
+- [x] No real credential, production hostname, Azure reference, or sensitive finance data is committed.
+- [x] `docker compose config` succeeds with the documented setup.
+- [x] No finance schema, table, migration, business record, outbox, or inbox is introduced.
+- [x] README wording distinguishes this learning environment from production/reference architecture.
 
 ### Likely files
 
