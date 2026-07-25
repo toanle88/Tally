@@ -15,7 +15,7 @@
       - [x] **User Story 1 — Establish the monorepo structure**
       - [x] **User Story 2 — Provide a minimal Go API shell**
       - [x] **User Story 3 — Provide a minimal React application shell**
-      - [ ] **User Story 4 — Provide shared root commands**
+      - [x] **User Story 4 — Provide shared root commands**
       - [ ] **User Story 5 — Document and prove clean-clone reproducibility**
 
 ## Milestone and epic roadmap
@@ -152,5 +152,5 @@
 - Review pass 1: all 10 milestone IDs are present in order.
 - Review pass 2: all 24 epics are present under their approved milestones.
 - Review pass 3: all five `DLV-PLAT-001` user stories are present.
-- Review pass 4: User Story 1 is checked; Stories 2–5 remain open.
+- Review pass 4: User Stories 1–4 are checked; Story 5 remains open.
 - Review pass 5: `DLV-PLAT-001`, `EP-PLAT-001`, and M0 remain open because their remaining child scope is incomplete.
