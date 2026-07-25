@@ -81,15 +81,15 @@ Creates the physical foundation for the modular monolith and frontend without pr
 - [x] The Go API entry point is located at `cmd/api/main.go`.
 - [x] Reusable API-shell HTTP behavior is located under `internal/platform/httpx/` or an equivalently narrow technical package under `internal/platform/`.
 - [x] The frontend application is located directly under `/web`; it is not nested inside a backend-only parent directory.
-- [ ] The root contains `README.md`, `.gitignore`, `go.mod`, and the selected root command manifest.
-- [ ] `go.mod` uses the confirmed canonical module path and a Go directive compatible with the approved Go `1.26.x` baseline.
-- [ ] `go.sum` is committed when the selected Go dependencies generate it.
-- [ ] pnpm is the sole frontend package manager and `web/pnpm-lock.yaml` is committed.
-- [ ] `web/package.json` pins the selected exact pnpm version through its `packageManager` field.
-- [ ] No npm, Yarn, or other frontend lockfile is committed.
-- [ ] Local environment files, dependency directories, frontend build output, test output, and compiled binaries are ignored.
-- [ ] No finance bounded-context package, database artifact, event contract, generated API contract, or cloud resource is introduced.
-- [ ] Future repository areas remain absent until their owning delivery items require them.
+- [x] The root contains `README.md`, `.gitignore`, `go.mod`, and the selected root command manifest.
+- [x] `go.mod` uses the confirmed canonical module path and a Go directive compatible with the approved Go `1.26.x` baseline.
+- [x] `go.sum` is committed when the selected Go dependencies generate it.
+- [x] pnpm is the sole frontend package manager and `web/pnpm-lock.yaml` is committed.
+- [x] `web/package.json` pins the selected exact pnpm version through its `packageManager` field.
+- [x] No npm, Yarn, or other frontend lockfile is committed.
+- [x] Local environment files, dependency directories, frontend build output, test output, and compiled binaries are ignored.
+- [x] No finance bounded-context package, database artifact, event contract, generated API contract, or cloud resource is introduced.
+- [x] Future repository areas remain absent until their owning delivery items require them.
 
 ### Expected minimum shape
 
