@@ -196,7 +196,7 @@ All commands are defined in the root [`package.json`](./package.json).
 
 ## Roadmap
 
-See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0 (engineering foundation) through M9 (full-system qualification). The current checkpoint is **DLV-PLAT-001** — monorepo foundation. User Stories 1–4 are complete; Story 5 remains in progress.
+See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0 (engineering foundation) through M9 (full-system qualification). The current checkpoint is **DLV-PLAT-001** — monorepo foundation. All five User Stories under DLV-PLAT-001 are complete.
 
 ---
 
