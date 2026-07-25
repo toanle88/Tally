@@ -189,17 +189,17 @@ Names are recommended aliases, not contracts.
 
 ### Acceptance criteria
 
-- [ ] Every lifecycle intent runs from repository root.
-- [ ] Commands use the checked-in Compose definition and documented local configuration.
-- [ ] Start includes or clearly directs the bounded health-wait step.
-- [ ] Stop preserves the volume.
-- [ ] Status distinguishes available Compose states where supported.
-- [ ] Shell uses local configuration and does not hard-code a production credential.
-- [ ] Logs do not echo full connection strings or credentials.
-- [ ] Missing Docker, invalid config, startup failure, health timeout, and shell failure return non-zero.
-- [ ] Repeating safe commands produces understandable outcomes.
-- [ ] No unnecessary task-runner dependency is added.
-- [ ] Prerequisites, names, working directory, normal behavior, and failure behavior are documented.
+- [x] Every lifecycle intent runs from repository root.
+- [x] Commands use the checked-in Compose definition and documented local configuration.
+- [x] Start includes or clearly directs the bounded health-wait step.
+- [x] Stop preserves the volume.
+- [x] Status distinguishes available Compose states where supported.
+- [x] Shell uses local configuration and does not hard-code a production credential.
+- [x] Logs do not echo full connection strings or credentials.
+- [x] Missing Docker, invalid config, startup failure, health timeout, and shell failure return non-zero.
+- [x] Repeating safe commands produces understandable outcomes.
+- [x] No unnecessary task-runner dependency is added.
+- [x] Prerequisites, names, working directory, normal behavior, and failure behavior are documented.
 
 ### Evidence
 

@@ -20,7 +20,7 @@
     - [-] **DLV-PLAT-002 — Docker Compose PostgreSQL development environment**
       - [x] **User Story 1 — Define safe local database configuration**
       - [x] **User Story 2 — Start and health-check PostgreSQL**
-      - [ ] **User Story 3 — Provide root database lifecycle commands**
+      - [x] **User Story 3 — Provide root database lifecycle commands**
       - [ ] **User Story 4 — Orchestrate migration and deterministic seeding**
       - [ ] **User Story 5 — Reset and prove reproducibility**
 

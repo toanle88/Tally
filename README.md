@@ -83,6 +83,33 @@ A single PostgreSQL 18.4 (bookworm) development container is defined in
 
 See `.env.example` for the full set of configurable variables.
 
+### Database lifecycle commands
+
+Run all database commands from the repository root.
+
+| Command | Behavior |
+|---|---|
+| `make db-config` | Validates the effective Docker Compose configuration. |
+| `make db-up` | Starts PostgreSQL in detached mode and waits until it is healthy. |
+| `make db-wait` | Waits for PostgreSQL to become healthy and fails after a bounded timeout. |
+| `make db-status` | Shows the PostgreSQL container and health state. |
+| `make db-logs` | Shows the latest PostgreSQL logs. |
+| `make db-shell` | Opens `psql` against the configured local database. |
+| `make db-version` | Prints the running PostgreSQL server version. |
+| `make db-down` | Stops the Compose environment while preserving the database volume. |
+
+`make db-down` is non-destructive. It stops and removes the Compose
+container and network but retains the named PostgreSQL data volume.
+
+The commands use the checked-in `compose.yaml` definition and the local
+configuration described above. Docker Engine and Docker Compose v2 must be
+available.
+
+Failures from Docker Compose, PostgreSQL health checks, and `psql` are
+returned as non-zero command results. These commands configure only the local
+learning environment; they do not establish production readiness, database
+migrations, finance schemas, Azure PostgreSQL, backup, or disaster recovery.
+
 ---
 
 ## Architecture
