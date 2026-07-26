@@ -7,6 +7,10 @@
 	db-shell \
 	db-down \
 	db-version \
+	db-migrate \
+	db-seed \
+	db-verify \
+	db-prepare \
 	db-reset \
 	db-migrate-status \
 	db-migrate-validate \
@@ -15,7 +19,11 @@
 	db-migrate-inventory \
 	check \
 	verify-database \
-	verify-database-clean
+	verify-database-clean \
+	db-sqlc-version \
+	db-sqlc-generate \
+	db-sqlc-check \
+	db-sqlc-integration
 
 
 DB_SERVICE := postgres
@@ -84,8 +92,6 @@ db-version:
 	docker compose exec $(DB_SERVICE) \
 		sh -c 'psql --username "$$POSTGRES_USER" --dbname "$$POSTGRES_DB" --tuples-only --no-align --command "SHOW server_version;"'
 
-.PHONY: db-migrate db-seed db-verify db-prepare
-
 db-migrate: db-wait
 	./scripts/db/migrate.sh up
 
@@ -137,3 +143,21 @@ verify-database:
 
 verify-database-clean:
 	./scripts/verify/database.sh --clean
+
+db-sqlc-version:
+	@bash ./scripts/tools/sqlc.sh version
+
+db-sqlc-generate:
+	@bash ./scripts/tools/sqlc.sh generate -f sqlc.yaml
+
+db-sqlc-check:
+	@bash ./scripts/db/sqlc-check.sh
+
+db-sqlc-integration:
+	@set -a; \
+	. ./.env; \
+	set +a; \
+	go test -tags=integration ./internal/platform/database \
+		-run '^TestSQLCPlatformSeedManifestWithinTransaction$$' \
+		-count=1 \
+		-v

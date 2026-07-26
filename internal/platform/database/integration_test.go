@@ -1,9 +1,12 @@
+//go:build integration
+
 package database
 
 import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"os"
 	"strconv"
 	"testing"
 	"time"
@@ -11,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
+	"github.com/toanle88/Tally/internal/platform/database/platformdb"
 )
 
 const (
@@ -32,6 +36,51 @@ func TestPostgres18ConnectionCommitRollbackAndCleanup(t *testing.T) {
 
 	runTransactionProofs(t, ctx, pool)
 	assertNoAcquiredConnections(t, pool)
+}
+
+func TestSQLCPlatformSeedManifestWithinTransaction(t *testing.T) {
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		t.Fatal("DATABASE_URL is required for the sqlc integration test")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	pool, err := Open(ctx, Config{
+		DatabaseURL:    databaseURL,
+		MaxConnections: integrationMaxConnections,
+		ConnectTimeout: 10 * time.Second,
+	})
+	if err != nil {
+		t.Fatalf("open PostgreSQL integration pool: %v", err)
+	}
+	t.Cleanup(pool.Close)
+
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatalf("begin sqlc transaction: %v", err)
+	}
+	t.Cleanup(func() {
+		_ = tx.Rollback(ctx)
+	})
+
+	queries := platformdb.New(pool).WithTx(tx)
+
+	checksum, err := queries.GetLocalSeedManifestChecksum(
+		ctx,
+		platformdb.GetLocalSeedManifestChecksumParams{
+			SeedName:    "tally-local-platform",
+			SeedVersion: 1,
+		},
+	)
+	if err != nil {
+		t.Fatalf("query local seed manifest through sqlc: %v", err)
+	}
+
+	if checksum == "" {
+		t.Fatal("local seed manifest checksum is empty")
+	}
 }
 
 func startPostgres18Container(

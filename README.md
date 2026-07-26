@@ -85,6 +85,10 @@ All commands must be run from the repository root.
 | `make db-migrate-create` | Create a migration skeleton: `make db-migrate-create SCHEMA=platform NAME=desc` |
 | `make db-migrate-check` | Verify migration checksum inventory matches committed migrations |
 | `make db-migrate-inventory` | Regenerate `db/migrations/checksums.sha256` |
+| `make db-sqlc-version` | Show the pinned sqlc version |
+| `make db-sqlc-generate` | Regenerate typed Go query code from committed SQL source |
+| `make db-sqlc-check` | Regenerate sqlc output, detect drift, and run Go tests |
+| `make db-sqlc-integration` | Execute the sqlc platform seed-manifest integration test |
 | `make check` | Run migration validation, checksum check, and `go test ./...` |
 | `make verify-database` | Run end-to-end database verification from current state |
 | `make verify-database-clean` | Delete volume, recreate, and run full verification from scratch |
@@ -115,10 +119,10 @@ The technology baseline (from the approved solution architecture):
 
 | Area | Current | Planned |
 |---|---|---|
-| Backend | Go 1.26 + chi/v5 5.3.1 | — |
+| Backend | Go 1.26.3 + chi/v5 5.3.1 | — |
 | Frontend | React 19, TypeScript, Vite | — |
 | Package manager | pnpm 11.9.0 | — |
-| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, seed/verify scripts, migration checksum inventory | sqlc |
+| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform queries, seed/verify scripts, migration checksum inventory | End-to-end persistence integration and CI drift detection |
 | Styling | — | Tailwind CSS + daisyUI |
 | Client state | — | TanStack Query |
 | API contract | Single GET /health/live endpoint | REST/JSON + OpenAPI 3.1 |
@@ -141,6 +145,9 @@ The technology baseline (from the approved solution architecture):
 │   │   ├── platform/
 │   │   │   └── 00001_create_local_seed_manifest.sql
 │   │   └── checksums.sha256              # Migration integrity checksums
+│   ├── queries/
+│   │   └── platform/
+│   │       └── local_seed_manifest.sql    # sqlc source query
 │   └── seeds/
 │       └── local/
 │           └── v1.sql                 # Synthetic seed data
@@ -150,7 +157,11 @@ The technology baseline (from the approved solution architecture):
 │       ├── database/
 │       │   ├── pool.go                 # pgx connection pool with config validation
 │       │   ├── pool_test.go            # Pool validation and security unit tests
-│       │   └── integration_test.go     # PostgreSQL 18 integration tests
+│       │   ├── integration_test.go     # PostgreSQL 18 integration tests
+│       │   └── platformdb/             # sqlc-generated platform query package
+│       │       ├── db.go
+│       │       ├── local_seed_manifest.sql.go
+│       │       └── models.go
 │       └── httpx/
 │           ├── health.go              # GET /health/live handler
 │           └── health_test.go         # Liveness test
@@ -158,8 +169,11 @@ The technology baseline (from the approved solution architecture):
 │   ├── README.md                    # Script documentation
 │   ├── db/
 │   │   ├── migrate.sh                 # Goose migration runner
+│   │   ├── sqlc-check.sh              # sqlc generation drift check
 │   │   ├── seed.sh                    # Seed applier with checksum guard
 │   │   └── verify.sh                  # Migration status + seed checksum verification
+│   ├── tools/
+│   │   └── sqlc.sh                    # Pinned sqlc launcher
 │   └── verify/
 │       └── database.sh                # End-to-end database verification workflow
 ├── web/
@@ -181,6 +195,7 @@ The technology baseline (from the approved solution architecture):
 │   ├── tsconfig.node.json
 │   ├── eslint.config.js
 │   ├── package.json
+│   ├── pnpm-lock.yaml
 │   ├── .gitignore
 │   └── README.md                      # Vite scaffold notice (unused)
 ├── docs/
@@ -214,6 +229,7 @@ The technology baseline (from the approved solution architecture):
 ├── Makefile                           # PostgreSQL lifecycle + migration targets
 ├── package.json                       # Root scripts (pnpm@11.9.0)
 ├── pnpm-lock.yaml
+├── sqlc.yaml                            # sqlc code-generation configuration
 ├── go.mod                             # Go 1.26.3, chi/v5 5.3.1, goose/v3 3.27.1
 ├── go.sum
 ├── AGENTS.md
@@ -221,54 +237,6 @@ The technology baseline (from the approved solution architecture):
 ├── LICENSE                            # MIT
 └── README.md
 ```
-
-**What exists today:**
-- Go API binary with a single endpoint: `GET /health/live` returns
-  `{"status":"ok"}` with graceful shutdown.
-- React + Vite app shell that renders the TALLY heading.
-- Test infrastructure: Go tests via `go test`, frontend tests via Vitest +
-  Testing Library.
-- pgx/v5 connection pool (`internal/platform/database/pool.go`) with
-  configuration validation, connection-refusal handling,
-  context-cancellation protection, and connectivity timeout.
-- Pool unit tests (`pool_test.go`) covering invalid configurations,
-  connection refusal, canceled context, and connectivity timeout — all
-  with credential-safe error assertions.
-- PostgreSQL 18 integration test (`integration_test.go`) proving
-  connection, commit, rollback, and connection cleanup via
-  testcontainers.
-- Supporting config: TypeScript, ESLint, Vite, Go modules, path alias (`@/`).
-- Docker Compose PostgreSQL 18.4 development service with health check and
-  `make` lifecycle commands (`db-up`, `db-wait`, `db-status`, `db-version`,
-  `db-down`).
-- Goose v3.27.1 database migrations for the `platform` schema and
-  `local_seed_manifest` table, run via `make db-migrate`.
-  `bootstrap` schema migration creates the `platform` schema.
-- Migration validation (`make db-migrate-validate`), status (`make db-migrate-status`),
-  and creation (`make db-migrate-create`) commands.
-- Migration checksum inventory (`db/migrations/checksums.sha256`) with drift
-  detection (`make db-migrate-check`).
-- Versioned synthetic seed (`db/seeds/local/v1.sql`) with checksum-based
-  drift detection, run via `make db-seed`.
-- Migration and seed verification via `make db-verify`.
-- Orchestrated `make db-prepare` that runs wait → migrate → seed → verify
-  and stops on first failure.
-- Destructive database reset (`make db-reset`) that warns, removes the volume,
-  and recreates everything via `db-up` and `db-prepare`.
-- Verification evidence: clean-clone reproducibility
-  (`docs/verification/DLV-PLAT-001_clean_clone_evidence.md`) and local-db
-  reproducibility (`docs/verification/DLV-PLAT-002_local-db-reproducibility.md`).
-- Delivery planning artifacts: user stories for DLV-PLAT-001 through DLV-PLAT-003,
-  backlog templates, architecture and technical specifications.
-
-**What is specified but not yet implemented:**
-- All 19 finance domain modules (GL, AP, AR, COA, etc.) — see
-  [`docs/specs/system_design/02_application_module_design_v1.0.md`](./docs/specs/system_design/02_application_module_design_v1.0.md).
-- sqlc generation workflow (sqlc configuration, queries, generated code).
-- End-to-end persistence integration test (migrations + pgx + sqlc).
-- CI drift detection workflow for migrations and generated code.
-- OpenAPI specification, workers, authentication, authorization,
-  observability, Terraform, Azure deployment, CI/CD.
 
 ---
 
