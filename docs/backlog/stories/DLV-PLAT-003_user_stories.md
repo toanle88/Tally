@@ -139,24 +139,24 @@ Names are recommended aliases, not architecture contracts.
 
 ### Acceptance criteria
 
-- [ ] Goose is the sole migration framework.
-- [ ] The selected exact Goose version is pinned through a repository-controlled Go tool or equivalent tooling manifest.
-- [ ] Migration commands use the pinned version and do not require a separately installed unversioned Goose binary.
-- [ ] The current real platform migration is valid Goose SQL and preserves its existing technical behavior.
-- [ ] Migrations are grouped by owning schema under `db/migrations/` or an equivalently explicit schema-owned layout.
-- [ ] Each initialized schema uses its own Goose migration-history table.
-- [ ] No migration-history table is created for a schema that has no delivered migration.
-- [ ] Migration filenames are ordered, unique, and documented.
-- [ ] Migration files contain the required Goose annotations and have deterministic statement boundaries.
-- [ ] The existing root `db-migrate` command delegates to the Goose workflow rather than a competing raw runner.
-- [ ] Migration commands use documented local configuration without hard-coding credentials or production endpoints.
-- [ ] Applying migrations to a clean PostgreSQL 18 database succeeds.
-- [ ] A second apply reports no pending migration and makes no duplicate schema change.
-- [ ] Invalid ordering, duplicate versions, invalid SQL, or an unavailable database returns non-zero.
-- [ ] A deterministic migration inventory, checksum manifest, or equivalent reviewed mechanism detects changed, deleted, or unrecorded committed migrations.
-- [ ] Shared-environment guidance states forward-fix by default; a local `down` command, if retained, is documented as disposable-development behavior only.
-- [ ] Migration authoring guidance requires lock-risk, expected duration, forward-fix/rollback approach, backup need, and verification query when the change reaches business data.
-- [ ] No finance schema or aggregate table is introduced.
+- [x] Goose is the sole migration framework.
+- [x] The selected exact Goose version is pinned through a repository-controlled Go tool or equivalent tooling manifest.
+- [x] Migration commands use the pinned version and do not require a separately installed unversioned Goose binary.
+- [x] The current real platform migration is valid Goose SQL and preserves its existing technical behavior.
+- [x] Migrations are grouped by owning schema under `db/migrations/` or an equivalently explicit schema-owned layout.
+- [x] Each initialized schema uses its own Goose migration-history table.
+- [x] No migration-history table is created for a schema that has no delivered migration.
+- [x] Migration filenames are ordered, unique, and documented.
+- [x] Migration files contain the required Goose annotations and have deterministic statement boundaries.
+- [x] The existing root `db-migrate` command delegates to the Goose workflow rather than a competing raw runner.
+- [x] Migration commands use documented local configuration without hard-coding credentials or production endpoints.
+- [x] Applying migrations to a clean PostgreSQL 18 database succeeds.
+- [x] A second apply reports no pending migration and makes no duplicate schema change.
+- [x] Invalid ordering, duplicate versions, invalid SQL, or an unavailable database returns non-zero.
+- [x] A deterministic migration inventory, checksum manifest, or equivalent reviewed mechanism detects changed, deleted, or unrecorded committed migrations.
+- [x] Shared-environment guidance states forward-fix by default; a local `down` command, if retained, is documented as disposable-development behavior only.
+- [x] Migration authoring guidance requires lock-risk, expected duration, forward-fix/rollback approach, backup need, and verification query when the change reaches business data.
+- [x] No finance schema or aggregate table is introduced.
 
 ### Likely files
 
