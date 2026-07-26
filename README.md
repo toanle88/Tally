@@ -38,6 +38,11 @@ Local PostgreSQL configuration is managed through `.env`:
 cp .env.example .env
 ```
 
+For a new local environment:
+```bash
+make verify-database-clean
+```
+
 ---
 
 ## Project Commands
@@ -72,6 +77,14 @@ All commands must be run from the repository root.
 | `make db-verify` | Verify migration status and seed checksum |
 | `make db-prepare` | Run db-migrate → db-seed → db-verify in order, stop on failure |
 | `make db-reset` | Destroy and recreate the PostgreSQL volume from scratch |
+| `make db-migrate-status` | Show applied and pending Goose migrations per schema |
+| `make db-migrate-validate` | Validate migration ordering and Goose syntax without connecting |
+| `make db-migrate-create` | Create a migration skeleton: `make db-migrate-create SCHEMA=platform NAME=desc` |
+| `make db-migrate-check` | Verify migration checksum inventory matches committed migrations |
+| `make db-migrate-inventory` | Regenerate `db/migrations/checksums.sha256` |
+| `make check` | Run migration validation, checksum check, and `go test ./...` |
+| `make verify-database` | Run end-to-end database verification from current state |
+| `make verify-database-clean` | Delete volume, recreate, and run full verification from scratch |
 
 ---
 
@@ -89,6 +102,8 @@ A single PostgreSQL 18.4 (bookworm) development container is defined in
 See `.env.example` for the full set of configurable variables.
 
 ### Database lifecycle commands
+
+See [`scripts/README.md`](scripts/README.md) for script behavior, direct usage, and destructive-command warnings.
 
 Run all database commands from the repository root.
 
@@ -137,7 +152,7 @@ The technology baseline (from the approved solution architecture):
 | Backend | Go 1.26 + chi/v5 5.3.1 | — |
 | Frontend | React 19, TypeScript, Vite | — |
 | Package manager | pnpm 11.9.0 | — |
-| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, seed/verify scripts | pgx + sqlc |
+| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, seed/verify scripts, migration checksum inventory | pgx + sqlc |
 | Styling | — | Tailwind CSS + daisyUI |
 | Client state | — | TanStack Query |
 | API contract | Single GET /health/live endpoint | REST/JSON + OpenAPI 3.1 |
@@ -157,8 +172,9 @@ The technology baseline (from the approved solution architecture):
 │   ├── migrations/
 │   │   ├── bootstrap/
 │   │   │   └── 00001_create_platform_schema.sql
-│   │   └── platform/
-│   │       └── 00001_create_local_seed_manifest.sql
+│   │   ├── platform/
+│   │   │   └── 00001_create_local_seed_manifest.sql
+│   │   └── checksums.sha256              # Migration integrity checksums
 │   └── seeds/
 │       └── local/
 │           └── v1.sql                 # Synthetic seed data
@@ -169,10 +185,13 @@ The technology baseline (from the approved solution architecture):
 │           ├── health.go              # GET /health/live handler
 │           └── health_test.go         # Liveness test
 ├── scripts/
-│   └── db/
-│       ├── migrate.sh                 # Goose migration runner
-│       ├── seed.sh                    # Seed applier with checksum guard
-│       └── verify.sh                  # Migration status + seed checksum verification
+│   ├── README.md                    # Script documentation
+│   ├── db/
+│   │   ├── migrate.sh                 # Goose migration runner
+│   │   ├── seed.sh                    # Seed applier with checksum guard
+│   │   └── verify.sh                  # Migration status + seed checksum verification
+│   └── verify/
+│       └── database.sh                # End-to-end database verification workflow
 ├── web/
 │   ├── src/
 │   │   ├── app/
@@ -195,7 +214,7 @@ The technology baseline (from the approved solution architecture):
 │   ├── .gitignore
 │   └── README.md                      # Vite scaffold notice (unused)
 ├── docs/
-│   ├── backlog/                       # User stories (DLV-PLAT-001, DLV-PLAT-002)
+│   ├── backlog/                       # User stories (DLV-PLAT-001, DLV-PLAT-002, DLV-PLAT-003)
 │   │   ├── epic-template.md
 │   │   ├── milestone-template.md
 │   │   ├── story-template.md
@@ -207,11 +226,13 @@ The technology baseline (from the approved solution architecture):
 │   └── verification/                  # Clean-clone and reproducibility evidence
 │       ├── DLV-PLAT-001_clean_clone_evidence.md
 │       └── DLV-PLAT-002_local-db-reproducibility.md
-├── .opencode/
+├── .agents/
 │   ├── commands/
 │   │   ├── review-branch-diff.md
 │   │   └── update-readme.md
 │   └── skills/
+│       ├── create-pr/
+│       │   └── SKILL.md
 │       ├── review-current-branch-diff/
 │       │   └── SKILL.md
 │       └── update-readme/
@@ -242,6 +263,11 @@ The technology baseline (from the approved solution architecture):
   `db-down`).
 - Goose v3.27.1 database migrations for the `platform` schema and
   `local_seed_manifest` table, run via `make db-migrate`.
+  `bootstrap` schema migration creates the `platform` schema.
+- Migration validation (`make db-migrate-validate`), status (`make db-migrate-status`),
+  and creation (`make db-migrate-create`) commands.
+- Migration checksum inventory (`db/migrations/checksums.sha256`) with drift
+  detection (`make db-migrate-check`).
 - Versioned synthetic seed (`db/seeds/local/v1.sql`) with checksum-based
   drift detection, run via `make db-seed`.
 - Migration and seed verification via `make db-verify`.
@@ -252,13 +278,16 @@ The technology baseline (from the approved solution architecture):
 - Verification evidence: clean-clone reproducibility
   (`docs/verification/DLV-PLAT-001_clean_clone_evidence.md`) and local-db
   reproducibility (`docs/verification/DLV-PLAT-002_local-db-reproducibility.md`).
-- Delivery planning artifacts: user stories, backlog templates, architecture
-  and technical specifications.
+- Delivery planning artifacts: user stories for DLV-PLAT-001 through DLV-PLAT-003,
+  backlog templates, architecture and technical specifications.
 
 **What is specified but not yet implemented:**
 - All 19 finance domain modules (GL, AP, AR, COA, etc.) — see
   [`docs/specs/system_design/02_application_module_design_v1.0.md`](./docs/specs/system_design/02_application_module_design_v1.0.md).
-- App-level database access (pgx, sqlc).
+- Platform database foundation (`internal/platform/database` with pgx pool).
+- sqlc generation workflow (sqlc configuration, queries, generated code).
+- End-to-end persistence integration test (migrations + pgx + sqlc).
+- CI drift detection workflow for migrations and generated code.
 - OpenAPI specification, workers, authentication, authorization,
   observability, Terraform, Azure deployment, CI/CD.
 

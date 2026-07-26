@@ -23,6 +23,12 @@
       - [x] **User Story 3 — Provide root database lifecycle commands**
       - [x] **User Story 4 — Orchestrate migration and deterministic seeding**
       - [x] **User Story 5 — Reset and prove reproducibility**
+    - [-] **DLV-PLAT-003 — Goose migrations, pgx and sqlc workflow**
+      - [x] **User Story 1 — Establish the Goose migration contract**
+      - [ ] **User Story 2 — Establish the pgx database foundation**
+      - [ ] **User Story 3 — Establish the sqlc generation workflow**
+      - [ ] **User Story 4 — Prove migrations, pgx, and sqlc together**
+      - [ ] **User Story 5 — Detect persistence drift in CI**
 
 ## Milestone and epic roadmap
 
@@ -34,7 +40,6 @@
 
 - [ ] **EP-PLAT-001 — Engineering foundation**
   - Scope: Repository, Go/React applications, Docker Compose, migrations, sqlc, OpenAPI, testing and conventions.
-  - Current item: `DLV-PLAT-002` — User Story 1 is complete; User Stories 2–5 remain open.
 - [ ] **EP-UX-001 — Shared UX and design system**
   - Scope: Tailwind, daisyUI abstractions, routing, forms, tables, accessibility and shared operational surfaces.
 - [ ] **EP-IAC-001 — Terraform and Azure learning environment**
@@ -153,12 +158,3 @@
 4. A milestone is complete only when every required epic, workflow demonstration, and minimum gate passes.
 5. Partial percentage completion never marks a milestone complete.
 
-## Review record
-
-- Review pass 1: all 10 milestone IDs are present in order.
-- Review pass 2: all 24 epics are present under their approved milestones.
-- Review pass 3: all five `DLV-PLAT-001` user stories are present.
-- Review pass 4: User Stories 1–4 are checked; Story 5 remains open.
-- Review pass 5: `DLV-PLAT-001`, `EP-PLAT-001`, and M0 remain open because their remaining child scope is incomplete.
-- Review pass 6: User Story 5 is checked. `DLV-PLAT-001`, `EP-PLAT-001`, and M0 remain open because their remaining child scope is incomplete.
-- Review pass 7: `DLV-PLAT-002` is added under `EP-PLAT-001`. User Story 1 is checked; User Stories 2–5 remain open. `EP-PLAT-001` and M0 remain open.

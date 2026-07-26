@@ -6,7 +6,17 @@
 	db-logs \
 	db-shell \
 	db-down \
-	db-version
+	db-version \
+	db-reset \
+	db-migrate-status \
+	db-migrate-validate \
+	db-migrate-create \
+	db-migrate-check \
+	db-migrate-inventory \
+	check \
+	verify-database \
+	verify-database-clean
+
 
 DB_SERVICE := postgres
 DB_WAIT_ATTEMPTS := 50
@@ -77,7 +87,7 @@ db-version:
 .PHONY: db-migrate db-seed db-verify db-prepare
 
 db-migrate: db-wait
-	./scripts/db/migrate.sh
+	./scripts/db/migrate.sh up
 
 db-seed: db-wait
 	./scripts/db/seed.sh
@@ -87,11 +97,43 @@ db-verify: db-wait
 
 db-prepare: db-migrate db-seed db-verify
 
-.PHONY: db-reset
-
 db-reset:
 	@printf '%s\n' \
 		'WARNING: db-reset permanently deletes the TALLY local PostgreSQL database volume.'
 	docker compose down --volumes
 	$(MAKE) db-up
 	$(MAKE) db-prepare
+
+db-migrate-status: db-wait
+	./scripts/db/migrate.sh status
+
+db-migrate-validate:
+	./scripts/db/migrate.sh validate
+
+db-migrate-create:
+	@if [ -z "$(SCHEMA)" ] || [ -z "$(NAME)" ]; then \
+		echo "Usage: make db-migrate-create SCHEMA=<bootstrap|platform> NAME=<migration_name>" >&2; \
+		exit 2; \
+	fi
+	./scripts/db/migrate.sh create "$(SCHEMA)" "$(NAME)"
+
+db-migrate-check:
+	./scripts/db/migrate.sh check
+
+db-migrate-inventory:
+	find db/migrations \
+		-type f \
+		-name '*.sql' \
+		-print0 | \
+		sort -z | \
+		xargs -0 sha256sum > db/migrations/checksums.sha256
+	@echo "Updated db/migrations/checksums.sha256"
+
+check: db-migrate-validate db-migrate-check
+	go test ./...
+
+verify-database:
+	./scripts/verify/database.sh
+
+verify-database-clean:
+	./scripts/verify/database.sh --clean
