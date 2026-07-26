@@ -19,8 +19,8 @@ if [[ ! -f sqlc.yaml ]]; then
   fail "sqlc.yaml is missing"
 fi
 
-if [[ ! -x scripts/tools/sqlc.sh ]]; then
-  fail "scripts/tools/sqlc.sh is missing or is not executable"
+if [[ ! -f scripts/tools/sqlc.sh ]]; then
+  fail "scripts/tools/sqlc.sh is missing"
 fi
 
 if [[ ! -d "${generated_dir}" ]]; then
@@ -44,7 +44,7 @@ if [[ -n "$(git ls-files --others --exclude-standard -- "${generated_dir}")" ]];
   fail "generated output contains untracked files"
 fi
 
-./scripts/tools/sqlc.sh generate -f sqlc.yaml
+bash ./scripts/tools/sqlc.sh generate -f sqlc.yaml
 
 # Source/schema drift is detected when regeneration changes committed output.
 if ! git diff --quiet -- "${generated_dir}"; then

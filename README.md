@@ -85,6 +85,10 @@ All commands must be run from the repository root.
 | `make db-migrate-create` | Create a migration skeleton: `make db-migrate-create SCHEMA=platform NAME=desc` |
 | `make db-migrate-check` | Verify migration checksum inventory matches committed migrations |
 | `make db-migrate-inventory` | Regenerate `db/migrations/checksums.sha256` |
+| `make db-sqlc-version` | Show the pinned sqlc version |
+| `make db-sqlc-generate` | Regenerate typed Go query code from committed SQL source |
+| `make db-sqlc-check` | Regenerate sqlc output, detect drift, and run Go tests |
+| `make db-sqlc-integration` | Execute the sqlc platform seed-manifest integration test |
 | `make check` | Run migration validation, checksum check, and `go test ./...` |
 | `make verify-database` | Run end-to-end database verification from current state |
 | `make verify-database-clean` | Delete volume, recreate, and run full verification from scratch |
@@ -118,7 +122,7 @@ The technology baseline (from the approved solution architecture):
 | Backend | Go 1.26 + chi/v5 5.3.1 | — |
 | Frontend | React 19, TypeScript, Vite | — |
 | Package manager | pnpm 11.9.0 | — |
-| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, seed/verify scripts, migration checksum inventory | sqlc |
+| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform queries, seed/verify scripts, migration checksum inventory | End-to-end persistence integration and CI drift detection |
 | Styling | — | Tailwind CSS + daisyUI |
 | Client state | — | TanStack Query |
 | API contract | Single GET /health/live endpoint | REST/JSON + OpenAPI 3.1 |
@@ -141,6 +145,9 @@ The technology baseline (from the approved solution architecture):
 │   │   ├── platform/
 │   │   │   └── 00001_create_local_seed_manifest.sql
 │   │   └── checksums.sha256              # Migration integrity checksums
+│   ├── queries/
+│   │   └── platform/
+│   │       └── local_seed_manifest.sql    # sqlc source query
 │   └── seeds/
 │       └── local/
 │           └── v1.sql                 # Synthetic seed data
@@ -150,7 +157,8 @@ The technology baseline (from the approved solution architecture):
 │       ├── database/
 │       │   ├── pool.go                 # pgx connection pool with config validation
 │       │   ├── pool_test.go            # Pool validation and security unit tests
-│       │   └── integration_test.go     # PostgreSQL 18 integration tests
+│       │   ├── integration_test.go     # PostgreSQL 18 integration tests
+│       │   └── platformdb/             # sqlc-generated platform query package
 │       └── httpx/
 │           ├── health.go              # GET /health/live handler
 │           └── health_test.go         # Liveness test
@@ -158,8 +166,11 @@ The technology baseline (from the approved solution architecture):
 │   ├── README.md                    # Script documentation
 │   ├── db/
 │   │   ├── migrate.sh                 # Goose migration runner
+│   │   ├── sqlc-check.sh              # sqlc generation drift check
 │   │   ├── seed.sh                    # Seed applier with checksum guard
 │   │   └── verify.sh                  # Migration status + seed checksum verification
+│   ├── tools/
+│   │   └── sqlc.sh                    # Pinned sqlc launcher
 │   └── verify/
 │       └── database.sh                # End-to-end database verification workflow
 ├── web/
@@ -255,6 +266,14 @@ The technology baseline (from the approved solution architecture):
   and stops on first failure.
 - Destructive database reset (`make db-reset`) that warns, removes the volume,
   and recreates everything via `db-up` and `db-prepare`.
+- sqlc v1.31.1 generation workflow with source SQL under
+  `db/queries/platform/`, generated Go under
+  `internal/platform/database/platformdb/`, and `make db-sqlc-generate` as the
+  regeneration command.
+- sqlc drift detection via `make db-sqlc-check`; source SQL is the authoring
+  surface and generated Go must not be manually edited.
+- sqlc integration coverage via `make db-sqlc-integration`, which executes the
+  generated platform seed-manifest query inside a pgx transaction.
 - Verification evidence: clean-clone reproducibility
   (`docs/verification/DLV-PLAT-001_clean_clone_evidence.md`) and local-db
   reproducibility (`docs/verification/DLV-PLAT-002_local-db-reproducibility.md`).
@@ -264,7 +283,6 @@ The technology baseline (from the approved solution architecture):
 **What is specified but not yet implemented:**
 - All 19 finance domain modules (GL, AP, AR, COA, etc.) — see
   [`docs/specs/system_design/02_application_module_design_v1.0.md`](./docs/specs/system_design/02_application_module_design_v1.0.md).
-- sqlc generation workflow (sqlc configuration, queries, generated code).
 - End-to-end persistence integration test (migrations + pgx + sqlc).
 - CI drift detection workflow for migrations and generated code.
 - OpenAPI specification, workers, authentication, authorization,

@@ -10,7 +10,7 @@
 	db-migrate \
 	db-seed \
 	db-verify \
-	db-prepare
+	db-prepare \
 	db-reset \
 	db-migrate-status \
 	db-migrate-validate \
@@ -145,13 +145,13 @@ verify-database-clean:
 	./scripts/verify/database.sh --clean
 
 db-sqlc-version:
-	@./scripts/tools/sqlc.sh version
+	@bash ./scripts/tools/sqlc.sh version
 
 db-sqlc-generate:
-	@./scripts/tools/sqlc.sh generate -f sqlc.yaml
+	@bash ./scripts/tools/sqlc.sh generate -f sqlc.yaml
 
 db-sqlc-check:
-	@./scripts/db/sqlc-check.sh
+	@bash ./scripts/db/sqlc-check.sh
 
 db-sqlc-integration:
 	@set -a; \
