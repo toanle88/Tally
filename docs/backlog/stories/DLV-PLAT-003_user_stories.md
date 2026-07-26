@@ -193,22 +193,22 @@ Provides the approved low-level database access mechanism while keeping business
 
 ### Acceptance criteria
 
-- [ ] The repository uses the approved pgx major line and pins the selected exact dependency version through Go modules.
-- [ ] Shared pgx setup is located under `internal/platform/database/`.
-- [ ] The package opens a PostgreSQL pool from validated configuration rather than embedding a connection string.
-- [ ] Pool creation accepts a context and uses a bounded connectivity check.
-- [ ] Pool shutdown is explicit and safe to call from a composition root or test cleanup.
-- [ ] The connection string and credentials are never logged or included in returned errors.
-- [ ] The implementation remains compatible with the approved `DATABASE_URL` and bounded pool-size configuration contract.
-- [ ] The package exposes only the minimal facilities needed by sqlc and future repositories; it does not introduce a generic repository, unit-of-work framework, service locator, or ORM abstraction.
-- [ ] Transactions use pgx transaction semantics and sqlc's transaction-compatible query binding rather than a custom finance transaction model.
-- [ ] A committed integration test proves successful connection to PostgreSQL 18.
-- [ ] A committed integration test proves transaction commit behavior using technical synthetic data.
-- [ ] A committed integration test proves rollback on an intentional error or cancellation.
-- [ ] Test cleanup leaves no unexplained persistent row or open connection.
-- [ ] Connection refusal, invalid configuration, context expiry, and transaction failure produce explicit non-success outcomes.
-- [ ] The API is not required to gain finance repositories, protected actions, or `/health/ready` merely to complete this story.
-- [ ] No business module imports or uses the platform database package before its own approved delivery item.
+- [x] The repository uses the approved pgx major line and pins the selected exact dependency version through Go modules.
+- [x] Shared pgx setup is located under `internal/platform/database/`.
+- [x] The package opens a PostgreSQL pool from validated configuration rather than embedding a connection string.
+- [x] Pool creation accepts a context and uses a bounded connectivity check.
+- [x] Pool shutdown is explicit and safe to call from a composition root or test cleanup.
+- [x] The connection string and credentials are never logged or included in returned errors.
+- [x] The implementation remains compatible with the approved `DATABASE_URL` and bounded pool-size configuration contract.
+- [x] The package exposes only the minimal facilities needed by sqlc and future repositories; it does not introduce a generic repository, unit-of-work framework, service locator, or ORM abstraction.
+- [x] Transactions use pgx transaction semantics and sqlc's transaction-compatible query binding rather than a custom finance transaction model.
+- [x] A committed integration test proves successful connection to PostgreSQL 18.
+- [x] A committed integration test proves transaction commit behavior using technical synthetic data.
+- [x] A committed integration test proves rollback on an intentional error or cancellation.
+- [x] Test cleanup leaves no unexplained persistent row or open connection.
+- [x] Connection refusal, invalid configuration, context expiry, and transaction failure produce explicit non-success outcomes.
+- [x] The API is not required to gain finance repositories, protected actions, or `/health/ready` merely to complete this story.
+- [x] No business module imports or uses the platform database package before its own approved delivery item.
 
 ### Likely files
 
