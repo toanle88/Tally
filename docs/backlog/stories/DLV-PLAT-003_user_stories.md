@@ -241,24 +241,24 @@ Implements the approved pgx/sqlc choice and creates the source-to-generated-code
 
 ### Acceptance criteria
 
-- [ ] The selected exact sqlc version is pinned through a repository-controlled tool or equivalent tooling manifest.
-- [ ] A checked-in sqlc configuration identifies schema source, query source, Go package, output location, and pgx target.
-- [ ] Query source is grouped by owning schema or module.
-- [ ] The initial query targets the existing delivered technical platform persistence contract; it does not require a new finance table.
-- [ ] The initial query has a real use in verification or integration testing and is not an unused demonstration query.
-- [ ] Query names are stable and descriptive.
-- [ ] Generated Go code is placed under `internal/platform/database/` in a clearly generated package or directory.
-- [ ] Generated files include the tool-generated marker and are not manually edited.
-- [ ] Generated code is committed if the selected workflow uses committed generation artifacts.
-- [ ] sqlc uses pgx-compatible generated code and does not introduce `database/sql` merely as a second access path.
-- [ ] Generated code compiles with `go test ./...` or the repository's complete Go verification command.
-- [ ] A transaction can bind the generated query set to a pgx transaction.
-- [ ] The initial query references only the `platform` schema and any PostgreSQL system metadata explicitly needed by the tooling.
-- [ ] No query references a future finance schema or performs a cross-context join.
-- [ ] No generated type introduces floating-point representation for exact numeric database values.
-- [ ] Changing query or schema source and running generation produces a deterministic, reviewable diff.
-- [ ] Deleting or manually editing generated output is detected by the drift check.
-- [ ] README documents where source SQL lives, where generated code lives, how to regenerate, and that source SQL—not generated Go—is the authoring surface.
+- [x] The selected exact sqlc version is pinned through a repository-controlled tool or equivalent tooling manifest.
+- [x] A checked-in sqlc configuration identifies schema source, query source, Go package, output location, and pgx target.
+- [x] Query source is grouped by owning schema or module.
+- [x] The initial query targets the existing delivered technical platform persistence contract; it does not require a new finance table.
+- [x] The initial query has a real use in verification or integration testing and is not an unused demonstration query.
+- [x] Query names are stable and descriptive.
+- [x] Generated Go code is placed under `internal/platform/database/` in a clearly generated package or directory.
+- [x] Generated files include the tool-generated marker and are not manually edited.
+- [x] Generated code is committed if the selected workflow uses committed generation artifacts.
+- [x] sqlc uses pgx-compatible generated code and does not introduce `database/sql` merely as a second access path.
+- [x] Generated code compiles with `go test ./...` or the repository's complete Go verification command.
+- [x] A transaction can bind the generated query set to a pgx transaction.
+- [x] The initial query references only the `platform` schema and any PostgreSQL system metadata explicitly needed by the tooling.
+- [x] No query references a future finance schema or performs a cross-context join.
+- [x] No generated type introduces floating-point representation for exact numeric database values.
+- [x] Changing query or schema source and running generation produces a deterministic, reviewable diff.
+- [x] Deleting or manually editing generated output is detected by the drift check.
+- [x] README documents where source SQL lives, where generated code lives, how to regenerate, and that source SQL—not generated Go—is the authoring surface.
 
 ### Likely files
 

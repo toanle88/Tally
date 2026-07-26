@@ -26,7 +26,7 @@
     - [-] **DLV-PLAT-003 — Goose migrations, pgx and sqlc workflow**
       - [x] **User Story 1 — Establish the Goose migration contract**
       - [x] **User Story 2 — Establish the pgx database foundation**
-      - [ ] **User Story 3 — Establish the sqlc generation workflow**
+      - [x] **User Story 3 — Establish the sqlc generation workflow**
       - [ ] **User Story 4 — Prove migrations, pgx, and sqlc together**
       - [ ] **User Story 5 — Detect persistence drift in CI**
 

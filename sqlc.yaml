@@ -1,0 +1,15 @@
+version: "2"
+
+sql:
+  - name: platform
+    engine: postgresql
+    schema:
+      - db/migrations/bootstrap
+      - db/migrations/platform
+    queries:
+      - db/queries/platform
+    gen:
+      go:
+        package: platformdb
+        out: internal/platform/database/platformdb
+        sql_package: pgx/v5
