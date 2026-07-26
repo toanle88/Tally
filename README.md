@@ -38,6 +38,11 @@ Local PostgreSQL configuration is managed through `.env`:
 cp .env.example .env
 ```
 
+For a new local environment:
+```bash
+make verify-database-clean
+```
+
 ---
 
 ## Project Commands
@@ -89,6 +94,8 @@ A single PostgreSQL 18.4 (bookworm) development container is defined in
 See `.env.example` for the full set of configurable variables.
 
 ### Database lifecycle commands
+
+See [`scripts/README.md`](scripts/README.md) for script behavior, direct usage, and destructive-command warnings.
 
 Run all database commands from the repository root.
 

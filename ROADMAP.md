@@ -34,7 +34,6 @@
 
 - [ ] **EP-PLAT-001 — Engineering foundation**
   - Scope: Repository, Go/React applications, Docker Compose, migrations, sqlc, OpenAPI, testing and conventions.
-  - Current item: `DLV-PLAT-002` — User Story 1 is complete; User Stories 2–5 remain open.
 - [ ] **EP-UX-001 — Shared UX and design system**
   - Scope: Tailwind, daisyUI abstractions, routing, forms, tables, accessibility and shared operational surfaces.
 - [ ] **EP-IAC-001 — Terraform and Azure learning environment**
