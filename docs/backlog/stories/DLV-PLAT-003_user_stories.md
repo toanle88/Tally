@@ -293,22 +293,22 @@ Provides executable evidence that the selected migration, connection, generation
 
 ### Acceptance criteria
 
-- [ ] The integration test uses Testcontainers with PostgreSQL `18.x` or the exact approved production-equivalent major version.
-- [ ] The test begins from a new database instance or isolated database state.
-- [ ] The test applies all initialized schema migrations through the same Goose command or library contract used by normal development.
-- [ ] The test verifies the expected per-schema migration history and latest applied version.
-- [ ] The test opens pgx using the platform database foundation.
-- [ ] The test executes at least one committed sqlc-generated query against the delivered technical platform table.
-- [ ] The test proves a successful transaction commit.
-- [ ] The test proves rollback or cancellation leaves no established test effect.
-- [ ] A second migration application is harmless and reports no pending work.
-- [ ] The test does not depend on a developer's existing Compose volume, host PostgreSQL installation, Azure, or production credential.
-- [ ] Test data is synthetic, deterministic, and non-sensitive.
-- [ ] Tests are isolated and can run repeatedly without duplicate or unexplained state.
-- [ ] Container startup, migration, query, assertion, and cleanup failures propagate non-zero.
-- [ ] Failure output identifies the phase without printing secrets.
-- [ ] The integration test is bounded by explicit context or test timeout.
-- [ ] The test does not claim finance repository behavior, business idempotency, concurrency correctness, recovery qualification, or full `QG-03` completion.
+- [x] The integration test uses Testcontainers with PostgreSQL `18.x` or the exact approved production-equivalent major version.
+- [x] The test begins from a new database instance or isolated database state.
+- [x] The test applies all initialized schema migrations through the same Goose command or library contract used by normal development.
+- [x] The test verifies the expected per-schema migration history and latest applied version.
+- [x] The test opens pgx using the platform database foundation.
+- [x] The test executes at least one committed sqlc-generated query against the delivered technical platform table.
+- [x] The test proves a successful transaction commit.
+- [x] The test proves rollback or cancellation leaves no established test effect.
+- [x] A second migration application is harmless and reports no pending work.
+- [x] The test does not depend on a developer's existing Compose volume, host PostgreSQL installation, Azure, or production credential.
+- [x] Test data is synthetic, deterministic, and non-sensitive.
+- [x] Tests are isolated and can run repeatedly without duplicate or unexplained state.
+- [x] Container startup, migration, query, assertion, and cleanup failures propagate non-zero.
+- [x] Failure output identifies the phase without printing secrets.
+- [x] The integration test is bounded by explicit context or test timeout.
+- [x] The test does not claim finance repository behavior, business idempotency, concurrency correctness, recovery qualification, or full `QG-03` completion.
 
 ### Evidence
 

@@ -157,7 +157,10 @@ The technology baseline (from the approved solution architecture):
 │       ├── database/
 │       │   ├── pool.go                 # pgx connection pool with config validation
 │       │   ├── pool_test.go            # Pool validation and security unit tests
+│       │   ├── integration_fixture_test.go    # testcontainers fixture setup
 │       │   ├── integration_test.go     # PostgreSQL 18 integration tests
+│       │   ├── migration_integration_test.go  # migration apply/verify helpers
+│       │   ├── transaction_integration_test.go # generated query commit/rollback proof
 │       │   └── platformdb/             # sqlc-generated platform query package
 │       │       ├── db.go
 │       │       ├── local_seed_manifest.sql.go
@@ -225,6 +228,7 @@ The technology baseline (from the approved solution architecture):
 │           └── SKILL.md
 ├── .env.example                       # Developer PostgreSQL config template
 ├── .gitattributes
+├── .gitignore
 ├── compose.yaml                       # PostgreSQL 18.4 dev service + health check
 ├── Makefile                           # PostgreSQL lifecycle + migration targets
 ├── package.json                       # Root scripts (pnpm@11.9.0)
