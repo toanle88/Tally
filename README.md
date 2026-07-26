@@ -66,12 +66,15 @@ All commands must be run from the repository root.
 ### Makefile targets — PostgreSQL lifecycle
 
 | Target | Description |
-|---|---|
+|---|---|---|
+| `make db-config` | Validate Docker Compose configuration |
 | `make db-up` | Start PostgreSQL and wait for healthy status |
 | `make db-wait` | Poll Docker health check up to 50 attempts, 1 s interval |
 | `make db-status` | Show container status (`docker compose ps postgres`) |
+| `make db-logs` | Show the latest PostgreSQL logs |
+| `make db-shell` | Open `psql` against the configured local database |
 | `make db-version` | Query `SHOW server_version` inside the container |
-| `make db-down` | Stop the PostgreSQL container |
+| `make db-down` | Stop the PostgreSQL container (preserves data volume) |
 | `make db-migrate` | Apply Goose migrations (bootstrap schema, platform tables) |
 | `make db-seed` | Apply the committed synthetic seed data |
 | `make db-verify` | Verify migration status and seed checksum |
@@ -99,43 +102,6 @@ A single PostgreSQL 18.4 (bookworm) development container is defined in
 - For local learning and development only — no production availability,
   backup, recovery, or security qualification claim.
 
-See `.env.example` for the full set of configurable variables.
-
-### Database lifecycle commands
-
-See [`scripts/README.md`](scripts/README.md) for script behavior, direct usage, and destructive-command warnings.
-
-Run all database commands from the repository root.
-
-| Command | Behavior |
-|---|---|
-| `make db-config` | Validates the effective Docker Compose configuration. |
-| `make db-up` | Starts PostgreSQL in detached mode and waits until it is healthy. |
-| `make db-wait` | Waits for PostgreSQL to become healthy and fails after a bounded timeout. |
-| `make db-status` | Shows the PostgreSQL container and health state. |
-| `make db-logs` | Shows the latest PostgreSQL logs. |
-| `make db-shell` | Opens `psql` against the configured local database. |
-| `make db-version` | Prints the running PostgreSQL server version. |
-| `make db-down` | Stops the Compose environment while preserving the database volume. |
-| `make db-migrate` | Applies Goose migrations from `db/migrations/bootstrap` and `db/migrations/platform`. |
-| `make db-seed` | Applies the committed synthetic seed from `db/seeds/local/v1.sql` and records its checksum. |
-| `make db-verify` | Checks the recorded seed checksum and runs `goose status` on both migration directories. |
-| `make db-prepare` | Orchestrates wait → migrate → seed → verify in order; stops on first failure. |
-| `make db-reset`   | Destroys the PostgreSQL volume (`docker compose down --volumes`), then runs `db-up` and `db-prepare`. Shows a warning before the destructive step. |
-
-`make db-down` is non-destructive. It stops and removes the Compose
-container and network but retains the named PostgreSQL data volume.
-
-The commands use the checked-in `compose.yaml` definition and the local
-configuration described above. Docker Engine and Docker Compose v2 must be
-available.
-
-Failures from Docker Compose, PostgreSQL health checks, `psql`, Goose
-migrations, and seed verification are returned as non-zero command results.
-These commands configure only the local learning environment; they do not
-establish production readiness, finance schemas, Azure PostgreSQL, backup, or
-disaster recovery.
-
 ---
 
 ## Architecture
@@ -152,7 +118,7 @@ The technology baseline (from the approved solution architecture):
 | Backend | Go 1.26 + chi/v5 5.3.1 | — |
 | Frontend | React 19, TypeScript, Vite | — |
 | Package manager | pnpm 11.9.0 | — |
-| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, seed/verify scripts, migration checksum inventory | pgx + sqlc |
+| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, seed/verify scripts, migration checksum inventory | sqlc |
 | Styling | — | Tailwind CSS + daisyUI |
 | Client state | — | TanStack Query |
 | API contract | Single GET /health/live endpoint | REST/JSON + OpenAPI 3.1 |
@@ -181,6 +147,10 @@ The technology baseline (from the approved solution architecture):
 ├── internal/
 │   ├── .gitkeep
 │   └── platform/
+│       ├── database/
+│       │   ├── pool.go                 # pgx connection pool with config validation
+│       │   ├── pool_test.go            # Pool validation and security unit tests
+│       │   └── integration_test.go     # PostgreSQL 18 integration tests
 │       └── httpx/
 │           ├── health.go              # GET /health/live handler
 │           └── health_test.go         # Liveness test
@@ -220,7 +190,8 @@ The technology baseline (from the approved solution architecture):
 │   │   ├── story-template.md
 │   │   └── stories/
 │   │       ├── DLV-PLAT-001_user_stories.md
-│   │       └── DLV-PLAT-002_user_stories.md
+│   │       ├── DLV-PLAT-002_user_stories.md
+│   │       └── DLV-PLAT-003_user_stories.md
 │   ├── specs/                         # PRD, domain model, UX, NFR,
 │   │                                  # system design, technical specs
 │   └── verification/                  # Clean-clone and reproducibility evidence
@@ -257,6 +228,15 @@ The technology baseline (from the approved solution architecture):
 - React + Vite app shell that renders the TALLY heading.
 - Test infrastructure: Go tests via `go test`, frontend tests via Vitest +
   Testing Library.
+- pgx/v5 connection pool (`internal/platform/database/pool.go`) with
+  configuration validation, connection-refusal handling,
+  context-cancellation protection, and connectivity timeout.
+- Pool unit tests (`pool_test.go`) covering invalid configurations,
+  connection refusal, canceled context, and connectivity timeout — all
+  with credential-safe error assertions.
+- PostgreSQL 18 integration test (`integration_test.go`) proving
+  connection, commit, rollback, and connection cleanup via
+  testcontainers.
 - Supporting config: TypeScript, ESLint, Vite, Go modules, path alias (`@/`).
 - Docker Compose PostgreSQL 18.4 development service with health check and
   `make` lifecycle commands (`db-up`, `db-wait`, `db-status`, `db-version`,
@@ -284,7 +264,6 @@ The technology baseline (from the approved solution architecture):
 **What is specified but not yet implemented:**
 - All 19 finance domain modules (GL, AP, AR, COA, etc.) — see
   [`docs/specs/system_design/02_application_module_design_v1.0.md`](./docs/specs/system_design/02_application_module_design_v1.0.md).
-- Platform database foundation (`internal/platform/database` with pgx pool).
 - sqlc generation workflow (sqlc configuration, queries, generated code).
 - End-to-end persistence integration test (migrations + pgx + sqlc).
 - CI drift detection workflow for migrations and generated code.
