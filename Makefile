@@ -23,7 +23,12 @@
 	db-sqlc-version \
 	db-sqlc-generate \
 	db-sqlc-check \
-	db-sqlc-integration
+	db-sqlc-integration \
+	persistence-tools-version \
+	sqlc-compile \
+	sqlc-check \
+	persistence-integration-test \
+	persistence-check	
 
 
 DB_SERVICE := postgres
@@ -161,3 +166,35 @@ db-sqlc-integration:
 		-run '^TestSQLCPlatformSeedManifestWithinTransaction$$' \
 		-count=1 \
 		-v
+
+# Persistence tooling is pinned through the repository-controlled Go tool
+# declarations established by earlier DLV-PLAT-003 stories.
+GOOSE ?= go tool goose
+SQLC ?= go tool sqlc
+
+## Print the exact repository-pinned persistence tool versions.
+persistence-tools-version:
+	@$(GOOSE) -version
+	@$(SQLC) version
+
+## Parse and type-check the committed sqlc schema and query source.
+sqlc-compile:
+	@$(SQLC) -f sqlc.yaml compile
+
+## Compare committed generated output with deterministic sqlc output.
+## This fails for stale, deleted, or manually edited generated files.
+sqlc-check:
+	@$(SQLC) -f sqlc.yaml diff
+
+## Run all database integration tests, including clean migration and
+## generated-query verification, against PostgreSQL 18 Testcontainers.
+persistence-integration-test:
+	@go test \
+		-tags=integration \
+		-count=1 \
+		-timeout=10m \
+		./internal/platform/database
+
+## Run the complete local persistence release gate used by CI.
+persistence-check:
+	@bash scripts/db/persistence-check.sh
