@@ -23,12 +23,12 @@
       - [x] **User Story 3 — Provide root database lifecycle commands**
       - [x] **User Story 4 — Orchestrate migration and deterministic seeding**
       - [x] **User Story 5 — Reset and prove reproducibility**
-    - [-] **DLV-PLAT-003 — Goose migrations, pgx and sqlc workflow**
+    - [x] **DLV-PLAT-003 — Goose migrations, pgx and sqlc workflow**
       - [x] **User Story 1 — Establish the Goose migration contract**
       - [x] **User Story 2 — Establish the pgx database foundation**
       - [x] **User Story 3 — Establish the sqlc generation workflow**
       - [x] **User Story 4 — Prove migrations, pgx, and sqlc together**
-      - [ ] **User Story 5 — Detect persistence drift in CI**
+      - [x] **User Story 5 — Detect persistence drift in CI**
 
 ## Milestone and epic roadmap
 
@@ -157,4 +157,3 @@
 3. An epic is complete only when all required delivery items and applicable quality gates pass.
 4. A milestone is complete only when every required epic, workflow demonstration, and minimum gate passes.
 5. Partial percentage completion never marks a milestone complete.
-

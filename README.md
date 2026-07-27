@@ -89,6 +89,11 @@ All commands must be run from the repository root.
 | `make db-sqlc-generate` | Regenerate typed Go query code from committed SQL source |
 | `make db-sqlc-check` | Regenerate sqlc output, detect drift, and run Go tests |
 | `make db-sqlc-integration` | Execute the sqlc platform seed-manifest integration test |
+| `make persistence-tools-version` | Show pinned Goose and sqlc versions used by the release gate |
+| `make sqlc-compile` | Parse and type-check committed sqlc schema and query source |
+| `make sqlc-check` | Compare committed sqlc output with deterministic generated output |
+| `make persistence-integration-test` | Run PostgreSQL 18 Testcontainers persistence integration tests |
+| `make persistence-check` | Run the focused persistence drift gate used by CI |
 | `make check` | Run migration validation, checksum check, and `go test ./...` |
 | `make verify-database` | Run end-to-end database verification from current state |
 | `make verify-database-clean` | Delete volume, recreate, and run full verification from scratch |
@@ -108,6 +113,37 @@ A single PostgreSQL 18.4 (bookworm) development container is defined in
 
 ---
 
+## Persistence Verification
+
+The focused persistence release gate is:
+
+```bash
+make persistence-check
+```
+
+It verifies the repository-pinned Goose and sqlc tools, validates Goose
+migration sets, checks `db/migrations/checksums.sha256`, compiles sqlc source,
+detects stale or manually edited generated sqlc output, runs Go tests, and then
+runs the PostgreSQL 18 Testcontainers persistence integration tests.
+
+Author SQL in `db/queries/` and regenerate committed output with
+`make db-sqlc-generate`. Generated files under
+`internal/platform/database/platformdb/` are machine-produced and must not be
+manually edited. Author migrations under the owning schema directory in
+`db/migrations/`, update the checksum inventory with
+`make db-migrate-inventory`, and verify drift with `make db-migrate-check`.
+
+Shared-environment migration correction is forward-fix by default. Destructive
+reset commands such as `make db-reset` and `make verify-database-clean` are for
+disposable local development state only.
+
+The GitHub Actions workflow at `.github/workflows/persistence.yml` invokes the
+same `make persistence-check` command for focused DLV-PLAT-003 persistence
+drift detection. It does not complete the broader DLV-CI-001 pull-request
+quality pipeline.
+
+---
+
 ## Architecture
 
 Tally uses a **modular-monolith** architecture: a single deployable Go
@@ -122,7 +158,7 @@ The technology baseline (from the approved solution architecture):
 | Backend | Go 1.26.3 + chi/v5 5.3.1 | — |
 | Frontend | React 19, TypeScript, Vite | — |
 | Package manager | pnpm 11.9.0 | — |
-| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform queries, seed/verify scripts, migration checksum inventory | End-to-end persistence integration and CI drift detection |
+| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform queries, seed/verify scripts, migration checksum inventory, focused persistence drift command and CI workflow | Broader PR quality-pipeline integration |
 | Styling | — | Tailwind CSS + daisyUI |
 | Client state | — | TanStack Query |
 | API contract | Single GET /health/live endpoint | REST/JSON + OpenAPI 3.1 |

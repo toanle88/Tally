@@ -347,32 +347,32 @@ The check shall perform, in a deterministic order:
 
 ### Local acceptance criteria
 
-- [ ] One documented root command runs the complete persistence verification.
-- [ ] It uses repository-pinned Goose and sqlc versions.
-- [ ] It does not silently skip migration validation, generation, compilation, or integration verification.
-- [ ] It fails when a committed historical migration changes without the required migration-inventory update.
-- [ ] It fails when a migration is deleted, duplicated, invalid, or out of order.
-- [ ] It fails when sqlc source changes but generated code is stale.
-- [ ] It fails when a generated file is manually changed or deleted.
-- [ ] It fails when generated code does not compile.
-- [ ] It fails when clean migration application or the generated query integration test fails.
-- [ ] It succeeds from a clean checkout with a clean PostgreSQL test dependency.
-- [ ] A successful run leaves the Git working tree unchanged.
-- [ ] Failure propagation is non-zero and identifies the failed stage.
+- [x] One documented root command runs the complete persistence verification.
+- [x] It uses repository-pinned Goose and sqlc versions.
+- [x] It does not silently skip migration validation, generation, compilation, or integration verification.
+- [x] It fails when a committed historical migration changes without the required migration-inventory update.
+- [x] It fails when a migration is deleted, duplicated, invalid, or out of order.
+- [x] It fails when sqlc source changes but generated code is stale.
+- [x] It fails when a generated file is manually changed or deleted.
+- [x] It fails when generated code does not compile.
+- [x] It fails when clean migration application or the generated query integration test fails.
+- [x] It succeeds from a clean checkout with a clean PostgreSQL test dependency.
+- [x] A successful run leaves the Git working tree unchanged.
+- [x] Failure propagation is non-zero and identifies the failed stage.
 
 ### CI acceptance criteria
 
-- [ ] A focused GitHub Actions job or workflow invokes the same repository root persistence command used locally.
-- [ ] The workflow uses PostgreSQL `18.x` through a service container or the approved Testcontainers path.
-- [ ] Tool versions come from repository-controlled pins rather than floating CI installation commands.
-- [ ] The workflow requires no Azure credential, production database, or committed secret.
-- [ ] The workflow does not print `DATABASE_URL`, database passwords, or complete secret values.
-- [ ] The job fails on migration drift.
-- [ ] The job fails on stale or manually changed sqlc output.
-- [ ] The job fails on migration, compile, or integration-test failure.
-- [ ] The job succeeds on the reviewed clean branch.
-- [ ] The job is named clearly enough to be reused or included by the later `DLV-CI-001` full PR pipeline.
-- [ ] Documentation explicitly states that this focused job does not complete `DLV-CI-001`.
+- [x] A focused GitHub Actions job or workflow invokes the same repository root persistence command used locally.
+- [x] The workflow uses PostgreSQL `18.x` through a service container or the approved Testcontainers path.
+- [x] Tool versions come from repository-controlled pins rather than floating CI installation commands.
+- [x] The workflow requires no Azure credential, production database, or committed secret.
+- [x] The workflow does not print `DATABASE_URL`, database passwords, or complete secret values.
+- [x] The job fails on migration drift.
+- [x] The job fails on stale or manually changed sqlc output.
+- [x] The job fails on migration, compile, or integration-test failure.
+- [x] The job succeeds on the reviewed clean branch.
+- [x] The job is named clearly enough to be reused or included by the later `DLV-CI-001` full PR pipeline.
+- [x] Documentation explicitly states that this focused job does not complete `DLV-CI-001`.
 
 ### Controlled negative evidence
 
@@ -387,14 +387,14 @@ Each mutation must make the local check fail. At least migration drift and gener
 
 ### Documentation acceptance criteria
 
-- [ ] README documents pinned-tool setup and verification.
-- [ ] README documents migration creation, validation, status, application, and drift checking.
-- [ ] README documents sqlc source, generation, generated output, and no-manual-edit rule.
-- [ ] README documents the persistence integration-test command and PostgreSQL/Docker prerequisites.
-- [ ] README explains forward-fix versus disposable local reset.
-- [ ] README explains the `DLV-PLAT-003`/`DLV-CI-001` boundary.
-- [ ] README does not claim finance schemas, finance repositories, OpenAPI, idempotency, outbox/inbox, production recovery, full `QG-03`, full CI, or `M0` complete.
-- [ ] A verification record is committed or linked.
+- [x] README documents pinned-tool setup and verification.
+- [x] README documents migration creation, validation, status, application, and drift checking.
+- [x] README documents sqlc source, generation, generated output, and no-manual-edit rule.
+- [x] README documents the persistence integration-test command and PostgreSQL/Docker prerequisites.
+- [x] README explains forward-fix versus disposable local reset.
+- [x] README explains the `DLV-PLAT-003`/`DLV-CI-001` boundary.
+- [x] README does not claim finance schemas, finance repositories, OpenAPI, idempotency, outbox/inbox, production recovery, full `QG-03`, full CI, or `M0` complete.
+- [x] A verification record is committed or linked.
 
 ### Evidence record template
 
@@ -448,23 +448,23 @@ Each mutation must make the local check fail. At least migration drift and gener
 
 `DLV-PLAT-003` is complete only when all five stories and every condition below pass:
 
-- [ ] Goose and sqlc tool versions are pinned in repository-controlled manifests.
-- [ ] The current real platform migration is valid under the Goose workflow.
-- [ ] Migration sets are schema-owned and every initialized schema has its own history table.
-- [ ] Clean migration and repeated migration application pass against PostgreSQL 18.
-- [ ] A deterministic migration inventory/checksum or equivalent mechanism detects drift.
-- [ ] A minimal pgx database foundation exists under `internal/platform/database`.
-- [ ] Connection, transaction commit, and rollback behavior pass integration tests.
-- [ ] sqlc configuration, query source, and generated Go output are committed according to the selected workflow.
-- [ ] Generated code uses pgx and compiles.
-- [ ] At least one real generated query executes against the delivered technical platform persistence contract.
-- [ ] Persistence integration verification begins from clean PostgreSQL state and is repeatable.
-- [ ] One root command validates migrations, regenerates sqlc, checks the working tree, compiles, migrates, and tests.
-- [ ] Local negative checks prove migration and generated-code drift detection.
-- [ ] CI invokes the same persistence command and rejects both migration drift and generated-code drift.
-- [ ] Documentation and verification evidence are current.
-- [ ] No finance schema, aggregate table, business repository, API operation, event, or capability behavior is introduced.
-- [ ] No adjacent delivery item or milestone is falsely marked complete.
+- [x] Goose and sqlc tool versions are pinned in repository-controlled manifests.
+- [x] The current real platform migration is valid under the Goose workflow.
+- [x] Migration sets are schema-owned and every initialized schema has its own history table.
+- [x] Clean migration and repeated migration application pass against PostgreSQL 18.
+- [x] A deterministic migration inventory/checksum or equivalent mechanism detects drift.
+- [x] A minimal pgx database foundation exists under `internal/platform/database`.
+- [x] Connection, transaction commit, and rollback behavior pass integration tests.
+- [x] sqlc configuration, query source, and generated Go output are committed according to the selected workflow.
+- [x] Generated code uses pgx and compiles.
+- [x] At least one real generated query executes against the delivered technical platform persistence contract.
+- [x] Persistence integration verification begins from clean PostgreSQL state and is repeatable.
+- [x] One root command validates migrations, regenerates sqlc, checks the working tree, compiles, migrates, and tests.
+- [x] Local negative checks prove migration and generated-code drift detection.
+- [x] CI invokes the same persistence command and rejects both migration drift and generated-code drift.
+- [x] Documentation and verification evidence are current.
+- [x] No finance schema, aggregate table, business repository, API operation, event, or capability behavior is introduced.
+- [x] No adjacent delivery item or milestone is falsely marked complete.
 
 ## 12. Explicit exclusions and follow-on ownership
 
@@ -486,39 +486,39 @@ Each mutation must make the local check fail. At least migration drift and gener
 
 ## 13. Definition of Ready
 
-- [ ] Exact item, epic, milestone, deliverable, and exit evidence are identified.
-- [ ] `DLV-PLAT-001` root commands and repository layout are stable.
-- [ ] `DLV-PLAT-002` PostgreSQL 18 lifecycle and reproducible reset pass.
-- [ ] The existing real migration and technical seed-manifest persistence contract are identified from the repository.
-- [ ] Exact Goose, pgx, sqlc, and Testcontainers versions can be selected and pinned.
-- [ ] Schema-owned migration and generated-code paths can be chosen without inventing finance modules.
-- [ ] The migration drift method is selected.
-- [ ] The focused CI boundary with `DLV-CI-001` is understood.
-- [ ] Positive, negative, clean-database, repeated-run, and CI evidence is identified.
-- [ ] Five stories are small enough for one or a short chain of reviewable changes.
+- [x] Exact item, epic, milestone, deliverable, and exit evidence are identified.
+- [x] `DLV-PLAT-001` root commands and repository layout are stable.
+- [x] `DLV-PLAT-002` PostgreSQL 18 lifecycle and reproducible reset pass.
+- [x] The existing real migration and technical seed-manifest persistence contract are identified from the repository.
+- [x] Exact Goose, pgx, sqlc, and Testcontainers versions can be selected and pinned.
+- [x] Schema-owned migration and generated-code paths can be chosen without inventing finance modules.
+- [x] The migration drift method is selected.
+- [x] The focused CI boundary with `DLV-CI-001` is understood.
+- [x] Positive, negative, clean-database, repeated-run, and CI evidence is identified.
+- [x] Five stories are small enough for one or a short chain of reviewable changes.
 
 Finance requirements, authoritative finance records, UX states, authorization decisions, correction paths, business concurrency, integration events, and production recovery are not applicable.
 
 ## 14. Definition of Done
 
-- [ ] Every criterion in Sections 6–11 passes; none is silently deferred.
-- [ ] Tool pins, migrations, migration inventory/checksums, pgx foundation, sqlc source/configuration, generated code, tests, root commands, focused CI, and documentation are complete.
-- [ ] Go dependency manifests are tidy and committed.
-- [ ] Goose migration validation and clean application pass.
-- [ ] Repeated migration application is harmless.
-- [ ] Migration history is schema-owned for every initialized schema.
-- [ ] pgx connection, commit, rollback, and cleanup tests pass.
-- [ ] sqlc generation is deterministic and generated code compiles.
-- [ ] PostgreSQL 18 integration verification passes from clean state and on repetition.
-- [ ] The root persistence check passes and leaves a clean working tree.
-- [ ] Controlled local migration-drift and generated-code-drift checks fail as expected.
-- [ ] Focused CI rejects migration drift and generated-code drift and passes on the clean branch.
-- [ ] Documentation matches actual versions, commands, file locations, migration behavior, generated-code policy, and CI job.
-- [ ] No real credential, production data, build output, test artifact, or developer-specific config is committed.
-- [ ] The diff is reviewed against modular-monolith, schema ownership, query ownership, and adjacent-item boundaries.
-- [ ] Traceability is current.
-- [ ] No functional requirement, workflow, NFR qualification, full `QG-03`, `DLV-CI-001`, adjacent delivery item, or `M0` milestone is incorrectly marked complete.
-- [ ] No critical or high unresolved defect remains.
+- [x] Every criterion in Sections 6–11 passes; none is silently deferred.
+- [x] Tool pins, migrations, migration inventory/checksums, pgx foundation, sqlc source/configuration, generated code, tests, root commands, focused CI, and documentation are complete.
+- [x] Go dependency manifests are tidy and committed.
+- [x] Goose migration validation and clean application pass.
+- [x] Repeated migration application is harmless.
+- [x] Migration history is schema-owned for every initialized schema.
+- [x] pgx connection, commit, rollback, and cleanup tests pass.
+- [x] sqlc generation is deterministic and generated code compiles.
+- [x] PostgreSQL 18 integration verification passes from clean state and on repetition.
+- [x] The root persistence check passes and leaves a clean working tree.
+- [x] Controlled local migration-drift and generated-code-drift checks fail as expected.
+- [x] Focused CI rejects migration drift and generated-code drift and passes on the clean branch.
+- [x] Documentation matches actual versions, commands, file locations, migration behavior, generated-code policy, and CI job.
+- [x] No real credential, production data, build output, test artifact, or developer-specific config is committed.
+- [x] The diff is reviewed against modular-monolith, schema ownership, query ownership, and adjacent-item boundaries.
+- [x] Traceability is current.
+- [x] No functional requirement, workflow, NFR qualification, full `QG-03`, `DLV-CI-001`, adjacent delivery item, or `M0` milestone is incorrectly marked complete.
+- [x] No critical or high unresolved defect remains.
 
 ### General Definition-of-Done applicability
 
