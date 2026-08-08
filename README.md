@@ -100,6 +100,7 @@ All commands must be run from the repository root.
 | `make api-ts-generate` | Generate the TypeScript Fetch client and types from the OpenAPI contract |
 | `make api-ts-check` | Validate deterministic TypeScript generation, inventory, markers, and frontend compilation |
 | `make api-check` | Run the focused OpenAPI contract and generated-artifact drift gate |
+| `make money-check` | Run focused exact-decimal money and currency primitive tests |
 | `make check` | Run migration validation, checksum check, and `go test ./...` |
 | `make verify-database` | Run end-to-end database verification from current state |
 | `make verify-database-clean` | Delete volume, recreate, and run full verification from scratch |
@@ -222,6 +223,9 @@ The technology baseline (from the approved solution architecture):
 ├── internal/
 │   ├── .gitkeep
 │   └── platform/
+│       ├── money/
+│       │   ├── money.go             # Exact-decimal currency and money primitives
+│       │   └── money_test.go        # Money, currency, precision, and boundary tests
 │       ├── database/
 │       │   ├── pool.go                 # pgx connection pool with config validation
 │       │   ├── pool_test.go            # Pool validation and security unit tests
@@ -241,6 +245,8 @@ The technology baseline (from the approved solution architecture):
 │           └── health_test.go         # Liveness test
 ├── scripts/
 │   ├── README.md                    # Script documentation
+│   ├── verify/
+│   │   └── money.sh                 # Focused money primitive verification
 │   ├── openapi/
 │   │   ├── api-check.sh                # Aggregate contract and artifact drift gate
 │   │   ├── api-generate-check.sh       # Working-tree-safe Go generation check
@@ -377,7 +383,9 @@ TALLY enforces these design rules across all modules:
 
 See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0
 (engineering foundation) through M9 (full-system qualification). The current
-platform backlog includes completed `DLV-PLAT-001` through `DLV-PLAT-004`.
+platform backlog includes completed `DLV-PLAT-001` through `DLV-PLAT-004` and
+implemented User Story 1 of `DLV-PLAT-005`; the remaining shared primitive
+stories are still open.
 Focused contract/generated-artifact drift is enforced by `make api-check` and
 `.github/workflows/openapi.yml`.
 

@@ -41,11 +41,11 @@ This item establishes reusable domain-neutral primitives required by later finan
 
 **As a finance module developer, I want exact-decimal money and validated currency values, so that calculations cannot silently lose monetary precision.**
 
-- [ ] Money construction rejects malformed decimal values and values that violate the agreed currency precision policy.
-- [ ] Money arithmetic is deterministic, preserves currency identity, and rejects incompatible currencies or invalid results.
-- [ ] Currency values validate the agreed canonical representation and expose the precision policy selected in Definition of Ready.
-- [ ] Serialization uses the exact-decimal representation selected in Definition of Ready and never converts money through binary floating point.
-- [ ] Tests cover zero, permitted negative values, precision boundaries, rounding boundaries, and incompatible currencies.
+- [x] Money construction rejects malformed decimal values and values that violate the agreed currency precision policy.
+- [x] Money arithmetic is deterministic, preserves currency identity, and rejects incompatible currencies or invalid results.
+- [x] Currency values validate the agreed canonical representation and expose the precision policy selected in Definition of Ready.
+- [x] Serialization uses the exact-decimal representation selected in Definition of Ready and never converts money through binary floating point.
+- [x] Tests cover zero, permitted negative values, precision boundaries, rounding boundaries, and incompatible currencies.
 
 ### User Story 2 — Implement explicit accounting-scope identity
 
@@ -89,18 +89,18 @@ This item establishes reusable domain-neutral primitives required by later finan
 
 ## 5. Definition of Ready
 
-- [ ] Exact-decimal, currency precision, identifier, scope, and version representations are explicitly selected against the domain and technical specifications.
-- [ ] Package locations, public construction contracts, and the exact Go/API serialization boundary are identified.
+- [x] User Story 1 uses `shopspring/decimal`, caller-provided immutable currency metadata, configured currency scale from `0..12`, and the PostgreSQL-compatible `numeric(38,12)` domain ceiling.
+- [x] User Story 1 is implemented in `internal/platform/money` with explicit constructors, accessors, arithmetic methods, stable errors, and canonical amount-text serialization. The API continues to represent amount and currency separately.
 - [ ] Boundaries with `DLV-PLAT-004`, `DLV-PLAT-006`, `DLV-PLAT-007`, and finance capability items are preserved.
 - [ ] Five stories are small enough for one or a short chain of reviewable changes.
 
 ## 6. Definition of Done
 
 - [ ] All five stories and acceptance criteria pass.
-- [ ] Focused unit, serialization, and boundary tests pass from a clean checkout.
-- [ ] Money has no binary floating-point implementation or serialization path.
-- [ ] Documentation identifies the primitives, invariants, commands, and ownership boundaries.
-- [ ] No finance capability, idempotency behavior, integration workflow, or adjacent delivery item is falsely marked complete.
+- [x] User Story 1 focused unit, serialization, and boundary tests pass.
+- [x] User Story 1 money has no binary floating-point implementation or serialization path.
+- [x] User Story 1 documentation identifies the primitives, invariants, command, and ownership boundary.
+- [x] No finance capability, idempotency behavior, integration workflow, or adjacent delivery item was marked complete.
 
 ## 7. Traceability
 

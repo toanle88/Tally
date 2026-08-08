@@ -34,7 +34,8 @@
 	api-negative-check \
 	api-ts-generate \
 	api-ts-check \
-	api-check
+	api-check \
+	money-check
 
 
 DB_SERVICE := postgres
@@ -223,3 +224,6 @@ api-ts-check:
 
 api-check:
 	@bash scripts/openapi/api-check.sh
+
+money-check:
+	@bash scripts/verify/money.sh
