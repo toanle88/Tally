@@ -20,13 +20,13 @@ declare -A expected_errors=(
 work_dir="$(mktemp -d)"
 trap 'rm -rf "$work_dir"' EXIT
 
-"$runner" lint "$root/contracts/openapi/openapi.yaml"
+bash "$runner" lint "$root/contracts/openapi/openapi.yaml"
 rm -f "$bundle"
 mkdir -p "$(dirname "$bundle")"
 
-"$runner" bundle "$root/contracts/openapi/openapi.yaml" --output "$bundle"
+bash "$runner" bundle "$root/contracts/openapi/openapi.yaml" --output "$bundle"
 first_hash="$(sha256sum "$bundle" | cut -d' ' -f1)"
-"$runner" bundle "$root/contracts/openapi/openapi.yaml" --output "$bundle"
+bash "$runner" bundle "$root/contracts/openapi/openapi.yaml" --output "$bundle"
 second_hash="$(sha256sum "$bundle" | cut -d' ' -f1)"
 if [[ "$first_hash" != "$second_hash" ]]; then
   echo "OpenAPI bundle output is not deterministic" >&2
@@ -35,7 +35,7 @@ fi
 
 for fixture in "${fixtures[@]}"; do
   output="$work_dir/$fixture.out"
-  if "$runner" lint "$root/contracts/openapi/fixtures/invalid/$fixture" >"$output" 2>&1; then
+  if bash "$runner" lint "$root/contracts/openapi/fixtures/invalid/$fixture" >"$output" 2>&1; then
     echo "Invalid OpenAPI fixture unexpectedly passed: $fixture" >&2
     exit 1
   fi
