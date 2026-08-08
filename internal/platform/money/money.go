@@ -27,6 +27,16 @@ var (
 var currencyCodePattern = regexp.MustCompile(`^[A-Z]{3}$`)
 var amountPattern = regexp.MustCompile(`^-?[0-9]+(?:\.[0-9]+)?$`)
 
+// ValidateCurrencyCode validates the canonical currency-code syntax shared by
+// money values and other platform primitives. Currency master-data membership
+// remains outside this package.
+func ValidateCurrencyCode(code string) error {
+	if !currencyCodePattern.MatchString(code) {
+		return ErrMalformedCurrency
+	}
+	return nil
+}
+
 type CurrencyMetadata struct {
 	Code  string
 	Scale uint8
@@ -47,8 +57,8 @@ type CurrencyRegistry struct {
 func NewCurrencyRegistry(metadata []CurrencyMetadata) (CurrencyRegistry, error) {
 	values := make(map[string]Currency, len(metadata))
 	for _, item := range metadata {
-		if !currencyCodePattern.MatchString(item.Code) {
-			return CurrencyRegistry{}, ErrMalformedCurrency
+		if err := ValidateCurrencyCode(item.Code); err != nil {
+			return CurrencyRegistry{}, err
 		}
 		if item.Scale > maxScale {
 			return CurrencyRegistry{}, ErrScaleViolation
@@ -62,8 +72,8 @@ func NewCurrencyRegistry(metadata []CurrencyMetadata) (CurrencyRegistry, error) 
 }
 
 func (r CurrencyRegistry) Lookup(code string) (Currency, error) {
-	if !currencyCodePattern.MatchString(code) {
-		return Currency{}, ErrMalformedCurrency
+	if err := ValidateCurrencyCode(code); err != nil {
+		return Currency{}, err
 	}
 	currency, ok := r.metadata[code]
 	if !ok {
@@ -78,7 +88,7 @@ type Money struct {
 }
 
 func NewMoney(currency Currency, amount string) (Money, error) {
-	if currency.code == "" || !currencyCodePattern.MatchString(currency.code) || currency.scale > maxScale {
+	if currency.code == "" || ValidateCurrencyCode(currency.code) != nil || currency.scale > maxScale {
 		return Money{}, ErrMalformedCurrency
 	}
 	if !amountPattern.MatchString(amount) {
@@ -97,7 +107,7 @@ func NewMoney(currency Currency, amount string) (Money, error) {
 }
 
 func Zero(currency Currency) (Money, error) {
-	if currency.code == "" || !currencyCodePattern.MatchString(currency.code) || currency.scale > maxScale {
+	if currency.code == "" || ValidateCurrencyCode(currency.code) != nil || currency.scale > maxScale {
 		return Money{}, ErrMalformedCurrency
 	}
 	return Money{currency: currency, amount: decimal.Zero}, nil
