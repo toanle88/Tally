@@ -328,7 +328,10 @@ TALLY enforces these design rules across all modules:
 ## Roadmap
 
 See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0
-(engineering foundation) through M9 (full-system qualification).
+(engineering foundation) through M9 (full-system qualification). The current
+platform backlog includes completed `DLV-PLAT-001` through `DLV-PLAT-003` and
+planned `DLV-PLAT-004` for the OpenAPI-first REST workflow and generated
+clients.
 
 ---
 
