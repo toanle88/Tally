@@ -178,7 +178,7 @@ The technology baseline (from the approved solution architecture):
 | Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform queries, seed/verify scripts, migration checksum inventory, focused persistence drift command and CI workflow | Broader PR quality-pipeline integration |
 | Styling | — | Tailwind CSS + daisyUI |
 | Client state | — | TanStack Query |
-| API contract | Single GET /health/live endpoint | REST/JSON + OpenAPI 3.1 |
+| API contract | OpenAPI 3.1 source with generated Go server/types boundary; runtime currently exposes GET /health/live | TypeScript client generation and focused contract/generated-artifact drift CI |
 | Infrastructure | — | Terraform + Azure |
 | CI/CD | — | GitHub Actions |
 
@@ -228,6 +228,7 @@ The technology baseline (from the approved solution architecture):
 │   ├── README.md                    # Script documentation
 │   ├── openapi/
 │   │   ├── api-generate-check.sh      # Working-tree-safe Go generation check
+│   │   ├── expected-go-artifacts.txt  # Generated Go artifact inventory
 │   │   ├── go-generate.sh             # Pinned ogen generation wrapper
 │   │   └── go-negative-check.sh        # Isolated negative generation checks
 │   ├── db/
@@ -262,19 +263,22 @@ The technology baseline (from the approved solution architecture):
 │   ├── .gitignore
 │   └── README.md                      # Vite scaffold notice (unused)
 ├── docs/
-│   ├── backlog/                       # User stories (DLV-PLAT-001, DLV-PLAT-002, DLV-PLAT-003)
+│   ├── backlog/                       # User stories (DLV-PLAT-001 through DLV-PLAT-004)
 │   │   ├── epic-template.md
 │   │   ├── milestone-template.md
 │   │   ├── story-template.md
 │   │   └── stories/
 │   │       ├── DLV-PLAT-001_user_stories.md
 │   │       ├── DLV-PLAT-002_user_stories.md
-│   │       └── DLV-PLAT-003_user_stories.md
+│   │       ├── DLV-PLAT-003_user_stories.md
+│   │       └── DLV-PLAT-004_user_stories.md
 │   ├── specs/                         # PRD, domain model, UX, NFR,
 │   │                                  # system design, technical specs
 │   └── verification/                  # Clean-clone and reproducibility evidence
 │       ├── DLV-PLAT-001_clean_clone_evidence.md
-│       └── DLV-PLAT-002_local-db-reproducibility.md
+│       ├── DLV-PLAT-002_local-db-reproducibility.md
+│       ├── DLV-PLAT-003-persistence.md
+│       └── DLV-PLAT-004-go-api-artifacts.md
 ├── .agents/
 │   ├── commands/
 │   │   ├── review-branch-diff.md
@@ -353,9 +357,9 @@ TALLY enforces these design rules across all modules:
 
 See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0
 (engineering foundation) through M9 (full-system qualification). The current
-platform backlog includes completed `DLV-PLAT-001` through `DLV-PLAT-003` and
-planned `DLV-PLAT-004` for the OpenAPI-first REST workflow and generated
-clients.
+platform backlog includes completed `DLV-PLAT-001` through `DLV-PLAT-003`, plus
+completed Go artifact generation in `DLV-PLAT-004`; its TypeScript client and
+focused contract/generated-artifact drift work remain planned.
 
 ---
 
