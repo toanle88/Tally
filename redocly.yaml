@@ -1,0 +1,16 @@
+apis:
+  tally:
+    root: ./contracts/openapi/openapi.yaml
+
+extends:
+  - recommended
+
+rules:
+  operation-operationId-unique: error
+  no-unresolved-refs: error
+  no-invalid-media-type-examples: error
+  no-invalid-parameter-examples: error
+  no-invalid-schema-examples: error
+  security-defined: off
+  operation-summary: off
+  struct: off

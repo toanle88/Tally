@@ -1,0 +1,15 @@
+openapi: 3.1.0
+info:
+  title: Invalid TALLY contract fixture
+  version: 0.0.0
+paths:
+  /fixture:
+    get:
+      operationId: invalidFixture
+      responses:
+        '200':
+          description: Invalid response reference
+          content:
+            application/json:
+              schema:
+                $ref: ../../missing/schema.yaml#/schemas/Missing

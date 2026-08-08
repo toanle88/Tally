@@ -3,28 +3,31 @@ info:
   title: TALLY Finance Platform API
   version: 1.0.0
   description: Contract-only HTTP boundary for the TALLY modular monolith.
+  license:
+    name: UNLICENSED
+    identifier: UNLICENSED
 servers:
   - url: /api/v1
 tags:
-  - name: master-data
-  - name: general-ledger
-  - name: accounts-payable
-  - name: accounts-receivable
-  - name: payroll
-  - name: invoicing
-  - name: payments
-  - name: reporting
-  - name: intercompany
-  - name: revenue-recognition
-  - name: fixed-assets
-  - name: multi-currency
-  - name: fiscal-periods
-  - name: coa-segments
-  - name: bank-reconciliation
-  - name: tax
-  - name: approvals
-  - name: identity-access
-  - name: audit-integrity
+  - { name: master-data, description: Organization and master-data configuration. }
+  - { name: general-ledger, description: Ledger, journal, and posting controls. }
+  - { name: accounts-payable, description: Vendor invoices and payable obligations. }
+  - { name: accounts-receivable, description: Customer invoices, receipts, and receivables. }
+  - { name: payroll, description: Payroll runs, corrections, and filing records. }
+  - { name: invoicing, description: Invoice templates, schedules, and generation. }
+  - { name: payments, description: Payment batches, instructions, and settlements. }
+  - { name: reporting, description: Financial reporting and consolidation workflows. }
+  - { name: intercompany, description: Intercompany matching and settlement. }
+  - { name: revenue-recognition, description: Revenue contracts and recognition schedules. }
+  - { name: fixed-assets, description: Fixed-asset lifecycle and accounting actions. }
+  - { name: multi-currency, description: Currency rates, revaluation, and translation. }
+  - { name: fiscal-periods, description: Fiscal-period and close controls. }
+  - { name: coa-segments, description: Chart-of-accounts segment configuration. }
+  - { name: bank-reconciliation, description: Bank feeds, matching, and reconciliation. }
+  - { name: tax, description: Tax configuration, returns, and submissions. }
+  - { name: approvals, description: Approval policies, decisions, and delegation. }
+  - { name: identity-access, description: Identity, access, and authorization boundaries. }
+  - { name: audit-integrity, description: Audit evidence and integrity verification. }
 paths:
   $ref: ./paths/catalog.yaml
 components:

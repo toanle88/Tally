@@ -72,7 +72,7 @@ schemas:
     format: uuid
   Money:
     type: string
-    pattern: '^-?[0-9]+(\\.[0-9]+)?$'
+    pattern: '^-?[0-9]+(\.[0-9]+)?$'
     description: Exact-decimal monetary value represented as a JSON string.
     examples: ['1250.00']
   CurrencyCode:
