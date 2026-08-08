@@ -15,9 +15,13 @@ scripts/
 │   ├── seed.sh         # Local database seed
 │   └── verify.sh       # Database verification
 ├── openapi/
-│   ├── api-generate-check.sh # Working-tree-safe Go generation check
-│   ├── go-generate.sh        # Pinned ogen generation wrapper
-│   └── go-negative-check.sh  # Isolated negative generation checks
+│   ├── api-generate-check.sh          # Working-tree-safe Go generation check
+│   ├── expected-go-artifacts.txt      # Generated Go artifact inventory
+│   ├── expected-typescript-artifacts.txt # Generated TypeScript inventory
+│   ├── go-generate.sh                 # Pinned ogen generation wrapper
+│   ├── go-negative-check.sh           # Isolated negative generation checks
+│   ├── typescript-generate.sh        # Bundled OpenAPI TypeScript generation
+│   └── typescript-client-check.sh    # TypeScript generation and compile check
 ├── verify/
 │   ├── database.sh      # End-to-end database verification
 │   └── openapi-story1.sh # OpenAPI User Story 1 verification
@@ -131,6 +135,31 @@ Generated output is written to `internal/platform/httpapi/generated/` and is
 not a manual authoring surface. The expected file inventory is maintained in
 `scripts/openapi/expected-go-artifacts.txt`. Tracked-artifact and focused CI
 drift enforcement belongs to the later OpenAPI delivery story.
+
+## TypeScript client generation
+
+The TypeScript workflow bundles `contracts/openapi/openapi.yaml` with the
+pinned Redocly CLI, then runs `@hey-api/openapi-ts 0.99.0` with its bundled
+Fetch client. Generated output is written to `web/src/generated/api/` and is
+not a manual authoring surface. The expected file inventory is maintained in
+`scripts/openapi/expected-typescript-artifacts.txt`.
+
+Use the wrapper as the supported entry point because it supplies a temporary
+bundled OpenAPI input. Direct config execution expects the ignored fallback
+bundle at `contracts/openapi/dist/openapi.bundle.yaml`.
+
+Run:
+
+```bash
+make api-ts-generate
+make api-ts-check
+```
+
+`api-ts-check` validates OpenAPI linting, deterministic temporary generation,
+the generated marker, bundled Fetch client output, exact-decimal and
+nullable/optional type assertions, and frontend TypeScript compilation. Clean
+installation evidence is recorded separately; User Story 5 owns committed
+artifact drift enforcement and focused CI.
 
 ## database.sh
 

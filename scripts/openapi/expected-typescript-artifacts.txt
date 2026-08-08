@@ -1,0 +1,16 @@
+client.gen.ts
+client/client.gen.ts
+client/index.ts
+client/types.gen.ts
+client/utils.gen.ts
+core/auth.gen.ts
+core/bodySerializer.gen.ts
+core/params.gen.ts
+core/pathSerializer.gen.ts
+core/queryKeySerializer.gen.ts
+core/serverSentEvents.gen.ts
+core/types.gen.ts
+core/utils.gen.ts
+index.ts
+sdk.gen.ts
+types.gen.ts

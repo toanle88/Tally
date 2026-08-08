@@ -65,10 +65,10 @@ This item establishes the OpenAPI-first workflow. It may use a minimal technical
 
 **As the React developer, I want generated TypeScript API types/client functions, so that the frontend cannot silently diverge from the backend contract.**
 
-- [ ] A pinned generator configuration produces TypeScript client/types from the same OpenAPI source.
-- [ ] Generated TypeScript output compiles with the pnpm-managed frontend verification command.
-- [ ] The client preserves operation IDs, response/error types, exact-decimal transport values, and nullable/optional distinctions.
-- [ ] Generated output is clearly marked and no frontend screen is required to complete this item.
+- [x] A pinned generator configuration produces TypeScript client/types from the same OpenAPI source.
+- [x] Generated TypeScript output compiles with the pnpm-managed frontend verification command.
+- [x] The client preserves operation IDs, response/error types, exact-decimal transport values, and nullable/optional distinctions.
+- [x] Generated output is clearly marked and no frontend screen is required to complete this item.
 
 ### User Story 5 — Detect contract and generated-artifact drift
 
