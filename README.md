@@ -377,10 +377,9 @@ TALLY enforces these design rules across all modules:
 
 See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0
 (engineering foundation) through M9 (full-system qualification). The current
-platform backlog includes completed `DLV-PLAT-001` through `DLV-PLAT-003`, plus
-completed User Stories 1–4 in `DLV-PLAT-004`. Its local
-contract/generated-artifact drift gate is implemented; final delivery remains
-pending successful focused CI evidence.
+platform backlog includes completed `DLV-PLAT-001` through `DLV-PLAT-004`.
+Focused contract/generated-artifact drift is enforced by `make api-check` and
+`.github/workflows/openapi.yml`.
 
 ---
 

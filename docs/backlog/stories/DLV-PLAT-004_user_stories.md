@@ -6,7 +6,7 @@
 | Item type | Platform foundation item |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Milestone | `M0` — Engineering foundation |
-| Status | Planned — local verification complete; focused CI pending |
+| Status | Complete |
 | Dependency position | Builds on `DLV-PLAT-001` and `DLV-PLAT-003`; no finance capability implementation is required. |
 | Exit evidence | OpenAPI 3.1 validates and bundles; generated Go and TypeScript artifacts compile; focused CI detects contract or generated-artifact drift. |
 
@@ -76,7 +76,7 @@ This item establishes the OpenAPI-first workflow. It may use a minimal technical
 
 - [x] One documented root command validates the contract, regenerates both language artifacts, checks compilation, and fails when regeneration changes tracked output.
 - [x] Local negative verification proves the check fails for stale output and passes after regeneration.
-- [ ] Focused CI invokes the same command on a clean checkout.
+- [x] Focused CI invokes the same command on a clean checkout.
 - [x] The workflow clearly leaves full API compatibility, security, frontend, SQL, Terraform, and documentation gates to their owning items or `DLV-CI-001`.
 
 ## 5. Definition of Ready
@@ -88,10 +88,10 @@ This item establishes the OpenAPI-first workflow. It may use a minimal technical
 
 ## 6. Definition of Done
 
-- [ ] All five stories and acceptance criteria pass.
+- [x] All five stories and acceptance criteria pass.
 - [x] OpenAPI validation and bundling are reproducible from a clean checkout.
 - [x] Generated Go and TypeScript artifacts compile and remain synchronized with the contract.
-- [ ] Local and focused CI drift checks pass, including controlled negative checks.
+- [x] Local and focused CI drift checks pass, including controlled negative checks.
 - [x] Documentation identifies commands, tool pins, source locations, generated locations, and ownership boundaries.
 - [x] No finance capability, protected action, business event, or adjacent delivery item is falsely marked complete.
 

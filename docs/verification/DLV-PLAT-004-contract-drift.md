@@ -42,10 +42,12 @@ GOCACHE=/tmp/tally-go-cache make api-negative-check
 - Freshly regenerated Go and TypeScript output passed their respective checks.
 - The aggregate `make api-check` command passed without changing tracked generated artifacts.
 - Focused CI is configured to install both lockfiles with frozen resolution and invoke the same `make api-check` command.
-- Focused CI execution evidence is pending; the story and delivery item remain open until a successful GitHub Actions run is recorded.
+- Focused CI completed successfully for pull request 24.
 
 ## CI evidence
 
-No GitHub Actions run has been recorded for `.github/workflows/openapi.yml` yet.
-After the first successful run, record the workflow URL, commit SHA, job name,
-and result here before marking User Story 5 or `DLV-PLAT-004` complete.
+- Workflow: `.github/workflows/openapi.yml`
+- Result: passed
+- Pull request: `#24`
+- Run: [GitHub Actions run 31252064661](https://github.com/toanle88/Tally/actions/runs/31252064661)
+- Job: [Contract and generated-artifact drift, job 93089812424](https://github.com/toanle88/Tally/actions/runs/31252064661/job/93089812424)
