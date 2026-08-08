@@ -28,7 +28,10 @@
 	sqlc-compile \
 	sqlc-check \
 	persistence-integration-test \
-	persistence-check	
+	persistence-check \
+	api-generate \
+	api-generate-check \
+	api-negative-check
 
 
 DB_SERVICE := postgres
@@ -198,3 +201,12 @@ persistence-integration-test:
 ## Run the complete local persistence release gate used by CI.
 persistence-check:
 	@bash scripts/db/persistence-check.sh
+
+api-generate:
+	@bash scripts/openapi/go-generate.sh
+
+api-generate-check:
+	@bash scripts/openapi/api-generate-check.sh
+
+api-negative-check:
+	@bash scripts/openapi/go-negative-check.sh

@@ -1,0 +1,14 @@
+oas_cfg_gen.go
+oas_handlers_gen.go
+oas_interfaces_gen.go
+oas_json_gen.go
+oas_middleware_gen.go
+oas_operations_gen.go
+oas_parameters_gen.go
+oas_request_decoders_gen.go
+oas_response_encoders_gen.go
+oas_router_gen.go
+oas_schemas_gen.go
+oas_server_gen.go
+oas_unimplemented_gen.go
+oas_validators_gen.go

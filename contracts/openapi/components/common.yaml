@@ -9,7 +9,7 @@ headers:
     name: X-Correlation-Id
     in: header
     required: false
-    schema: { type: string, format: uuid }
+    schema: { $ref: '#/schemas/Uuid' }
   Idempotency-Key:
     name: Idempotency-Key
     in: header
@@ -29,7 +29,7 @@ headers:
     name: X-Accounting-Scope-Id
     in: header
     required: false
-    schema: { type: string, format: uuid }
+    schema: { $ref: '#/schemas/Uuid' }
   Accept-Language:
     name: Accept-Language
     in: header
@@ -55,7 +55,7 @@ parameters:
     name: recordId
     in: path
     required: true
-    schema: { type: string, format: uuid }
+    schema: { $ref: '#/schemas/Uuid' }
   BusinessIdentity:
     name: businessIdentity
     in: path
@@ -65,7 +65,7 @@ parameters:
     name: evidenceId
     in: path
     required: true
-    schema: { type: string, format: uuid }
+    schema: { $ref: '#/schemas/Uuid' }
 schemas:
   Uuid:
     type: string
