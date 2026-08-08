@@ -1,0 +1,8 @@
+type: https://finance.example/errors/version-conflict
+title: Version conflict
+status: 409
+code: VERSION_CONFLICT
+detail: The record changed after it was reviewed.
+correlationId: 0195a91b-20ab-7c15-8aa8-4e111a8bd621
+currentVersion: 9
+fieldErrors: []

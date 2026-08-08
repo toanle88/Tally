@@ -1,0 +1,8 @@
+status: established
+aggregateId: 0195a91b-20ab-7c15-8aa8-4e111a8bd620
+aggregateVersion: 8
+processId: null
+correlationId: 0195a91b-20ab-7c15-8aa8-4e111a8bd621
+links:
+  self: /api/v1/example/results/0195a91b-20ab-7c15-8aa8-4e111a8bd620
+data: {}
