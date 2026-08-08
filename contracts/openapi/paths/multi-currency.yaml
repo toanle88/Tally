@@ -1,0 +1,131 @@
+/multi-currency/actions/publish-rate-set:
+  post:
+    tags: [multi-currency]
+    operationId: fxPublishRateSet
+    x-owner-capability: multi-currency
+    x-permission: finance.fx.publish.rate.set
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/multi-currency/actions/run-revaluation:
+  post:
+    tags: [multi-currency]
+    operationId: fxRunRevaluation
+    x-owner-capability: multi-currency
+    x-permission: finance.fx.run.revaluation
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/multi-currency/actions/apply-revaluation-approval-decision:
+  post:
+    tags: [multi-currency]
+    operationId: fxApplyRevaluationApprovalDecision
+    x-owner-capability: multi-currency
+    x-permission: finance.fx.apply.revaluation.approval.decision
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/multi-currency/actions/post-revaluation-run:
+  post:
+    tags: [multi-currency]
+    operationId: fxPostRevaluationRun
+    x-owner-capability: multi-currency
+    x-permission: finance.fx.post.revaluation.run
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/multi-currency/actions/run-translation:
+  post:
+    tags: [multi-currency]
+    operationId: fxRunTranslation
+    x-owner-capability: multi-currency
+    x-permission: finance.fx.run.translation
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+

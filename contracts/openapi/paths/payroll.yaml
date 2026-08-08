@@ -1,0 +1,185 @@
+/payroll/actions/calculate-payroll-run:
+  post:
+    tags: [payroll]
+    operationId: payrCalculatePayrollRun
+    x-owner-capability: payroll
+    x-permission: finance.payr.calculate.payroll.run
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payroll/actions/apply-payroll-run-approval-decision:
+  post:
+    tags: [payroll]
+    operationId: payrApplyPayrollRunApprovalDecision
+    x-owner-capability: payroll
+    x-permission: finance.payr.apply.payroll.run.approval.decision
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payroll/actions/post-payroll-run:
+  post:
+    tags: [payroll]
+    operationId: payrPostPayrollRun
+    x-owner-capability: payroll
+    x-permission: finance.payr.post.payroll.run
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payroll/actions/create-payroll-correction:
+  post:
+    tags: [payroll]
+    operationId: payrCreatePayrollCorrection
+    x-owner-capability: payroll
+    x-permission: finance.payr.create.payroll.correction
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payroll/actions/apply-payment-return:
+  post:
+    tags: [payroll]
+    operationId: payrApplyPaymentReturn
+    x-owner-capability: payroll
+    x-permission: finance.payr.apply.payment.return
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payroll/configuration/maintain-employee-payroll-profiles:
+  put:
+    tags: [payroll]
+    operationId: payrMaintainEmployeePayrollProfiles
+    x-owner-capability: payroll
+    x-permission: finance.payr.maintain.employee.payroll.profiles
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+      - $ref: ../components/common.yaml#/headers/If-Match
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payroll/configuration/maintain-payroll-tax-filing-records:
+  put:
+    tags: [payroll]
+    operationId: payrMaintainPayrollTaxFilingRecords
+    x-owner-capability: payroll
+    x-permission: finance.payr.maintain.payroll.tax.filing.records
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+      - $ref: ../components/common.yaml#/headers/If-Match
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+

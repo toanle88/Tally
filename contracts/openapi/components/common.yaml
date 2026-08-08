@@ -1,0 +1,138 @@
+headers:
+  Authorization:
+    name: Authorization
+    in: header
+    required: true
+    schema: { type: string }
+    description: Bearer access token; enforced outside the contract-only story.
+  X-Correlation-Id:
+    name: X-Correlation-Id
+    in: header
+    required: false
+    schema: { type: string, format: uuid }
+  Idempotency-Key:
+    name: Idempotency-Key
+    in: header
+    required: false
+    schema: { type: string, minLength: 1 }
+  Idempotency-Key-Required:
+    name: Idempotency-Key
+    in: header
+    required: true
+    schema: { type: string, minLength: 1 }
+  If-Match:
+    name: If-Match
+    in: header
+    required: false
+    schema: { type: string }
+  X-Accounting-Scope-Id:
+    name: X-Accounting-Scope-Id
+    in: header
+    required: false
+    schema: { type: string, format: uuid }
+  Accept-Language:
+    name: Accept-Language
+    in: header
+    required: false
+    schema: { type: string }
+parameters:
+  PageSize:
+    name: page[size]
+    in: query
+    required: false
+    schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+  PageAfter:
+    name: page[after]
+    in: query
+    required: false
+    schema: { type: string }
+  RecordType:
+    name: recordType
+    in: path
+    required: true
+    schema: { type: string }
+  RecordId:
+    name: recordId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+  BusinessIdentity:
+    name: businessIdentity
+    in: path
+    required: true
+    schema: { type: string }
+  EvidenceId:
+    name: evidenceId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+schemas:
+  Uuid:
+    type: string
+    format: uuid
+  Money:
+    type: string
+    pattern: '^-?[0-9]+(\\.[0-9]+)?$'
+    description: Exact-decimal monetary value represented as a JSON string.
+    examples: ['1250.00']
+  CurrencyCode:
+    type: string
+    pattern: '^[A-Z]{3}$'
+    examples: [USD]
+  CommandRequest:
+    type: object
+    required: [commandId, data]
+    properties:
+      commandId: { $ref: '#/schemas/Uuid' }
+      expectedVersion: { type: integer, minimum: 0 }
+      accountingScopeId: { $ref: '#/schemas/Uuid' }
+      businessDate: { type: string, format: date }
+      data: { type: object, additionalProperties: true }
+  EstablishedResult:
+    type: object
+    required: [status, aggregateId, aggregateVersion, correlationId, links, data]
+    properties:
+      status: { type: string, const: established }
+      aggregateId: { $ref: '#/schemas/Uuid' }
+      aggregateVersion: { type: integer, minimum: 0 }
+      processId: { oneOf: [{ $ref: '#/schemas/Uuid' }, { type: 'null' }] }
+      correlationId: { $ref: '#/schemas/Uuid' }
+      links: { $ref: '#/schemas/Links' }
+      data: { type: object, additionalProperties: true }
+  Links:
+    type: object
+    required: [self]
+    properties:
+      self: { type: string }
+      status: { type: string }
+  Page:
+    type: object
+    required: [size]
+    properties:
+      size: { type: integer, minimum: 1, maximum: 200 }
+      after: { type: string }
+      hasMore: { type: boolean }
+  ProblemFieldError:
+    type: object
+    required: [field, message]
+    properties:
+      field: { type: string }
+      message: { type: string }
+      code: { type: string }
+  ProblemDetails:
+    type: object
+    required: [type, title, status, code, detail, correlationId]
+    properties:
+      type: { type: string, format: uri-reference }
+      title: { type: string }
+      status: { type: integer, minimum: 400, maximum: 599 }
+      code: { type: string }
+      detail: { type: string }
+      correlationId: { $ref: '#/schemas/Uuid' }
+      currentVersion: { type: integer, minimum: 0 }
+      fieldErrors:
+        type: array
+        items: { $ref: '#/schemas/ProblemFieldError' }
+responses:
+  Established: { description: Established result, content: { application/json: { schema: { $ref: '#/schemas/EstablishedResult' } } } }
+  Problem: { description: RFC 9457-style problem details, content: { application/problem+json: { schema: { $ref: '#/schemas/ProblemDetails' } } } }

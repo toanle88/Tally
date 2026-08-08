@@ -1,0 +1,158 @@
+/reporting/actions/run-consolidation:
+  post:
+    tags: [reporting]
+    operationId: rptRunConsolidation
+    x-owner-capability: reporting
+    x-permission: finance.rpt.run.consolidation
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/reporting/actions/apply-translation-result:
+  post:
+    tags: [reporting]
+    operationId: rptApplyTranslationResult
+    x-owner-capability: reporting
+    x-permission: finance.rpt.apply.translation.result
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/reporting/actions/apply-consolidation-approval-decision:
+  post:
+    tags: [reporting]
+    operationId: rptApplyConsolidationApprovalDecision
+    x-owner-capability: reporting
+    x-permission: finance.rpt.apply.consolidation.approval.decision
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/reporting/actions/publish-consolidated-statement:
+  post:
+    tags: [reporting]
+    operationId: rptPublishConsolidatedStatement
+    x-owner-capability: reporting
+    x-permission: finance.rpt.publish.consolidated.statement
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/reporting/configuration/maintain-report-definitions:
+  put:
+    tags: [reporting]
+    operationId: rptMaintainReportDefinitions
+    x-owner-capability: reporting
+    x-permission: finance.rpt.maintain.report.definitions
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+      - $ref: ../components/common.yaml#/headers/If-Match
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/reporting/actions/generate-and-publish-ledger-financial-statements:
+  post:
+    tags: [reporting]
+    operationId: rptGenerateAndPublishLedgerFinancialStatements
+    x-owner-capability: reporting
+    x-permission: finance.rpt.generate.and.publish.ledger.financial.statements
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+

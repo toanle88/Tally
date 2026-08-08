@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plan Review"
+  short_description: "Review plans with a clear PASS or REJECT verdict, issues, and suggestions."
+  default_prompt: "Review this plan against its goals, constraints, dependencies, risks, and verification approach. Return PASS or REJECT, then list issues and suggestions with priorities and evidence."

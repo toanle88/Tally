@@ -1,0 +1,417 @@
+/accounts-receivable/actions/issue-customer-invoice:
+  post:
+    tags: [accounts-receivable]
+    operationId: arIssueCustomerInvoice
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.issue.customer.invoice
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/accounts-receivable/actions/record-receipt:
+  post:
+    tags: [accounts-receivable]
+    operationId: arRecordReceipt
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.record.receipt
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/accounts-receivable/actions/apply-receipt:
+  post:
+    tags: [accounts-receivable]
+    operationId: arApplyReceipt
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.apply.receipt
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/accounts-receivable/actions/unapply-receipt:
+  post:
+    tags: [accounts-receivable]
+    operationId: arUnapplyReceipt
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.unapply.receipt
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/accounts-receivable/actions/rollback-unposted-application-batch:
+  post:
+    tags: [accounts-receivable]
+    operationId: arRollbackUnpostedApplicationBatch
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.rollback.unposted.application.batch
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/accounts-receivable/actions/issue-credit-note:
+  post:
+    tags: [accounts-receivable]
+    operationId: arIssueCreditNote
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.issue.credit.note
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/accounts-receivable/actions/create-customer-refund-request:
+  post:
+    tags: [accounts-receivable]
+    operationId: arCreateCustomerRefundRequest
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.create.customer.refund.request
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/accounts-receivable/actions/cancel-customer-refund-request:
+  post:
+    tags: [accounts-receivable]
+    operationId: arCancelCustomerRefundRequest
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.cancel.customer.refund.request
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/accounts-receivable/actions/apply-customer-refund-approval-decision:
+  post:
+    tags: [accounts-receivable]
+    operationId: arApplyCustomerRefundApprovalDecision
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.apply.customer.refund.approval.decision
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/accounts-receivable/actions/request-customer-refund-payment:
+  post:
+    tags: [accounts-receivable]
+    operationId: arRequestCustomerRefundPayment
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.request.customer.refund.payment
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/accounts-receivable/actions/cancel-customer-refund-payment:
+  post:
+    tags: [accounts-receivable]
+    operationId: arCancelCustomerRefundPayment
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.cancel.customer.refund.payment
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/accounts-receivable/actions/apply-customer-refund-payment-result:
+  post:
+    tags: [accounts-receivable]
+    operationId: arApplyCustomerRefundPaymentResult
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.apply.customer.refund.payment.result
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/accounts-receivable/actions/apply-payment-return:
+  post:
+    tags: [accounts-receivable]
+    operationId: arApplyPaymentReturn
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.apply.payment.return
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/accounts-receivable/actions/resolve-customer-overpayments:
+  post:
+    tags: [accounts-receivable]
+    operationId: arResolveCustomerOverpayments
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.resolve.customer.overpayments
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/accounts-receivable/actions/record-customer-chargebacks:
+  post:
+    tags: [accounts-receivable]
+    operationId: arRecordCustomerChargebacks
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.record.customer.chargebacks
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/accounts-receivable/actions/record-receivable-write-offs:
+  post:
+    tags: [accounts-receivable]
+    operationId: arRecordReceivableWriteOffs
+    x-owner-capability: accounts-receivable
+    x-permission: finance.ar.record.receivable.write.offs
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+

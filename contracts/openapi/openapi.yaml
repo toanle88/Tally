@@ -1,0 +1,57 @@
+openapi: 3.1.0
+info:
+  title: TALLY Finance Platform API
+  version: 1.0.0
+  description: Contract-only HTTP boundary for the TALLY modular monolith.
+servers:
+  - url: /api/v1
+tags:
+  - name: master-data
+  - name: general-ledger
+  - name: accounts-payable
+  - name: accounts-receivable
+  - name: payroll
+  - name: invoicing
+  - name: payments
+  - name: reporting
+  - name: intercompany
+  - name: revenue-recognition
+  - name: fixed-assets
+  - name: multi-currency
+  - name: fiscal-periods
+  - name: coa-segments
+  - name: bank-reconciliation
+  - name: tax
+  - name: approvals
+  - name: identity-access
+  - name: audit-integrity
+paths:
+  $ref: ./paths/catalog.yaml
+components:
+  headers:
+    Authorization: { $ref: ./components/common.yaml#/headers/Authorization }
+    X-Correlation-Id: { $ref: ./components/common.yaml#/headers/X-Correlation-Id }
+    Idempotency-Key: { $ref: ./components/common.yaml#/headers/Idempotency-Key }
+    If-Match: { $ref: ./components/common.yaml#/headers/If-Match }
+    X-Accounting-Scope-Id: { $ref: ./components/common.yaml#/headers/X-Accounting-Scope-Id }
+    Accept-Language: { $ref: ./components/common.yaml#/headers/Accept-Language }
+  parameters:
+    PageSize: { $ref: ./components/common.yaml#/parameters/PageSize }
+    PageAfter: { $ref: ./components/common.yaml#/parameters/PageAfter }
+    RecordType: { $ref: ./components/common.yaml#/parameters/RecordType }
+    RecordId: { $ref: ./components/common.yaml#/parameters/RecordId }
+    BusinessIdentity: { $ref: ./components/common.yaml#/parameters/BusinessIdentity }
+    EvidenceId: { $ref: ./components/common.yaml#/parameters/EvidenceId }
+  schemas:
+    Uuid: { $ref: ./components/common.yaml#/schemas/Uuid }
+    Money: { $ref: ./components/common.yaml#/schemas/Money }
+    CurrencyCode: { $ref: ./components/common.yaml#/schemas/CurrencyCode }
+    CommandRequest: { $ref: ./components/common.yaml#/schemas/CommandRequest }
+    EstablishedResult: { $ref: ./components/common.yaml#/schemas/EstablishedResult }
+    Links: { $ref: ./components/common.yaml#/schemas/Links }
+    Page: { $ref: ./components/common.yaml#/schemas/Page }
+    ProblemFieldError: { $ref: ./components/common.yaml#/schemas/ProblemFieldError }
+    ProblemDetails: { $ref: ./components/common.yaml#/schemas/ProblemDetails }
+  responses:
+    Established: { $ref: ./components/common.yaml#/responses/Established }
+    Problem: { $ref: ./components/common.yaml#/responses/Problem }

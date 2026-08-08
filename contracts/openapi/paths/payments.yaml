@@ -1,0 +1,652 @@
+/payments/actions/prepare-payment-batch:
+  post:
+    tags: [payments]
+    operationId: pcmPreparePaymentBatch
+    x-owner-capability: payments
+    x-permission: finance.pcm.prepare.payment.batch
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/apply-payment-batch-approval-decision:
+  post:
+    tags: [payments]
+    operationId: pcmApplyPaymentBatchApprovalDecision
+    x-owner-capability: payments
+    x-permission: finance.pcm.apply.payment.batch.approval.decision
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/cancel-payment-batch:
+  post:
+    tags: [payments]
+    operationId: pcmCancelPaymentBatch
+    x-owner-capability: payments
+    x-permission: finance.pcm.cancel.payment.batch
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/register-expected-incoming-settlement:
+  post:
+    tags: [payments]
+    operationId: pcmRegisterExpectedIncomingSettlement
+    x-owner-capability: payments
+    x-permission: finance.pcm.register.expected.incoming.settlement
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/resolve-expected-incoming-settlement-exception:
+  post:
+    tags: [payments]
+    operationId: pcmResolveExpectedIncomingSettlementException
+    x-owner-capability: payments
+    x-permission: finance.pcm.resolve.expected.incoming.settlement.exception
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/cancel-expected-incoming-settlement:
+  post:
+    tags: [payments]
+    operationId: pcmCancelExpectedIncomingSettlement
+    x-owner-capability: payments
+    x-permission: finance.pcm.cancel.expected.incoming.settlement
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/close-expected-incoming-settlement:
+  post:
+    tags: [payments]
+    operationId: pcmCloseExpectedIncomingSettlement
+    x-owner-capability: payments
+    x-permission: finance.pcm.close.expected.incoming.settlement
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/create-payment-instruction-from-obligation:
+  post:
+    tags: [payments]
+    operationId: pcmCreatePaymentInstructionFromObligation
+    x-owner-capability: payments
+    x-permission: finance.pcm.create.payment.instruction.from.obligation
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/submit-payment-instruction:
+  post:
+    tags: [payments]
+    operationId: pcmSubmitPaymentInstruction
+    x-owner-capability: payments
+    x-permission: finance.pcm.submit.payment.instruction
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/retry-payment-instruction:
+  post:
+    tags: [payments]
+    operationId: pcmRetryPaymentInstruction
+    x-owner-capability: payments
+    x-permission: finance.pcm.retry.payment.instruction
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/cancel-payment-instruction:
+  post:
+    tags: [payments]
+    operationId: pcmCancelPaymentInstruction
+    x-owner-capability: payments
+    x-permission: finance.pcm.cancel.payment.instruction
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/apply-payment-instruction-exception-decision:
+  post:
+    tags: [payments]
+    operationId: pcmApplyPaymentInstructionExceptionDecision
+    x-owner-capability: payments
+    x-permission: finance.pcm.apply.payment.instruction.exception.decision
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/record-payment-return:
+  post:
+    tags: [payments]
+    operationId: pcmRecordPaymentReturn
+    x-owner-capability: payments
+    x-permission: finance.pcm.record.payment.return
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/cancel-unposted-payment-return:
+  post:
+    tags: [payments]
+    operationId: pcmCancelUnpostedPaymentReturn
+    x-owner-capability: payments
+    x-permission: finance.pcm.cancel.unposted.payment.return
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/acknowledge-payment-return:
+  post:
+    tags: [payments]
+    operationId: pcmAcknowledgePaymentReturn
+    x-owner-capability: payments
+    x-permission: finance.pcm.acknowledge.payment.return
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/resolve-payment-return-exception:
+  post:
+    tags: [payments]
+    operationId: pcmResolvePaymentReturnException
+    x-owner-capability: payments
+    x-permission: finance.pcm.resolve.payment.return.exception
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/record-unallocated-incoming-settlement:
+  post:
+    tags: [payments]
+    operationId: pcmRecordUnallocatedIncomingSettlement
+    x-owner-capability: payments
+    x-permission: finance.pcm.record.unallocated.incoming.settlement
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/resolve-unallocated-incoming-settlement:
+  post:
+    tags: [payments]
+    operationId: pcmResolveUnallocatedIncomingSettlement
+    x-owner-capability: payments
+    x-permission: finance.pcm.resolve.unallocated.incoming.settlement
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/record-incoming-settlement:
+  post:
+    tags: [payments]
+    operationId: pcmRecordIncomingSettlement
+    x-owner-capability: payments
+    x-permission: finance.pcm.record.incoming.settlement
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/resolve-settlement-receipt-validation-exception:
+  post:
+    tags: [payments]
+    operationId: pcmResolveSettlementReceiptValidationException
+    x-owner-capability: payments
+    x-permission: finance.pcm.resolve.settlement.receipt.validation.exception
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/resolve-incoming-settlement-owner-exception:
+  post:
+    tags: [payments]
+    operationId: pcmResolveIncomingSettlementOwnerException
+    x-owner-capability: payments
+    x-permission: finance.pcm.resolve.incoming.settlement.owner.exception
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/cancel-unposted-settlement-receipt:
+  post:
+    tags: [payments]
+    operationId: pcmCancelUnpostedSettlementReceipt
+    x-owner-capability: payments
+    x-permission: finance.pcm.cancel.unposted.settlement.receipt
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/acknowledge-incoming-settlement:
+  post:
+    tags: [payments]
+    operationId: pcmAcknowledgeIncomingSettlement
+    x-owner-capability: payments
+    x-permission: finance.pcm.acknowledge.incoming.settlement
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/actions/reverse-incoming-settlement:
+  post:
+    tags: [payments]
+    operationId: pcmReverseIncomingSettlement
+    x-owner-capability: payments
+    x-permission: finance.pcm.reverse.incoming.settlement
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/payments/configuration/maintain-bank-accounts:
+  put:
+    tags: [payments]
+    operationId: pcmMaintainBankAccounts
+    x-owner-capability: payments
+    x-permission: finance.pcm.maintain.bank.accounts
+    parameters:
+      - $ref: ../components/common.yaml#/headers/Authorization
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+      - $ref: ../components/common.yaml#/headers/If-Match
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          examples:
+            deterministic:
+              $ref: ../examples/command-request.yaml
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '409': { $ref: ../components/common.yaml#/responses/Problem }
+      '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+

@@ -1,0 +1,387 @@
+/master-data/configuration/maintain-legal-entities:
+  $ref: ./master-data.yaml#/~1master-data~1configuration~1maintain-legal-entities
+/master-data/configuration/maintain-parties:
+  $ref: ./master-data.yaml#/~1master-data~1configuration~1maintain-parties
+/master-data/configuration/maintain-customer-profiles:
+  $ref: ./master-data.yaml#/~1master-data~1configuration~1maintain-customer-profiles
+/master-data/configuration/maintain-vendor-profiles:
+  $ref: ./master-data.yaml#/~1master-data~1configuration~1maintain-vendor-profiles
+/master-data/configuration/maintain-fiscal-calendars:
+  $ref: ./master-data.yaml#/~1master-data~1configuration~1maintain-fiscal-calendars
+/master-data/actions/publish-approved-master-data-changes:
+  $ref: ./master-data.yaml#/~1master-data~1actions~1publish-approved-master-data-changes
+/general-ledger/actions/submit-posting-request:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1actions~1submit-posting-request
+/general-ledger/actions/apply-journal-approval-decision:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1actions~1apply-journal-approval-decision
+/general-ledger/actions/reverse-journal-entry:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1actions~1reverse-journal-entry
+/general-ledger/actions/enter-soft-close-gate:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1actions~1enter-soft-close-gate
+/general-ledger/actions/exit-soft-close-gate:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1actions~1exit-soft-close-gate
+/general-ledger/actions/acquire-posting-barrier:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1actions~1acquire-posting-barrier
+/general-ledger/actions/release-posting-barrier:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1actions~1release-posting-barrier
+/general-ledger/actions/finalize-posting-gate:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1actions~1finalize-posting-gate
+/general-ledger/actions/open-scoped-reopen-gate:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1actions~1open-scoped-reopen-gate
+/general-ledger/actions/close-scoped-reopen-gate:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1actions~1close-scoped-reopen-gate
+/general-ledger/actions/open-operational-reopen-gate:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1actions~1open-operational-reopen-gate
+/general-ledger/actions/close-operational-reopen-gate:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1actions~1close-operational-reopen-gate
+/general-ledger/actions/begin-reclose-gate:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1actions~1begin-reclose-gate
+/general-ledger/reference/get-posting-gate-status:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1reference~1get-posting-gate-status
+/general-ledger/configuration/maintain-ledgers:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1configuration~1maintain-ledgers
+/general-ledger/configuration/maintain-accounting-books:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1configuration~1maintain-accounting-books
+/general-ledger/configuration/maintain-charts-of-accounts:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1configuration~1maintain-charts-of-accounts
+/general-ledger/configuration/maintain-accounts-and-reporting-mappings:
+  $ref: ./general-ledger.yaml#/~1general-ledger~1configuration~1maintain-accounts-and-reporting-mappings
+/accounts-payable/actions/register-vendor-invoice:
+  $ref: ./accounts-payable.yaml#/~1accounts-payable~1actions~1register-vendor-invoice
+/accounts-payable/actions/apply-asset-clearing-classification:
+  $ref: ./accounts-payable.yaml#/~1accounts-payable~1actions~1apply-asset-clearing-classification
+/accounts-payable/actions/apply-incoming-settlement:
+  $ref: ./accounts-payable.yaml#/~1accounts-payable~1actions~1apply-incoming-settlement
+/accounts-payable/actions/reverse-incoming-settlement-application:
+  $ref: ./accounts-payable.yaml#/~1accounts-payable~1actions~1reverse-incoming-settlement-application
+/accounts-payable/actions/apply-payment-return:
+  $ref: ./accounts-payable.yaml#/~1accounts-payable~1actions~1apply-payment-return
+/accounts-payable/actions/apply-vendor-invoice-approval-decision:
+  $ref: ./accounts-payable.yaml#/~1accounts-payable~1actions~1apply-vendor-invoice-approval-decision
+/accounts-payable/actions/request-payment:
+  $ref: ./accounts-payable.yaml#/~1accounts-payable~1actions~1request-payment
+/accounts-payable/actions/validate-vendor-invoice:
+  $ref: ./accounts-payable.yaml#/~1accounts-payable~1actions~1validate-vendor-invoice
+/accounts-payable/actions/dispute-vendor-invoice:
+  $ref: ./accounts-payable.yaml#/~1accounts-payable~1actions~1dispute-vendor-invoice
+/accounts-payable/actions/void-vendor-invoice:
+  $ref: ./accounts-payable.yaml#/~1accounts-payable~1actions~1void-vendor-invoice
+/accounts-receivable/actions/issue-customer-invoice:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1issue-customer-invoice
+/accounts-receivable/actions/record-receipt:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1record-receipt
+/accounts-receivable/actions/apply-receipt:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1apply-receipt
+/accounts-receivable/actions/unapply-receipt:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1unapply-receipt
+/accounts-receivable/actions/rollback-unposted-application-batch:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1rollback-unposted-application-batch
+/accounts-receivable/actions/issue-credit-note:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1issue-credit-note
+/accounts-receivable/actions/create-customer-refund-request:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1create-customer-refund-request
+/accounts-receivable/actions/cancel-customer-refund-request:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1cancel-customer-refund-request
+/accounts-receivable/actions/apply-customer-refund-approval-decision:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1apply-customer-refund-approval-decision
+/accounts-receivable/actions/request-customer-refund-payment:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1request-customer-refund-payment
+/accounts-receivable/actions/cancel-customer-refund-payment:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1cancel-customer-refund-payment
+/accounts-receivable/actions/apply-customer-refund-payment-result:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1apply-customer-refund-payment-result
+/accounts-receivable/actions/apply-payment-return:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1apply-payment-return
+/accounts-receivable/actions/resolve-customer-overpayments:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1resolve-customer-overpayments
+/accounts-receivable/actions/record-customer-chargebacks:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1record-customer-chargebacks
+/accounts-receivable/actions/record-receivable-write-offs:
+  $ref: ./accounts-receivable.yaml#/~1accounts-receivable~1actions~1record-receivable-write-offs
+/payroll/actions/calculate-payroll-run:
+  $ref: ./payroll.yaml#/~1payroll~1actions~1calculate-payroll-run
+/payroll/actions/apply-payroll-run-approval-decision:
+  $ref: ./payroll.yaml#/~1payroll~1actions~1apply-payroll-run-approval-decision
+/payroll/actions/post-payroll-run:
+  $ref: ./payroll.yaml#/~1payroll~1actions~1post-payroll-run
+/payroll/actions/create-payroll-correction:
+  $ref: ./payroll.yaml#/~1payroll~1actions~1create-payroll-correction
+/payroll/actions/apply-payment-return:
+  $ref: ./payroll.yaml#/~1payroll~1actions~1apply-payment-return
+/payroll/configuration/maintain-employee-payroll-profiles:
+  $ref: ./payroll.yaml#/~1payroll~1configuration~1maintain-employee-payroll-profiles
+/payroll/configuration/maintain-payroll-tax-filing-records:
+  $ref: ./payroll.yaml#/~1payroll~1configuration~1maintain-payroll-tax-filing-records
+/invoicing/configuration/configure-invoice-templates:
+  $ref: ./invoicing.yaml#/~1invoicing~1configuration~1configure-invoice-templates
+/invoicing/configuration/configure-billing-schedules:
+  $ref: ./invoicing.yaml#/~1invoicing~1configuration~1configure-billing-schedules
+/invoicing/actions/generate-invoices:
+  $ref: ./invoicing.yaml#/~1invoicing~1actions~1generate-invoices
+/invoicing/actions/finalize-generated-invoices:
+  $ref: ./invoicing.yaml#/~1invoicing~1actions~1finalize-generated-invoices
+/invoicing/actions/recalculate-unfinalized-invoices:
+  $ref: ./invoicing.yaml#/~1invoicing~1actions~1recalculate-unfinalized-invoices
+/invoicing/actions/cancel-unfinalized-invoices:
+  $ref: ./invoicing.yaml#/~1invoicing~1actions~1cancel-unfinalized-invoices
+/payments/actions/prepare-payment-batch:
+  $ref: ./payments.yaml#/~1payments~1actions~1prepare-payment-batch
+/payments/actions/apply-payment-batch-approval-decision:
+  $ref: ./payments.yaml#/~1payments~1actions~1apply-payment-batch-approval-decision
+/payments/actions/cancel-payment-batch:
+  $ref: ./payments.yaml#/~1payments~1actions~1cancel-payment-batch
+/payments/actions/register-expected-incoming-settlement:
+  $ref: ./payments.yaml#/~1payments~1actions~1register-expected-incoming-settlement
+/payments/actions/resolve-expected-incoming-settlement-exception:
+  $ref: ./payments.yaml#/~1payments~1actions~1resolve-expected-incoming-settlement-exception
+/payments/actions/cancel-expected-incoming-settlement:
+  $ref: ./payments.yaml#/~1payments~1actions~1cancel-expected-incoming-settlement
+/payments/actions/close-expected-incoming-settlement:
+  $ref: ./payments.yaml#/~1payments~1actions~1close-expected-incoming-settlement
+/payments/actions/create-payment-instruction-from-obligation:
+  $ref: ./payments.yaml#/~1payments~1actions~1create-payment-instruction-from-obligation
+/payments/actions/submit-payment-instruction:
+  $ref: ./payments.yaml#/~1payments~1actions~1submit-payment-instruction
+/payments/actions/retry-payment-instruction:
+  $ref: ./payments.yaml#/~1payments~1actions~1retry-payment-instruction
+/payments/actions/cancel-payment-instruction:
+  $ref: ./payments.yaml#/~1payments~1actions~1cancel-payment-instruction
+/payments/actions/apply-payment-instruction-exception-decision:
+  $ref: ./payments.yaml#/~1payments~1actions~1apply-payment-instruction-exception-decision
+/payments/actions/record-payment-return:
+  $ref: ./payments.yaml#/~1payments~1actions~1record-payment-return
+/payments/actions/cancel-unposted-payment-return:
+  $ref: ./payments.yaml#/~1payments~1actions~1cancel-unposted-payment-return
+/payments/actions/acknowledge-payment-return:
+  $ref: ./payments.yaml#/~1payments~1actions~1acknowledge-payment-return
+/payments/actions/resolve-payment-return-exception:
+  $ref: ./payments.yaml#/~1payments~1actions~1resolve-payment-return-exception
+/payments/actions/record-unallocated-incoming-settlement:
+  $ref: ./payments.yaml#/~1payments~1actions~1record-unallocated-incoming-settlement
+/payments/actions/resolve-unallocated-incoming-settlement:
+  $ref: ./payments.yaml#/~1payments~1actions~1resolve-unallocated-incoming-settlement
+/payments/actions/record-incoming-settlement:
+  $ref: ./payments.yaml#/~1payments~1actions~1record-incoming-settlement
+/payments/actions/resolve-settlement-receipt-validation-exception:
+  $ref: ./payments.yaml#/~1payments~1actions~1resolve-settlement-receipt-validation-exception
+/payments/actions/resolve-incoming-settlement-owner-exception:
+  $ref: ./payments.yaml#/~1payments~1actions~1resolve-incoming-settlement-owner-exception
+/payments/actions/cancel-unposted-settlement-receipt:
+  $ref: ./payments.yaml#/~1payments~1actions~1cancel-unposted-settlement-receipt
+/payments/actions/acknowledge-incoming-settlement:
+  $ref: ./payments.yaml#/~1payments~1actions~1acknowledge-incoming-settlement
+/payments/actions/reverse-incoming-settlement:
+  $ref: ./payments.yaml#/~1payments~1actions~1reverse-incoming-settlement
+/payments/configuration/maintain-bank-accounts:
+  $ref: ./payments.yaml#/~1payments~1configuration~1maintain-bank-accounts
+/reporting/actions/run-consolidation:
+  $ref: ./reporting.yaml#/~1reporting~1actions~1run-consolidation
+/reporting/actions/apply-translation-result:
+  $ref: ./reporting.yaml#/~1reporting~1actions~1apply-translation-result
+/reporting/actions/apply-consolidation-approval-decision:
+  $ref: ./reporting.yaml#/~1reporting~1actions~1apply-consolidation-approval-decision
+/reporting/actions/publish-consolidated-statement:
+  $ref: ./reporting.yaml#/~1reporting~1actions~1publish-consolidated-statement
+/reporting/configuration/maintain-report-definitions:
+  $ref: ./reporting.yaml#/~1reporting~1configuration~1maintain-report-definitions
+/reporting/actions/generate-and-publish-ledger-financial-statements:
+  $ref: ./reporting.yaml#/~1reporting~1actions~1generate-and-publish-ledger-financial-statements
+/intercompany/actions/start-settlement:
+  $ref: ./intercompany.yaml#/~1intercompany~1actions~1start-settlement
+/intercompany/actions/match-intercompany-items:
+  $ref: ./intercompany.yaml#/~1intercompany~1actions~1match-intercompany-items
+/intercompany/actions/apply-residual-approval-decision:
+  $ref: ./intercompany.yaml#/~1intercompany~1actions~1apply-residual-approval-decision
+/intercompany/actions/create-settlement-instructions:
+  $ref: ./intercompany.yaml#/~1intercompany~1actions~1create-settlement-instructions
+/intercompany/actions/complete-settlement-run:
+  $ref: ./intercompany.yaml#/~1intercompany~1actions~1complete-settlement-run
+/intercompany/actions/apply-incoming-settlement:
+  $ref: ./intercompany.yaml#/~1intercompany~1actions~1apply-incoming-settlement
+/intercompany/actions/reverse-incoming-settlement-application:
+  $ref: ./intercompany.yaml#/~1intercompany~1actions~1reverse-incoming-settlement-application
+/intercompany/actions/apply-payment-return:
+  $ref: ./intercompany.yaml#/~1intercompany~1actions~1apply-payment-return
+/intercompany/actions/run-elimination:
+  $ref: ./intercompany.yaml#/~1intercompany~1actions~1run-elimination
+/intercompany/configuration/maintain-intercompany-agreements:
+  $ref: ./intercompany.yaml#/~1intercompany~1configuration~1maintain-intercompany-agreements
+/intercompany/actions/record-intercompany-transactions:
+  $ref: ./intercompany.yaml#/~1intercompany~1actions~1record-intercompany-transactions
+/revenue-recognition/actions/assess-contract:
+  $ref: ./revenue-recognition.yaml#/~1revenue-recognition~1actions~1assess-contract
+/revenue-recognition/actions/apply-revenue-schedule-approval-decision:
+  $ref: ./revenue-recognition.yaml#/~1revenue-recognition~1actions~1apply-revenue-schedule-approval-decision
+/revenue-recognition/actions/publish-revenue-accounting-profile:
+  $ref: ./revenue-recognition.yaml#/~1revenue-recognition~1actions~1publish-revenue-accounting-profile
+/revenue-recognition/actions/modify-contract:
+  $ref: ./revenue-recognition.yaml#/~1revenue-recognition~1actions~1modify-contract
+/revenue-recognition/actions/apply-contract-modification-approval-decision:
+  $ref: ./revenue-recognition.yaml#/~1revenue-recognition~1actions~1apply-contract-modification-approval-decision
+/revenue-recognition/actions/run-recognition:
+  $ref: ./revenue-recognition.yaml#/~1revenue-recognition~1actions~1run-recognition
+/fixed-assets/actions/capitalize-asset:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1capitalize-asset
+/fixed-assets/actions/create-asset-acquisition-clearing:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1create-asset-acquisition-clearing
+/fixed-assets/actions/run-depreciation:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1run-depreciation
+/fixed-assets/actions/apply-impairment-approval-decision:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1apply-impairment-approval-decision
+/fixed-assets/actions/dispose-asset:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1dispose-asset
+/fixed-assets/actions/apply-asset-disposal-approval-decision:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1apply-asset-disposal-approval-decision
+/fixed-assets/actions/cancel-unposted-asset-disposal:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1cancel-unposted-asset-disposal
+/fixed-assets/actions/compensate-failed-disposal-posting:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1compensate-failed-disposal-posting
+/fixed-assets/actions/create-disposal-settlement-clearing:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1create-disposal-settlement-clearing
+/fixed-assets/actions/apply-asset-supplier-liability-result:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1apply-asset-supplier-liability-result
+/fixed-assets/actions/apply-incoming-settlement:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1apply-incoming-settlement
+/fixed-assets/actions/reverse-incoming-settlement-application:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1reverse-incoming-settlement-application
+/fixed-assets/actions/apply-payment-return:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1apply-payment-return
+/fixed-assets/actions/apply-asset-settlement-result:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1apply-asset-settlement-result
+/fixed-assets/actions/reclassify-disposal-cost-for-payment:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1reclassify-disposal-cost-for-payment
+/fixed-assets/actions/request-disposal-cost-payment:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1request-disposal-cost-payment
+/fixed-assets/actions/request-disposal-cost-payment-replacement:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1request-disposal-cost-payment-replacement
+/fixed-assets/actions/record-impairment-assessments:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1record-impairment-assessments
+/fixed-assets/actions/transfer-assets-or-components:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1transfer-assets-or-components
+/fixed-assets/actions/split-assets-or-components:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1split-assets-or-components
+/fixed-assets/actions/correct-posted-asset-disposals:
+  $ref: ./fixed-assets.yaml#/~1fixed-assets~1actions~1correct-posted-asset-disposals
+/multi-currency/actions/publish-rate-set:
+  $ref: ./multi-currency.yaml#/~1multi-currency~1actions~1publish-rate-set
+/multi-currency/actions/run-revaluation:
+  $ref: ./multi-currency.yaml#/~1multi-currency~1actions~1run-revaluation
+/multi-currency/actions/apply-revaluation-approval-decision:
+  $ref: ./multi-currency.yaml#/~1multi-currency~1actions~1apply-revaluation-approval-decision
+/multi-currency/actions/post-revaluation-run:
+  $ref: ./multi-currency.yaml#/~1multi-currency~1actions~1post-revaluation-run
+/multi-currency/actions/run-translation:
+  $ref: ./multi-currency.yaml#/~1multi-currency~1actions~1run-translation
+/fiscal-periods/actions/start-soft-close:
+  $ref: ./fiscal-periods.yaml#/~1fiscal-periods~1actions~1start-soft-close
+/fiscal-periods/actions/end-soft-close:
+  $ref: ./fiscal-periods.yaml#/~1fiscal-periods~1actions~1end-soft-close
+/fiscal-periods/actions/start-hard-close:
+  $ref: ./fiscal-periods.yaml#/~1fiscal-periods~1actions~1start-hard-close
+/fiscal-periods/actions/resume-close-run:
+  $ref: ./fiscal-periods.yaml#/~1fiscal-periods~1actions~1resume-close-run
+/fiscal-periods/actions/abort-close-run:
+  $ref: ./fiscal-periods.yaml#/~1fiscal-periods~1actions~1abort-close-run
+/fiscal-periods/actions/apply-posting-gate-result:
+  $ref: ./fiscal-periods.yaml#/~1fiscal-periods~1actions~1apply-posting-gate-result
+/fiscal-periods/actions/apply-close-exception-approval-decision:
+  $ref: ./fiscal-periods.yaml#/~1fiscal-periods~1actions~1apply-close-exception-approval-decision
+/fiscal-periods/actions/apply-close-approval-decision:
+  $ref: ./fiscal-periods.yaml#/~1fiscal-periods~1actions~1apply-close-approval-decision
+/fiscal-periods/actions/request-reopen:
+  $ref: ./fiscal-periods.yaml#/~1fiscal-periods~1actions~1request-reopen
+/fiscal-periods/actions/apply-reopen-approval-decision:
+  $ref: ./fiscal-periods.yaml#/~1fiscal-periods~1actions~1apply-reopen-approval-decision
+/fiscal-periods/actions/start-reclose:
+  $ref: ./fiscal-periods.yaml#/~1fiscal-periods~1actions~1start-reclose
+/fiscal-periods/actions/take-over-period-control:
+  $ref: ./fiscal-periods.yaml#/~1fiscal-periods~1actions~1take-over-period-control
+/fiscal-periods/actions/extend-close-exception:
+  $ref: ./fiscal-periods.yaml#/~1fiscal-periods~1actions~1extend-close-exception
+/coa-segments/configuration/maintain-segment-definitions:
+  $ref: ./coa-segments.yaml#/~1coa-segments~1configuration~1maintain-segment-definitions
+/coa-segments/configuration/maintain-segment-values:
+  $ref: ./coa-segments.yaml#/~1coa-segments~1configuration~1maintain-segment-values
+/coa-segments/actions/validate-segment-combinations:
+  $ref: ./coa-segments.yaml#/~1coa-segments~1actions~1validate-segment-combinations
+/coa-segments/actions/request-segment-changes:
+  $ref: ./coa-segments.yaml#/~1coa-segments~1actions~1request-segment-changes
+/coa-segments/actions/apply-segment-change-approval-decision:
+  $ref: ./coa-segments.yaml#/~1coa-segments~1actions~1apply-segment-change-approval-decision
+/bank-reconciliation/actions/import-statement:
+  $ref: ./bank-reconciliation.yaml#/~1bank-reconciliation~1actions~1import-statement
+/bank-reconciliation/actions/propose-match:
+  $ref: ./bank-reconciliation.yaml#/~1bank-reconciliation~1actions~1propose-match
+/bank-reconciliation/actions/confirm-match:
+  $ref: ./bank-reconciliation.yaml#/~1bank-reconciliation~1actions~1confirm-match
+/bank-reconciliation/actions/unmatch:
+  $ref: ./bank-reconciliation.yaml#/~1bank-reconciliation~1actions~1unmatch
+/bank-reconciliation/actions/complete-reconciliation:
+  $ref: ./bank-reconciliation.yaml#/~1bank-reconciliation~1actions~1complete-reconciliation
+/bank-reconciliation/configuration/maintain-bank-feed-connections:
+  $ref: ./bank-reconciliation.yaml#/~1bank-reconciliation~1configuration~1maintain-bank-feed-connections
+/tax/actions/determine-tax:
+  $ref: ./tax.yaml#/~1tax~1actions~1determine-tax
+/tax/actions/prepare-tax-return:
+  $ref: ./tax.yaml#/~1tax~1actions~1prepare-tax-return
+/tax/actions/apply-tax-return-approval-decision:
+  $ref: ./tax.yaml#/~1tax~1actions~1apply-tax-return-approval-decision
+/tax/actions/submit-tax-return:
+  $ref: ./tax.yaml#/~1tax~1actions~1submit-tax-return
+/tax/actions/create-tax-amendment:
+  $ref: ./tax.yaml#/~1tax~1actions~1create-tax-amendment
+/tax/actions/apply-tax-amendment-approval-decision:
+  $ref: ./tax.yaml#/~1tax~1actions~1apply-tax-amendment-approval-decision
+/tax/actions/submit-tax-amendment:
+  $ref: ./tax.yaml#/~1tax~1actions~1submit-tax-amendment
+/tax/actions/create-return-level-tax-adjustment:
+  $ref: ./tax.yaml#/~1tax~1actions~1create-return-level-tax-adjustment
+/tax/actions/apply-return-level-tax-adjustment-approval-decision:
+  $ref: ./tax.yaml#/~1tax~1actions~1apply-return-level-tax-adjustment-approval-decision
+/tax/actions/post-return-level-tax-adjustment:
+  $ref: ./tax.yaml#/~1tax~1actions~1post-return-level-tax-adjustment
+/tax/actions/request-tax-payment:
+  $ref: ./tax.yaml#/~1tax~1actions~1request-tax-payment
+/tax/actions/record-tax-payment-settlement:
+  $ref: ./tax.yaml#/~1tax~1actions~1record-tax-payment-settlement
+/tax/actions/apply-incoming-settlement:
+  $ref: ./tax.yaml#/~1tax~1actions~1apply-incoming-settlement
+/tax/actions/reverse-incoming-settlement-application:
+  $ref: ./tax.yaml#/~1tax~1actions~1reverse-incoming-settlement-application
+/tax/actions/apply-payment-return:
+  $ref: ./tax.yaml#/~1tax~1actions~1apply-payment-return
+/tax/configuration/maintain-tax-configurations:
+  $ref: ./tax.yaml#/~1tax~1configuration~1maintain-tax-configurations
+/approvals/actions/create-approval-request:
+  $ref: ./approvals.yaml#/~1approvals~1actions~1create-approval-request
+/approvals/actions/decide-approval-request:
+  $ref: ./approvals.yaml#/~1approvals~1actions~1decide-approval-request
+/approvals/actions/delegate-approval:
+  $ref: ./approvals.yaml#/~1approvals~1actions~1delegate-approval
+/approvals/actions/escalate-approval:
+  $ref: ./approvals.yaml#/~1approvals~1actions~1escalate-approval
+/approvals/configuration/maintain-approval-policies:
+  $ref: ./approvals.yaml#/~1approvals~1configuration~1maintain-approval-policies
+/identity-access/actions/manage-users:
+  $ref: ./identity-access.yaml#/~1identity-access~1actions~1manage-users
+/identity-access/actions/manage-roles:
+  $ref: ./identity-access.yaml#/~1identity-access~1actions~1manage-roles
+/identity-access/actions/manage-access-policies:
+  $ref: ./identity-access.yaml#/~1identity-access~1actions~1manage-access-policies
+/identity-access/actions/manage-segregation-rules:
+  $ref: ./identity-access.yaml#/~1identity-access~1actions~1manage-segregation-rules
+/identity-access/actions/grant-emergency-access:
+  $ref: ./identity-access.yaml#/~1identity-access~1actions~1grant-emergency-access
+/identity-access/actions/revoke-emergency-access:
+  $ref: ./identity-access.yaml#/~1identity-access~1actions~1revoke-emergency-access
+/audit-integrity/actions/append-auditable-event:
+  $ref: ./audit-integrity.yaml#/~1audit-integrity~1actions~1append-auditable-event
+/audit-integrity/actions/create-audit-seal:
+  $ref: ./audit-integrity.yaml#/~1audit-integrity~1actions~1create-audit-seal
+/audit-integrity/actions/rotate-verification-credential:
+  $ref: ./audit-integrity.yaml#/~1audit-integrity~1actions~1rotate-verification-credential
+/audit-integrity/actions/escalate-integrity-incident:
+  $ref: ./audit-integrity.yaml#/~1audit-integrity~1actions~1escalate-integrity-incident
+/audit-integrity/reference/verify-proof:
+  $ref: ./audit-integrity.yaml#/~1audit-integrity~1reference~1verify-proof
+
