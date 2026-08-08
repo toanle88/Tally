@@ -97,6 +97,8 @@ All commands must be run from the repository root.
 | `make api-generate` | Generate Go server interfaces and transport types from the OpenAPI contract |
 | `make api-generate-check` | Validate deterministic Go generation, markers, compilation, and working-tree output |
 | `make api-negative-check` | Run isolated negative checks for generated Go output and invalid contract input |
+| `make api-ts-generate` | Generate the TypeScript Fetch client and types from the OpenAPI contract |
+| `make api-ts-check` | Validate deterministic TypeScript generation, inventory, markers, and frontend compilation |
 | `make check` | Run migration validation, checksum check, and `go test ./...` |
 | `make verify-database` | Run end-to-end database verification from current state |
 | `make verify-database-clean` | Delete volume, recreate, and run full verification from scratch |
@@ -140,7 +142,7 @@ Shared-environment migration correction is forward-fix by default. Destructive
 reset commands such as `make db-reset` and `make verify-database-clean` are for
 disposable local development state only.
 
-## OpenAPI Go Artifacts
+## OpenAPI Artifacts
 
 The OpenAPI source under `contracts/openapi/` is bundled with the pinned Redocly
 CLI before generation. `ogen v1.23.0` is pinned as a Go tool dependency and
@@ -151,8 +153,17 @@ and must not be edited manually.
 Use `make api-generate` to regenerate output and
 `make api-generate-check` to validate deterministic output, generated markers,
 the expected artifact inventory, OpenAPI validation, and Go compilation. Use
-`make api-negative-check` for isolated intentional failure checks. TypeScript
-client generation and focused CI drift enforcement remain later delivery scope.
+`make api-negative-check` for isolated intentional failure checks.
+
+TypeScript client generation bundles the same OpenAPI source and uses the
+pinned `@hey-api/openapi-ts 0.99.0` tool. It writes machine-produced output to
+`web/src/generated/api/`; use `make api-ts-generate` to regenerate it and
+`make api-ts-check` to validate deterministic output, the generated inventory,
+the bundled Fetch client, and temporary TypeScript compilation. The wrapper is
+the supported entry point because it supplies a temporary bundled OpenAPI
+input; direct config execution expects the ignored fallback bundle at
+`contracts/openapi/dist/openapi.bundle.yaml`. Focused CI drift enforcement
+remains User Story 5 scope.
 
 The GitHub Actions workflow at `.github/workflows/persistence.yml` invokes the
 same `make persistence-check` command for focused DLV-PLAT-003 persistence
@@ -229,8 +240,11 @@ The technology baseline (from the approved solution architecture):
 │   ├── openapi/
 │   │   ├── api-generate-check.sh      # Working-tree-safe Go generation check
 │   │   ├── expected-go-artifacts.txt  # Generated Go artifact inventory
+│   │   ├── expected-typescript-artifacts.txt # Generated TypeScript inventory
 │   │   ├── go-generate.sh             # Pinned ogen generation wrapper
-│   │   └── go-negative-check.sh        # Isolated negative generation checks
+│   │   ├── go-negative-check.sh        # Isolated negative generation checks
+│   │   ├── typescript-generate.sh     # Bundled OpenAPI TypeScript generation
+│   │   └── typescript-client-check.sh # TypeScript generation and compile check
 │   ├── db/
 │   │   ├── migrate.sh                 # Goose migration runner
 │   │   ├── sqlc-check.sh              # sqlc generation drift check
@@ -358,8 +372,8 @@ TALLY enforces these design rules across all modules:
 See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0
 (engineering foundation) through M9 (full-system qualification). The current
 platform backlog includes completed `DLV-PLAT-001` through `DLV-PLAT-003`, plus
-completed Go artifact generation in `DLV-PLAT-004`; its TypeScript client and
-focused contract/generated-artifact drift work remain planned.
+completed User Stories 1–4 in `DLV-PLAT-004`. Its focused
+contract/generated-artifact drift work remains planned as User Story 5.
 
 ---
 

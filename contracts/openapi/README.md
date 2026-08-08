@@ -20,9 +20,12 @@ is pinned in the root package manifest and configured by `redocly.yaml`.
 The bundle at `contracts/openapi/dist/openapi.bundle.yaml` is derived output and
 is ignored by Git. The pinned `ogen v1.23.0` Go generation wrapper creates a
 temporary bundle before generating server interfaces and transport types under
-`internal/platform/httpapi/generated/`. Invalid-contract fixtures used by the
-focused checks live under `contracts/openapi/fixtures/invalid/`.
+`internal/platform/httpapi/generated/`. The pinned `@hey-api/openapi-ts 0.99.0`
+TypeScript wrapper uses the same bundled contract and writes client/types under
+`web/src/generated/api/`. Invalid-contract fixtures used by the focused checks
+live under `contracts/openapi/fixtures/invalid/`.
 
-This story defines transport contracts and the Go generation workflow only. It
-does not implement handlers, finance behavior, authorization, persistence,
-eventing, TypeScript generation, or full CI drift checks.
+Generated Go and TypeScript files are machine-produced and must not be edited
+manually. This delivery item defines transport contracts and generation
+workflows only. It does not implement handlers, finance behavior,
+authorization, persistence, eventing, or full CI drift checks.
