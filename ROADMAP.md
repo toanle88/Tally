@@ -29,15 +29,18 @@
       - [x] **User Story 3 — Establish the sqlc generation workflow**
       - [x] **User Story 4 — Prove migrations, pgx, and sqlc together**
       - [x] **User Story 5 — Detect persistence drift in CI**
-
-### Next EP-PLAT delivery item
-
-- [x] **DLV-PLAT-004 — OpenAPI-first REST workflow and generated clients**
-  - [x] **User Story 1 — Establish the contract layout and common schemas**
-  - [x] **User Story 2 — Validate and bundle the OpenAPI contract**
-  - [x] **User Story 3 — Generate and verify Go API artifacts**
-  - [x] **User Story 4 — Generate and verify the TypeScript client**
-  - [x] **User Story 5 — Detect contract and generated-artifact drift**
+    - [x] **DLV-PLAT-004 — OpenAPI-first REST workflow and generated clients**
+      - [x] **User Story 1 — Establish the contract layout and common schemas**
+      - [x] **User Story 2 — Validate and bundle the OpenAPI contract**
+      - [x] **User Story 3 — Generate and verify Go API artifacts**
+      - [x] **User Story 4 — Generate and verify the TypeScript client**
+      - [x] **User Story 5 — Detect contract and generated-artifact drift**
+    - [ ] **DLV-PLAT-005 — Shared finance primitives**
+      - [ ] **User Story 1 — Implement exact-decimal money and currency primitives**
+      - [ ] **User Story 2 — Implement explicit accounting-scope identity**
+      - [ ] **User Story 3 — Implement stable identity primitives**
+      - [ ] **User Story 4 — Implement aggregate version primitives**
+      - [ ] **User Story 5 — Prove serialization and boundary behavior**
 
 ## Milestone and epic roadmap
 
