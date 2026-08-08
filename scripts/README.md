@@ -15,7 +15,8 @@ scripts/
 │   ├── seed.sh         # Local database seed
 │   └── verify.sh       # Database verification
 ├── verify/
-│   └── database.sh     # End-to-end database verification
+│   ├── database.sh      # End-to-end database verification
+│   └── openapi-story1.sh # OpenAPI User Story 1 verification
 └── README.md
 ```
 
@@ -101,6 +102,14 @@ make db-verify
 ---
 
 # Verification Scripts
+
+## openapi-story1.sh
+
+Verifies the OpenAPI User Story 1 structure and authoritative operation catalog:
+
+```bash
+./scripts/verify/openapi-story1.sh
+```
 
 ## database.sh
 

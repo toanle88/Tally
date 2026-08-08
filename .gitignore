@@ -59,6 +59,7 @@ web/.vite/
 web/*.local
 .pnpm-store/
 web/.pnpm-store/
+/contracts/openapi/dist/
 
 # JavaScript and frontend logs
 

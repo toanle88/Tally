@@ -38,19 +38,19 @@ This item establishes the OpenAPI-first workflow. It may use a minimal technical
 
 **As the TALLY developer, I want a maintainable OpenAPI source layout and common schemas, so that future capabilities extend the API without duplicating transport rules.**
 
-- [ ] An OpenAPI 3.1 root document exists under `contracts/openapi/` and references committed component and path files.
-- [ ] Common headers, command requests, established results, pagination/query conventions, and RFC 9457-style problem details are represented consistently.
-- [ ] Examples are deterministic and contain no credentials or real personal/financial data.
-- [ ] Every operation has a unique, stable `operationId` and an identified owning capability boundary.
+- [x] An OpenAPI 3.1 root document exists under `contracts/openapi/` and references committed component and path files.
+- [x] Common headers, command requests, established results, pagination/query conventions, and RFC 9457-style problem details are represented consistently.
+- [x] Examples are deterministic and contain no credentials or real personal/financial data.
+- [x] Every operation has a unique, stable `operationId` and an identified owning capability boundary.
 
 ### User Story 2 — Validate and bundle the OpenAPI contract
 
 **As the TALLY developer, I want pinned, repeatable contract validation, so that malformed references and incompatible API changes fail before review.**
 
-- [ ] The repository pins the selected OpenAPI linter/bundler and exposes a root validation command.
-- [ ] Validation covers all referenced files and rejects broken references, duplicate operation IDs, invalid schemas, and malformed examples.
-- [ ] A negative fixture proves an invalid contract fails with a non-zero result and no secret output.
-- [ ] Bundling or equivalent verification output is deterministic.
+- [x] The repository pins the selected OpenAPI linter/bundler and exposes a root validation command.
+- [x] Validation covers all referenced files and rejects broken references, duplicate operation IDs, invalid schemas, and malformed examples.
+- [x] A negative fixture proves an invalid contract fails with a non-zero result and no secret output.
+- [x] Bundling or equivalent verification output is deterministic.
 
 ### User Story 3 — Generate and verify Go API artifacts
 

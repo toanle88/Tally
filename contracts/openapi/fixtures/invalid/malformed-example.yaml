@@ -1,0 +1,17 @@
+openapi: 3.1.0
+info:
+  title: Malformed example fixture
+  version: 0.0.0
+paths:
+  /fixture:
+    get:
+      operationId: malformedExampleFixture
+      responses:
+        '200':
+          description: Malformed example
+          content:
+            application/json:
+              schema:
+                type: string
+                pattern: '^[A-Z]+$'
+              example: not-uppercase

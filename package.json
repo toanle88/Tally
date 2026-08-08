@@ -3,17 +3,20 @@
   "private": true,
   "packageManager": "pnpm@11.9.0",
   "scripts": {
+    "contract:lint": "bash scripts/openapi/redocly-run.sh lint contracts/openapi/openapi.yaml",
+    "contract:bundle": "bash scripts/openapi/redocly-run.sh bundle contracts/openapi/openapi.yaml --output contracts/openapi/dist/openapi.bundle.yaml",
+    "contract:check": "bash scripts/openapi/contract-check.sh",
     "build": "pnpm run build:api && pnpm run build:web",
     "build:api": "go build ./cmd/api",
     "build:web": "pnpm -C web run build",
-
     "test": "pnpm run test:api && pnpm run test:web",
     "test:api": "go test ./...",
     "test:web": "pnpm -C web run test",
-
     "check": "pnpm run test && pnpm run build",
-
     "dev-api": "go run ./cmd/api",
     "dev-web": "pnpm -C web run dev"
+  },
+  "devDependencies": {
+    "@redocly/cli": "1.34.4"
   }
 }

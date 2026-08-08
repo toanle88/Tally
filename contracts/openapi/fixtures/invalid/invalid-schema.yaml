@@ -1,0 +1,15 @@
+openapi: 3.1.0
+info:
+  title: Invalid schema fixture
+  version: 0.0.0
+paths:
+  /fixture:
+    get:
+      operationId: invalidSchemaFixture
+      responses:
+        '200':
+          description: Invalid schema
+          content:
+            application/json:
+              schema:
+                type: not-a-schema-type

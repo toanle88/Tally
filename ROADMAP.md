@@ -33,8 +33,8 @@
 ### Next EP-PLAT delivery item
 
 - [ ] **DLV-PLAT-004 — OpenAPI-first REST workflow and generated clients**
-  - [ ] **User Story 1 — Establish the contract layout and common schemas**
-  - [ ] **User Story 2 — Validate and bundle the OpenAPI contract**
+  - [x] **User Story 1 — Establish the contract layout and common schemas**
+  - [x] **User Story 2 — Validate and bundle the OpenAPI contract**
   - [ ] **User Story 3 — Generate and verify Go API artifacts**
   - [ ] **User Story 4 — Generate and verify the TypeScript client**
   - [ ] **User Story 5 — Detect contract and generated-artifact drift**
