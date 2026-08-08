@@ -101,6 +101,7 @@ All commands must be run from the repository root.
 | `make api-ts-check` | Validate deterministic TypeScript generation, inventory, markers, and frontend compilation |
 | `make api-check` | Run the focused OpenAPI contract and generated-artifact drift gate |
 | `make money-check` | Run focused exact-decimal money and currency primitive tests |
+| `make accounting-scope-check` | Run focused accounting-scope identity and serialization tests |
 | `make check` | Run migration validation, checksum check, and `go test ./...` |
 | `make verify-database` | Run end-to-end database verification from current state |
 | `make verify-database-clean` | Delete volume, recreate, and run full verification from scratch |
@@ -226,6 +227,9 @@ The technology baseline (from the approved solution architecture):
 │       ├── money/
 │       │   ├── money.go             # Exact-decimal currency and money primitives
 │       │   └── money_test.go        # Money, currency, precision, and boundary tests
+│       ├── accountingscope/
+│       │   ├── accounting_scope.go      # Explicit five-component accounting scope
+│       │   └── accounting_scope_test.go # Scope validation, equality, and JSON tests
 │       ├── database/
 │       │   ├── pool.go                 # pgx connection pool with config validation
 │       │   ├── pool_test.go            # Pool validation and security unit tests
@@ -384,8 +388,8 @@ TALLY enforces these design rules across all modules:
 See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0
 (engineering foundation) through M9 (full-system qualification). The current
 platform backlog includes completed `DLV-PLAT-001` through `DLV-PLAT-004` and
-implemented User Story 1 of `DLV-PLAT-005`; the remaining shared primitive
-stories are still open.
+implemented User Stories 1 and 2 of `DLV-PLAT-005`; the remaining shared
+primitive stories are still open.
 Focused contract/generated-artifact drift is enforced by `make api-check` and
 `.github/workflows/openapi.yml`.
 

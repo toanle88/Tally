@@ -37,7 +37,7 @@
       - [x] **User Story 5 — Detect contract and generated-artifact drift**
     - [ ] **DLV-PLAT-005 — Shared finance primitives**
       - [x] **User Story 1 — Implement exact-decimal money and currency primitives**
-      - [ ] **User Story 2 — Implement explicit accounting-scope identity**
+      - [x] **User Story 2 — Implement explicit accounting-scope identity**
       - [ ] **User Story 3 — Implement stable identity primitives**
       - [ ] **User Story 4 — Implement aggregate version primitives**
       - [ ] **User Story 5 — Prove serialization and boundary behavior**

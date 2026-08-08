@@ -35,7 +35,8 @@
 	api-ts-generate \
 	api-ts-check \
 	api-check \
-	money-check
+	money-check \
+	accounting-scope-check
 
 
 DB_SERVICE := postgres
@@ -227,3 +228,6 @@ api-check:
 
 money-check:
 	@bash scripts/verify/money.sh
+
+accounting-scope-check:
+	@bash scripts/verify/accounting-scope.sh

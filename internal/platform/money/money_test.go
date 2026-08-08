@@ -26,6 +26,19 @@ func TestCurrencyRegistry(t *testing.T) {
 	}
 }
 
+func TestValidateCurrencyCode(t *testing.T) {
+	for _, code := range []string{"USD", "JPY", "XAU"} {
+		if err := ValidateCurrencyCode(code); err != nil {
+			t.Errorf("ValidateCurrencyCode(%q) error = %v", code, err)
+		}
+	}
+	for _, code := range []string{"", "usd", "US", "US1", "US$"} {
+		if err := ValidateCurrencyCode(code); !errors.Is(err, ErrMalformedCurrency) {
+			t.Errorf("ValidateCurrencyCode(%q) error = %v", code, err)
+		}
+	}
+}
+
 func TestCurrencyRegistryRejectsInvalidMetadata(t *testing.T) {
 	for _, metadata := range [][]CurrencyMetadata{
 		{{Code: "USD", Scale: 2}, {Code: "USD", Scale: 2}},

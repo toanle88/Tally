@@ -51,11 +51,11 @@ This item establishes reusable domain-neutral primitives required by later finan
 
 **As a finance module developer, I want an explicit accounting scope, so that ledger-bound facts cannot be attributed to an inferred or incomplete scope.**
 
-- [ ] `AccountingScope` contains tenant, legal entity, ledger, accounting book, and functional currency identifiers.
-- [ ] Construction rejects missing, malformed, or inconsistent scope components.
-- [ ] Equality and serialization include every scope component, including functional currency.
-- [ ] The primitive does not read ambient tenant, request, session, or authentication context.
-- [ ] Tests prove distinct ledgers or accounting books remain distinct even under the same legal entity.
+- [x] `AccountingScope` contains tenant, legal entity, ledger, accounting book, and functional currency identifiers.
+- [x] Construction rejects missing or malformed components; cross-component relationship consistency remains with the owning contexts.
+- [x] Equality and serialization include every scope component, including functional currency.
+- [x] The primitive does not read ambient tenant, request, session, or authentication context.
+- [x] Tests prove distinct ledgers or accounting books remain distinct even under the same legal entity.
 
 ### User Story 3 — Implement stable identity primitives
 
@@ -91,6 +91,7 @@ This item establishes reusable domain-neutral primitives required by later finan
 
 - [x] User Story 1 uses `shopspring/decimal`, caller-provided immutable currency metadata, configured currency scale from `0..12`, and the PostgreSQL-compatible `numeric(38,12)` domain ceiling.
 - [x] User Story 1 is implemented in `internal/platform/money` with explicit constructors, accessors, arithmetic methods, stable errors, and canonical amount-text serialization. The API continues to represent amount and currency separately.
+- [x] User Story 2 uses UUID components, a canonical uppercase three-letter functional-currency code, structural-only validation, and an exact JSON round-trip contract in `internal/platform/accountingscope`.
 - [ ] Boundaries with `DLV-PLAT-004`, `DLV-PLAT-006`, `DLV-PLAT-007`, and finance capability items are preserved.
 - [ ] Five stories are small enough for one or a short chain of reviewable changes.
 
@@ -100,6 +101,8 @@ This item establishes reusable domain-neutral primitives required by later finan
 - [x] User Story 1 focused unit, serialization, and boundary tests pass.
 - [x] User Story 1 money has no binary floating-point implementation or serialization path.
 - [x] User Story 1 documentation identifies the primitives, invariants, command, and ownership boundary.
+- [x] User Story 2 focused unit, serialization, boundary, and package-ownership tests pass.
+- [x] User Story 2 documentation identifies the representation, structural-validation boundary, command, and ownership boundary.
 - [x] No finance capability, idempotency behavior, integration workflow, or adjacent delivery item was marked complete.
 
 ## 7. Traceability
