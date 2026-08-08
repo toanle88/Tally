@@ -132,7 +132,7 @@
 
 ```sql
 create domain platform.currency_code as text
-  check (value ~ '^[A-Z]3$');
+  check (value ~ '^[A-Z]{3}$');
 
 create domain platform.money_amount as numeric(38,12);
 ```
