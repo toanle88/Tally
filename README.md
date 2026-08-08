@@ -94,6 +94,9 @@ All commands must be run from the repository root.
 | `make sqlc-check` | Compare committed sqlc output with deterministic generated output |
 | `make persistence-integration-test` | Run PostgreSQL 18 Testcontainers persistence integration tests |
 | `make persistence-check` | Run the focused persistence drift gate used by CI |
+| `make api-generate` | Generate Go server interfaces and transport types from the OpenAPI contract |
+| `make api-generate-check` | Validate deterministic Go generation, markers, compilation, and working-tree output |
+| `make api-negative-check` | Run isolated negative checks for generated Go output and invalid contract input |
 | `make check` | Run migration validation, checksum check, and `go test ./...` |
 | `make verify-database` | Run end-to-end database verification from current state |
 | `make verify-database-clean` | Delete volume, recreate, and run full verification from scratch |
@@ -136,6 +139,20 @@ manually edited. Author migrations under the owning schema directory in
 Shared-environment migration correction is forward-fix by default. Destructive
 reset commands such as `make db-reset` and `make verify-database-clean` are for
 disposable local development state only.
+
+## OpenAPI Go Artifacts
+
+The OpenAPI source under `contracts/openapi/` is bundled with the pinned Redocly
+CLI before generation. `ogen v1.23.0` is pinned as a Go tool dependency and
+generates server interfaces and transport types into
+`internal/platform/httpapi/generated/`. Generated files are machine-produced
+and must not be edited manually.
+
+Use `make api-generate` to regenerate output and
+`make api-generate-check` to validate deterministic output, generated markers,
+the expected artifact inventory, OpenAPI validation, and Go compilation. Use
+`make api-negative-check` for isolated intentional failure checks. TypeScript
+client generation and focused CI drift enforcement remain later delivery scope.
 
 The GitHub Actions workflow at `.github/workflows/persistence.yml` invokes the
 same `make persistence-check` command for focused DLV-PLAT-003 persistence
@@ -201,11 +218,18 @@ The technology baseline (from the approved solution architecture):
 │       │       ├── db.go
 │       │       ├── local_seed_manifest.sql.go
 │       │       └── models.go
+│       ├── httpapi/
+│       │   ├── boundary.go            # Compile-only generated API boundary reference
+│       │   └── generated/             # ogen-generated server/types artifacts
 │       └── httpx/
 │           ├── health.go              # GET /health/live handler
 │           └── health_test.go         # Liveness test
 ├── scripts/
 │   ├── README.md                    # Script documentation
+│   ├── openapi/
+│   │   ├── api-generate-check.sh      # Working-tree-safe Go generation check
+│   │   ├── go-generate.sh             # Pinned ogen generation wrapper
+│   │   └── go-negative-check.sh        # Isolated negative generation checks
 │   ├── db/
 │   │   ├── migrate.sh                 # Goose migration runner
 │   │   ├── sqlc-check.sh              # sqlc generation drift check

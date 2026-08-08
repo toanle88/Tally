@@ -18,9 +18,11 @@ contract:lint`, `pnpm contract:bundle`, and `pnpm contract:check`. Redocly CLI
 is pinned in the root package manifest and configured by `redocly.yaml`.
 
 The bundle at `contracts/openapi/dist/openapi.bundle.yaml` is derived output and
-is ignored by Git. Invalid-contract fixtures used by the focused checks live
-under `contracts/openapi/fixtures/invalid/`.
+is ignored by Git. The pinned `ogen v1.23.0` Go generation wrapper creates a
+temporary bundle before generating server interfaces and transport types under
+`internal/platform/httpapi/generated/`. Invalid-contract fixtures used by the
+focused checks live under `contracts/openapi/fixtures/invalid/`.
 
-This story defines transport contracts only. It does not implement handlers,
-finance behavior, authorization, persistence, eventing, generation, or full CI
-drift checks.
+This story defines transport contracts and the Go generation workflow only. It
+does not implement handlers, finance behavior, authorization, persistence,
+eventing, TypeScript generation, or full CI drift checks.

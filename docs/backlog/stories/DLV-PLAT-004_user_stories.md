@@ -56,10 +56,10 @@ This item establishes the OpenAPI-first workflow. It may use a minimal technical
 
 **As the Go API developer, I want generated server interfaces and transport types from the contract, so that future handlers conform to the reviewed HTTP boundary.**
 
-- [ ] A pinned generator configuration produces Go artifacts from the committed contract.
-- [ ] Generated Go code compiles under the normal Go verification command and has a generated-file marker.
-- [ ] Generation is deterministic and does not require a globally installed unpinned tool.
-- [ ] A minimal compile or shell integration references the generated boundary without introducing finance behavior.
+- [x] A pinned generator configuration produces Go artifacts from the committed contract.
+- [x] Generated Go code compiles under the normal Go verification command and has a generated-file marker.
+- [x] Generation is deterministic and does not require a globally installed unpinned tool.
+- [x] A minimal compile or shell integration references the generated boundary without introducing finance behavior.
 
 ### User Story 4 — Generate and verify the TypeScript client
 

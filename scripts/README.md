@@ -14,6 +14,10 @@ scripts/
 │   ├── migrate.sh      # Goose migration workflow
 │   ├── seed.sh         # Local database seed
 │   └── verify.sh       # Database verification
+├── openapi/
+│   ├── api-generate-check.sh # Working-tree-safe Go generation check
+│   ├── go-generate.sh        # Pinned ogen generation wrapper
+│   └── go-negative-check.sh  # Isolated negative generation checks
 ├── verify/
 │   ├── database.sh      # End-to-end database verification
 │   └── openapi-story1.sh # OpenAPI User Story 1 verification
@@ -110,6 +114,23 @@ Verifies the OpenAPI User Story 1 structure and authoritative operation catalog:
 ```bash
 ./scripts/verify/openapi-story1.sh
 ```
+
+## Go API generation
+
+The OpenAPI Go workflow uses the repository-pinned `ogen v1.23.0` tool. The
+wrapper accepts an optional output directory and input contract, then bundles
+the contract with Redocly before generation:
+
+```bash
+make api-generate
+make api-generate-check
+make api-negative-check
+```
+
+Generated output is written to `internal/platform/httpapi/generated/` and is
+not a manual authoring surface. The expected file inventory is maintained in
+`scripts/openapi/expected-go-artifacts.txt`. Tracked-artifact and focused CI
+drift enforcement belongs to the later OpenAPI delivery story.
 
 ## database.sh
 
