@@ -1,5 +1,5 @@
 # Keep pnpm's install-time build policy explicit and reviewable. These
 # transitive packages are required by the pinned OpenAPI tooling.
-onlyBuiltDependencies:
-  - core-js
-  - protobufjs
+allowBuilds:
+  core-js: true
+  protobufjs: true
