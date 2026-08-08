@@ -45,6 +45,8 @@ while IFS= read -r file; do
   grep -Fqx "${generated_marker}" <(head -n 1 "${generated_dir}/${file}") || fail "missing generated marker in committed output: ${file}"
 done < <(files "${generated_dir}")
 
+diff -ru "${generated_dir}" "${first}" || fail "committed TypeScript output is stale or has unexpected files"
+
 [[ -f "${first}/client.gen.ts" ]] || fail "generated Fetch client entrypoint is missing"
 if grep -Rqs '@hey-api/client-fetch' "${first}"; then
   fail "generated output must use the bundled Fetch runtime"

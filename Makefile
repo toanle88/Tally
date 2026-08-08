@@ -33,7 +33,8 @@
 	api-generate-check \
 	api-negative-check \
 	api-ts-generate \
-	api-ts-check
+	api-ts-check \
+	api-check
 
 
 DB_SERVICE := postgres
@@ -212,9 +213,13 @@ api-generate-check:
 
 api-negative-check:
 	@bash scripts/openapi/go-negative-check.sh
+	@bash scripts/openapi/typescript-negative-check.sh
 
 api-ts-generate:
 	@bash scripts/openapi/typescript-generate.sh
 
 api-ts-check:
 	@bash scripts/openapi/typescript-client-check.sh
+
+api-check:
+	@bash scripts/openapi/api-check.sh

@@ -27,5 +27,7 @@ live under `contracts/openapi/fixtures/invalid/`.
 
 Generated Go and TypeScript files are machine-produced and must not be edited
 manually. This delivery item defines transport contracts and generation
-workflows only. It does not implement handlers, finance behavior,
-authorization, persistence, eventing, or full CI drift checks.
+workflows only. The focused `make api-check` gate and
+`.github/workflows/openapi.yml` enforce contract and generated-artifact drift;
+they do not implement handlers, finance behavior, authorization, persistence,
+eventing, or the full `DLV-CI-001` quality pipeline.

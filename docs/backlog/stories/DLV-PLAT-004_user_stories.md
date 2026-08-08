@@ -6,7 +6,7 @@
 | Item type | Platform foundation item |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Milestone | `M0` — Engineering foundation |
-| Status | Planned |
+| Status | Complete |
 | Dependency position | Builds on `DLV-PLAT-001` and `DLV-PLAT-003`; no finance capability implementation is required. |
 | Exit evidence | OpenAPI 3.1 validates and bundles; generated Go and TypeScript artifacts compile; focused CI detects contract or generated-artifact drift. |
 
@@ -74,26 +74,26 @@ This item establishes the OpenAPI-first workflow. It may use a minimal technical
 
 **As the TALLY maintainer, I want local and focused CI checks to detect contract and generated-code drift, so that committed artifacts cannot become stale.**
 
-- [ ] One documented root command validates the contract, regenerates both language artifacts, checks compilation, and fails when regeneration changes tracked output.
-- [ ] Local negative verification proves the check fails for stale output and passes after regeneration.
-- [ ] Focused CI invokes the same command on a clean checkout.
-- [ ] The workflow clearly leaves full API compatibility, security, frontend, SQL, Terraform, and documentation gates to their owning items or `DLV-CI-001`.
+- [x] One documented root command validates the contract, regenerates both language artifacts, checks compilation, and fails when regeneration changes tracked output.
+- [x] Local negative verification proves the check fails for stale output and passes after regeneration.
+- [x] Focused CI invokes the same command on a clean checkout.
+- [x] The workflow clearly leaves full API compatibility, security, frontend, SQL, Terraform, and documentation gates to their owning items or `DLV-CI-001`.
 
 ## 5. Definition of Ready
 
-- [ ] The OpenAPI 3.1 specification and exact endpoint catalog are available as the source of truth.
-- [ ] Contract directory, generated output locations, and toolchain versions are agreed and documented.
-- [ ] Boundaries with `DLV-PLAT-003`, `DLV-PLAT-005`–`007`, `EP-UX-001`, and `DLV-CI-001` are preserved.
-- [ ] Five stories are small enough for one or a short chain of reviewable changes.
+- [x] The OpenAPI 3.1 specification and exact endpoint catalog are available as the source of truth.
+- [x] Contract directory, generated output locations, and toolchain versions are agreed and documented.
+- [x] Boundaries with `DLV-PLAT-003`, `DLV-PLAT-005`–`007`, `EP-UX-001`, and `DLV-CI-001` are preserved.
+- [x] Five stories are small enough for one or a short chain of reviewable changes.
 
 ## 6. Definition of Done
 
-- [ ] All five stories and acceptance criteria pass.
-- [ ] OpenAPI validation and bundling are reproducible from a clean checkout.
-- [ ] Generated Go and TypeScript artifacts compile and remain synchronized with the contract.
-- [ ] Local and focused CI drift checks pass, including controlled negative checks.
-- [ ] Documentation identifies commands, tool pins, source locations, generated locations, and ownership boundaries.
-- [ ] No finance capability, protected action, business event, or adjacent delivery item is falsely marked complete.
+- [x] All five stories and acceptance criteria pass.
+- [x] OpenAPI validation and bundling are reproducible from a clean checkout.
+- [x] Generated Go and TypeScript artifacts compile and remain synchronized with the contract.
+- [x] Local and focused CI drift checks pass, including controlled negative checks.
+- [x] Documentation identifies commands, tool pins, source locations, generated locations, and ownership boundaries.
+- [x] No finance capability, protected action, business event, or adjacent delivery item is falsely marked complete.
 
 ## 7. Traceability
 

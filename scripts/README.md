@@ -15,13 +15,15 @@ scripts/
 │   ├── seed.sh         # Local database seed
 │   └── verify.sh       # Database verification
 ├── openapi/
+│   ├── api-check.sh                    # Aggregate contract and artifact drift gate
 │   ├── api-generate-check.sh          # Working-tree-safe Go generation check
 │   ├── expected-go-artifacts.txt      # Generated Go artifact inventory
 │   ├── expected-typescript-artifacts.txt # Generated TypeScript inventory
 │   ├── go-generate.sh                 # Pinned ogen generation wrapper
 │   ├── go-negative-check.sh           # Isolated negative generation checks
 │   ├── typescript-generate.sh        # Bundled OpenAPI TypeScript generation
-│   └── typescript-client-check.sh    # TypeScript generation and compile check
+│   ├── typescript-client-check.sh    # TypeScript generation, drift, and compile check
+│   └── typescript-negative-check.sh  # TypeScript negative generation checks
 ├── verify/
 │   ├── database.sh      # End-to-end database verification
 │   └── openapi-story1.sh # OpenAPI User Story 1 verification
@@ -129,12 +131,13 @@ the contract with Redocly before generation:
 make api-generate
 make api-generate-check
 make api-negative-check
+make api-check
 ```
 
 Generated output is written to `internal/platform/httpapi/generated/` and is
 not a manual authoring surface. The expected file inventory is maintained in
-`scripts/openapi/expected-go-artifacts.txt`. Tracked-artifact and focused CI
-drift enforcement belongs to the later OpenAPI delivery story.
+`scripts/openapi/expected-go-artifacts.txt`. `make api-check` compares fresh
+generation with the committed output and is the focused CI drift gate.
 
 ## TypeScript client generation
 
@@ -158,8 +161,13 @@ make api-ts-check
 `api-ts-check` validates OpenAPI linting, deterministic temporary generation,
 the generated marker, bundled Fetch client output, exact-decimal and
 nullable/optional type assertions, and frontend TypeScript compilation. Clean
-installation evidence is recorded separately; User Story 5 owns committed
-artifact drift enforcement and focused CI.
+installation evidence is recorded separately. It also compares the complete
+committed output directory with fresh generation, rejecting changed, missing,
+deleted, or extra artifacts. `make api-negative-check` proves these failures
+for both Go and TypeScript output.
+
+The focused workflow at `.github/workflows/openapi.yml` installs the root and
+frontend lockfiles with `--frozen-lockfile` and invokes `make api-check`.
 
 ## database.sh
 
