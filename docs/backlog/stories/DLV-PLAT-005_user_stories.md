@@ -61,11 +61,11 @@ This item establishes reusable domain-neutral primitives required by later finan
 
 **As a finance module developer, I want validated stable identifiers, so that records and references remain unambiguous across module boundaries.**
 
-- [ ] Required identifier types have validated construction and canonical serialization.
-- [ ] Empty, malformed, and wrong-type identifiers are rejected deterministically.
-- [ ] Identifier equality is value-based and does not depend on display formatting.
-- [ ] Identifiers do not carry mutable lifecycle state or infer ownership outside their declared type.
-- [ ] Tests cover round-trip serialization, equality, invalid input, and type distinction.
+- [x] `AggregateID`, `CorrelationID`, and `CausationID` have validated UUID construction and canonical serialization in `internal/platform/identity`.
+- [x] Empty, malformed, nil, and cross-type identifiers are rejected deterministically; command idempotency remains distinct and is deferred to `DLV-PLAT-006`.
+- [x] Identifier equality is value-based and does not depend on display formatting.
+- [x] Identifiers do not carry mutable lifecycle state or infer ownership outside their declared type.
+- [x] Tests cover round-trip serialization, equality, invalid input, stable sentinel errors, UUID v7 generation, and compile-time type distinction.
 
 ### User Story 4 — Implement aggregate version primitives
 
@@ -92,6 +92,7 @@ This item establishes reusable domain-neutral primitives required by later finan
 - [x] User Story 1 uses `shopspring/decimal`, caller-provided immutable currency metadata, configured currency scale from `0..12`, and the PostgreSQL-compatible `numeric(38,12)` domain ceiling.
 - [x] User Story 1 is implemented in `internal/platform/money` with explicit constructors, accessors, arithmetic methods, stable errors, and canonical amount-text serialization. The API continues to represent amount and currency separately.
 - [x] User Story 2 uses UUID components, a canonical uppercase three-letter functional-currency code, structural-only validation, and an exact JSON round-trip contract in `internal/platform/accountingscope`.
+- [x] User Story 3 uses typed UUID identities in `internal/platform/identity`: application-created aggregate identities use UUID v7; correlation and causation identities validate existing UUID fields; JSON is canonical lowercase UUID text; `ErrNilID`, `ErrMalformedID`, and `ErrInvalidJSON` are stable error contracts.
 - [ ] Boundaries with `DLV-PLAT-004`, `DLV-PLAT-006`, `DLV-PLAT-007`, and finance capability items are preserved.
 - [ ] Five stories are small enough for one or a short chain of reviewable changes.
 
@@ -103,6 +104,8 @@ This item establishes reusable domain-neutral primitives required by later finan
 - [x] User Story 1 documentation identifies the primitives, invariants, command, and ownership boundary.
 - [x] User Story 2 focused unit, serialization, boundary, and package-ownership tests pass.
 - [x] User Story 2 documentation identifies the representation, structural-validation boundary, command, and ownership boundary.
+- [x] User Story 3 focused unit, serialization, type-safety, and package-ownership tests pass.
+- [x] User Story 3 documentation identifies the identity types, UUID-version policy, serialization/error contract, idempotency boundary, and ownership boundary.
 - [x] No finance capability, idempotency behavior, integration workflow, or adjacent delivery item was marked complete.
 
 ## 7. Traceability
