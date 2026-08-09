@@ -26,6 +26,7 @@ internal/platform/authn/
 internal/platform/authz/
 internal/platform/config/
 internal/platform/database/
+internal/platform/identity/
 internal/platform/httpx/
 internal/platform/idempotency/
 internal/platform/observability/
@@ -543,6 +544,6 @@ Configuration is loaded once at startup from environment variables and secret re
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `b05cdd2c172a57233c874a919e06ce03adeb849fdb8fb8257d2c7b4e56f12a76` |
+| Verified body SHA-256 | `62a7d1c5b0f88961a74762c24147bc6e0f4bc075bf1e60888492a3ad572531ac` |
 | Review status | Passed |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; run the full suite for API, database, event, security, deployment, recovery, or technology-baseline changes. |

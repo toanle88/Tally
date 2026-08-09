@@ -690,6 +690,7 @@ All solution controls `ARC-ACC-001, ARC-API-001, ARC-AUD-001, ARC-CAP-001, ARC-C
 | TADR-010 | Use Azure Blob remote state and GitHub OIDC | Accepted | Secures Terraform state and avoids long-lived deployment credentials. |
 | TADR-011 | Use separate API, worker and reporting pools | Accepted | Prevents background/read workloads from starving financial writes. |
 | TADR-012 | Keep audit evidence separate from operational logs | Accepted | Preserves audit authority and retention semantics. |
+| TADR-013 | Use typed UUID platform identities for aggregate, correlation and causation references | Accepted | Preserves canonical cross-module identity while leaving command idempotency to the existing `IdempotencyKey` contract. Application-created aggregate identities use UUID v7. |
 
 ## 10. Change-control rules
 
@@ -718,6 +719,6 @@ All solution controls `ARC-ACC-001, ARC-API-001, ARC-AUD-001, ARC-CAP-001, ARC-C
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `90c76bf47081b1367747d76c79a8469535a53ae7a722cac9de4428b8b95731b6` |
+| Verified body SHA-256 | `5fb74ed01e7081a7b440537593968bd3fb7110b970f35d776723a7185a9ecfb2` |
 | Review status | Passed — targeted source-manifest and pnpm consistency review |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; run the full suite for API, database, event, security, deployment, recovery, or technology-baseline changes. |
