@@ -36,7 +36,8 @@
 	api-ts-check \
 	api-check \
 	money-check \
-	accounting-scope-check
+	accounting-scope-check \
+	aggregate-version-check
 
 
 DB_SERVICE := postgres
@@ -231,3 +232,6 @@ money-check:
 
 accounting-scope-check:
 	@bash scripts/verify/accounting-scope.sh
+
+aggregate-version-check:
+	@bash scripts/verify/aggregate-version.sh

@@ -26,6 +26,7 @@ internal/platform/authn/
 internal/platform/authz/
 internal/platform/config/
 internal/platform/database/
+internal/platform/aggregateversion/
 internal/platform/identity/
 internal/platform/httpx/
 internal/platform/idempotency/
@@ -151,15 +152,18 @@ infra/terraform/
 Every mutable aggregate shall expose:
 
 ```go
+import "github.com/toanle88/Tally/internal/platform/aggregateversion"
+
 type AggregateMeta struct {
     ID        uuid.UUID
-    Version   int64
+    Version   aggregateversion.AggregateVersion
     CreatedAt time.Time
     UpdatedAt time.Time
 }
 ```
 
 - Commands carry `ExpectedVersion` when they modify an existing aggregate.
+- Domain-facing aggregate metadata, commands and results use `aggregateversion.AggregateVersion`; persistence adapters validate `bigint`/`int64` values with `FromInt64`, and use `Value` when writing or returning boundary values.
 - The repository update uses `WHERE aggregate_id = $1 AND aggregate_version = $2` and increments exactly once.
 - Zero affected rows become `VERSION_CONFLICT`; handlers do not silently reload and overwrite.
 - Established financial facts use append-only child/fact tables and linked correction records.
@@ -173,7 +177,7 @@ type CommandMeta struct {
     AccountingScopeID   uuid.UUID
     IdempotencyKey      string
     CanonicalFingerprint string
-    ExpectedVersion     *int64
+    ExpectedVersion     *aggregateversion.AggregateVersion
     CorrelationID       uuid.UUID
     CausationID         uuid.UUID
 }
@@ -181,7 +185,7 @@ type CommandMeta struct {
 type CommandResult[T any] struct {
     Status          string
     AggregateID     uuid.UUID
-    AggregateVersion int64
+    AggregateVersion aggregateversion.AggregateVersion
     ProcessID       *uuid.UUID
     Data            T
 }
@@ -544,6 +548,6 @@ Configuration is loaded once at startup from environment variables and secret re
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `62a7d1c5b0f88961a74762c24147bc6e0f4bc075bf1e60888492a3ad572531ac` |
+| Verified body SHA-256 | `6f2359dfc4ded8f1e78b39e01292f4a4628d36d43423ce52dac88cdf6ba280c7` |
 | Review status | Passed |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; run the full suite for API, database, event, security, deployment, recovery, or technology-baseline changes. |
