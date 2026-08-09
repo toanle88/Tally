@@ -44,7 +44,7 @@
 |---|---|---|
 | `<aggregate>_id` | `uuid` | Primary identity; UUID v7 for application-created records |
 | `accounting_scope_id` | `uuid` | Required on ledger-bound records |
-| `aggregate_version` | `bigint` | Starts at 1 and increments once per aggregate transition |
+| `aggregate_version` | `bigint` | Starts at 1 and increments once per aggregate transition; adapters validate values with `aggregateversion.FromInt64` before constructing the domain type |
 | `status` | `text` | Check-constrained to DDD lifecycle values |
 | `created_at` / `updated_at` | `timestamptz` | UTC; database supplied |
 | `created_by` / `updated_by` | `uuid` | Application actor identity |
@@ -281,6 +281,6 @@ Every added index requires the target query, expected cardinality and `EXPLAIN (
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `af929d5aed082a5424fcb1ddde20cb3bb75faffc9d55641ecd3e56bfc09a4158` |
+| Verified body SHA-256 | `f1e03ea4052cf3fac4a47b85a46b9932d398fa2fc72498335f79ef94c741a167` |
 | Review status | Passed |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; run the full suite for API, database, event, security, deployment, recovery, or technology-baseline changes. |

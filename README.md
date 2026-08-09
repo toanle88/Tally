@@ -102,6 +102,7 @@ All commands must be run from the repository root.
 | `make api-check` | Run the focused OpenAPI contract and generated-artifact drift gate |
 | `make money-check` | Run focused exact-decimal money and currency primitive tests |
 | `make accounting-scope-check` | Run focused accounting-scope identity and serialization tests |
+| `make aggregate-version-check` | Run focused aggregate-version and boundary tests |
 | `make check` | Run migration validation, checksum check, and `go test ./...` |
 | `make verify-database` | Run end-to-end database verification from current state |
 | `make verify-database-clean` | Delete volume, recreate, and run full verification from scratch |
@@ -388,8 +389,8 @@ TALLY enforces these design rules across all modules:
 See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0
 (engineering foundation) through M9 (full-system qualification). The current
 platform backlog includes completed `DLV-PLAT-001` through `DLV-PLAT-004` and
-implemented User Stories 1 and 2 of `DLV-PLAT-005`; the remaining shared
-primitive stories are still open.
+implemented User Stories 1 through 4 of `DLV-PLAT-005`; User Story 5 remains
+open.
 Focused contract/generated-artifact drift is enforced by `make api-check` and
 `.github/workflows/openapi.yml`.
 

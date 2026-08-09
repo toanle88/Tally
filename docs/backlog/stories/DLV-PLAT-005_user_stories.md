@@ -71,11 +71,11 @@ This item establishes reusable domain-neutral primitives required by later finan
 
 **As a finance module developer, I want explicit aggregate versions, so that concurrent changes can be detected without overwriting an established outcome.**
 
-- [ ] A new aggregate has a defined initial version, and the version representation and valid range are recorded in Definition of Ready.
-- [ ] Version advancement is monotonic and rejects overflow or invalid transitions.
-- [ ] Expected-version comparison distinguishes a matching version from a stale version.
-- [ ] Serialization round-trips versions without loss or implicit conversion.
-- [ ] Tests cover initial, matching, stale, advancement, invalid, and boundary values.
+- [x] A new aggregate starts at `AggregateVersion(1)`; the typed domain range is `1..math.MaxInt64`, while persistence and transport remain explicit `int64`/`bigint` boundaries.
+- [x] Version advancement is monotonic and rejects overflow or invalid transitions.
+- [x] Expected-version comparison distinguishes a matching version from a stale version.
+- [x] JSON serialization round-trips integer versions without string conversion; `FromInt64` and `Value` provide explicit boundary conversion.
+- [x] Tests cover initial, matching, stale, advancement, invalid, maximum, overflow, JSON, and explicit-conversion boundary values.
 
 ### User Story 5 — Prove serialization and boundary behavior
 
@@ -93,6 +93,7 @@ This item establishes reusable domain-neutral primitives required by later finan
 - [x] User Story 1 is implemented in `internal/platform/money` with explicit constructors, accessors, arithmetic methods, stable errors, and canonical amount-text serialization. The API continues to represent amount and currency separately.
 - [x] User Story 2 uses UUID components, a canonical uppercase three-letter functional-currency code, structural-only validation, and an exact JSON round-trip contract in `internal/platform/accountingscope`.
 - [x] User Story 3 uses typed UUID identities in `internal/platform/identity`: application-created aggregate identities use UUID v7; correlation and causation identities validate existing UUID fields; JSON is canonical lowercase UUID text; `ErrNilID`, `ErrMalformedID`, and `ErrInvalidJSON` are stable error contracts.
+- [x] User Story 4 uses `internal/platform/aggregateversion.AggregateVersion` with initial value `1`, valid range `1..math.MaxInt64`, stable validation/overflow/JSON errors, and explicit `FromInt64`/`Value` conversion at persistence and transport boundaries. The OpenAPI integer contract is unchanged.
 - [ ] Boundaries with `DLV-PLAT-004`, `DLV-PLAT-006`, `DLV-PLAT-007`, and finance capability items are preserved.
 - [ ] Five stories are small enough for one or a short chain of reviewable changes.
 
@@ -106,6 +107,8 @@ This item establishes reusable domain-neutral primitives required by later finan
 - [x] User Story 2 documentation identifies the representation, structural-validation boundary, command, and ownership boundary.
 - [x] User Story 3 focused unit, serialization, type-safety, and package-ownership tests pass.
 - [x] User Story 3 documentation identifies the identity types, UUID-version policy, serialization/error contract, idempotency boundary, and ownership boundary.
+- [x] User Story 4 focused unit, JSON, explicit-conversion, type-safety, and package-ownership tests pass.
+- [x] User Story 4 documentation identifies the typed representation, valid range, initial value, conversion boundary, serialization/error contract, and ownership boundary.
 - [x] No finance capability, idempotency behavior, integration workflow, or adjacent delivery item was marked complete.
 
 ## 7. Traceability
