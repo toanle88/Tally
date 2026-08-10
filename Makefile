@@ -37,7 +37,8 @@
 	api-check \
 	money-check \
 	accounting-scope-check \
-	aggregate-version-check
+	aggregate-version-check \
+	shared-primitives-check
 
 
 DB_SERVICE := postgres
@@ -235,3 +236,6 @@ accounting-scope-check:
 
 aggregate-version-check:
 	@bash scripts/verify/aggregate-version.sh
+
+shared-primitives-check:
+	@bash scripts/verify/shared-primitives.sh

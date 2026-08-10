@@ -6,7 +6,7 @@
 | Item type | Platform foundation item |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Milestone | `M0` — Engineering foundation |
-| Status | Planned |
+| Status | Complete |
 | Dependency position | Builds on `DLV-PLAT-001` and `DLV-PLAT-003`; may use the transport conventions from `DLV-PLAT-004`. No finance capability implementation is required. |
 | Exit evidence | Shared primitives have unit and serialization tests; money uses exact decimal arithmetic; invalid precision, scope, identity, and version values are rejected deterministically. |
 
@@ -81,11 +81,11 @@ This item establishes reusable domain-neutral primitives required by later finan
 
 **As the TALLY maintainer, I want focused verification for the shared primitives, so that later modules can adopt them without duplicating incompatible rules.**
 
-- [ ] Unit tests cover all primitive invariants and negative cases.
-- [ ] Serialization tests cover the exact Go boundary and API representation selected in Definition of Ready, without changing the OpenAPI contract unnecessarily.
-- [ ] Tests prove no binary floating-point money representation is used in implementation or serialized output.
-- [ ] Package ownership and import checks show shared primitives do not depend on finance bounded-context adapters or schemas.
-- [ ] A documented root command runs the focused verification reproducibly.
+- [x] Unit tests cover all primitive invariants and negative cases.
+- [x] Serialization tests cover the exact Go boundary and API representation selected in Definition of Ready, without changing the OpenAPI contract unnecessarily.
+- [x] Tests prove no binary floating-point money representation is used in implementation or serialized output.
+- [x] Package ownership and import checks show shared primitives do not depend on finance bounded-context adapters or schemas.
+- [x] A documented root command runs the focused verification reproducibly.
 
 ## 5. Definition of Ready
 
@@ -94,12 +94,12 @@ This item establishes reusable domain-neutral primitives required by later finan
 - [x] User Story 2 uses UUID components, a canonical uppercase three-letter functional-currency code, structural-only validation, and an exact JSON round-trip contract in `internal/platform/accountingscope`.
 - [x] User Story 3 uses typed UUID identities in `internal/platform/identity`: application-created aggregate identities use UUID v7; correlation and causation identities validate existing UUID fields; JSON is canonical lowercase UUID text; `ErrNilID`, `ErrMalformedID`, and `ErrInvalidJSON` are stable error contracts.
 - [x] User Story 4 uses `internal/platform/aggregateversion.AggregateVersion` with initial value `1`, valid range `1..math.MaxInt64`, stable validation/overflow/JSON errors, and explicit `FromInt64`/`Value` conversion at persistence and transport boundaries. The OpenAPI integer contract is unchanged.
-- [ ] Boundaries with `DLV-PLAT-004`, `DLV-PLAT-006`, `DLV-PLAT-007`, and finance capability items are preserved.
-- [ ] Five stories are small enough for one or a short chain of reviewable changes.
+- [x] Boundaries with `DLV-PLAT-004`, `DLV-PLAT-006`, `DLV-PLAT-007`, and finance capability items are preserved.
+- [x] Five stories are small enough for one or a short chain of reviewable changes.
 
 ## 6. Definition of Done
 
-- [ ] All five stories and acceptance criteria pass.
+- [x] All five stories and acceptance criteria pass.
 - [x] User Story 1 focused unit, serialization, and boundary tests pass.
 - [x] User Story 1 money has no binary floating-point implementation or serialization path.
 - [x] User Story 1 documentation identifies the primitives, invariants, command, and ownership boundary.
@@ -109,6 +109,8 @@ This item establishes reusable domain-neutral primitives required by later finan
 - [x] User Story 3 documentation identifies the identity types, UUID-version policy, serialization/error contract, idempotency boundary, and ownership boundary.
 - [x] User Story 4 focused unit, JSON, explicit-conversion, type-safety, and package-ownership tests pass.
 - [x] User Story 4 documentation identifies the typed representation, valid range, initial value, conversion boundary, serialization/error contract, and ownership boundary.
+- [x] User Story 5 focused verification covers all primitive suites, serialization boundaries, float-free money, package ownership, and unchanged OpenAPI artifacts.
+- [x] User Story 5 documentation identifies the shared verification command, representations, boundary contracts, and ownership checks.
 - [x] No finance capability, idempotency behavior, integration workflow, or adjacent delivery item was marked complete.
 
 ## 7. Traceability
