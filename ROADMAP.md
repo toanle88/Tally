@@ -41,6 +41,12 @@
       - [x] **User Story 3 — Implement stable identity primitives**
       - [x] **User Story 4 — Implement aggregate version primitives**
       - [x] **User Story 5 — Prove serialization and boundary behavior**
+    - [ ] **DLV-PLAT-006 — Request fingerprint and idempotency foundation**
+      - [ ] **User Story 1 — Define canonical request fingerprinting**
+      - [ ] **User Story 2 — Define scoped idempotency identity and stored command-result metadata**
+      - [ ] **User Story 3 — Return the established result for identical retries**
+      - [ ] **User Story 4 — Reject changed content under the same identity**
+      - [ ] **User Story 5 — Prove transactional, concurrent, and boundary behavior**
 
 ## Milestone and epic roadmap
 
