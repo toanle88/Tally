@@ -691,6 +691,7 @@ All solution controls `ARC-ACC-001, ARC-API-001, ARC-AUD-001, ARC-CAP-001, ARC-C
 | TADR-011 | Use separate API, worker and reporting pools | Accepted | Prevents background/read workloads from starving financial writes. |
 | TADR-012 | Keep audit evidence separate from operational logs | Accepted | Preserves audit authority and retention semantics. |
 | TADR-013 | Use typed UUID platform identities for aggregate, correlation and causation references | Accepted | Preserves canonical cross-module identity while leaving command idempotency to the existing `IdempotencyKey` contract. Application-created aggregate identities use UUID v7. |
+| TADR-014 | Canonicalize functional request projections as versioned compact JSON and fingerprint them with domain-separated SHA-256 | Accepted | v1 sorts decoded object keys by UTF-8 bytes, preserves array order, rejects duplicate keys, unsupported numbers and lone surrogates, enforces depth 256, and represents the digest as `sha256:` plus lowercase hexadecimal. |
 
 ## 10. Change-control rules
 
