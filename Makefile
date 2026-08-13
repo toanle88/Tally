@@ -38,7 +38,8 @@
 	money-check \
 	accounting-scope-check \
 	aggregate-version-check \
-	shared-primitives-check
+	shared-primitives-check \
+	request-fingerprint-check
 
 
 DB_SERVICE := postgres
@@ -239,3 +240,6 @@ aggregate-version-check:
 
 shared-primitives-check:
 	@bash scripts/verify/shared-primitives.sh
+
+request-fingerprint-check:
+	@bash scripts/verify/request-fingerprint.sh

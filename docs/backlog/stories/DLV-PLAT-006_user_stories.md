@@ -6,7 +6,7 @@
 | Item type | Platform foundation item |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Milestone | `M0` — Engineering foundation |
-| Status | Open |
+| Status | User Story 1 implementation complete; verification evidence pending |
 | Dependency position | Builds on the shared identity and accounting-scope primitives from `DLV-PLAT-005`; provides a foundation for capability handlers and the outbox/inbox work in `DLV-PLAT-007`. |
 | Exit evidence | Canonical fingerprint, same-content retry, changed-content conflict, transactional, concurrent, and boundary tests pass without duplicate business effects. |
 
@@ -41,11 +41,11 @@ This item defines reusable platform behavior and contracts. It does not implemen
 
 **As a platform and finance module developer, I want functional request content canonicalized deterministically, so that semantically equivalent retries can be recognized.**
 
-- [ ] Canonicalization defines included functional fields, excluded transport/non-functional fields, ordering, normalization, and representation for supported values.
-- [ ] Equivalent functional content produces byte-identical canonical input and the same fingerprint.
-- [ ] Material changes to functional content produce a different fingerprint.
-- [ ] Fingerprint serialization is stable and suitable for persistence, comparison, logging, and audit references without exposing unnecessary sensitive request content.
-- [ ] Tests cover field ordering, omitted versus explicit values where applicable, Unicode/encoding, nested collections, nullability, and boundary-sized requests.
+- [x] Canonicalization defines included functional fields, excluded transport/non-functional fields, ordering, normalization, and representation for supported values.
+- [x] Equivalent functional content produces byte-identical canonical input and the same fingerprint.
+- [x] Material changes to functional content produce a different fingerprint.
+- [x] Fingerprint serialization is stable and suitable for persistence, comparison, logging, and audit references without exposing unnecessary sensitive request content.
+- [x] Tests cover field ordering, omitted versus explicit values where applicable, Unicode/encoding, nested collections, nullability, and boundary-sized requests.
 
 ### User Story 2 — Define scoped idempotency identity and stored command-result metadata
 
@@ -129,4 +129,3 @@ This item defines reusable platform behavior and contracts. It does not implemen
 - `docs/specs/technical_specifications/03_database_persistence_specifications_v1.0.md` — local transaction and persistence conventions.
 - `docs/specs/technical_specifications/09_testing_performance_recovery_specifications_v1.0.md` — concurrency and recovery verification expectations.
 - `docs/backlog/stories/DLV-PLAT-005_user_stories.md` — shared identity and accounting-scope foundation boundary.
-
