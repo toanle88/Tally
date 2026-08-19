@@ -6,7 +6,7 @@
 | Item type | Platform foundation item |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Milestone | `M0` — Engineering foundation |
-| Status | User Story 1 implementation complete; verification evidence pending |
+| Status | User Stories 1–2 implementation complete; verification evidence pending |
 | Dependency position | Builds on the shared identity and accounting-scope primitives from `DLV-PLAT-005`; provides a foundation for capability handlers and the outbox/inbox work in `DLV-PLAT-007`. |
 | Exit evidence | Canonical fingerprint, same-content retry, changed-content conflict, transactional, concurrent, and boundary tests pass without duplicate business effects. |
 
@@ -51,11 +51,11 @@ This item defines reusable platform behavior and contracts. It does not implemen
 
 **As a platform developer, I want a validated scoped idempotency identity and result record, so that distinct business scopes and command outcomes cannot be confused.**
 
-- [ ] Missing, malformed, empty, or otherwise invalid identities are rejected deterministically with stable validation behavior.
-- [ ] Identity equality includes the applicable accounting scope and business/command identity; identical text in different scopes remains distinct.
-- [ ] Documentation and types distinguish business identity/fingerprint from aggregate version, event identity, correlation ID, and causation ID.
-- [ ] Stored result metadata can represent in-progress and terminal outcomes and retains the canonical fingerprint and stable result reference/response metadata.
-- [ ] Result metadata does not mutate or replace an established financial fact and does not make the platform package the owner of a finance aggregate.
+- [x] Missing, malformed, empty, or otherwise invalid identities are rejected deterministically with stable validation behavior.
+- [x] Identity equality includes the applicable accounting scope and business/command identity; identical text in different scopes remains distinct.
+- [x] Documentation and types distinguish business identity/fingerprint from aggregate version, event identity, correlation ID, and causation ID.
+- [x] Stored result metadata can represent in-progress and terminal outcomes and retains the canonical fingerprint and stable result reference/response metadata.
+- [x] Result metadata does not mutate or replace an established financial fact and does not make the platform package the owner of a finance aggregate.
 
 ### User Story 3 — Return the established result for identical retries
 

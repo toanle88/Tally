@@ -158,7 +158,24 @@ create table platform.idempotency_record (
   expires_at timestamptz not null,
   primary key (scope_key, idempotency_key)
 );
+```
 
+`scope_key` is the compact JSON representation emitted by the validated
+`internal/platform/accountingscope.AccountingScope` JSON contract. The
+platform idempotency identity is `(scope_key, idempotency_key)`; `operation_id`
+is stored result metadata and is not part of identity equality. Idempotency
+keys and operation IDs are valid UTF-8, non-empty, contain no control
+characters, are not whitespace-only or padded with leading/trailing Unicode
+whitespace, and are limited to 255 UTF-8 bytes. Valid internal whitespace and
+Unicode are preserved exactly.
+
+The supported lifecycle values are `in_progress`, `established`, and `failed`.
+`result_body` contains validated JSON response metadata. `created_at` and
+`expires_at` are persistence-envelope fields and are not part of the platform
+value object's identity equality. The Go identity and result-metadata types do
+not introduce a separate JSON wire contract.
+
+```sql
 create table integration.outbox (
   outbox_id uuid primary key,
   event_type text not null,
