@@ -6,7 +6,7 @@
 | Item type | Platform foundation item |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Milestone | `M0` — Engineering foundation |
-| Status | User Stories 1–2 implementation complete; verification evidence pending |
+| Status | User Stories 1–2 complete; idempotency coordination-contract prerequisite implemented; transaction-integrated Stories 3–5 remain open |
 | Dependency position | Builds on the shared identity and accounting-scope primitives from `DLV-PLAT-005`; provides a foundation for capability handlers and the outbox/inbox work in `DLV-PLAT-007`. |
 | Exit evidence | Canonical fingerprint, same-content retry, changed-content conflict, transactional, concurrent, and boundary tests pass without duplicate business effects. |
 
@@ -15,6 +15,13 @@
 **As the TALLY platform maintainer, I want a scoped request-fingerprint and idempotency foundation, so that retried commands return established outcomes and cannot repeat or change a business effect.**
 
 This item defines reusable platform behavior and contracts. It does not implement a finance aggregate or capability workflow.
+
+The coordination-contract prerequisite provides an in-memory, concurrency-safe
+test double for ownership, established-result lookup, terminal-result
+finalization, and ambiguous-state behavior. It does not prove PostgreSQL
+durability, transaction rollback/recovery, cross-process coordination, or
+exactly-once financial/business effects. Those remain required follow-up scope
+before User Story 3 and DLV-PLAT-006 can be marked complete.
 
 ## 2. Approved boundaries
 
@@ -66,6 +73,11 @@ This item defines reusable platform behavior and contracts. It does not implemen
 - [ ] Identical retries do not invoke or commit the owning business effect a second time.
 - [ ] An ambiguous or in-progress result remains discoverable through the established identity and is never presented as a false success.
 - [ ] Tests cover retry before completion, retry after success, and retry after a terminal failure or rejection.
+
+#### Coordination-contract prerequisite delivered
+
+- [x] First execution ownership, same-fingerprint established-result lookup, terminal-result transition, and ambiguous/in-progress visibility are covered by `internal/platform/idempotency` tests.
+- [ ] Real owning-transaction integration and exactly-once business-effect protection remain open and are not claimed by the prerequisite.
 
 ### User Story 4 — Reject changed content under the same identity
 

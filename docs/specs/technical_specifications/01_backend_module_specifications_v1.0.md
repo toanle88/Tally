@@ -204,6 +204,22 @@ Command-handler order is normative:
 9. Persist aggregate/fact changes, idempotency result, audit envelope and outbox records in the same transaction.
 10. Commit; only then return the established result.
 
+### 6.1 Idempotency coordination-contract prerequisite
+
+`internal/platform/idempotency` provides a technical coordination contract and
+an in-memory test double. A first acquisition receives one execution token;
+same-fingerprint retries receive the existing `in_progress`, `established`,
+or `failed` result. A finalization callback receives the current metadata and
+returns the matching terminal result. Callback failure or panic leaves the
+visible result `in_progress`, and retries during finalization do not acquire a
+second execution token.
+
+This prerequisite does not own a finance transaction, persistence schema, or
+business effect. The owning bounded context must later provide the transaction
+adapter that persists its business change and matching idempotency result in
+one local transaction. PostgreSQL durability, rollback/recovery, and
+cross-process exactly-once behavior are not established by this prerequisite.
+
 ## 7. Domain error contract
 
 | Code | HTTP | Meaning | Required behavior |
