@@ -9,7 +9,11 @@ import (
 )
 
 var (
+	// ErrFingerprintMismatch is retained for compatibility with the original
+	// coordination contract. ErrIdempotencyConflict is its stable semantic
+	// alias for transport and application callers.
 	ErrFingerprintMismatch  = errors.New("idempotency fingerprint mismatch")
+	ErrIdempotencyConflict  = ErrFingerprintMismatch
 	ErrInvalidAcquisition   = errors.New("invalid idempotency acquisition")
 	ErrAlreadyFinalized     = errors.New("idempotency acquisition already finalized")
 	ErrFinalizationProgress = errors.New("idempotency finalization already in progress")

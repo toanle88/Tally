@@ -220,6 +220,17 @@ adapter that persists its business change and matching idempotency result in
 one local transaction. PostgreSQL durability, rollback/recovery, and
 cross-process exactly-once behavior are not established by this prerequisite.
 
+When an identity already exists, acquisition compares the supplied functional
+request fingerprint with the stored canonical fingerprint. Equal fingerprints
+return the existing result, including `in_progress` and terminal results.
+Different fingerprints return `ErrIdempotencyConflict` before changing result
+metadata or invoking the owning business transaction. The owning transport
+adapter must map this meaning to the existing `IDEMPOTENCY_CONFLICT` HTTP 409
+contract when that integration is delivered. Fingerprints are produced by the
+package's canonical JSON rules, so object member order and insignificant
+serialization whitespace do not change equality, while material value changes
+do.
+
 ## 7. Domain error contract
 
 | Code | HTTP | Meaning | Required behavior |

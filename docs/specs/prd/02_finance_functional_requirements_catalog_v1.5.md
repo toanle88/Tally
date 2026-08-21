@@ -24,7 +24,7 @@
 - **GFR-004:** Approval-bearing actions shall route through the applicable approval policy and revalidate current business state when the decision is applied.
 - **GFR-005:** Posted, accepted, or otherwise established financial facts shall not be edited destructively; correction shall use reversal, adjustment, amendment, return, unapplication, replacement, or compensation.
 - **GFR-006:** Repeated submission of the same business identity and fingerprint shall return the established result without repeating the business effect.
-- **GFR-007:** Reuse of the same business identity with changed functional content shall be rejected as an idempotency conflict.
+- **GFR-007:** Reuse of the same business identity with changed functional content shall be rejected as an idempotency conflict. Functional-content comparison shall use the established canonical request representation; equivalent JSON member ordering and insignificant serialization whitespace shall be treated as identical, while material value changes shall be rejected without a repeated effect.
 - **GFR-008:** Concurrent changes shall be checked against expected versions and shall never silently overwrite an established business outcome.
 - **GFR-009:** Each user-visible workflow shall expose current state, allowed actions, blocked actions, blocking reason, responsible owner, and correction or recovery path.
 - **GFR-010:** Financial amounts shall display transaction, functional, and presentation currency where applicable, including the rate-set and conversion evidence used.

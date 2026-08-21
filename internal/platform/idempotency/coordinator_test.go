@@ -155,9 +155,11 @@ func TestMemoryCoordinatorRejectsMismatchAndInvalidFinalization(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := coordinator.Acquire(identity, "sha256:other", "payments.submit"); !errors.Is(err, ErrFingerprintMismatch) {
+	if _, err := coordinator.Acquire(identity, "sha256:other", "payments.submit"); !errors.Is(err, ErrIdempotencyConflict) {
 		t.Fatalf("mismatch error = %v", err)
 	}
+	// A conflict must not replace the original result or create a second
+	// execution owner. The original acquisition can still be finalized.
 	final := coordinatorResult(t, identity, "sha256:payment", StateEstablished)
 	if err := coordinator.Finalize(acquisition, func(CommandResultMetadata) (CommandResultMetadata, error) {
 		return coordinatorResult(t, identity, "sha256:payment", StateInProgress), nil
@@ -177,6 +179,57 @@ func TestMemoryCoordinatorRejectsMismatchAndInvalidFinalization(t *testing.T) {
 	}
 	if err := coordinator.Finalize(Acquisition{}, func(CommandResultMetadata) (CommandResultMetadata, error) { return final, nil }); !errors.Is(err, ErrInvalidAcquisition) {
 		t.Fatalf("invalid acquisition error = %v", err)
+	}
+}
+
+func TestMemoryCoordinatorRejectsChangedCanonicalContentWithoutMutation(t *testing.T) {
+	coordinator := NewMemoryCoordinator()
+	identity, err := NewIdentity(metadataScope(t, ""), "statement-import-123")
+	if err != nil {
+		t.Fatal(err)
+	}
+	firstContent := []byte(`{"transactions":[{"amount":100,"reference":"A"}],"account":"cash"}`)
+	reorderedContent := []byte(`{ "account": "cash", "transactions": [ { "reference": "A", "amount": 100 } ] }`)
+	changedContent := []byte(`{"transactions":[{"amount":101,"reference":"A"}],"account":"cash"}`)
+	firstFingerprint, err := ComputeFingerprint(firstContent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reorderedFingerprint, err := ComputeFingerprint(reorderedContent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if firstFingerprint != reorderedFingerprint {
+		t.Fatalf("canonical equivalent content fingerprints differ: %s != %s", firstFingerprint, reorderedFingerprint)
+	}
+	changedFingerprint, err := ComputeFingerprint(changedContent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	first, err := coordinator.Acquire(identity, firstFingerprint, "bankfeeds.import")
+	if err != nil || first.Decision() != DecisionExecute {
+		t.Fatalf("first acquisition = %#v, %v", first, err)
+	}
+	retry, err := coordinator.Acquire(identity, reorderedFingerprint, "bankfeeds.import")
+	if err != nil || retry.Decision() != DecisionReturn || retry.Result().Fingerprint() != firstFingerprint {
+		t.Fatalf("canonical retry = %#v, %v", retry, err)
+	}
+	if _, err := coordinator.Acquire(identity, changedFingerprint, "bankfeeds.import"); !errors.Is(err, ErrIdempotencyConflict) {
+		t.Fatalf("changed-content error = %v", err)
+	}
+	status := 200
+	final, err := NewCommandResultMetadata(identity, firstFingerprint, "bankfeeds.import", StateEstablished, &status, []byte(`{"reference":"statement-import-123"}`), nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := coordinator.Finalize(first, func(CommandResultMetadata) (CommandResultMetadata, error) {
+		return final, nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	unchanged, err := coordinator.Acquire(identity, firstFingerprint, "bankfeeds.import")
+	if err != nil || unchanged.Decision() != DecisionReturn || unchanged.Result().State() != StateEstablished {
+		t.Fatalf("post-conflict result = %#v, %v", unchanged, err)
 	}
 }
 
