@@ -45,6 +45,7 @@
       - [x] **User Story 1 — Define canonical request fingerprinting**
       - [x] **User Story 2 — Define scoped idempotency identity and stored command-result metadata**
       - [ ] **User Story 3 — Return the established result for identical retries**
+        - [x] Coordination-contract prerequisite: ownership, established-result lookup, and ambiguous-state behavior
       - [ ] **User Story 4 — Reject changed content under the same identity**
       - [ ] **User Story 5 — Prove transactional, concurrent, and boundary behavior**
 
