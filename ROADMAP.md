@@ -48,6 +48,7 @@
         - [x] Coordination-contract prerequisite: ownership, established-result lookup, and ambiguous-state behavior
       - [ ] **User Story 4 — Reject changed content under the same identity**
       - [ ] **User Story 5 — Prove transactional, concurrent, and boundary behavior**
+        - Contract-only coordination evidence is implemented; PostgreSQL and owning-business-transaction proof remain deferred.
 
 ## Milestone and epic roadmap
 

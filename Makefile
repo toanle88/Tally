@@ -39,7 +39,8 @@
 	accounting-scope-check \
 	aggregate-version-check \
 	shared-primitives-check \
-	request-fingerprint-check
+	request-fingerprint-check \
+	idempotency-check
 
 
 DB_SERVICE := postgres
@@ -243,3 +244,6 @@ shared-primitives-check:
 
 request-fingerprint-check:
 	@bash scripts/verify/request-fingerprint.sh
+
+idempotency-check:
+	@bash scripts/verify/idempotency.sh

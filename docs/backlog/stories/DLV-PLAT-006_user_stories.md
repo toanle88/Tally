@@ -6,7 +6,7 @@
 | Item type | Platform foundation item |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Milestone | `M0` — Engineering foundation |
-| Status | User Stories 1–2 complete; idempotency coordination-contract prerequisite implemented; transaction-integrated Stories 3–5 remain open |
+| Status | User Stories 1–2 complete; coordination-contract and contract-only User Story 5 evidence implemented; durable transaction-integrated Stories 3–5 remain open |
 | Dependency position | Builds on the shared identity and accounting-scope primitives from `DLV-PLAT-005`; provides a foundation for capability handlers and the outbox/inbox work in `DLV-PLAT-007`. |
 | Exit evidence | Canonical fingerprint, same-content retry, changed-content conflict, transactional, concurrent, and boundary tests pass without duplicate business effects. |
 
@@ -90,6 +90,10 @@ before User Story 3 and DLV-PLAT-006 can be marked complete.
 - [ ] Tests cover changes to each material content category and verify no state change.
 
 ### User Story 5 — Prove transactional, concurrent, and boundary behavior
+
+> Current verification scope is contract-only. It proves the in-memory coordination
+> and test-only commit-boundary behavior without claiming PostgreSQL durability,
+> cross-process coordination, or an owning finance business effect.
 
 **As the TALLY maintainer, I want focused verification of the idempotency foundation, so that transaction failures and concurrent submissions cannot duplicate business effects.**
 
