@@ -1,0 +1,1 @@
+import{_ as a,o as t,c as i,a2 as n}from"./chunks/framework.Bzd4OF_4.js";const m=JSON.parse('{"title":"TALLY","description":"","frontmatter":{},"headers":[],"relativePath":"index.md","filePath":"index.md"}'),l={name:"index.md"};function r(o,e,s,c,d,p){return t(),i("div",null,[...e[0]||(e[0]=[n("",6)])])}const u=a(l,[["render",r]]);export{m as __pageData,u as default};
