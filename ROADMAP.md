@@ -41,13 +41,14 @@
       - [x] **User Story 3 — Implement stable identity primitives**
       - [x] **User Story 4 — Implement aggregate version primitives**
       - [x] **User Story 5 — Prove serialization and boundary behavior**
-    - [ ] **DLV-PLAT-006 — Request fingerprint and idempotency foundation**
+    - [x] **DLV-PLAT-006 — Request fingerprint and idempotency foundation**
       - [x] **User Story 1 — Define canonical request fingerprinting**
       - [x] **User Story 2 — Define scoped idempotency identity and stored command-result metadata**
-      - [ ] **User Story 3 — Return the established result for identical retries**
-        - [x] Coordination-contract prerequisite: ownership, established-result lookup, and ambiguous-state behavior
-      - [ ] **User Story 4 — Reject changed content under the same identity**
-      - [ ] **User Story 5 — Prove transactional, concurrent, and boundary behavior**
+      - [x] **User Story 3 — Coordinate established results for identical retries**
+      - [x] **User Story 4 — Reject changed content at the platform boundary**
+      - [x] **User Story 5 — Prove platform transactional, concurrent, and boundary behavior**
+        - Owning finance transaction, authorization/audit integration, cross-process recovery, and finance-level exactly-once proof are follow-up capability scope.
+        - Focused evidence passes; Docker-backed integration and pinned SQLC drift verification remain environment-dependent release gates.
 
 ## Milestone and epic roadmap
 

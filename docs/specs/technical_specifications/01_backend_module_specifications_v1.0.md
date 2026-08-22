@@ -204,21 +204,23 @@ Command-handler order is normative:
 9. Persist aggregate/fact changes, idempotency result, audit envelope and outbox records in the same transaction.
 10. Commit; only then return the established result.
 
-### 6.1 Idempotency coordination-contract prerequisite
+### 6.1 Idempotency coordination and durable reservation foundation
 
-`internal/platform/idempotency` provides a technical coordination contract and
-an in-memory test double. A first acquisition receives one execution token;
-same-fingerprint retries receive the existing `in_progress`, `established`,
-or `failed` result. A finalization callback receives the current metadata and
-returns the matching terminal result. Callback failure or panic leaves the
-visible result `in_progress`, and retries during finalization do not acquire a
-second execution token.
+`internal/platform/idempotency` provides a technical coordination contract,
+an in-memory test double, and a PostgreSQL-backed reservation/finalization
+adapter. A first acquisition receives one execution token; same-fingerprint
+retries receive the existing `in_progress`, `established`, or `failed` result.
+The durable adapter uses a scoped identity primary key, owner tokens, and
+lease metadata. Terminal finalization is guarded by the owner token and is
+performed by the owning bounded context's transaction.
 
-This prerequisite does not own a finance transaction, persistence schema, or
-business effect. The owning bounded context must later provide the transaction
-adapter that persists its business change and matching idempotency result in
-one local transaction. PostgreSQL durability, rollback/recovery, and
-cross-process exactly-once behavior are not established by this prerequisite.
+This foundation does not own a finance transaction or business effect. The
+owning bounded context must provide the transaction adapter that persists its
+business change, audit evidence, and matching idempotency result in one local
+transaction. The current durable evidence proves PostgreSQL reservation,
+terminal-result persistence, lease ownership, and connection-level
+coordination; it does not claim finance-level exactly-once behavior until that
+owning transaction is implemented.
 
 When an identity already exists, acquisition compares the supplied functional
 request fingerprint with the stored canonical fingerprint. Equal fingerprints

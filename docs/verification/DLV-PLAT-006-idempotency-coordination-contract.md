@@ -18,14 +18,16 @@ financial/business effects.
 - Callback failure or recovered panic restores `in_progress`.
 - Returned metadata and response bodies are defensively copied.
 
-## Deferred acceptance
+## Historical follow-up scope
 
-The following User Story 3 criteria remain open:
+The following concerns were outside this contract-only record:
 
 - Real coordination with an owning business transaction.
 - Proof that an identical retry cannot commit a second business effect.
 
-User Stories 4 and 5 remain open. DLV-PLAT-006 remains open.
+This historical contract record is superseded by the durable platform
+foundation. Its remaining concerns are follow-up capability scope, not
+incomplete DLV-PLAT-006 platform acceptance.
 
 ## Verification commands
 

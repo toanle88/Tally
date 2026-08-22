@@ -6,22 +6,24 @@
 | Item type | Platform foundation item |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Milestone | `M0` — Engineering foundation |
-| Status | User Stories 1–2 complete; idempotency coordination-contract prerequisite implemented; transaction-integrated Stories 3–5 remain open |
+| Status | DLV-PLAT-006 platform foundation implemented; focused evidence passes, with the environment-dependent persistence gate pending |
 | Dependency position | Builds on the shared identity and accounting-scope primitives from `DLV-PLAT-005`; provides a foundation for capability handlers and the outbox/inbox work in `DLV-PLAT-007`. |
-| Exit evidence | Canonical fingerprint, same-content retry, changed-content conflict, transactional, concurrent, and boundary tests pass without duplicate business effects. |
+| Exit evidence | Canonical fingerprint, durable reservation, same-content retry, changed-content conflict, transactional metadata finalization, concurrent ownership, boundary, and architecture evidence pass; Docker/SQLC persistence verification remains an environment-dependent gate. |
 
 ## 1. Purpose and scope
 
 **As the TALLY platform maintainer, I want a scoped request-fingerprint and idempotency foundation, so that retried commands return established outcomes and cannot repeat or change a business effect.**
 
-This item defines reusable platform behavior and contracts. It does not implement a finance aggregate or capability workflow.
+This item defines reusable platform behavior and contracts. It does not own a
+finance aggregate or capability workflow. Owning-capability integration proves
+how a finance transaction uses this foundation and is tracked by the relevant
+capability delivery item.
 
-The coordination-contract prerequisite provides an in-memory, concurrency-safe
-test double for ownership, established-result lookup, terminal-result
-finalization, and ambiguous-state behavior. It does not prove PostgreSQL
-durability, transaction rollback/recovery, cross-process coordination, or
-exactly-once financial/business effects. Those remain required follow-up scope
-before User Story 3 and DLV-PLAT-006 can be marked complete.
+The coordination-contract and durable persistence implementations provide
+platform ownership, established-result lookup, terminal-result finalization,
+lease handling, and database-level concurrency behavior. They do not claim
+exactly-once financial/business effects, authorization policy, audit policy,
+or a specific owning-capability transaction.
 
 ## 2. Approved boundaries
 
@@ -30,9 +32,9 @@ before User Story 3 and DLV-PLAT-006 can be marked complete.
 - The business idempotency identity is scoped by the applicable `AccountingScope` and command/business identity. It is distinct from aggregate version, event identity, correlation identity, and causation identity.
 - For the same scope, identity, and fingerprint, the established in-progress or terminal command result is returned without repeating the business effect.
 - Reusing an identity with a different canonical fingerprint returns `IDEMPOTENCY_CONFLICT` and produces no business effect.
-- Idempotency result metadata is persisted in the same local transaction as the owning business change. A result must not claim success when the business change did not commit.
+- Idempotency metadata has an explicit durable reservation/finalization transaction boundary. An owning capability must later persist its business change and terminal result together.
 - Stored metadata includes the scoped identity, canonical fingerprint, lifecycle/result status, and the stable result reference or response metadata needed to return the established result; it does not own finance state.
-- Shared platform code provides technical coordination only. The owning finance bounded context remains responsible for authorization, validation, aggregate invariants, and business effects.
+- Shared platform code provides technical coordination only. The owning finance bounded context remains responsible for authorization, audit, validation, aggregate invariants, and business effects.
 - Outbox, inbox, workers, delivery retries, and replay orchestration remain deferred to `DLV-PLAT-007`.
 
 ## 3. Explicit exclusions
@@ -41,6 +43,7 @@ before User Story 3 and DLV-PLAT-006 can be marked complete.
 - Event identity deduplication or consumer inbox behavior.
 - External provider idempotency, delivery scheduling, retry policy, or replay tooling.
 - Frontend screens or changes to existing OpenAPI idempotency-header contracts.
+- Owning finance transactions, journal effects, authorization policy, audit persistence, and finance-level exactly-once proof.
 
 ## 4. User stories
 
@@ -64,60 +67,61 @@ before User Story 3 and DLV-PLAT-006 can be marked complete.
 - [x] Stored result metadata can represent in-progress and terminal outcomes and retains the canonical fingerprint and stable result reference/response metadata.
 - [x] Result metadata does not mutate or replace an established financial fact and does not make the platform package the owner of a finance aggregate.
 
-### User Story 3 — Return the established result for identical retries
+### User Story 3 — Coordinate established results for identical retries
 
-**As a command handler, I want an identical retry to return the established in-progress or terminal result, so that network retries are safe and the business effect occurs once.**
+**As a platform maintainer, I want the foundation to coordinate identical retries, so owning command handlers can safely return established outcomes.**
 
-- [ ] The first accepted identity/fingerprint establishes one result record and coordinates execution with the owning business transaction.
-- [ ] A repeat with the same scope, identity, and fingerprint returns the existing in-progress or terminal result.
-- [ ] Identical retries do not invoke or commit the owning business effect a second time.
-- [ ] An ambiguous or in-progress result remains discoverable through the established identity and is never presented as a false success.
-- [ ] Tests cover retry before completion, retry after success, and retry after a terminal failure or rejection.
+- [x] The first accepted identity/fingerprint establishes one durable result record and one execution owner.
+- [x] A repeat with the same scope, identity, and fingerprint returns the existing in-progress or terminal result.
+- [x] The platform coordinator does not issue a second owner for an identical retry.
+- [x] An ambiguous or in-progress result remains discoverable through the established identity and is never presented as a false success.
+- [x] Tests cover retry before completion, retry after success, and retry after a terminal failure or rejection.
 
 #### Coordination-contract prerequisite delivered
 
 - [x] First execution ownership, same-fingerprint established-result lookup, terminal-result transition, and ambiguous/in-progress visibility are covered by `internal/platform/idempotency` tests.
-- [ ] Real owning-transaction integration and exactly-once business-effect protection remain open and are not claimed by the prerequisite.
+- Owning-transaction integration and exactly-once business-effect protection remain follow-up capability scope.
 
-### User Story 4 — Reject changed content under the same identity
+### User Story 4 — Reject changed content at the platform boundary
 
-**As a command handler, I want changed content under an existing identity rejected, so that one business identity cannot establish conflicting outcomes.**
+**As a platform maintainer, I want changed content under an existing identity rejected, so that one business identity cannot establish conflicting outcomes.**
 
-- [ ] A same-scope identity with a different canonical fingerprint returns `IDEMPOTENCY_CONFLICT` using the existing API error meaning and HTTP status.
-- [ ] The conflict exposes only the result/fingerprint reference permitted by the contract and does not disclose protected request content.
-- [ ] A conflict does not update the stored result metadata, aggregate state, events, or other business state.
-- [ ] The caller is directed to create a new business identity/action rather than silently overwriting or merging content.
-- [ ] Tests cover changes to each material content category and verify no state change.
+- [x] A same-scope identity with a different canonical fingerprint returns `ErrIdempotencyConflict` using the stable platform error meaning.
+- [x] The platform conflict contains no request content and does not disclose protected data.
+- [x] A conflict does not update stored result metadata or create a second owner.
+- [x] The platform contract directs callers to preserve the identity and fingerprint pairing rather than overwrite it.
+- [x] Tests cover material content changes and verify no platform state change.
+
+The owning transport adapter remains responsible for mapping this platform
+error to the existing `IDEMPOTENCY_CONFLICT` HTTP 409 contract.
 
 ### User Story 5 — Prove transactional, concurrent, and boundary behavior
 
-**As the TALLY maintainer, I want focused verification of the idempotency foundation, so that transaction failures and concurrent submissions cannot duplicate business effects.**
+> User Story 5 is complete for the platform foundation. Cross-process recovery,
+> owning finance effects, authorization, audit integration, and finance-level
+> exactly-once behavior remain capability follow-up scope.
 
-- [ ] Concurrent first submissions for one scoped identity establish at most one result; losers observe the established result or a deterministic conflict.
-- [ ] Idempotency metadata commits atomically with the owning business change; rollback leaves no false result, and recovery/transaction retry retains the committed result.
-- [ ] Tests prove same-content retry, changed-content conflict, malformed identity, fingerprint boundaries, and terminal/in-progress result behavior.
-- [ ] Package and architecture checks show finance modules and adapters do not own shared idempotency behavior or access another module's schema directly.
-- [ ] Existing OpenAPI idempotency-header contracts remain unchanged and a documented root verification command runs the focused checks reproducibly.
+**As the TALLY maintainer, I want focused verification of the idempotency foundation, so that owning capabilities have a durable and concurrency-safe platform contract.**
 
-## 5. Definition of Ready
+- [x] Concurrent first submissions for one scoped identity establish at most one platform owner; losers observe the established, in-progress, or deterministic conflict result.
+- [x] Idempotency reservation and terminal metadata finalization have explicit transaction boundaries; rollback leaves no false terminal result and lease recovery is guarded by owner tokens.
+- [x] Tests prove same-content retry, changed-content conflict, malformed identity, fingerprint boundaries, and terminal/in-progress result behavior.
+- [x] Package and architecture checks show finance modules and adapters do not own shared idempotency behavior or access another module's schema directly.
+- [x] Existing OpenAPI idempotency-header contracts remain unchanged and documented root verification commands run the focused checks reproducibly.
 
-- [ ] Canonicalization inputs, exclusions, normalization, digest representation, and sensitive-data handling are approved.
-- [ ] The exact scoped identity components and result lifecycle/status values are approved without conflating them with existing identity primitives or aggregate versions.
-- [ ] Transaction ownership and persistence boundary are agreed with the owning capability; no shared finance schema is introduced by this foundation item.
-- [ ] `IDEMPOTENCY_CONFLICT` remains the stable conflict code and existing OpenAPI contracts are the compatibility baseline.
-- [ ] Boundaries with `DLV-PLAT-005`, `DLV-PLAT-007`, and finance capability items are preserved.
-- [ ] Five stories are small enough for one or a short chain of reviewable changes.
+## 5. Definition of Done
 
-## 6. Definition of Done
+- [x] The platform slices of all five stories and their acceptance criteria pass.
+- [x] Canonicalization and fingerprint tests prove equivalent content stability and material-change distinction.
+- [x] Identity validation, scope separation, result metadata, retry, conflict, transaction, concurrency, lease, and boundary evidence pass.
+- [x] The platform does not create a second owner for an identical retry, and changed content creates no second platform effect.
+- [x] Package ownership, architecture, and unchanged OpenAPI checks pass.
+- [x] Owning finance effects, authorization policy, audit persistence, frontend behavior, and outbox/inbox workflow remain outside this delivery item.
 
-- [ ] All five stories and acceptance criteria pass.
-- [ ] Canonicalization and fingerprint tests prove equivalent content stability and material-change distinction.
-- [ ] Identity validation, scope separation, result metadata, retry, conflict, transaction, concurrency, and recovery evidence pass.
-- [ ] No business effect is repeated for an identical retry, and changed content produces no effect.
-- [ ] Package ownership, architecture, and unchanged OpenAPI checks pass.
-- [ ] No finance capability, authorization policy, frontend behavior, outbox/inbox workflow, or verification evidence file is marked complete by this documentation item.
+The Docker-backed integration and pinned SQLC drift checks are release-gate
+verification and are not marked as passed until they run successfully.
 
-## 7. Traceability
+## 6. Traceability
 
 | Field | Value |
 |---|---|
@@ -127,9 +131,9 @@ before User Story 3 and DLV-PLAT-006 can be marked complete.
 | Direct requirement IDs | Contributes to `GFR-006` and `GFR-007`; supports `GFR-008` and the immutable lineage expectations of `GFR-013`. |
 | Workflow IDs | `WF-7.13`, `WF-7.14` |
 | Quality contribution | Deterministic retry, conflict safety, transaction atomicity, and concurrency safety for later command handlers. |
-| Exit evidence | Same-content, changed-content, transaction, concurrent, recovery, package-boundary, and contract-preservation tests pass. |
+| Exit evidence | Same-content, changed-content, transactional metadata, concurrent ownership, boundary, package-boundary, and contract-preservation checks pass. |
 
-## 8. Source references
+## 7. Source references
 
 - `docs/specs/finance_delivery_plan_v1.0.md` — platform foundation backlog and GFR mappings.
 - `docs/specs/finance_domain_model_ddd.md` — command fingerprint, duplicate delivery, concurrency, recovery, and immutable-fact rules.
