@@ -35,8 +35,9 @@ git diff --check
 - `internal/platform/idempotency/transaction_harness_test.go`
 - `scripts/verify/idempotency.sh`
 
-## Deferred acceptance
+## Historical follow-up scope
 
-User Story 5 and DLV-PLAT-006 remain open for PostgreSQL persistence,
-owning-business-transaction integration, recovery after database failure, and
-finance-level exactly-once business-effect proof.
+This contract-only record predates the durable platform foundation. Its
+remaining concerns—owning-business-transaction integration, recovery after
+database failure, and finance-level exactly-once business-effect proof—are
+follow-up capability scope, not incomplete platform acceptance.

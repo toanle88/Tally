@@ -40,7 +40,8 @@
 	aggregate-version-check \
 	shared-primitives-check \
 	request-fingerprint-check \
-	idempotency-check
+	idempotency-check \
+	idempotency-persistence-check
 
 
 DB_SERVICE := postgres
@@ -247,3 +248,6 @@ request-fingerprint-check:
 
 idempotency-check:
 	@bash scripts/verify/idempotency.sh
+
+idempotency-persistence-check:
+	@bash scripts/verify/idempotency-persistence.sh

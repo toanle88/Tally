@@ -218,7 +218,7 @@ Priority meanings: `P0` blocks the current milestone; `P1` is required for the d
 | DLV-PLAT-003 | EP-PLAT-001 | M0 | Establish Goose migrations, pgx and sqlc workflow. | CI detects migration and generated-code drift. |
 | DLV-PLAT-004 | EP-PLAT-001 | M0 | Establish OpenAPI-first REST workflow. | OpenAPI validates and generated clients compile. |
 | DLV-PLAT-005 | EP-PLAT-001 | M0 | Implement shared money, currency, accounting-scope, identity and version primitives. | Unit and serialization tests pass without floating-point money. |
-| DLV-PLAT-006 | EP-PLAT-001 | M0 | Implement request fingerprint and idempotency foundation. | Same identity/same fingerprint and changed-fingerprint tests pass. |
+| DLV-PLAT-006 | EP-PLAT-001 | M0 | Implement request fingerprint and idempotency foundation. | Platform fingerprint, retry, conflict, transaction-boundary, concurrency, and package-boundary checks pass. |
 | DLV-PLAT-007 | EP-PLAT-001 | M0 | Implement PostgreSQL outbox/inbox and worker foundation. | Crash-before/after-commit and duplicate-delivery tests pass. |
 | DLV-UX-001 | EP-UX-001 | M0 | Implement Tailwind/daisyUI application shell and component abstractions. | Shared worklist, detail, action, status, form and dialog examples pass. |
 | DLV-UX-002 | EP-UX-001 | M0 | Implement accessibility test harness. | axe, keyboard and manual screen-reader check procedure is repeatable. |

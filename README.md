@@ -105,6 +105,7 @@ All commands must be run from the repository root.
 | `make aggregate-version-check` | Run focused aggregate-version and boundary tests |
 | `make shared-primitives-check` | Run the complete shared finance primitive serialization, boundary, ownership, and API representation gate |
 | `make idempotency-check` | Run the contract-only idempotency concurrency, boundary, ownership, and API-preservation gate |
+| `make idempotency-persistence-check` | Run idempotency migration, SQLC, PostgreSQL transaction, and concurrency integration checks |
 | `make check` | Run migration validation, checksum check, and `go test ./...` |
 | `make verify-database` | Run end-to-end database verification from current state |
 | `make verify-database-clean` | Delete volume, recreate, and run full verification from scratch |

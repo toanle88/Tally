@@ -8,6 +8,22 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type PlatformIdempotencyRecord struct {
+	ScopeKey             string
+	IdempotencyKey       string
+	CanonicalFingerprint string
+	OperationID          string
+	State                string
+	ResultStatus         pgtype.Int4
+	ResultBody           []byte
+	AggregateID          pgtype.UUID
+	ProcessID            pgtype.UUID
+	OwnerToken           pgtype.UUID
+	LeaseUntil           pgtype.Timestamptz
+	CreatedAt            pgtype.Timestamptz
+	ExpiresAt            pgtype.Timestamptz
+}
+
 type PlatformLocalSeedManifest struct {
 	SeedName    string
 	SeedVersion int64
