@@ -18,11 +18,16 @@
     "test:web": "pnpm -C web run test",
     "check": "pnpm run test && pnpm run build",
     "dev-api": "go run ./cmd/api",
-    "dev-web": "pnpm -C web run dev"
+    "dev-web": "pnpm -C web run dev",
+    "docs:dev": "vitepress dev docs-site",
+    "docs:build": "vitepress build docs-site",
+    "docs:preview": "vitepress preview docs-site",
+    "docs:check": "pnpm docs:build"
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "0.99.0",
     "@redocly/cli": "1.34.4",
-    "typescript": "6.0.2"
+    "typescript": "6.0.2",
+    "vitepress": "1.6.4"
   }
 }
