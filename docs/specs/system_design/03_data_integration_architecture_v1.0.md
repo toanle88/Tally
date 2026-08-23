@@ -152,19 +152,19 @@ This preserves delivery, retry and replay semantics without adding Kafka or Azur
 
 ```json
 {
-  "eventId": "opaque-id",
+  "messageId": "0195a91b-20ab-7c15-8aa8-4e111a8bd622",
   "eventType": "JournalEntryPosted",
   "eventVersion": 1,
-  "occurredAt": "UTC instant",
+  "occurredAt": "2026-07-24T08:00:00Z",
   "sourceContext": "gl",
-  "sourceAggregateType": "JournalEntry",
-  "sourceAggregateId": "opaque-id",
-  "sourceVersion": 12,
-  "accountingScope": {"tenantId":"...","legalEntityId":"...","ledgerId":"...","accountingBookId":"..."},
-  "correlationId": "opaque-id",
-  "causationId": "opaque-id",
-  "dataClassification": "Internal",
-  "payload": {}
+  "aggregateId": "0195a91b-20ab-7c15-8aa8-4e111a8bd620",
+  "aggregateVersion": 8,
+  "accountingScopeId": "0195a91b-20ab-7c15-8aa8-4e111a8bd619",
+  "correlationId": "0195a91b-20ab-7c15-8aa8-4e111a8bd621",
+  "causationId": "0195a91b-20ab-7c15-8aa8-4e111a8bd618",
+  "dataClassification": "internal",
+  "payloadFingerprint": "sha256:<lowercase-hex>",
+  "data": {}
 }
 ```
 
@@ -241,6 +241,6 @@ Recovery order:
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `08766b164781df7069609008b242c4546bcbe749f8b288baab542b421180e2bd` |
+| Verified body SHA-256 | `e2580eb71d5da6564b3a9f2b9a557e2a40e1043851be6f269a573935e47fce73` |
 | Review status | Passed |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; re-run the full suite for architecture, data ownership, security, recovery, or technology-baseline changes. |

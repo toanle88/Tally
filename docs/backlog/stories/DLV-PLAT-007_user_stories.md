@@ -6,7 +6,7 @@
 | Item type | Platform foundation item |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Milestone | `M0` — Engineering foundation |
-| Status | Planned |
+| Status | Open — User Story 1 envelope foundation implemented; delivery item remains open |
 | Dependency position | Builds on `DLV-PLAT-003` persistence conventions and `DLV-PLAT-006` idempotency coordination; provides the integration-delivery foundation for later bounded contexts. |
 | Exit evidence | Versioned event contracts, transactional outbox/inbox persistence, lease-safe dispatch, retry and poison-work handling, worker lifecycle behavior, crash recovery, duplicate-delivery, ordering, and replay tests pass. |
 
@@ -55,11 +55,15 @@ without introducing an external broker.
 
 **As a platform and bounded-context developer, I want a stable event envelope, so that every published event carries enough identity and lineage for validation, delivery, deduplication, and replay.**
 
-- [ ] The envelope defines `messageId`, `eventType`, `eventVersion`, `occurredAt`, `sourceContext`, `aggregateId`, `aggregateVersion`, `accountingScopeId` where applicable, `correlationId`, `causationId`, `dataClassification`, `payloadFingerprint`, and minimal `data`.
-- [ ] Event identity, semantic contract version, source aggregate version, scope, correlation, causation, and payload fingerprint are distinct concepts.
-- [ ] Unknown contract versions, invalid scope, malformed identity, and unsupported semantic transformations produce an explicit validation outcome without changing domain state.
+- [x] The platform envelope defines the canonical identity, lineage, classification, fingerprint, and object-payload wire fields.
+- [x] Event identity, semantic contract version, source aggregate version, scope, correlation, causation, and payload fingerprint are distinct concepts.
+- [x] Unknown contract versions, invalid scope, malformed identity, invalid timestamps, invalid payloads, and fingerprint mismatches produce explicit structural validation outcomes without changing domain state.
 - [ ] Payloads contain only the minimum facts required by approved consumers and exclude secrets, tokens, full bank-account numbers, payroll details, and unrestricted remittance text.
-- [ ] Serialization and fingerprinting are deterministic and preserve the original event identity across retry and replay.
+- [x] Serialization and fingerprinting are deterministic and preserve the original event identity and stored fingerprint across round-trip/replay-shaped tests.
+
+#### Deferred follow-up — event-specific payload safety
+
+Semantic payload minimization, event-specific schemas, sensitive-data allowlists, and semantic-transformation validation remain deferred. They are not implemented or claimed by this envelope foundation.
 
 ### User Story 2 — Persist durable PostgreSQL outbox and inbox records
 
@@ -151,4 +155,3 @@ without introducing an external broker.
 - `DLV-PLAT-006` — request fingerprint, scoped identity, established-result lookup, and owner-token coordination foundations.
 - `DLV-OPS-001` and `DLV-OPS-002` — later structured telemetry, dashboards, and runbook completion.
 - Future bounded-context delivery items — source effects, receiving effects, authorization, audit, and business-level exactly-once behavior.
-
