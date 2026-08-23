@@ -41,7 +41,8 @@
 	shared-primitives-check \
 	request-fingerprint-check \
 	idempotency-check \
-	idempotency-persistence-check
+	idempotency-persistence-check \
+	event-envelope-check
 
 
 DB_SERVICE := postgres
@@ -248,6 +249,9 @@ request-fingerprint-check:
 
 idempotency-check:
 	@bash scripts/verify/idempotency.sh
+
+event-envelope-check:
+	@bash scripts/verify/event-envelope.sh
 
 idempotency-persistence-check:
 	@bash scripts/verify/idempotency-persistence.sh

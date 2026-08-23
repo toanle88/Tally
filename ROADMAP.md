@@ -50,6 +50,8 @@
         - Owning finance transaction, authorization/audit integration, cross-process recovery, and finance-level exactly-once proof are follow-up capability scope.
         - Focused evidence passes; Docker-backed integration and pinned SQLC drift verification remain environment-dependent release gates.
     - [ ] **DLV-PLAT-007 — PostgreSQL outbox/inbox and worker foundation**
+      - [x] **User Story 1 envelope foundation — versioned structural envelope and deterministic payload fingerprinting**
+      - Semantic payload safety, outbox/inbox persistence, workers, delivery, and replay remain open.
 
 ## Milestone and epic roadmap
 

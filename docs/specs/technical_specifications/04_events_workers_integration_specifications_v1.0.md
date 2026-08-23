@@ -34,6 +34,38 @@
 }
 ```
 
+The envelope is platform-owned and versioned. The fields are `messageId` (UUID
+identity), `eventType` and `sourceContext` (non-empty UTF-8 identifier text with
+no control characters or surrounding whitespace), `eventVersion` (integer,
+currently only `1`), `occurredAt` (UTC RFC3339Nano instant), `aggregateId`
+(UUID), `aggregateVersion` (positive integer), optional `accountingScopeId`
+(structurally a UUID), `correlationId` and `causationId` (UUIDs),
+`dataClassification`, `payloadFingerprint`, and `data`.
+
+The canonical classification wire values are `public`, `internal`,
+`confidential`, and `highly_restricted`, mapping respectively to the security
+labels Public, Internal, Confidential, and Highly Restricted. The platform
+checks structural scope shape only; receiving bounded contexts own scope
+existence, authorization, and semantic payload policy.
+
+`data` must be a UTF-8 JSON object. Canonicalization rejects duplicate object
+keys, invalid JSON or UTF-8, unsupported numbers, non-object roots, excessive
+nesting, and trailing input. It sorts object keys and emits deterministic JSON.
+The fingerprint is lowercase `sha256:<hex>` over those canonical payload bytes,
+without an additional domain prefix. Equivalent payload formatting therefore
+has the same fingerprint, while material changes do not. A received mismatch
+is an explicit validation outcome; identity and the stored fingerprint are
+never silently recomputed during retry or replay.
+
+Unknown envelope fields and trailing JSON input are rejected. `occurredAt` is
+normalized to UTC before RFC3339Nano serialization. Structural validation
+outcomes are `valid`, `malformed_identity`, `invalid_aggregate_version`,
+`invalid_scope_identifier`, `invalid_classification`,
+`unsupported_event_version`, `invalid_payload`, `fingerprint_mismatch`, and
+`invalid_occurred_at`. Semantic payload minimization, event-specific schemas,
+sensitive-field allowlists, and transformation validation are deferred to
+follow-up capability work.
+
 ## 3. Command inventory
 
 | Owner | Command | Contract identity | Implementation |
@@ -489,6 +521,6 @@ Azure Service Bus may replace or supplement the database dispatcher only after a
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `00ad16ef174204066ce96252668fb10762487fad23847d9c6e0b9211f1b6e260` |
+| Verified body SHA-256 | `7aba0d346b726a3f4b4a9f8ddd9e3a257f91c15d6e8210c97a85ad51853c4e14` |
 | Review status | Passed |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; run the full suite for API, database, event, security, deployment, recovery, or technology-baseline changes. |

@@ -1,0 +1,15 @@
+[
+  {"name":"public","envelope":{"messageId":"0195a91b-20ab-7c15-8aa8-4e111a8bd622","eventType":"JournalEntryPosted","eventVersion":1,"occurredAt":"2026-07-24T08:00:00Z","sourceContext":"gl","aggregateId":"0195a91b-20ab-7c15-8aa8-4e111a8bd620","aggregateVersion":8,"correlationId":"0195a91b-20ab-7c15-8aa8-4e111a8bd621","causationId":"0195a91b-20ab-7c15-8aa8-4e111a8bd618","dataClassification":"public","payloadFingerprint":"sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a","data":{}}},
+  {"name":"internal","envelope":{"messageId":"0195a91b-20ab-7c15-8aa8-4e111a8bd622","eventType":"JournalEntryPosted","eventVersion":1,"occurredAt":"2026-07-24T08:00:00Z","sourceContext":"gl","aggregateId":"0195a91b-20ab-7c15-8aa8-4e111a8bd620","aggregateVersion":8,"correlationId":"0195a91b-20ab-7c15-8aa8-4e111a8bd621","causationId":"0195a91b-20ab-7c15-8aa8-4e111a8bd618","dataClassification":"internal","payloadFingerprint":"sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a","data":{}}},
+  {"name":"confidential","envelope":{"messageId":"0195a91b-20ab-7c15-8aa8-4e111a8bd622","eventType":"JournalEntryPosted","eventVersion":1,"occurredAt":"2026-07-24T08:00:00Z","sourceContext":"gl","aggregateId":"0195a91b-20ab-7c15-8aa8-4e111a8bd620","aggregateVersion":8,"correlationId":"0195a91b-20ab-7c15-8aa8-4e111a8bd621","causationId":"0195a91b-20ab-7c15-8aa8-4e111a8bd618","dataClassification":"confidential","payloadFingerprint":"sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a","data":{}}},
+  {"name":"highly_restricted","envelope":{"messageId":"0195a91b-20ab-7c15-8aa8-4e111a8bd622","eventType":"JournalEntryPosted","eventVersion":1,"occurredAt":"2026-07-24T08:00:00Z","sourceContext":"gl","aggregateId":"0195a91b-20ab-7c15-8aa8-4e111a8bd620","aggregateVersion":8,"correlationId":"0195a91b-20ab-7c15-8aa8-4e111a8bd621","causationId":"0195a91b-20ab-7c15-8aa8-4e111a8bd618","dataClassification":"highly_restricted","payloadFingerprint":"sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a","data":{}}}
+,
+  {"name":"malformed_identity","validationCode":"malformed_identity"},
+  {"name":"invalid_aggregate_version","validationCode":"invalid_aggregate_version"},
+  {"name":"invalid_scope_identifier","validationCode":"invalid_scope_identifier"},
+  {"name":"invalid_classification","validationCode":"invalid_classification"},
+  {"name":"unsupported_event_version","validationCode":"unsupported_event_version"},
+  {"name":"invalid_payload","validationCode":"invalid_payload"},
+  {"name":"fingerprint_mismatch","validationCode":"fingerprint_mismatch"},
+  {"name":"invalid_occurred_at","validationCode":"invalid_occurred_at"}
+]
