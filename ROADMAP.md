@@ -51,7 +51,8 @@
         - Focused evidence passes; Docker-backed integration and pinned SQLC drift verification remain environment-dependent release gates.
     - [ ] **DLV-PLAT-007 — PostgreSQL outbox/inbox and worker foundation**
       - [x] **User Story 1 envelope foundation — versioned structural envelope and deterministic payload fingerprinting**
-      - Semantic payload safety, outbox/inbox persistence, workers, delivery, and replay remain open.
+      - [x] **User Story 2 — Persist durable PostgreSQL outbox and inbox records**
+      - Semantic payload safety, transactional coordination, workers, delivery, and replay remain open.
 
 ## Milestone and epic roadmap
 

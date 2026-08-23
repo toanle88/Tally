@@ -42,6 +42,7 @@
 	request-fingerprint-check \
 	idempotency-check \
 	idempotency-persistence-check \
+	outbox-inbox-persistence-check \
 	event-envelope-check
 
 
@@ -255,3 +256,6 @@ event-envelope-check:
 
 idempotency-persistence-check:
 	@bash scripts/verify/idempotency-persistence.sh
+
+outbox-inbox-persistence-check:
+	@bash scripts/verify/outbox-inbox-persistence.sh

@@ -106,6 +106,7 @@ All commands must be run from the repository root.
 | `make shared-primitives-check` | Run the complete shared finance primitive serialization, boundary, ownership, and API representation gate |
 | `make idempotency-check` | Run the contract-only idempotency concurrency, boundary, ownership, and API-preservation gate |
 | `make idempotency-persistence-check` | Run idempotency migration, SQLC, PostgreSQL transaction, and concurrency integration checks |
+| `make outbox-inbox-persistence-check` | Run outbox/inbox migration, SQLC, durability, constraint, and concurrent-claim checks |
 | `make check` | Run migration validation, checksum check, and `go test ./...` |
 | `make verify-database` | Run end-to-end database verification from current state |
 | `make verify-database-clean` | Delete volume, recreate, and run full verification from scratch |
@@ -132,6 +133,16 @@ The focused persistence release gate is:
 ```bash
 make persistence-check
 ```
+
+The focused DLV-PLAT-007 User Story 2 gate is:
+
+```bash
+make outbox-inbox-persistence-check
+```
+
+It verifies the durable `integration.outbox` and `integration.inbox` migration,
+platform-owned sqlc queries, PostgreSQL constraint behavior, commit/reopen
+durability, rollback, reconciliation lookup, and concurrent due-row claims.
 
 It verifies the repository-pinned Goose and sqlc tools, validates Goose
 migration sets, checks `db/migrations/checksums.sha256`, compiles sqlc source,
@@ -217,10 +228,14 @@ The technology baseline (from the approved solution architecture):
 │   │   ├── bootstrap/
 │   │   │   └── 00001_create_platform_schema.sql
 │   │   ├── platform/
-│   │   │   └── 00001_create_local_seed_manifest.sql
+│   │   │   ├── 00001_create_local_seed_manifest.sql
+│   │   │   ├── 00002_create_idempotency_record.sql
+│   │   │   └── 00003_create_integration_outbox_inbox.sql
 │   │   └── checksums.sha256              # Migration integrity checksums
 │   ├── queries/
 │   │   └── platform/
+│   │       ├── integration_inbox.sql      # sqlc inbox queries
+│   │       ├── integration_outbox.sql     # sqlc outbox queries
 │   │       └── local_seed_manifest.sql    # sqlc source query
 │   └── seeds/
 │       └── local/
@@ -239,10 +254,13 @@ The technology baseline (from the approved solution architecture):
 │       │   ├── pool_test.go            # Pool validation and security unit tests
 │       │   ├── integration_fixture_test.go    # testcontainers fixture setup
 │       │   ├── integration_test.go     # PostgreSQL 18 integration tests
+│       │   ├── outbox_inbox_integration_test.go # Outbox/inbox persistence tests
 │       │   ├── migration_integration_test.go  # migration apply/verify helpers
 │       │   ├── transaction_integration_test.go # generated query commit/rollback proof
 │       │   └── platformdb/             # sqlc-generated platform query package
 │       │       ├── db.go
+│       │       ├── integration_inbox.sql.go
+│       │       ├── integration_outbox.sql.go
 │       │       ├── local_seed_manifest.sql.go
 │       │       └── models.go
 │       ├── httpapi/

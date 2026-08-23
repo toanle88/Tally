@@ -8,6 +8,37 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type IntegrationInbox struct {
+	ConsumerName       string
+	MessageID          pgtype.UUID
+	MessageFingerprint string
+	State              string
+	ResultReference    []byte
+	FirstReceivedAt    pgtype.Timestamptz
+	EstablishedAt      pgtype.Timestamptz
+}
+
+type IntegrationOutbox struct {
+	OutboxID           pgtype.UUID
+	EventType          string
+	EventVersion       int32
+	SourceContext      string
+	AggregateID        pgtype.UUID
+	AggregateVersion   int64
+	AccountingScopeID  pgtype.UUID
+	CorrelationID      pgtype.UUID
+	CausationID        pgtype.UUID
+	Payload            []byte
+	PayloadFingerprint string
+	AvailableAt        pgtype.Timestamptz
+	ClaimedUntil       pgtype.Timestamptz
+	ClaimOwner         pgtype.Text
+	AttemptCount       int32
+	EstablishedAt      pgtype.Timestamptz
+	LastErrorCode      pgtype.Text
+	CreatedAt          pgtype.Timestamptz
+}
+
 type PlatformIdempotencyRecord struct {
 	ScopeKey             string
 	IdempotencyKey       string
