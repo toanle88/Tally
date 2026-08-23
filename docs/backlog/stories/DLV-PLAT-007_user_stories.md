@@ -6,7 +6,7 @@
 | Item type | Platform foundation item |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Milestone | `M0` — Engineering foundation |
-| Status | Open — User Story 1 envelope foundation implemented; delivery item remains open |
+| Status | Open — User Stories 1–2 foundations implemented; delivery item remains open |
 | Dependency position | Builds on `DLV-PLAT-003` persistence conventions and `DLV-PLAT-006` idempotency coordination; provides the integration-delivery foundation for later bounded contexts. |
 | Exit evidence | Versioned event contracts, transactional outbox/inbox persistence, lease-safe dispatch, retry and poison-work handling, worker lifecycle behavior, crash recovery, duplicate-delivery, ordering, and replay tests pass. |
 
@@ -69,11 +69,11 @@ Semantic payload minimization, event-specific schemas, sensitive-data allowlists
 
 **As a platform developer, I want durable outbox and inbox records, so that event publication and consumer identity survive process restart and database recovery.**
 
-- [ ] A migration creates `integration.outbox` with event identity, source aggregate/version, scope, lineage references, payload, fingerprint, availability, claim, attempt, error, and establishment fields.
-- [ ] A migration creates `integration.inbox` with consumer/message identity, message fingerprint, processing state, result reference, receipt time, and establishment time.
-- [ ] Outbox uniqueness prevents duplicate publication for the same source context, aggregate, aggregate version, and event type.
-- [ ] Inbox primary-key identity is `(consumer_name, message_id)`; state values are limited to `processing`, `established`, and `failed`.
-- [ ] Queries support due-outbox selection, lease expiry, inbox reconciliation, and scoped duplicate lookup without bypassing schema ownership.
+- [x] A migration creates `integration.outbox` with event identity, source aggregate/version, scope, lineage references, payload, fingerprint, availability, claim, attempt, error, and establishment fields.
+- [x] A migration creates `integration.inbox` with consumer/message identity, message fingerprint, processing state, result reference, receipt time, and establishment time.
+- [x] Outbox uniqueness prevents duplicate publication for the same source context, aggregate, aggregate version, and event type.
+- [x] Inbox primary-key identity is `(consumer_name, message_id)`; state values are limited to `processing`, `established`, and `failed`.
+- [x] Queries support due-outbox selection, lease expiry, inbox reconciliation, and scoped duplicate lookup without bypassing schema ownership.
 
 ### User Story 3 — Coordinate transactional publication and consumption
 

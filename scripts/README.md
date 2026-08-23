@@ -26,6 +26,7 @@ scripts/
 │   └── typescript-negative-check.sh  # TypeScript negative generation checks
 ├── verify/
 │   ├── database.sh      # End-to-end database verification
+│   ├── outbox-inbox-persistence.sh # DLV-PLAT-007 User Story 2 persistence gate
 │   └── openapi-story1.sh # OpenAPI User Story 1 verification
 └── README.md
 ```
@@ -197,6 +198,18 @@ This verifies:
 - migration validation
 - migration checksum inventory
 - repository checks
+
+## outbox-inbox-persistence.sh
+
+Runs the focused DLV-PLAT-007 User Story 2 persistence gate:
+
+```bash
+make outbox-inbox-persistence-check
+```
+
+It validates migration checksums and syntax, sqlc source and generated-output
+drift, PostgreSQL 18 outbox/inbox durability and constraint integration tests,
+concurrent due-row claims, and `git diff --check`.
 
 ---
 
