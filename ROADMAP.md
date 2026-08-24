@@ -52,7 +52,8 @@
     - [ ] **DLV-PLAT-007 — PostgreSQL outbox/inbox and worker foundation**
       - [x] **User Story 1 envelope foundation — versioned structural envelope and deterministic payload fingerprinting**
       - [x] **User Story 2 — Persist durable PostgreSQL outbox and inbox records**
-      - Semantic payload safety, transactional coordination, workers, delivery, and replay remain open.
+      - [x] **User Story 3 — Coordinate transactional publication and consumption**
+      - Semantic payload safety, workers, delivery, and replay remain open.
 
 ## Milestone and epic roadmap
 

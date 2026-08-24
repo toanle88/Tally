@@ -28,7 +28,7 @@ SET claimed_until = clock_timestamp() + $1::interval,
     attempt_count = outbox.attempt_count + 1
 FROM claim
 WHERE outbox.outbox_id = claim.outbox_id
-RETURNING outbox.outbox_id, outbox.event_type, outbox.event_version, outbox.source_context, outbox.aggregate_id, outbox.aggregate_version, outbox.accounting_scope_id, outbox.correlation_id, outbox.causation_id, outbox.payload, outbox.payload_fingerprint, outbox.available_at, outbox.claimed_until, outbox.claim_owner, outbox.attempt_count, outbox.established_at, outbox.last_error_code, outbox.created_at
+RETURNING outbox.outbox_id, outbox.event_type, outbox.event_version, outbox.source_context, outbox.aggregate_id, outbox.aggregate_version, outbox.accounting_scope_id, outbox.correlation_id, outbox.causation_id, outbox.payload, outbox.payload_fingerprint, outbox.available_at, outbox.claimed_until, outbox.claim_owner, outbox.attempt_count, outbox.established_at, outbox.last_error_code, outbox.created_at, outbox.occurred_at, outbox.data_classification
 `
 
 type ClaimDueOutboxParams struct {
@@ -65,6 +65,8 @@ func (q *Queries) ClaimDueOutbox(ctx context.Context, arg ClaimDueOutboxParams) 
 			&i.EstablishedAt,
 			&i.LastErrorCode,
 			&i.CreatedAt,
+			&i.OccurredAt,
+			&i.DataClassification,
 		); err != nil {
 			return nil, err
 		}
@@ -77,7 +79,7 @@ func (q *Queries) ClaimDueOutbox(ctx context.Context, arg ClaimDueOutboxParams) 
 }
 
 const getOutboxBySourceIdentity = `-- name: GetOutboxBySourceIdentity :one
-SELECT outbox_id, event_type, event_version, source_context, aggregate_id, aggregate_version, accounting_scope_id, correlation_id, causation_id, payload, payload_fingerprint, available_at, claimed_until, claim_owner, attempt_count, established_at, last_error_code, created_at
+SELECT outbox_id, event_type, event_version, source_context, aggregate_id, aggregate_version, accounting_scope_id, correlation_id, causation_id, payload, payload_fingerprint, available_at, claimed_until, claim_owner, attempt_count, established_at, last_error_code, created_at, occurred_at, data_classification
 FROM integration.outbox
 WHERE source_context = $1
   AND aggregate_id = $2
@@ -119,6 +121,8 @@ func (q *Queries) GetOutboxBySourceIdentity(ctx context.Context, arg GetOutboxBy
 		&i.EstablishedAt,
 		&i.LastErrorCode,
 		&i.CreatedAt,
+		&i.OccurredAt,
+		&i.DataClassification,
 	)
 	return i, err
 }
@@ -128,6 +132,7 @@ INSERT INTO integration.outbox (
     outbox_id,
     event_type,
     event_version,
+    occurred_at,
     source_context,
     aggregate_id,
     aggregate_version,
@@ -136,6 +141,7 @@ INSERT INTO integration.outbox (
     causation_id,
     payload,
     payload_fingerprint,
+    data_classification,
     available_at
 )
 VALUES (
@@ -148,17 +154,20 @@ VALUES (
     $7,
     $8,
     $9,
-    $10::jsonb,
-    $11,
-    $12
+    $10,
+    $11::jsonb,
+    $12,
+    $13,
+    $14
 )
-RETURNING outbox_id, event_type, event_version, source_context, aggregate_id, aggregate_version, accounting_scope_id, correlation_id, causation_id, payload, payload_fingerprint, available_at, claimed_until, claim_owner, attempt_count, established_at, last_error_code, created_at
+RETURNING outbox_id, event_type, event_version, source_context, aggregate_id, aggregate_version, accounting_scope_id, correlation_id, causation_id, payload, payload_fingerprint, available_at, claimed_until, claim_owner, attempt_count, established_at, last_error_code, created_at, occurred_at, data_classification
 `
 
 type InsertOutboxParams struct {
 	OutboxID           pgtype.UUID
 	EventType          string
 	EventVersion       int32
+	OccurredAt         pgtype.Timestamptz
 	SourceContext      string
 	AggregateID        pgtype.UUID
 	AggregateVersion   int64
@@ -167,6 +176,7 @@ type InsertOutboxParams struct {
 	CausationID        pgtype.UUID
 	Payload            []byte
 	PayloadFingerprint string
+	DataClassification string
 	AvailableAt        pgtype.Timestamptz
 }
 
@@ -175,6 +185,7 @@ func (q *Queries) InsertOutbox(ctx context.Context, arg InsertOutboxParams) (Int
 		arg.OutboxID,
 		arg.EventType,
 		arg.EventVersion,
+		arg.OccurredAt,
 		arg.SourceContext,
 		arg.AggregateID,
 		arg.AggregateVersion,
@@ -183,6 +194,7 @@ func (q *Queries) InsertOutbox(ctx context.Context, arg InsertOutboxParams) (Int
 		arg.CausationID,
 		arg.Payload,
 		arg.PayloadFingerprint,
+		arg.DataClassification,
 		arg.AvailableAt,
 	)
 	var i IntegrationOutbox
@@ -205,12 +217,14 @@ func (q *Queries) InsertOutbox(ctx context.Context, arg InsertOutboxParams) (Int
 		&i.EstablishedAt,
 		&i.LastErrorCode,
 		&i.CreatedAt,
+		&i.OccurredAt,
+		&i.DataClassification,
 	)
 	return i, err
 }
 
 const listExpiredOutbox = `-- name: ListExpiredOutbox :many
-SELECT outbox_id, event_type, event_version, source_context, aggregate_id, aggregate_version, accounting_scope_id, correlation_id, causation_id, payload, payload_fingerprint, available_at, claimed_until, claim_owner, attempt_count, established_at, last_error_code, created_at
+SELECT outbox_id, event_type, event_version, source_context, aggregate_id, aggregate_version, accounting_scope_id, correlation_id, causation_id, payload, payload_fingerprint, available_at, claimed_until, claim_owner, attempt_count, established_at, last_error_code, created_at, occurred_at, data_classification
 FROM integration.outbox
 WHERE established_at IS NULL
   AND claimed_until IS NOT NULL
@@ -247,6 +261,8 @@ func (q *Queries) ListExpiredOutbox(ctx context.Context, maxRows int32) ([]Integ
 			&i.EstablishedAt,
 			&i.LastErrorCode,
 			&i.CreatedAt,
+			&i.OccurredAt,
+			&i.DataClassification,
 		); err != nil {
 			return nil, err
 		}

@@ -6,7 +6,7 @@
 | Item type | Platform foundation item |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Milestone | `M0` — Engineering foundation |
-| Status | Open — User Stories 1–2 foundations implemented; delivery item remains open |
+| Status | Open — User Stories 1–3 foundations implemented; delivery item remains open |
 | Dependency position | Builds on `DLV-PLAT-003` persistence conventions and `DLV-PLAT-006` idempotency coordination; provides the integration-delivery foundation for later bounded contexts. |
 | Exit evidence | Versioned event contracts, transactional outbox/inbox persistence, lease-safe dispatch, retry and poison-work handling, worker lifecycle behavior, crash recovery, duplicate-delivery, ordering, and replay tests pass. |
 
@@ -79,12 +79,12 @@ Semantic payload minimization, event-specific schemas, sensitive-data allowlists
 
 **As an owning-context developer, I want explicit transaction boundaries, so that acknowledged local effects cannot be separated from their integration evidence.**
 
-- [ ] The source business effect and its outbox record commit in one database transaction.
-- [ ] A receiving inbox record, receiving local effect, and any resulting outbox records commit in one database transaction.
-- [ ] A same-fingerprint duplicate delivery returns the established inbox result and repeats no local business effect.
-- [ ] A different fingerprint for the same consumer/message identity returns an identity-content conflict, preserves existing evidence, and raises an integrity outcome.
-- [ ] A processing or failed inbox item remains discoverable and does not fabricate success; reconciliation checks the established local result before retrying.
-- [ ] Platform integration code does not become the owner of finance aggregates, accounting effects, authorization, or audit policy.
+- [x] The source business effect and its outbox record commit in one database transaction.
+- [x] A receiving inbox record, receiving local effect, and any resulting outbox records commit in one database transaction.
+- [x] A same-fingerprint duplicate delivery returns the established inbox result and repeats no local business effect.
+- [x] A different fingerprint for the same consumer/message identity returns an identity-content conflict, preserves existing evidence, and raises an integrity outcome.
+- [x] A processing or failed inbox item remains discoverable and does not fabricate success; reconciliation checks the established local result before retrying.
+- [x] Platform integration code does not become the owner of finance aggregates, accounting effects, authorization, or audit policy.
 
 ### User Story 4 — Dispatch due outbox work with leases and typed retries
 

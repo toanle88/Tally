@@ -3,6 +3,7 @@ INSERT INTO integration.outbox (
     outbox_id,
     event_type,
     event_version,
+    occurred_at,
     source_context,
     aggregate_id,
     aggregate_version,
@@ -11,12 +12,14 @@ INSERT INTO integration.outbox (
     causation_id,
     payload,
     payload_fingerprint,
+    data_classification,
     available_at
 )
 VALUES (
     sqlc.arg(outbox_id),
     sqlc.arg(event_type),
     sqlc.arg(event_version),
+    sqlc.arg(occurred_at),
     sqlc.arg(source_context),
     sqlc.arg(aggregate_id),
     sqlc.arg(aggregate_version),
@@ -25,6 +28,7 @@ VALUES (
     sqlc.arg(causation_id),
     sqlc.arg(payload)::jsonb,
     sqlc.arg(payload_fingerprint),
+    sqlc.arg(data_classification),
     sqlc.arg(available_at)
 )
 RETURNING *;

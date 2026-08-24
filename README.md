@@ -144,6 +144,17 @@ It verifies the durable `integration.outbox` and `integration.inbox` migration,
 platform-owned sqlc queries, PostgreSQL constraint behavior, commit/reopen
 durability, rollback, reconciliation lookup, and concurrent due-row claims.
 
+The focused DLV-PLAT-007 User Story 3 gate is:
+
+```bash
+make transactional-coordination-check
+```
+
+It verifies the platform transaction coordinator, atomic source publication,
+atomic consumer effects and resulting publications, duplicate established-result
+handling, identity-content conflicts, failed inbox evidence, reconciliation,
+sqlc drift, package ownership, and PostgreSQL integration behavior.
+
 It verifies the repository-pinned Goose and sqlc tools, validates Goose
 migration sets, checks `db/migrations/checksums.sha256`, compiles sqlc source,
 detects stale or manually edited generated sqlc output, runs Go tests, and then
