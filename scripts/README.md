@@ -27,6 +27,7 @@ scripts/
 ├── verify/
 │   ├── database.sh      # End-to-end database verification
 │   ├── outbox-inbox-persistence.sh # DLV-PLAT-007 User Story 2 persistence gate
+│   ├── transactional-coordination.sh # DLV-PLAT-007 User Story 3 transaction gate
 │   └── openapi-story1.sh # OpenAPI User Story 1 verification
 └── README.md
 ```

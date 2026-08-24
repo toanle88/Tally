@@ -11,6 +11,30 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const establishInbox = `-- name: EstablishInbox :execrows
+UPDATE integration.inbox
+SET state = 'established',
+    result_reference = $1::jsonb,
+    established_at = clock_timestamp()
+WHERE consumer_name = $2
+  AND message_id = $3
+  AND state IN ('processing', 'failed')
+`
+
+type EstablishInboxParams struct {
+	ResultReference []byte
+	ConsumerName    string
+	MessageID       pgtype.UUID
+}
+
+func (q *Queries) EstablishInbox(ctx context.Context, arg EstablishInboxParams) (int64, error) {
+	result, err := q.db.Exec(ctx, establishInbox, arg.ResultReference, arg.ConsumerName, arg.MessageID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const getInboxByIdentity = `-- name: GetInboxByIdentity :one
 SELECT consumer_name, message_id, message_fingerprint, state, result_reference, first_received_at, established_at
 FROM integration.inbox
@@ -25,6 +49,34 @@ type GetInboxByIdentityParams struct {
 
 func (q *Queries) GetInboxByIdentity(ctx context.Context, arg GetInboxByIdentityParams) (IntegrationInbox, error) {
 	row := q.db.QueryRow(ctx, getInboxByIdentity, arg.ConsumerName, arg.MessageID)
+	var i IntegrationInbox
+	err := row.Scan(
+		&i.ConsumerName,
+		&i.MessageID,
+		&i.MessageFingerprint,
+		&i.State,
+		&i.ResultReference,
+		&i.FirstReceivedAt,
+		&i.EstablishedAt,
+	)
+	return i, err
+}
+
+const getInboxForUpdate = `-- name: GetInboxForUpdate :one
+SELECT consumer_name, message_id, message_fingerprint, state, result_reference, first_received_at, established_at
+FROM integration.inbox
+WHERE consumer_name = $1
+  AND message_id = $2
+FOR UPDATE
+`
+
+type GetInboxForUpdateParams struct {
+	ConsumerName string
+	MessageID    pgtype.UUID
+}
+
+func (q *Queries) GetInboxForUpdate(ctx context.Context, arg GetInboxForUpdateParams) (IntegrationInbox, error) {
+	row := q.db.QueryRow(ctx, getInboxForUpdate, arg.ConsumerName, arg.MessageID)
 	var i IntegrationInbox
 	err := row.Scan(
 		&i.ConsumerName,
@@ -89,6 +141,44 @@ func (q *Queries) InsertInbox(ctx context.Context, arg InsertInboxParams) (Integ
 	return i, err
 }
 
+const insertInboxIfAbsent = `-- name: InsertInboxIfAbsent :one
+INSERT INTO integration.inbox (
+    consumer_name,
+    message_id,
+    message_fingerprint,
+    state
+)
+VALUES (
+    $1,
+    $2,
+    $3,
+    'processing'
+)
+ON CONFLICT (consumer_name, message_id) DO NOTHING
+RETURNING consumer_name, message_id, message_fingerprint, state, result_reference, first_received_at, established_at
+`
+
+type InsertInboxIfAbsentParams struct {
+	ConsumerName       string
+	MessageID          pgtype.UUID
+	MessageFingerprint string
+}
+
+func (q *Queries) InsertInboxIfAbsent(ctx context.Context, arg InsertInboxIfAbsentParams) (IntegrationInbox, error) {
+	row := q.db.QueryRow(ctx, insertInboxIfAbsent, arg.ConsumerName, arg.MessageID, arg.MessageFingerprint)
+	var i IntegrationInbox
+	err := row.Scan(
+		&i.ConsumerName,
+		&i.MessageID,
+		&i.MessageFingerprint,
+		&i.State,
+		&i.ResultReference,
+		&i.FirstReceivedAt,
+		&i.EstablishedAt,
+	)
+	return i, err
+}
+
 const listInboxForReconciliation = `-- name: ListInboxForReconciliation :many
 SELECT consumer_name, message_id, message_fingerprint, state, result_reference, first_received_at, established_at
 FROM integration.inbox
@@ -123,4 +213,38 @@ func (q *Queries) ListInboxForReconciliation(ctx context.Context, maxRows int32)
 		return nil, err
 	}
 	return items, nil
+}
+
+const recordInboxFailure = `-- name: RecordInboxFailure :execrows
+INSERT INTO integration.inbox (
+    consumer_name,
+    message_id,
+    message_fingerprint,
+    state
+)
+VALUES (
+    $1,
+    $2,
+    $3,
+    'failed'
+)
+ON CONFLICT (consumer_name, message_id) DO UPDATE
+SET state = 'failed',
+    result_reference = NULL,
+    established_at = NULL
+WHERE integration.inbox.state <> 'established'
+`
+
+type RecordInboxFailureParams struct {
+	ConsumerName       string
+	MessageID          pgtype.UUID
+	MessageFingerprint string
+}
+
+func (q *Queries) RecordInboxFailure(ctx context.Context, arg RecordInboxFailureParams) (int64, error) {
+	result, err := q.db.Exec(ctx, recordInboxFailure, arg.ConsumerName, arg.MessageID, arg.MessageFingerprint)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }

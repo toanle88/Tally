@@ -5,6 +5,9 @@ foundation. It does not claim transactional source/consumer coordination,
 workers, retries, stale-worker fencing, replay, or crash/database-recovery
 fault injection from later DLV-PLAT-007 stories.
 
+Transactional source/consumer coordination is verified separately in
+`DLV-PLAT-007-transactional-coordination.md`.
+
 ## Evidence scope
 
 - `integration.outbox` and `integration.inbox` are created by the platform

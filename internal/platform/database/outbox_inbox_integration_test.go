@@ -166,6 +166,7 @@ func TestOutboxInboxPersistence(t *testing.T) {
 			OutboxID:           uuidValue(uuid.New()),
 			EventType:          firstOutbox.EventType,
 			EventVersion:       firstOutbox.EventVersion,
+			OccurredAt:         firstOutbox.OccurredAt,
 			SourceContext:      firstOutbox.SourceContext,
 			AggregateID:        firstOutbox.AggregateID,
 			AggregateVersion:   firstOutbox.AggregateVersion,
@@ -173,6 +174,7 @@ func TestOutboxInboxPersistence(t *testing.T) {
 			CausationID:        firstOutbox.CausationID,
 			Payload:            firstOutbox.Payload,
 			PayloadFingerprint: firstOutbox.PayloadFingerprint,
+			DataClassification: firstOutbox.DataClassification,
 			AvailableAt:        firstOutbox.AvailableAt,
 		},
 	); !isPostgresConstraintError(err, "23505") {
@@ -379,6 +381,7 @@ func newOutboxParams(
 		OutboxID:           uuidValue(outboxID),
 		EventType:          eventType,
 		EventVersion:       1,
+		OccurredAt:         timestamptzValue(availableAt),
 		SourceContext:      "platform-test",
 		AggregateID:        uuidValue(aggregateID),
 		AggregateVersion:   1,
@@ -386,6 +389,7 @@ func newOutboxParams(
 		CausationID:        uuidValue(uuid.New()),
 		Payload:            []byte(`{"event":"test"}`),
 		PayloadFingerprint: "sha256:integration-test",
+		DataClassification: "internal",
 		AvailableAt:        timestamptzValue(availableAt),
 	}
 }
