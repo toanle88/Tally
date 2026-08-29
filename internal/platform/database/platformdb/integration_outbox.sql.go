@@ -305,6 +305,70 @@ func (q *Queries) ListExpiredOutbox(ctx context.Context, maxRows int32) ([]Integ
 	return items, nil
 }
 
+const listOutboxForReplay = `-- name: ListOutboxForReplay :many
+SELECT outbox_id, event_type, event_version, source_context, aggregate_id, aggregate_version, accounting_scope_id, correlation_id, causation_id, payload, payload_fingerprint, available_at, claimed_until, claim_owner, attempt_count, established_at, last_error_code, created_at, occurred_at, data_classification, managed_exception_at
+FROM integration.outbox
+WHERE source_context = $1
+  AND created_at >= $2
+  AND created_at < $3
+ORDER BY created_at, outbox_id
+LIMIT $4
+`
+
+type ListOutboxForReplayParams struct {
+	SourceContext string
+	FromTime      pgtype.Timestamptz
+	ToTime        pgtype.Timestamptz
+	MaxEvents     int32
+}
+
+func (q *Queries) ListOutboxForReplay(ctx context.Context, arg ListOutboxForReplayParams) ([]IntegrationOutbox, error) {
+	rows, err := q.db.Query(ctx, listOutboxForReplay,
+		arg.SourceContext,
+		arg.FromTime,
+		arg.ToTime,
+		arg.MaxEvents,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []IntegrationOutbox
+	for rows.Next() {
+		var i IntegrationOutbox
+		if err := rows.Scan(
+			&i.OutboxID,
+			&i.EventType,
+			&i.EventVersion,
+			&i.SourceContext,
+			&i.AggregateID,
+			&i.AggregateVersion,
+			&i.AccountingScopeID,
+			&i.CorrelationID,
+			&i.CausationID,
+			&i.Payload,
+			&i.PayloadFingerprint,
+			&i.AvailableAt,
+			&i.ClaimedUntil,
+			&i.ClaimOwner,
+			&i.AttemptCount,
+			&i.EstablishedAt,
+			&i.LastErrorCode,
+			&i.CreatedAt,
+			&i.OccurredAt,
+			&i.DataClassification,
+			&i.ManagedExceptionAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const markOutboxManagedException = `-- name: MarkOutboxManagedException :execrows
 UPDATE integration.outbox
 SET managed_exception_at = clock_timestamp(),

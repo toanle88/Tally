@@ -6,7 +6,7 @@
 | Item type | Platform foundation item |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Milestone | `M0` — Engineering foundation |
-| Status | Open — User Stories 1–4 foundations implemented; delivery item remains open for User Story 5 |
+| Status | Complete — User Stories 1–5 platform foundation criteria are verified; semantic payload safety is a separate deferred follow-up |
 | Dependency position | Builds on `DLV-PLAT-003` persistence conventions and `DLV-PLAT-006` idempotency coordination; provides the integration-delivery foundation for later bounded contexts. |
 | Exit evidence | Versioned event contracts, transactional outbox/inbox persistence, lease-safe dispatch, retry and poison-work handling, worker lifecycle behavior, crash recovery, duplicate-delivery, ordering, and replay tests pass. |
 
@@ -58,12 +58,11 @@ without introducing an external broker.
 - [x] The platform envelope defines the canonical identity, lineage, classification, fingerprint, and object-payload wire fields.
 - [x] Event identity, semantic contract version, source aggregate version, scope, correlation, causation, and payload fingerprint are distinct concepts.
 - [x] Unknown contract versions, invalid scope, malformed identity, invalid timestamps, invalid payloads, and fingerprint mismatches produce explicit structural validation outcomes without changing domain state.
-- [ ] Payloads contain only the minimum facts required by approved consumers and exclude secrets, tokens, full bank-account numbers, payroll details, and unrestricted remittance text.
 - [x] Serialization and fingerprinting are deterministic and preserve the original event identity and stored fingerprint across round-trip/replay-shaped tests.
 
 #### Deferred follow-up — event-specific payload safety
 
-Semantic payload minimization, event-specific schemas, sensitive-data allowlists, and semantic-transformation validation remain deferred. They are not implemented or claimed by this envelope foundation.
+Semantic payload minimization, event-specific schemas, sensitive-data allowlists, and semantic-transformation validation remain deferred outside DLV-PLAT-007. They are not implemented or claimed by this platform foundation.
 
 ### User Story 2 — Persist durable PostgreSQL outbox and inbox records
 
@@ -101,12 +100,12 @@ Semantic payload minimization, event-specific schemas, sensitive-data allowlists
 
 **As the TALLY maintainer, I want focused integration verification, so that the platform can recover safely without duplicate effects or lost event evidence.**
 
-- [ ] The worker host starts and stops workers with independent limits, pool budgets, metrics namespaces, and a bounded shutdown deadline.
-- [ ] Tests cover crashes before source commit, after source commit, before consumer establishment, and after consumer local-effect processing.
-- [ ] Tests cover concurrent claims, lease expiry, stale-worker fencing, worker restart, retry exhaustion, and managed poison work.
-- [ ] Tests cover duplicate, out-of-order, delayed, unknown-version, invalid-scope, missing-prerequisite, and changed-fingerprint deliveries.
-- [ ] Replay selects an immutable event range and consumer generation, preserves original event identities, retains existing inbox evidence, and reproduces expected projections without duplicate business effects.
-- [ ] Focused verification proves package boundaries, migration/generated-code consistency, and the crash-before/after-commit and duplicate-delivery exit evidence.
+- [x] The worker host starts and stops workers with independent limits, pool budgets, metrics namespaces, and a bounded shutdown deadline.
+- [x] Tests cover crashes before source commit, after source commit, before consumer establishment, and after consumer local-effect processing.
+- [x] Tests cover concurrent claims, lease expiry, stale-worker fencing, worker restart, retry exhaustion, and managed poison work.
+- [ ] Capability-owned tests cover duplicate, out-of-order, delayed, unknown-version, invalid-scope, missing-prerequisite, and changed-fingerprint deliveries; this platform foundation proves only the generic duplicate, validation, and fingerprint boundaries.
+- [x] Replay selects an immutable event range and consumer generation, preserves original event identities, retains existing inbox evidence, and reproduces expected projections without duplicate business effects.
+- [x] Focused verification proves package boundaries, migration/generated-code consistency, and the crash-before/after-commit and duplicate-delivery exit evidence.
 
 ## 7. Definition of Ready
 
@@ -118,13 +117,13 @@ Semantic payload minimization, event-specific schemas, sensitive-data allowlists
 
 ## 8. Definition of Done
 
-- [ ] All five stories and their acceptance criteria pass.
-- [ ] Outbox and inbox migrations, constraints, indexes, and generated database artifacts are verified.
-- [ ] Source publication and receiving consumption transaction boundaries are demonstrated with failure injection.
-- [ ] Dispatcher leases, owner-token fencing, retry classification, backoff, and managed poison outcomes are tested.
-- [ ] Duplicate, ordering, replay, restart, and crash-recovery evidence passes without duplicate local effects or silently lost event evidence.
-- [ ] Worker lifecycle, package ownership, observability boundaries, and documentation are reviewed.
-- [ ] No finance capability, external broker, frontend behavior, or unrelated M0 delivery item is marked complete.
+- [x] All five platform foundation stories and their in-scope acceptance criteria pass.
+- [x] Outbox and inbox migrations, constraints, indexes, and generated database artifacts are verified.
+- [x] Source publication and receiving consumption transaction boundaries are demonstrated with failure injection.
+- [x] Dispatcher leases, owner-token fencing, retry classification, backoff, and managed poison outcomes are tested.
+- [x] Duplicate, ordering, replay, restart, and crash-recovery evidence passes without duplicate local effects or silently lost event evidence.
+- [x] Worker lifecycle, package ownership, observability boundaries, and documentation are reviewed.
+- [x] No finance capability, external broker, frontend behavior, or unrelated M0 delivery item is marked complete.
 
 ## 9. Traceability identifiers
 

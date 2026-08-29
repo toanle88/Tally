@@ -29,6 +29,7 @@ scripts/
 │   ├── outbox-inbox-persistence.sh # DLV-PLAT-007 User Story 2 persistence gate
 │   ├── transactional-coordination.sh # DLV-PLAT-007 User Story 3 transaction gate
 │   ├── outbox-dispatch.sh # DLV-PLAT-007 User Story 4 dispatch gate
+│   ├── outbox-worker.sh # DLV-PLAT-007 User Story 5 worker/replay gate
 │   └── openapi-story1.sh # OpenAPI User Story 1 verification
 └── README.md
 ```
@@ -223,6 +224,19 @@ make outbox-dispatch-check
 
 It validates dispatcher unit, race, vet, package ownership, migration, SQLC,
 and PostgreSQL lease, retry, fencing, and managed-exception integration tests.
+
+## outbox-worker.sh
+
+Runs the focused DLV-PLAT-007 User Story 5 worker and replay gate:
+
+```bash
+make outbox-worker-check
+```
+
+It validates worker lifecycle and admission quotas, dispatcher polling,
+crash/restart evidence, duplicate and ordering behavior, replay identity and
+immutability, migration rollback/upgrade behavior, SQLC drift, package
+ownership, and PostgreSQL integration tests.
 
 ---
 
