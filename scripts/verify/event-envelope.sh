@@ -24,7 +24,7 @@ from hashlib import sha256
 from pathlib import Path
 import re
 paths = {
-    Path("docs/specs/technical_specifications/04_events_workers_integration_specifications_v1.0.md"): "7aba0d346b726a3f4b4a9f8ddd9e3a257f91c15d6e8210c97a85ad51853c4e14",
+    Path("docs/specs/technical_specifications/04_events_workers_integration_specifications_v1.0.md"): "9d90cbc0bdf6d119c9b0ccb5db13271dfe78a9dacd4ebe0163e9360814adfe83",
     Path("docs/specs/system_design/03_data_integration_architecture_v1.0.md"): "e2580eb71d5da6564b3a9f2b9a557e2a40e1043851be6f269a573935e47fce73",
 }
 for path, expected in paths.items():

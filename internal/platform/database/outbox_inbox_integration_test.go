@@ -325,6 +325,7 @@ func assertIntegrationSchemaObjects(t *testing.T, ctx context.Context, pool *pgx
 	for _, constraint := range []string{
 		"integration_outbox_pk",
 		"integration_outbox_source_event_unique",
+		"integration_outbox_established_managed_check",
 		"integration_inbox_pk",
 		"integration_inbox_state_check",
 	} {

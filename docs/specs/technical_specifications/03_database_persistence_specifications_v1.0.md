@@ -195,8 +195,10 @@ create table integration.outbox (
   claim_owner text,
   attempt_count integer not null default 0,
   established_at timestamptz,
+  managed_exception_at timestamptz,
   last_error_code text,
   created_at timestamptz not null default clock_timestamp(),
+  check (not (established_at is not null and managed_exception_at is not null)),
   unique (source_context, aggregate_id, aggregate_version, event_type)
 );
 
@@ -272,7 +274,7 @@ Posting additionally validates balanced transaction and functional totals inside
 | Aggregate lookup | Primary key plus `(accounting_scope_id, <id>)` where scope-bound |
 | Worklists | Partial/composite index on scope, status, owner and business date |
 | Idempotency | Unique scope/key; expiry index |
-| Outbox dispatch | Partial index on `(available_at, outbox_id)` where `established_at is null` |
+| Outbox dispatch | Partial index on `(available_at, outbox_id)` where `established_at is null and managed_exception_at is null` |
 | Inbox dedupe | Primary consumer/message identity |
 | Journal source lookup | Unique scope/source context/source aggregate/source version |
 | Timeline | `(aggregate_id, occurred_at, sequence)` |
@@ -300,6 +302,6 @@ Every added index requires the target query, expected cardinality and `EXPLAIN (
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `f1e03ea4052cf3fac4a47b85a46b9932d398fa2fc72498335f79ef94c741a167` |
+| Verified body SHA-256 | `5759924a22822c7139a6792f26c2979fdd681e3b8548ab10774d5f64ee37fa08` |
 | Review status | Passed |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; run the full suite for API, database, event, security, deployment, recovery, or technology-baseline changes. |

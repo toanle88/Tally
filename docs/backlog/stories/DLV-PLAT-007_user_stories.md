@@ -6,7 +6,7 @@
 | Item type | Platform foundation item |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Milestone | `M0` — Engineering foundation |
-| Status | Open — User Stories 1–3 foundations implemented; delivery item remains open |
+| Status | Open — User Stories 1–4 foundations implemented; delivery item remains open for User Story 5 |
 | Dependency position | Builds on `DLV-PLAT-003` persistence conventions and `DLV-PLAT-006` idempotency coordination; provides the integration-delivery foundation for later bounded contexts. |
 | Exit evidence | Versioned event contracts, transactional outbox/inbox persistence, lease-safe dispatch, retry and poison-work handling, worker lifecycle behavior, crash recovery, duplicate-delivery, ordering, and replay tests pass. |
 
@@ -90,12 +90,12 @@ Semantic payload minimization, event-specific schemas, sensitive-data allowlists
 
 **As a platform operator, I want lease-safe dispatch and controlled retries, so that multiple workers can process due events without stale workers overwriting newer outcomes.**
 
-- [ ] Claiming selects due, unestablished records using `FOR UPDATE SKIP LOCKED`, orders by availability and outbox identity, and assigns an owner token and lease.
-- [ ] The default claim duration is 30 seconds, renewal occurs before two-thirds of lease consumption, and the duration remains longer than the measured p99 handler duration.
-- [ ] Establishment and rescheduling require the current claim owner; an expired or superseded worker cannot overwrite a newer claim.
-- [ ] Only typed transient dependency failures are retried, using the default delays of 5 seconds, 30 seconds, 2 minutes, 10 minutes, and 30 minutes unless an approved adapter policy overrides them.
-- [ ] Domain rejection, authorization denial, idempotency conflict, and data-integrity mismatch are not automatically retried.
-- [ ] Work that reaches ten failed attempts becomes a managed exception with retained evidence and is never silently deleted.
+- [x] Claiming selects due, unestablished records using `FOR UPDATE SKIP LOCKED`, orders by availability and outbox identity, and assigns an owner token and lease.
+- [x] The default claim duration is 30 seconds, renewal occurs before two-thirds of lease consumption, and the duration remains longer than the measured p99 handler duration.
+- [x] Establishment and rescheduling require the current claim owner; an expired or superseded worker cannot overwrite a newer claim.
+- [x] Only typed transient dependency failures are retried, using the default delays of 5 seconds, 30 seconds, 2 minutes, 10 minutes, and 30 minutes unless an approved adapter policy overrides them.
+- [x] Domain rejection, authorization denial, idempotency conflict, and data-integrity mismatch are not automatically retried.
+- [x] Work that reaches ten failed attempts becomes a managed exception with retained evidence and is never silently deleted.
 
 ### User Story 5 — Prove worker lifecycle, crash recovery, duplicate delivery, and replay
 

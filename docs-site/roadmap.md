@@ -4,7 +4,7 @@ The roadmap is organized into nine milestones, from engineering foundation (M0) 
 
 ## Current checkpoint: M0
 
-Completed foundation deliveries include the monorepo, Docker/PostgreSQL workflow, migrations and typed persistence foundations, OpenAPI workflow, shared exact-decimal finance primitives, request fingerprint/idempotency foundations, and the DLV-PLAT-007 event-envelope plus durable outbox/inbox persistence foundations. Transactional coordination, workers, delivery, replay, and semantic payload safety remain open.
+Completed foundation deliveries include the monorepo, Docker/PostgreSQL workflow, migrations and typed persistence foundations, OpenAPI workflow, shared exact-decimal finance primitives, request fingerprint/idempotency foundations, and the DLV-PLAT-007 event-envelope, durable outbox/inbox, transactional coordination, lease-safe dispatch, and typed retry foundations. Worker lifecycle, crash recovery, delivery ordering, replay, and semantic payload safety remain open.
 
 ## Milestones
 

@@ -44,6 +44,7 @@
 	idempotency-persistence-check \
 	outbox-inbox-persistence-check \
 	transactional-coordination-check \
+	outbox-dispatch-check \
 	event-envelope-check
 
 
@@ -263,3 +264,6 @@ outbox-inbox-persistence-check:
 
 transactional-coordination-check:
 	@bash scripts/verify/transactional-coordination.sh
+
+outbox-dispatch-check:
+	@bash scripts/verify/outbox-dispatch.sh

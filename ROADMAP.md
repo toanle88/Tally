@@ -53,7 +53,8 @@
       - [x] **User Story 1 envelope foundation — versioned structural envelope and deterministic payload fingerprinting**
       - [x] **User Story 2 — Persist durable PostgreSQL outbox and inbox records**
       - [x] **User Story 3 — Coordinate transactional publication and consumption**
-      - Semantic payload safety, workers, delivery, and replay remain open.
+      - [x] **User Story 4 — Dispatch due outbox work with leases and typed retries**
+      - Semantic payload safety, worker lifecycle, crash recovery, delivery ordering, and replay remain open.
 
 ## Milestone and epic roadmap
 
