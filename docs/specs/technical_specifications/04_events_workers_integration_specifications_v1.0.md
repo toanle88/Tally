@@ -497,6 +497,47 @@ returning o.*;
 
 The `cmd/worker` process hosts all workers initially. Each worker has an independent concurrency limit, database pool budget, shutdown deadline and metrics namespace.
 
+## 7.1 Worker lifecycle foundation
+
+The reusable worker host validates every worker before starting it. A worker
+specification contains a unique name, run function, concurrency limit, database
+pool budget, shutdown timeout and stable metrics namespace. The sum of worker
+pool budgets cannot exceed `DB_MAX_CONNS`.
+
+The host provides each worker separate runtime admission limiters for declared
+concurrency and database pool budget. The outbox dispatcher claims no more than
+the lesser of its batch size, concurrency admission capacity, and database
+admission capacity, and holds both slots for each item while it is being
+processed. Missing dispatcher limiters receive local defaults for compatibility
+with direct package callers.
+
+The host cancels peer workers after the first non-context failure. Unexpected
+worker exit is an error, parent cancellation is graceful, and shutdown returns
+within the largest configured worker shutdown timeout. `cmd/worker` currently
+fails before database initialization when no capability consumers are
+registered; synthetic registrations prove the host lifecycle until a real
+capability supplies handlers.
+
+## 7.2 Replay foundation
+
+Replay is an internal platform operation and does not expose an HTTP or CLI
+surface in this delivery. A replay request contains `sourceContext`, an
+inclusive `from` and exclusive `to` UTC `created_at` range, a base consumer
+name, a generation name and `maxEvents`. `maxEvents` is between 1 and 10,000.
+
+The replay runner selects the complete range in one read-only transaction,
+orders by `created_at, outbox_id`, and rejects a selection larger than
+`maxEvents` before invoking effects. It derives the inbox consumer identity as
+`<consumer>.replay.<generation>`; callers cannot provide a live consumer name
+to the single-delivery path.
+
+Replay effects return only an opaque result reference. They run local,
+transactional projection work and cannot publish through the coordinator.
+Established entries are deduplicated; failed or processing replay entries may
+retry because replay effects are local and transactional. Original outbox
+identity and fingerprints are preserved, existing inbox evidence is retained,
+and a replay does not delete or mutate event facts.
+
 ## 8. External adapter contracts
 
 | Adapter | Required behavior |

@@ -45,6 +45,7 @@
 	outbox-inbox-persistence-check \
 	transactional-coordination-check \
 	outbox-dispatch-check \
+	outbox-worker-check \
 	event-envelope-check
 
 
@@ -267,3 +268,6 @@ transactional-coordination-check:
 
 outbox-dispatch-check:
 	@bash scripts/verify/outbox-dispatch.sh
+
+outbox-worker-check:
+	@bash scripts/verify/outbox-worker.sh

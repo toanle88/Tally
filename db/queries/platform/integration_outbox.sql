@@ -41,6 +41,15 @@ WHERE source_context = sqlc.arg(source_context)
   AND aggregate_version = sqlc.arg(aggregate_version)
   AND event_type = sqlc.arg(event_type);
 
+-- name: ListOutboxForReplay :many
+SELECT *
+FROM integration.outbox
+WHERE source_context = sqlc.arg(source_context)
+  AND created_at >= sqlc.arg(from_time)
+  AND created_at < sqlc.arg(to_time)
+ORDER BY created_at, outbox_id
+LIMIT sqlc.arg(max_events);
+
 -- name: ClaimDueOutbox :many
 WITH claim AS (
     SELECT outbox_id

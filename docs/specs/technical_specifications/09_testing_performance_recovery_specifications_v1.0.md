@@ -83,6 +83,24 @@
 9. Inbox redelivery never repeats a local financial effect.
 10. Restore/replay/reconciliation reproduces authoritative balances and audit sequence.
 
+## 2.1 DLV-PLAT-007 User Story 5 recovery evidence
+
+The focused worker/replay gate maps each acceptance criterion to named unit or
+PostgreSQL integration tests. Test-only subprocess helpers inject exits at
+source commit, consumer effect/inbox establishment, consumer commit and
+outbox establishment boundaries. The parent process verifies exact source,
+outbox, inbox and synthetic-effect rows after restart and lease expiry.
+
+Replay tests use an immutable `created_at` transport range, a maximum of 10,000
+events, deterministic `created_at, outbox_id` ordering, generation-scoped inbox
+identities, retained live inbox evidence, unchanged event fingerprints and no
+new outbox publications. Replaying the same generation must not repeat a
+synthetic projection effect; a new generation must establish an independent
+projection identity.
+
+Migration evidence includes empty-database apply, upgrade/down behavior for the
+outbox event-fact guard, checksum inventory, SQLC generation and drift checks.
+
 ## 5. Performance qualification
 
 The NFR specification is authoritative for thresholds. Test plans record dataset, concurrency, request mix, warm-up, duration, Azure topology, database size, result percentiles and resource saturation.

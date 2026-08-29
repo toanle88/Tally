@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/toanle88/Tally/internal/platform/database/platformdb"
 	"github.com/toanle88/Tally/internal/platform/events"
+	platformworker "github.com/toanle88/Tally/internal/platform/worker"
 )
 
 const (
@@ -119,11 +120,13 @@ func (realClock) Sleep(ctx context.Context, duration time.Duration) error {
 }
 
 type DispatcherConfig struct {
-	LeaseDuration      time.Duration
-	HandlerP99Duration time.Duration
-	BatchSize          int
-	Concurrency        int
-	Clock              Clock
+	LeaseDuration        time.Duration
+	HandlerP99Duration   time.Duration
+	BatchSize            int
+	Concurrency          int
+	Admission            platformworker.Admission
+	ConcurrencyAdmission platformworker.Admission
+	Clock                Clock
 }
 
 type DispatchReport struct {
@@ -135,9 +138,11 @@ type DispatchReport struct {
 }
 
 type Dispatcher struct {
-	store    OutboxStore
-	handlers map[HandlerKey]HandlerRegistration
-	config   DispatcherConfig
+	store                OutboxStore
+	handlers             map[HandlerKey]HandlerRegistration
+	config               DispatcherConfig
+	admission            platformworker.Admission
+	concurrencyAdmission platformworker.Admission
 }
 
 func NewDispatcher(store OutboxStore, registrations []HandlerRegistration, config DispatcherConfig) (*Dispatcher, error) {
@@ -158,6 +163,26 @@ func NewDispatcher(store OutboxStore, registrations []HandlerRegistration, confi
 	}
 	if config.BatchSize < 1 || config.Concurrency < 1 {
 		return nil, fmt.Errorf("%w: batch size and concurrency must be positive", ErrInvalidDispatcher)
+	}
+	if config.Admission == nil {
+		admission, err := platformworker.NewAdmission(config.Concurrency)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %v", ErrInvalidDispatcher, err)
+		}
+		config.Admission = admission
+	}
+	if config.Admission.Capacity() < 1 {
+		return nil, fmt.Errorf("%w: admission capacity must be positive", ErrInvalidDispatcher)
+	}
+	if config.ConcurrencyAdmission == nil {
+		admission, err := platformworker.NewAdmission(config.Concurrency)
+		if err != nil {
+			return nil, fmt.Errorf("%w: concurrency admission must be positive", ErrInvalidDispatcher)
+		}
+		config.ConcurrencyAdmission = admission
+	}
+	if config.ConcurrencyAdmission.Capacity() < 1 {
+		return nil, fmt.Errorf("%w: concurrency admission capacity must be positive", ErrInvalidDispatcher)
 	}
 	if config.Clock == nil {
 		config.Clock = realClock{}
@@ -182,7 +207,7 @@ func NewDispatcher(store OutboxStore, registrations []HandlerRegistration, confi
 		handlers[registration.Key] = registration
 	}
 
-	return &Dispatcher{store: store, handlers: handlers, config: config}, nil
+	return &Dispatcher{store: store, handlers: handlers, config: config, admission: config.Admission, concurrencyAdmission: config.ConcurrencyAdmission}, nil
 }
 
 // DispatchOnce claims and processes one bounded batch. Item failures are
@@ -192,10 +217,20 @@ func (d *Dispatcher) DispatchOnce(ctx context.Context) (DispatchReport, error) {
 		return DispatchReport{}, ErrInvalidDispatcher
 	}
 	owner := uuid.NewString()
+	batchSize := d.config.BatchSize
+	if capacity := d.admission.Capacity(); batchSize > capacity {
+		batchSize = capacity
+	}
+	if capacity := d.concurrencyAdmission.Capacity(); batchSize > capacity {
+		batchSize = capacity
+	}
+	if batchSize > d.config.Concurrency {
+		batchSize = d.config.Concurrency
+	}
 	claimed, err := d.store.ClaimDueOutbox(ctx, platformdb.ClaimDueOutboxParams{
 		LeaseDuration: intervalValue(d.config.LeaseDuration),
 		ClaimOwner:    pgtype.Text{String: owner, Valid: true},
-		BatchSize:     int32(d.config.BatchSize),
+		BatchSize:     int32(batchSize),
 	})
 	if err != nil {
 		return DispatchReport{}, err
@@ -210,6 +245,16 @@ func (d *Dispatcher) DispatchOnce(ctx context.Context) (DispatchReport, error) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+			if err := d.concurrencyAdmission.Acquire(ctx); err != nil {
+				results <- dispatchResult{err: err}
+				return
+			}
+			defer d.concurrencyAdmission.Release()
+			if err := d.admission.Acquire(ctx); err != nil {
+				results <- dispatchResult{err: err}
+				return
+			}
+			defer d.admission.Release()
 			select {
 			case semaphore <- struct{}{}:
 			case <-ctx.Done():
@@ -238,6 +283,29 @@ func (d *Dispatcher) DispatchOnce(ctx context.Context) (DispatchReport, error) {
 		joined = errors.Join(joined, result.err)
 	}
 	return report, joined
+}
+
+// Run polls the dispatcher until cancellation or a claim-level persistence
+// failure. Lease loss for an individual item is expected under contention.
+func (d *Dispatcher) Run(ctx context.Context, pollInterval time.Duration) error {
+	if d == nil || ctx == nil || pollInterval <= 0 {
+		return ErrInvalidDispatcher
+	}
+	for {
+		_, err := d.DispatchOnce(ctx)
+		if ctx.Err() != nil {
+			return nil
+		}
+		if err != nil && !errors.Is(err, ErrLeaseLost) {
+			return err
+		}
+		if err := d.config.Clock.Sleep(ctx, pollInterval); err != nil {
+			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+				return nil
+			}
+			return err
+		}
+	}
 }
 
 type dispatchOutcome int

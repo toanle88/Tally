@@ -108,6 +108,7 @@ All commands must be run from the repository root.
 | `make idempotency-persistence-check` | Run idempotency migration, SQLC, PostgreSQL transaction, and concurrency integration checks |
 | `make outbox-inbox-persistence-check` | Run outbox/inbox migration, SQLC, durability, constraint, and concurrent-claim checks |
 | `make outbox-dispatch-check` | Run outbox lease, typed retry, fencing, and managed-exception checks |
+| `make outbox-worker-check` | Run worker lifecycle, crash recovery, duplicate delivery, replay, migration, and SQLC checks |
 | `make check` | Run migration validation, checksum check, and `go test ./...` |
 | `make verify-database` | Run end-to-end database verification from current state |
 | `make verify-database-clean` | Delete volume, recreate, and run full verification from scratch |
@@ -170,6 +171,17 @@ It verifies the repository-pinned Goose and sqlc tools, validates Goose
 migration sets, checks `db/migrations/checksums.sha256`, compiles sqlc source,
 detects stale or manually edited generated sqlc output, runs Go tests, and then
 runs the PostgreSQL 18 Testcontainers persistence integration tests.
+
+The focused DLV-PLAT-007 User Story 5 gate is:
+
+```bash
+make outbox-worker-check
+```
+
+It verifies worker lifecycle, independent admission budgets, dispatcher
+polling, crash/restart recovery, duplicate and ordering behavior, generation-
+scoped replay, immutable outbox event facts, migration upgrade/down behavior,
+SQLC drift, package ownership, and PostgreSQL integration evidence.
 
 Author SQL in `db/queries/` and regenerate committed output with
 `make db-sqlc-generate`. Generated files under
@@ -243,8 +255,10 @@ The technology baseline (from the approved solution architecture):
 ```
 .
 ├── cmd/
-│   └── api/
-│       └── main.go                    # Go API entry point, graceful shutdown
+│   ├── api/
+│   │   └── main.go                    # Go API entry point, graceful shutdown
+│   └── worker/
+│       └── main.go                    # Safe worker composition scaffold
 ├── db/
 │   ├── migrations/
 │   │   ├── bootstrap/
@@ -254,7 +268,8 @@ The technology baseline (from the approved solution architecture):
 │   │   │   ├── 00002_create_idempotency_record.sql
 │   │   │   ├── 00003_create_integration_outbox_inbox.sql
 │   │   │   ├── 00004_add_outbox_envelope_metadata.sql
-│   │   │   └── 00005_add_outbox_managed_exception.sql
+│   │   │   ├── 00005_add_outbox_managed_exception.sql
+│   │   │   └── 00006_protect_outbox_event_facts.sql
 │   │   └── checksums.sha256              # Migration integrity checksums
 │   ├── queries/
 │   │   └── platform/
@@ -295,10 +310,15 @@ The technology baseline (from the approved solution architecture):
 │       ├── httpx/
 │       │   ├── health.go              # GET /health/live handler
 │       │   └── health_test.go         # Liveness test
-│       └── integration/
+│       ├── integration/
 │           ├── coordination.go        # Transactional outbox/inbox coordination
 │           ├── dispatcher.go           # Lease-safe outbox dispatcher and typed retries
-│           └── dispatcher_test.go      # Dispatcher retry and fencing tests
+│           ├── dispatcher_test.go      # Dispatcher retry and fencing tests
+│           ├── replay.go               # Generation-scoped replay runner
+│           └── replay_test.go          # Replay contract tests
+│       └── worker/
+│           ├── host.go                 # Worker lifecycle and admission host
+│           └── host_test.go             # Lifecycle, cancellation, and timeout tests
 ├── scripts/
 │   ├── README.md                    # Script documentation
 │   ├── openapi/
@@ -328,6 +348,7 @@ The technology baseline (from the approved solution architecture):
 │       ├── money.sh                     # Focused money primitive verification
 │       ├── openapi-story1.sh            # OpenAPI foundation verification
 │       ├── outbox-dispatch.sh           # Outbox dispatcher verification
+│       ├── outbox-worker.sh             # Worker lifecycle and replay verification
 │       ├── outbox-inbox-persistence.sh  # Outbox/inbox persistence verification
 │       ├── request-fingerprint.sh       # Request fingerprint verification
 │       ├── shared-primitives.sh         # Shared primitive verification
@@ -381,7 +402,8 @@ The technology baseline (from the approved solution architecture):
 │       ├── DLV-PLAT-007-event-envelope.md
 │       ├── DLV-PLAT-007-outbox-dispatch.md
 │       ├── DLV-PLAT-007-outbox-inbox-persistence.md
-│       └── DLV-PLAT-007-transactional-coordination.md
+│       ├── DLV-PLAT-007-transactional-coordination.md
+│       └── DLV-PLAT-007-worker-lifecycle-replay.md
 ├── .agents/
 │   ├── commands/
 │   │   ├── review-branch-diff.md
@@ -460,11 +482,12 @@ TALLY enforces these design rules across all modules:
 
 See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0
 (engineering foundation) through M9 (full-system qualification). The current
-platform backlog has completed `DLV-PLAT-001` through `DLV-PLAT-006`; `DLV-PLAT-007`
-has its envelope, persistence, transactional-coordination, and dispatch
-foundations implemented, while worker lifecycle, crash recovery, ordering, and
-replay remain open. Focused gates include
-`make shared-primitives-check`, `make outbox-dispatch-check`, and
+platform backlog has completed `DLV-PLAT-001` through `DLV-PLAT-007`; `DLV-PLAT-007`
+has its envelope, persistence, transactional-coordination, dispatch, worker
+lifecycle, crash recovery, ordering, and replay foundations implemented.
+Semantic payload safety is tracked as a separate deferred follow-up. Focused gates include
+`make shared-primitives-check`, `make outbox-dispatch-check`,
+`make outbox-worker-check`, and
 `make api-check`; focused contract/generated-artifact drift is also enforced by
 `.github/workflows/openapi.yml`.
 

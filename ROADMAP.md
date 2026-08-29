@@ -49,12 +49,13 @@
       - [x] **User Story 5 — Prove platform transactional, concurrent, and boundary behavior**
         - Owning finance transaction, authorization/audit integration, cross-process recovery, and finance-level exactly-once proof are follow-up capability scope.
         - Focused evidence passes; Docker-backed integration and pinned SQLC drift verification remain environment-dependent release gates.
-    - [ ] **DLV-PLAT-007 — PostgreSQL outbox/inbox and worker foundation**
+    - [x] **DLV-PLAT-007 — PostgreSQL outbox/inbox and worker foundation**
       - [x] **User Story 1 envelope foundation — versioned structural envelope and deterministic payload fingerprinting**
       - [x] **User Story 2 — Persist durable PostgreSQL outbox and inbox records**
       - [x] **User Story 3 — Coordinate transactional publication and consumption**
       - [x] **User Story 4 — Dispatch due outbox work with leases and typed retries**
-      - Semantic payload safety, worker lifecycle, crash recovery, delivery ordering, and replay remain open.
+      - [x] **User Story 5 — Prove worker lifecycle, crash recovery, duplicate delivery, and replay**
+      - Semantic payload safety is a separate deferred follow-up; DLV-PLAT-007 is verified by `make outbox-worker-check`.
 
 ## Milestone and epic roadmap
 

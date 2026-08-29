@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/toanle88/Tally/internal/platform/database/platformdb"
 	"github.com/toanle88/Tally/internal/platform/events"
+	platformworker "github.com/toanle88/Tally/internal/platform/worker"
 )
 
 func TestDefaultRetryPolicyMapsAttempts(t *testing.T) {
@@ -39,7 +40,7 @@ func TestNewDispatcherValidatesLeaseAgainstHandlerP99(t *testing.T) {
 func TestDispatcherReschedulesTypedTransientFailure(t *testing.T) {
 	now := time.Date(2026, 8, 29, 10, 0, 0, 0, time.UTC)
 	row := dispatcherOutboxRow(t, 1)
-	store := &dispatcherStore{rows: []platformdb.IntegrationOutbox{row}}
+	store := &dispatcherStore{rows: []platformdb.IntegrationOutbox{row}, establishRows: 1}
 	dispatcher := newTestDispatcher(t, store, now, HandlerFailure{
 		Class: TransientDependency,
 		Code:  "provider_unavailable",
@@ -155,14 +156,77 @@ func TestDispatcherFencesLostEstablishment(t *testing.T) {
 	}
 }
 
+func TestDispatcherBoundsClaimsToAdmissionCapacity(t *testing.T) {
+	row := dispatcherOutboxRow(t, 1)
+	store := &dispatcherStore{rows: []platformdb.IntegrationOutbox{row}, establishRows: 1}
+	admission, err := platformworker.NewAdmission(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dispatcher, err := NewDispatcher(store, []HandlerRegistration{{
+		Key:     HandlerKey{EventType: row.EventType, EventVersion: int(row.EventVersion)},
+		Handler: func(context.Context, events.Envelope) error { return nil },
+	}}, DispatcherConfig{
+		LeaseDuration:      30 * time.Second,
+		HandlerP99Duration: time.Second,
+		BatchSize:          10,
+		Concurrency:        10,
+		Admission:          admission,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := dispatcher.DispatchOnce(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if store.claimBatch != 1 {
+		t.Fatalf("claim batch = %d, want admission capacity 1", store.claimBatch)
+	}
+}
+
+func TestDispatcherBoundsClaimsToConcurrencyAdmissionCapacity(t *testing.T) {
+	row := dispatcherOutboxRow(t, 1)
+	store := &dispatcherStore{rows: []platformdb.IntegrationOutbox{row}, establishRows: 1}
+	dbAdmission, err := platformworker.NewAdmission(10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	concurrencyAdmission, err := platformworker.NewAdmission(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dispatcher, err := NewDispatcher(store, []HandlerRegistration{{
+		Key:     HandlerKey{EventType: row.EventType, EventVersion: int(row.EventVersion)},
+		Handler: func(context.Context, events.Envelope) error { return nil },
+	}}, DispatcherConfig{
+		LeaseDuration:        30 * time.Second,
+		HandlerP99Duration:   time.Second,
+		BatchSize:            10,
+		Concurrency:          10,
+		Admission:            dbAdmission,
+		ConcurrencyAdmission: concurrencyAdmission,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := dispatcher.DispatchOnce(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if store.claimBatch != 1 {
+		t.Fatalf("claim batch = %d, want concurrency admission capacity 1", store.claimBatch)
+	}
+}
+
 type dispatcherStore struct {
 	rows          []platformdb.IntegrationOutbox
+	claimBatch    int32
 	rescheduled   *platformdb.RescheduleOutboxParams
 	managedCode   string
 	establishRows int64
 }
 
-func (s *dispatcherStore) ClaimDueOutbox(context.Context, platformdb.ClaimDueOutboxParams) ([]platformdb.IntegrationOutbox, error) {
+func (s *dispatcherStore) ClaimDueOutbox(_ context.Context, params platformdb.ClaimDueOutboxParams) ([]platformdb.IntegrationOutbox, error) {
+	s.claimBatch = params.BatchSize
 	return s.rows, nil
 }
 

@@ -183,8 +183,14 @@ Pending -> Claimed -> Delivered
 - Partition identity is source context + aggregate identity unless the contract defines a stronger business sequence.
 - Aggregate versions detect gaps and out-of-order delivery.
 - Duplicate event IDs return the inbox-established result.
-- Replay selects an immutable event range and a consumer generation; it never deletes existing inbox evidence.
+- Replay selects an immutable `created_at` transport range in one read-only snapshot and a generation-scoped consumer identity; it never deletes existing inbox evidence.
+- Replay effects are local transactional projections and cannot publish new integration events through the replay coordinator path.
 - Changed content under the same event identity is an integrity incident.
+
+The initial `cmd/worker` composition is a safe scaffold while no capability
+consumer registry exists. It fails before database initialization rather than
+claiming work without a registered handler. Synthetic consumers prove the
+generic worker host lifecycle without introducing a finance capability.
 
 ## 8. External Integration Adapters
 
