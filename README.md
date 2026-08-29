@@ -107,6 +107,7 @@ All commands must be run from the repository root.
 | `make idempotency-check` | Run the contract-only idempotency concurrency, boundary, ownership, and API-preservation gate |
 | `make idempotency-persistence-check` | Run idempotency migration, SQLC, PostgreSQL transaction, and concurrency integration checks |
 | `make outbox-inbox-persistence-check` | Run outbox/inbox migration, SQLC, durability, constraint, and concurrent-claim checks |
+| `make outbox-dispatch-check` | Run outbox lease, typed retry, fencing, and managed-exception checks |
 | `make check` | Run migration validation, checksum check, and `go test ./...` |
 | `make verify-database` | Run end-to-end database verification from current state |
 | `make verify-database-clean` | Delete volume, recreate, and run full verification from scratch |
@@ -154,6 +155,16 @@ It verifies the platform transaction coordinator, atomic source publication,
 atomic consumer effects and resulting publications, duplicate established-result
 handling, identity-content conflicts, failed inbox evidence, reconciliation,
 sqlc drift, package ownership, and PostgreSQL integration behavior.
+
+The focused DLV-PLAT-007 User Story 4 gate is:
+
+```bash
+make outbox-dispatch-check
+```
+
+It verifies lease renewal, owner-fenced establishment and rescheduling, typed
+retry delays, retry exhaustion, managed-exception retention, SQLC and migration
+drift, package ownership, and PostgreSQL integration behavior.
 
 It verifies the repository-pinned Goose and sqlc tools, validates Goose
 migration sets, checks `db/migrations/checksums.sha256`, compiles sqlc source,

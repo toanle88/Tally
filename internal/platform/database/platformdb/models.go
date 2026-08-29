@@ -39,6 +39,7 @@ type IntegrationOutbox struct {
 	CreatedAt          pgtype.Timestamptz
 	OccurredAt         pgtype.Timestamptz
 	DataClassification string
+	ManagedExceptionAt pgtype.Timestamptz
 }
 
 type PlatformIdempotencyRecord struct {

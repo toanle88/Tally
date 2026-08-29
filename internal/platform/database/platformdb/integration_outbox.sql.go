@@ -16,6 +16,7 @@ WITH claim AS (
     SELECT outbox_id
     FROM integration.outbox
     WHERE established_at IS NULL
+      AND managed_exception_at IS NULL
       AND available_at <= clock_timestamp()
       AND (claimed_until IS NULL OR claimed_until < clock_timestamp())
     ORDER BY available_at, outbox_id
@@ -28,7 +29,7 @@ SET claimed_until = clock_timestamp() + $1::interval,
     attempt_count = outbox.attempt_count + 1
 FROM claim
 WHERE outbox.outbox_id = claim.outbox_id
-RETURNING outbox.outbox_id, outbox.event_type, outbox.event_version, outbox.source_context, outbox.aggregate_id, outbox.aggregate_version, outbox.accounting_scope_id, outbox.correlation_id, outbox.causation_id, outbox.payload, outbox.payload_fingerprint, outbox.available_at, outbox.claimed_until, outbox.claim_owner, outbox.attempt_count, outbox.established_at, outbox.last_error_code, outbox.created_at, outbox.occurred_at, outbox.data_classification
+RETURNING outbox.outbox_id, outbox.event_type, outbox.event_version, outbox.source_context, outbox.aggregate_id, outbox.aggregate_version, outbox.accounting_scope_id, outbox.correlation_id, outbox.causation_id, outbox.payload, outbox.payload_fingerprint, outbox.available_at, outbox.claimed_until, outbox.claim_owner, outbox.attempt_count, outbox.established_at, outbox.last_error_code, outbox.created_at, outbox.occurred_at, outbox.data_classification, outbox.managed_exception_at
 `
 
 type ClaimDueOutboxParams struct {
@@ -67,6 +68,7 @@ func (q *Queries) ClaimDueOutbox(ctx context.Context, arg ClaimDueOutboxParams) 
 			&i.CreatedAt,
 			&i.OccurredAt,
 			&i.DataClassification,
+			&i.ManagedExceptionAt,
 		); err != nil {
 			return nil, err
 		}
@@ -78,8 +80,33 @@ func (q *Queries) ClaimDueOutbox(ctx context.Context, arg ClaimDueOutboxParams) 
 	return items, nil
 }
 
+const establishOutbox = `-- name: EstablishOutbox :execrows
+UPDATE integration.outbox
+SET established_at = clock_timestamp(),
+    claimed_until = NULL,
+    claim_owner = NULL
+WHERE outbox_id = $1
+  AND established_at IS NULL
+  AND managed_exception_at IS NULL
+  AND claim_owner = $2
+  AND claimed_until > clock_timestamp()
+`
+
+type EstablishOutboxParams struct {
+	OutboxID   pgtype.UUID
+	ClaimOwner pgtype.Text
+}
+
+func (q *Queries) EstablishOutbox(ctx context.Context, arg EstablishOutboxParams) (int64, error) {
+	result, err := q.db.Exec(ctx, establishOutbox, arg.OutboxID, arg.ClaimOwner)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const getOutboxBySourceIdentity = `-- name: GetOutboxBySourceIdentity :one
-SELECT outbox_id, event_type, event_version, source_context, aggregate_id, aggregate_version, accounting_scope_id, correlation_id, causation_id, payload, payload_fingerprint, available_at, claimed_until, claim_owner, attempt_count, established_at, last_error_code, created_at, occurred_at, data_classification
+SELECT outbox_id, event_type, event_version, source_context, aggregate_id, aggregate_version, accounting_scope_id, correlation_id, causation_id, payload, payload_fingerprint, available_at, claimed_until, claim_owner, attempt_count, established_at, last_error_code, created_at, occurred_at, data_classification, managed_exception_at
 FROM integration.outbox
 WHERE source_context = $1
   AND aggregate_id = $2
@@ -123,6 +150,7 @@ func (q *Queries) GetOutboxBySourceIdentity(ctx context.Context, arg GetOutboxBy
 		&i.CreatedAt,
 		&i.OccurredAt,
 		&i.DataClassification,
+		&i.ManagedExceptionAt,
 	)
 	return i, err
 }
@@ -160,7 +188,7 @@ VALUES (
     $13,
     $14
 )
-RETURNING outbox_id, event_type, event_version, source_context, aggregate_id, aggregate_version, accounting_scope_id, correlation_id, causation_id, payload, payload_fingerprint, available_at, claimed_until, claim_owner, attempt_count, established_at, last_error_code, created_at, occurred_at, data_classification
+RETURNING outbox_id, event_type, event_version, source_context, aggregate_id, aggregate_version, accounting_scope_id, correlation_id, causation_id, payload, payload_fingerprint, available_at, claimed_until, claim_owner, attempt_count, established_at, last_error_code, created_at, occurred_at, data_classification, managed_exception_at
 `
 
 type InsertOutboxParams struct {
@@ -219,14 +247,16 @@ func (q *Queries) InsertOutbox(ctx context.Context, arg InsertOutboxParams) (Int
 		&i.CreatedAt,
 		&i.OccurredAt,
 		&i.DataClassification,
+		&i.ManagedExceptionAt,
 	)
 	return i, err
 }
 
 const listExpiredOutbox = `-- name: ListExpiredOutbox :many
-SELECT outbox_id, event_type, event_version, source_context, aggregate_id, aggregate_version, accounting_scope_id, correlation_id, causation_id, payload, payload_fingerprint, available_at, claimed_until, claim_owner, attempt_count, established_at, last_error_code, created_at, occurred_at, data_classification
+SELECT outbox_id, event_type, event_version, source_context, aggregate_id, aggregate_version, accounting_scope_id, correlation_id, causation_id, payload, payload_fingerprint, available_at, claimed_until, claim_owner, attempt_count, established_at, last_error_code, created_at, occurred_at, data_classification, managed_exception_at
 FROM integration.outbox
 WHERE established_at IS NULL
+  AND managed_exception_at IS NULL
   AND claimed_until IS NOT NULL
   AND claimed_until < clock_timestamp()
 ORDER BY claimed_until, outbox_id
@@ -263,6 +293,7 @@ func (q *Queries) ListExpiredOutbox(ctx context.Context, maxRows int32) ([]Integ
 			&i.CreatedAt,
 			&i.OccurredAt,
 			&i.DataClassification,
+			&i.ManagedExceptionAt,
 		); err != nil {
 			return nil, err
 		}
@@ -272,4 +303,88 @@ func (q *Queries) ListExpiredOutbox(ctx context.Context, maxRows int32) ([]Integ
 		return nil, err
 	}
 	return items, nil
+}
+
+const markOutboxManagedException = `-- name: MarkOutboxManagedException :execrows
+UPDATE integration.outbox
+SET managed_exception_at = clock_timestamp(),
+    claimed_until = NULL,
+    claim_owner = NULL,
+    last_error_code = $1
+WHERE outbox_id = $2
+  AND established_at IS NULL
+  AND managed_exception_at IS NULL
+  AND claim_owner = $3
+  AND claimed_until > clock_timestamp()
+`
+
+type MarkOutboxManagedExceptionParams struct {
+	LastErrorCode pgtype.Text
+	OutboxID      pgtype.UUID
+	ClaimOwner    pgtype.Text
+}
+
+func (q *Queries) MarkOutboxManagedException(ctx context.Context, arg MarkOutboxManagedExceptionParams) (int64, error) {
+	result, err := q.db.Exec(ctx, markOutboxManagedException, arg.LastErrorCode, arg.OutboxID, arg.ClaimOwner)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const renewOutboxLease = `-- name: RenewOutboxLease :execrows
+UPDATE integration.outbox
+SET claimed_until = clock_timestamp() + $1::interval
+WHERE outbox_id = $2
+  AND established_at IS NULL
+  AND managed_exception_at IS NULL
+  AND claim_owner = $3
+  AND claimed_until > clock_timestamp()
+`
+
+type RenewOutboxLeaseParams struct {
+	LeaseDuration pgtype.Interval
+	OutboxID      pgtype.UUID
+	ClaimOwner    pgtype.Text
+}
+
+func (q *Queries) RenewOutboxLease(ctx context.Context, arg RenewOutboxLeaseParams) (int64, error) {
+	result, err := q.db.Exec(ctx, renewOutboxLease, arg.LeaseDuration, arg.OutboxID, arg.ClaimOwner)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const rescheduleOutbox = `-- name: RescheduleOutbox :execrows
+UPDATE integration.outbox
+SET available_at = $1,
+    claimed_until = NULL,
+    claim_owner = NULL,
+    last_error_code = $2
+WHERE outbox_id = $3
+  AND established_at IS NULL
+  AND managed_exception_at IS NULL
+  AND claim_owner = $4
+  AND claimed_until > clock_timestamp()
+`
+
+type RescheduleOutboxParams struct {
+	AvailableAt   pgtype.Timestamptz
+	LastErrorCode pgtype.Text
+	OutboxID      pgtype.UUID
+	ClaimOwner    pgtype.Text
+}
+
+func (q *Queries) RescheduleOutbox(ctx context.Context, arg RescheduleOutboxParams) (int64, error) {
+	result, err := q.db.Exec(ctx, rescheduleOutbox,
+		arg.AvailableAt,
+		arg.LastErrorCode,
+		arg.OutboxID,
+		arg.ClaimOwner,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }

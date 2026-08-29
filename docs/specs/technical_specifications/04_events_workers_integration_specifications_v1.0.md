@@ -450,6 +450,7 @@ with claim as (
   select outbox_id
   from integration.outbox
   where established_at is null
+    and managed_exception_at is null
     and available_at <= clock_timestamp()
     and (claimed_until is null or claimed_until < clock_timestamp())
   order by available_at, outbox_id
@@ -468,6 +469,7 @@ returning o.*;
 - Claim duration is 30 seconds by default and must exceed the measured 99th-percentile handler duration.
 - A dispatcher renews before two-thirds of the lease is consumed.
 - Establishment or reschedule checks `claim_owner`; stale workers cannot overwrite a newer claim.
+- Renewal, establishment, rescheduling and managed-exception marking also require an unexpired lease and clear the claim after a successful transition.
 - Poison work becomes a managed exception; it is never silently deleted.
 
 ## 6. Inbox algorithm
@@ -509,7 +511,7 @@ The `cmd/worker` process hosts all workers initially. Each worker has an indepen
 ## 9. Retry policy
 
 - Retry only typed transient dependency failures.
-- Default delays: 5s, 30s, 2m, 10m, 30m; context adapters may override through approved configuration.
+- Default delays by failed attempt: 1=5s, 2=30s, 3=2m, 4=10m, 5-9=30m; context adapters may override delays through approved configuration, while the ten-attempt limit remains fixed.
 - Domain rejection, authorization denial, idempotency conflict and data-integrity mismatch are not automatically retried.
 - Before retrying an ambiguous external submission, query the provider using the original stable identity.
 
@@ -521,6 +523,6 @@ Azure Service Bus may replace or supplement the database dispatcher only after a
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `7aba0d346b726a3f4b4a9f8ddd9e3a257f91c15d6e8210c97a85ad51853c4e14` |
+| Verified body SHA-256 | `9d90cbc0bdf6d119c9b0ccb5db13271dfe78a9dacd4ebe0163e9360814adfe83` |
 | Review status | Passed |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; run the full suite for API, database, event, security, deployment, recovery, or technology-baseline changes. |

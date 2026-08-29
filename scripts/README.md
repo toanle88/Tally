@@ -28,6 +28,7 @@ scripts/
 │   ├── database.sh      # End-to-end database verification
 │   ├── outbox-inbox-persistence.sh # DLV-PLAT-007 User Story 2 persistence gate
 │   ├── transactional-coordination.sh # DLV-PLAT-007 User Story 3 transaction gate
+│   ├── outbox-dispatch.sh # DLV-PLAT-007 User Story 4 dispatch gate
 │   └── openapi-story1.sh # OpenAPI User Story 1 verification
 └── README.md
 ```
@@ -211,6 +212,17 @@ make outbox-inbox-persistence-check
 It validates migration checksums and syntax, sqlc source and generated-output
 drift, PostgreSQL 18 outbox/inbox durability and constraint integration tests,
 concurrent due-row claims, and `git diff --check`.
+
+## outbox-dispatch.sh
+
+Runs the focused DLV-PLAT-007 User Story 4 dispatcher gate:
+
+```bash
+make outbox-dispatch-check
+```
+
+It validates dispatcher unit, race, vet, package ownership, migration, SQLC,
+and PostgreSQL lease, retry, fencing, and managed-exception integration tests.
 
 ---
 

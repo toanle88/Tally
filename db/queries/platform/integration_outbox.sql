@@ -46,6 +46,7 @@ WITH claim AS (
     SELECT outbox_id
     FROM integration.outbox
     WHERE established_at IS NULL
+      AND managed_exception_at IS NULL
       AND available_at <= clock_timestamp()
       AND (claimed_until IS NULL OR claimed_until < clock_timestamp())
     ORDER BY available_at, outbox_id
@@ -64,7 +65,52 @@ RETURNING outbox.*;
 SELECT *
 FROM integration.outbox
 WHERE established_at IS NULL
+  AND managed_exception_at IS NULL
   AND claimed_until IS NOT NULL
   AND claimed_until < clock_timestamp()
 ORDER BY claimed_until, outbox_id
 LIMIT sqlc.arg(max_rows);
+
+-- name: RenewOutboxLease :execrows
+UPDATE integration.outbox
+SET claimed_until = clock_timestamp() + sqlc.arg(lease_duration)::interval
+WHERE outbox_id = sqlc.arg(outbox_id)
+  AND established_at IS NULL
+  AND managed_exception_at IS NULL
+  AND claim_owner = sqlc.arg(claim_owner)
+  AND claimed_until > clock_timestamp();
+
+-- name: EstablishOutbox :execrows
+UPDATE integration.outbox
+SET established_at = clock_timestamp(),
+    claimed_until = NULL,
+    claim_owner = NULL
+WHERE outbox_id = sqlc.arg(outbox_id)
+  AND established_at IS NULL
+  AND managed_exception_at IS NULL
+  AND claim_owner = sqlc.arg(claim_owner)
+  AND claimed_until > clock_timestamp();
+
+-- name: RescheduleOutbox :execrows
+UPDATE integration.outbox
+SET available_at = sqlc.arg(available_at),
+    claimed_until = NULL,
+    claim_owner = NULL,
+    last_error_code = sqlc.arg(last_error_code)
+WHERE outbox_id = sqlc.arg(outbox_id)
+  AND established_at IS NULL
+  AND managed_exception_at IS NULL
+  AND claim_owner = sqlc.arg(claim_owner)
+  AND claimed_until > clock_timestamp();
+
+-- name: MarkOutboxManagedException :execrows
+UPDATE integration.outbox
+SET managed_exception_at = clock_timestamp(),
+    claimed_until = NULL,
+    claim_owner = NULL,
+    last_error_code = sqlc.arg(last_error_code)
+WHERE outbox_id = sqlc.arg(outbox_id)
+  AND established_at IS NULL
+  AND managed_exception_at IS NULL
+  AND claim_owner = sqlc.arg(claim_owner)
+  AND claimed_until > clock_timestamp();
