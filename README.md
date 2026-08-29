@@ -252,7 +252,9 @@ The technology baseline (from the approved solution architecture):
 │   │   ├── platform/
 │   │   │   ├── 00001_create_local_seed_manifest.sql
 │   │   │   ├── 00002_create_idempotency_record.sql
-│   │   │   └── 00003_create_integration_outbox_inbox.sql
+│   │   │   ├── 00003_create_integration_outbox_inbox.sql
+│   │   │   ├── 00004_add_outbox_envelope_metadata.sql
+│   │   │   └── 00005_add_outbox_managed_exception.sql
 │   │   └── checksums.sha256              # Migration integrity checksums
 │   ├── queries/
 │   │   └── platform/
@@ -279,6 +281,8 @@ The technology baseline (from the approved solution architecture):
 │       │   ├── outbox_inbox_integration_test.go # Outbox/inbox persistence tests
 │       │   ├── migration_integration_test.go  # migration apply/verify helpers
 │       │   ├── transaction_integration_test.go # generated query commit/rollback proof
+│       │   ├── transactional_coordination_integration_test.go # Atomic publication/effect tests
+│       │   ├── outbox_dispatch_integration_test.go # Dispatch lease/fencing tests
 │       │   └── platformdb/             # sqlc-generated platform query package
 │       │       ├── db.go
 │       │       ├── integration_inbox.sql.go
@@ -288,13 +292,15 @@ The technology baseline (from the approved solution architecture):
 │       ├── httpapi/
 │       │   ├── boundary.go            # Compile-only generated API boundary reference
 │       │   └── generated/             # ogen-generated server/types artifacts
-│       └── httpx/
-│           ├── health.go              # GET /health/live handler
-│           └── health_test.go         # Liveness test
+│       ├── httpx/
+│       │   ├── health.go              # GET /health/live handler
+│       │   └── health_test.go         # Liveness test
+│       └── integration/
+│           ├── coordination.go        # Transactional outbox/inbox coordination
+│           ├── dispatcher.go           # Lease-safe outbox dispatcher and typed retries
+│           └── dispatcher_test.go      # Dispatcher retry and fencing tests
 ├── scripts/
 │   ├── README.md                    # Script documentation
-│   ├── verify/
-│   │   └── money.sh                 # Focused money primitive verification
 │   ├── openapi/
 │   │   ├── api-check.sh                # Aggregate contract and artifact drift gate
 │   │   ├── api-generate-check.sh       # Working-tree-safe Go generation check
@@ -313,7 +319,19 @@ The technology baseline (from the approved solution architecture):
 │   ├── tools/
 │   │   └── sqlc.sh                    # Pinned sqlc launcher
 │   └── verify/
-│       └── database.sh                # End-to-end database verification workflow
+│       ├── accounting-scope.sh         # Accounting-scope verification
+│       ├── aggregate-version.sh        # Aggregate-version verification
+│       ├── database.sh                 # End-to-end database verification workflow
+│       ├── event-envelope.sh           # Event-envelope contract verification
+│       ├── idempotency-persistence.sh  # Durable idempotency verification
+│       ├── idempotency.sh               # Idempotency contract verification
+│       ├── money.sh                     # Focused money primitive verification
+│       ├── openapi-story1.sh            # OpenAPI foundation verification
+│       ├── outbox-dispatch.sh           # Outbox dispatcher verification
+│       ├── outbox-inbox-persistence.sh  # Outbox/inbox persistence verification
+│       ├── request-fingerprint.sh       # Request fingerprint verification
+│       ├── shared-primitives.sh         # Shared primitive verification
+│       └── transactional-coordination.sh # Transactional coordination verification
 ├── web/
 │   ├── src/
 │   │   ├── app/
@@ -337,7 +355,7 @@ The technology baseline (from the approved solution architecture):
 │   ├── .gitignore
 │   └── README.md                      # Vite scaffold notice (unused)
 ├── docs/
-│   ├── backlog/                       # User stories (DLV-PLAT-001 through DLV-PLAT-004)
+│   ├── backlog/                       # User stories (DLV-PLAT-001 through DLV-PLAT-007)
 │   │   ├── epic-template.md
 │   │   ├── milestone-template.md
 │   │   ├── story-template.md
@@ -345,14 +363,25 @@ The technology baseline (from the approved solution architecture):
 │   │       ├── DLV-PLAT-001_user_stories.md
 │   │       ├── DLV-PLAT-002_user_stories.md
 │   │       ├── DLV-PLAT-003_user_stories.md
-│   │       └── DLV-PLAT-004_user_stories.md
+│   │       ├── DLV-PLAT-004_user_stories.md
+│   │       ├── DLV-PLAT-005_user_stories.md
+│   │       ├── DLV-PLAT-006_user_stories.md
+│   │       └── DLV-PLAT-007_user_stories.md
 │   ├── specs/                         # PRD, domain model, UX, NFR,
 │   │                                  # system design, technical specs
 │   └── verification/                  # Clean-clone and reproducibility evidence
 │       ├── DLV-PLAT-001_clean_clone_evidence.md
 │       ├── DLV-PLAT-002_local-db-reproducibility.md
 │       ├── DLV-PLAT-003-persistence.md
-│       └── DLV-PLAT-004-go-api-artifacts.md
+│       ├── DLV-PLAT-004-go-api-artifacts.md
+│       ├── DLV-PLAT-004-contract-drift.md
+│       ├── DLV-PLAT-004-typescript-client.md
+│       ├── DLV-PLAT-005-shared-primitives.md
+│       ├── DLV-PLAT-006-durable-coordination-verification.md
+│       ├── DLV-PLAT-007-event-envelope.md
+│       ├── DLV-PLAT-007-outbox-dispatch.md
+│       ├── DLV-PLAT-007-outbox-inbox-persistence.md
+│       └── DLV-PLAT-007-transactional-coordination.md
 ├── .agents/
 │   ├── commands/
 │   │   ├── review-branch-diff.md
@@ -431,10 +460,12 @@ TALLY enforces these design rules across all modules:
 
 See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0
 (engineering foundation) through M9 (full-system qualification). The current
-platform backlog includes completed `DLV-PLAT-001` through `DLV-PLAT-004` and
-implemented User Stories 1 through 5 of `DLV-PLAT-005`, including the focused
-shared-primitives verification gate `make shared-primitives-check`.
-Focused contract/generated-artifact drift is enforced by `make api-check` and
+platform backlog has completed `DLV-PLAT-001` through `DLV-PLAT-006`; `DLV-PLAT-007`
+has its envelope, persistence, transactional-coordination, and dispatch
+foundations implemented, while worker lifecycle, crash recovery, ordering, and
+replay remain open. Focused gates include
+`make shared-primitives-check`, `make outbox-dispatch-check`, and
+`make api-check`; focused contract/generated-artifact drift is also enforced by
 `.github/workflows/openapi.yml`.
 
 ---
