@@ -239,10 +239,10 @@ The technology baseline (from the approved solution architecture):
 | Area | Current | Planned |
 |---|---|---|
 | Backend | Go 1.26.3 + chi/v5 5.3.1 | — |
-| Frontend | React 19, TypeScript, Vite | — |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, daisyUI 5, shared semantic UI primitives and responsive foundation shell | Routed navigation, scope context and capability screens |
 | Package manager | pnpm 11.9.0 | — |
 | Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform queries, seed/verify scripts, migration checksum inventory, focused persistence drift command and CI workflow | Broader PR quality-pipeline integration |
-| Styling | — | Tailwind CSS + daisyUI |
+| Styling | Tailwind CSS 4 as the primary styling/layout system with daisyUI 5 theme and wrapper support | — |
 | Client state | — | TanStack Query |
 | API contract | OpenAPI 3.1 source with generated Go and TypeScript artifacts; runtime currently exposes GET /health/live; focused contract/generated-artifact drift CI | — |
 | Infrastructure | — | Terraform + Azure |
@@ -356,13 +356,15 @@ The technology baseline (from the approved solution architecture):
 ├── web/
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── app.tsx                # App shell (<h1>TALLY</h1>)
-│   │   │   ├── app.css
-│   │   │   └── app.test.tsx           # Shell render test
+│   │   │   ├── app.tsx                # Synthetic design-system preview
+│   │   │   ├── app-shell.tsx          # Responsive presentational shell
+│   │   │   └── app.test.tsx           # Shell region and theme tests
+│   │   ├── components/ui/             # Typed shared UI primitives
+│   │   │   └── ui.test.tsx             # Primitive semantics tests
 │   │   ├── main.tsx                   # React entry point
-│   │   ├── index.css
+│   │   ├── index.css                  # Tailwind/daisyUI CSS-first foundation
 │   │   └── test/
-│   │       └── setup.ts               # jest-dom matchers
+│   │       └── setup.ts               # jest-dom and Testing Library cleanup
 │   ├── public/
 │   │   └── favicon.svg
 │   ├── index.html

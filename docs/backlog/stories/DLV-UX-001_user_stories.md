@@ -8,6 +8,7 @@
 | Milestone | `M0` — Engineering foundation |
 | Artifact version | 1.0 |
 | Review status | Ready for implementation — story breakdown created from the approved baselines |
+| Implementation status | User Story 1 complete; User Stories 2–5 remain open |
 | Delivery profile | Solo, part-time, local-first learning project |
 | Dependency position | `DLV-PLAT-001` is complete; `DLV-UX-002` remains a separate follow-up delivery item. |
 | Authoritative deliverable | Implement the Tailwind/daisyUI application shell and shared UX component abstractions. |
@@ -79,15 +80,15 @@ Creates the styling, theme, status, button, input, panel, and layout foundation 
 
 ### Acceptance criteria
 
-- [ ] Tailwind CSS `4.x` and daisyUI `5.x` are installed through pnpm and the committed lockfile supports `pnpm install --frozen-lockfile`.
-- [ ] The Vite application loads Tailwind through the approved CSS-first configuration and daisyUI through its approved plugin configuration.
-- [ ] The semantic theme baseline includes `finance-light` and `finance-dark` themes and the semantic states `success`, `warning`, `error`, `info`, `pending`, `reconciled`, `restricted`, and `disabled`.
-- [ ] Shared low-level primitives provide typed, semantic wrappers for buttons, links, headings, fields, panels, status badges, tables, and confirmation surfaces.
-- [ ] State and severity examples include text labels and accessible names in addition to visual styling.
-- [ ] The application shell has a stable responsive layout that can contain global navigation, scope context, page content, and status feedback.
-- [ ] The shell does not claim authentication, authorization, database readiness, or finance capability availability.
-- [ ] A deterministic component test proves that semantic state tokens render their text meaning and that the shell renders its main regions.
-- [ ] The frontend production build succeeds without TypeScript errors or generated build output being committed.
+- [x] Tailwind CSS `4.x` and daisyUI `5.x` are installed through pnpm and the committed lockfile supports `pnpm install --frozen-lockfile`.
+- [x] The Vite application loads Tailwind through the approved CSS-first configuration and daisyUI through its approved plugin configuration.
+- [x] The semantic theme baseline includes `finance-light` and `finance-dark` themes and the semantic states `success`, `warning`, `error`, `info`, `pending`, `reconciled`, `restricted`, and `disabled`.
+- [x] Shared low-level primitives provide typed, semantic wrappers for buttons, links, headings, fields, panels, status badges, tables, and confirmation surfaces.
+- [x] State and severity examples include text labels and accessible names in addition to visual styling.
+- [x] The application shell has a stable responsive layout that can contain global navigation, scope context, page content, and status feedback.
+- [x] The shell does not claim authentication, authorization, database readiness, or finance capability availability.
+- [x] A deterministic component test proves that semantic state tokens render their text meaning and that the shell renders its main regions.
+- [x] The frontend production build succeeds without TypeScript errors or generated build output being committed.
 
 ### Evidence
 
@@ -95,6 +96,12 @@ Creates the styling, theme, status, button, input, panel, and layout foundation 
 - Rendered shell example showing light/dark theme and semantic status variants.
 - Vitest/Testing Library output for shell and primitive tests.
 - Successful frontend build output.
+
+### User Story 1 implementation evidence
+
+- `pnpm install --frozen-lockfile --ignore-workspace` passed from `web/` using `web/pnpm-lock.yaml`.
+- `pnpm -C web test` passed: 2 test files and 10 tests.
+- `pnpm -C web build` passed with Tailwind/daisyUI CSS emitted and no TypeScript errors.
 
 ## 6. User Story 2 — Establish routed navigation and accounting-scope context
 
