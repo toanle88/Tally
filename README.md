@@ -239,7 +239,7 @@ The technology baseline (from the approved solution architecture):
 | Area | Current | Planned |
 |---|---|---|
 | Backend | Go 1.26.3 + chi/v5 5.3.1 | — |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, daisyUI 5, shared semantic UI primitives and responsive foundation shell | Routed navigation, scope context and capability screens |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, daisyUI 5, shared semantic UI primitives, routed shell, fixture-backed scope context, and operational route seams | Capability screens |
 | Package manager | pnpm 11.9.0 | — |
 | Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform queries, seed/verify scripts, migration checksum inventory, focused persistence drift command and CI workflow | Broader PR quality-pipeline integration |
 | Styling | Tailwind CSS 4 as the primary styling/layout system with daisyUI 5 theme and wrapper support | — |
@@ -356,11 +356,16 @@ The technology baseline (from the approved solution architecture):
 ├── web/
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── app.tsx                # Synthetic design-system preview
+│   │   │   ├── app.tsx                # Router and fixture-backed app composition
+│   │   │   ├── development-examples.tsx # Reusable foundation examples
 │   │   │   ├── app-shell.tsx          # Responsive presentational shell
 │   │   │   └── app.test.tsx           # Shell region and theme tests
+│   │   ├── components/accounting-scope-selector/ # Persistent scope context
 │   │   ├── components/ui/             # Typed shared UI primitives
 │   │   │   └── ui.test.tsx             # Primitive semantics tests
+│   │   ├── lib/auth/                   # Authentication/scope adapter seam
+│   │   ├── lib/scope/                  # In-memory scope context and stale guards
+│   │   ├── routes/                     # Typed route registry and React Router setup
 │   │   ├── main.tsx                   # React entry point
 │   │   ├── index.css                  # Tailwind/daisyUI CSS-first foundation
 │   │   └── test/

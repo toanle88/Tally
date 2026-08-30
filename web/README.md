@@ -30,10 +30,21 @@ User Story 1 provides:
 - a responsive presentational shell with navigation, scope, content, and
   status-feedback regions.
 
-The application currently renders synthetic UI examples only. It does not
-provide authentication, authorization, accounting-scope selection, finance
-capabilities, API mutations, database readiness, or authoritative financial
-records.
+User Story 2 adds:
+
+- stable React Router paths for the eight global navigation areas;
+- contract-only routes for `XCT-WS-01`, `XCT-SCR-01`, and `CON-SCR-01`;
+- an in-memory accounting-scope context with tenant, legal entity, ledger,
+  accounting book, currency, and period display;
+- fixture-only authentication/scope protection and explicit unsaved-work
+  discard/return handling; and
+- stale-scope guards plus the integration point for canceling work and clearing
+  scope-bound query state.
+
+The application still does not provide Entra authentication, authorization
+policy evaluation, finance capabilities, API mutations, database readiness, or
+authoritative financial records. The development examples and fixtures are not
+production data or a global financial-record store.
 
 Shared primitives are exported from `src/components/ui/`. Capability code and
 the routed application shell will be added by later delivery stories.
