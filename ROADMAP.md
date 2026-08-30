@@ -59,7 +59,8 @@
   - [ ] **EP-UX-001 — Shared UX and design system**
     - [ ] **DLV-UX-001 — Shared UX and design system application shell and component abstractions**
       - [x] **User Story 1 — Establish the design-system foundation and application shell**
-      - User Stories 2–5 remain open.
+      - [x] **User Story 2 — Establish routed navigation and accounting-scope context**
+      - User Stories 3–5 remain open.
 
 ## Milestone and epic roadmap
 

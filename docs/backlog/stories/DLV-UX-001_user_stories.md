@@ -117,15 +117,15 @@ Establishes the route and scope boundaries that later capability workspaces can 
 
 ### Acceptance criteria
 
-- [ ] React Router provides a typed route tree with stable screen identifiers and paths aligned to the approved UX and frontend screen catalog.
-- [ ] The shell exposes the approved global navigation areas: Home, Work, Records, Approvals, Exceptions, Reports, Administration, and Audit.
-- [ ] The route foundation includes the shared operational route contracts for `XCT-WS-01`, `XCT-SCR-01`, and `CON-SCR-01` without implementing their finance resolution logic.
-- [ ] A reusable development/example entry renders the shared component examples needed for the delivery-item exit evidence.
-- [ ] The persistent scope context can display tenant, legal entity, ledger, accounting book, functional currency, and period when supplied by the fixture.
-- [ ] A scope change refreshes the displayed scope-bound context, prevents submission against a stale scope, and exposes an explicit discard/return path when unsaved changes exist.
-- [ ] Scope changes provide a single integration point for canceling in-flight work and clearing scope-bound query state; no authoritative financial record is stored in a global client store.
-- [ ] Protected-route behavior is represented by an authentication/scope adapter seam and fixtures only; token acquisition, Entra integration, and permission evaluation remain excluded.
-- [ ] Navigation tests cover active navigation, direct route access, unknown-route handling, browser back/forward behavior, and stale-scope prevention.
+- [x] React Router provides a typed route tree with stable screen identifiers and paths aligned to the approved UX and frontend screen catalog.
+- [x] The shell exposes the approved global navigation areas: Home, Work, Records, Approvals, Exceptions, Reports, Administration, and Audit.
+- [x] The route foundation includes the shared operational route contracts for `XCT-WS-01`, `XCT-SCR-01`, and `CON-SCR-01` without implementing their finance resolution logic.
+- [x] A reusable development/example entry renders the shared component examples needed for the delivery-item exit evidence.
+- [x] The persistent scope context can display tenant, legal entity, ledger, accounting book, functional currency, and period when supplied by the fixture.
+- [x] A scope change refreshes the displayed scope-bound context, prevents submission against a stale scope, and exposes an explicit discard/return path when unsaved changes exist.
+- [x] Scope changes provide a single integration point for canceling in-flight work and clearing scope-bound query state; no authoritative financial record is stored in a global client store.
+- [x] Protected-route behavior is represented by an authentication/scope adapter seam and fixtures only; token acquisition, Entra integration, and permission evaluation remain excluded.
+- [x] Navigation tests cover active navigation, direct route access, unknown-route handling, browser back/forward behavior, and stale-scope prevention.
 
 ### Evidence
 
@@ -133,6 +133,9 @@ Establishes the route and scope boundaries that later capability workspaces can 
 - Shell navigation and scope-context example.
 - Vitest/Testing Library route and scope tests.
 - Boundary review confirming that capability-specific pages remain owned by later delivery items.
+
+Implementation evidence for User Story 2 is recorded in
+`docs/verification/DLV-UX-001-us2-routed-navigation-scope-context.md`.
 
 ## 7. User Story 3 — Build record context, lifecycle, money, evidence, and privacy components
 
