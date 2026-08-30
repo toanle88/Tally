@@ -12,6 +12,8 @@ export { Link } from './link'
 export type { LinkProps, LinkTone } from './link'
 export { Panel } from './panel'
 export type { PanelProps } from './panel'
+export { Select } from './select'
+export type { SelectProps } from './select'
 export { StatusBadge } from './status-badge'
 export type { StatusBadgeProps } from './status-badge'
 export type {

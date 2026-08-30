@@ -21,7 +21,7 @@ const variantClasses: Record<ButtonVariant, string> = {
 
 const sizeClasses: Record<ControlSize, string> = {
   sm: 'btn-sm',
-  md: '',
+  md: 'min-h-11',
   lg: 'btn-lg',
 }
 

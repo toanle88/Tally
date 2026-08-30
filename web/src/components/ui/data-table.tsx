@@ -24,7 +24,7 @@ export function DataTable<Row>({
         <caption className="caption-top pb-3 text-left text-sm font-semibold">
           {caption}
         </caption>
-        <thead>
+        <thead className="bg-base-200/70">
           <tr>
             {columns.map((column) => (
               <th key={column.key} scope="col">
@@ -33,10 +33,13 @@ export function DataTable<Row>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-base-300/70">
+        <tbody>
           {rows.length > 0 ? (
             rows.map((row, index) => (
-              <tr key={getRowKey(row, index)} className="hover:bg-base-200/60">
+              <tr
+                key={getRowKey(row, index)}
+                className="border-b border-base-300/80 odd:bg-base-200/35 transition-colors hover:bg-info/10"
+              >
                 {columns.map((column) => (
                   <td key={column.key}>{column.render(row)}</td>
                 ))}
