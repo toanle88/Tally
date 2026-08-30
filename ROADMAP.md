@@ -58,7 +58,8 @@
       - Semantic payload safety is a separate deferred follow-up; DLV-PLAT-007 is verified by `make outbox-worker-check`.
   - [ ] **EP-UX-001 — Shared UX and design system**
     - [ ] **DLV-UX-001 — Shared UX and design system application shell and component abstractions**
-      - User stories defined; implementation pending.
+      - [x] **User Story 1 — Establish the design-system foundation and application shell**
+      - User Stories 2–5 remain open.
 
 ## Milestone and epic roadmap
 
