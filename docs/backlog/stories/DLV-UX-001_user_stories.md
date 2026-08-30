@@ -8,7 +8,7 @@
 | Milestone | `M0` — Engineering foundation |
 | Artifact version | 1.0 |
 | Review status | Ready for implementation — story breakdown created from the approved baselines |
-| Implementation status | User Story 1 complete; User Stories 2–5 remain open |
+| Implementation status | User Stories 1–3 complete; User Stories 4–5 remain open |
 | Delivery profile | Solo, part-time, local-first learning project |
 | Dependency position | `DLV-PLAT-001` is complete; `DLV-UX-002` remains a separate follow-up delivery item. |
 | Authoritative deliverable | Implement the Tailwind/daisyUI application shell and shared UX component abstractions. |
@@ -153,21 +153,24 @@ Implementation evidence for User Story 2 is recorded in
 
 ### Acceptance criteria
 
-- [ ] `CMP-002` displays record identity, authoritative capability, scope, lifecycle state, version, source, owner, and sensitivity label.
-- [ ] `CMP-004` displays established state transitions with actor, timestamp, decision, and linked correction/replacement references in chronological order.
-- [ ] `CMP-007` keeps transaction, functional, and presentation amounts distinct, displays currency and rounding labels, and shows rate evidence when supplied.
-- [ ] `CMP-007` rejects or does not accept numeric monetary props that could silently introduce binary floating-point values.
-- [ ] `CMP-009` preserves the original established fact and links reversal, amendment, return, unapplication, replacement, compensation, or supersession records without offering destructive edit behavior.
-- [ ] `CMP-013` presents access-controlled source, approval, posting, provider/authority, reconciliation, close, statement, and audit evidence links supplied by the fixture.
-- [ ] `CMP-015` masks restricted values by default, labels the restricted section, prevents unauthorized export actions in the presentation layer, and does not reveal protected values in errors or empty states.
-- [ ] `CMP-016` displays legal hold independently from business lifecycle state and indicates that retention destruction is blocked while business correction remains a separate concern.
-- [ ] Component tests cover established facts, correction lineage, multi-currency labels, missing evidence, masked values, restricted access, and legal hold.
+- [x] `CMP-002` displays record identity, authoritative capability, scope, lifecycle state, version, source, owner, and sensitivity label.
+- [x] `CMP-004` displays established state transitions with actor, timestamp, decision, and linked correction/replacement references in chronological order.
+- [x] `CMP-007` keeps transaction, functional, and presentation amounts distinct, displays currency and rounding labels, and shows rate evidence when supplied.
+- [x] `CMP-007` rejects or does not accept numeric monetary props that could silently introduce binary floating-point values.
+- [x] `CMP-009` preserves the original established fact and links reversal, amendment, return, unapplication, replacement, compensation, or supersession records without offering destructive edit behavior.
+- [x] `CMP-013` presents access-controlled source, approval, posting, provider/authority, reconciliation, close, statement, and audit evidence links supplied by the fixture.
+- [x] `CMP-015` masks restricted values by default, labels the restricted section, prevents unauthorized export actions in the presentation layer, and does not reveal protected values in errors or empty states.
+- [x] `CMP-016` displays legal hold independently from business lifecycle state and indicates that retention destruction is blocked while business correction remains a separate concern.
+- [x] Component tests cover established facts, correction lineage, multi-currency labels, missing evidence, masked values, restricted access, and legal hold.
 
 ### Evidence
 
 - Typed component props and synthetic record/evidence fixtures.
 - Detail example combining identity, lifecycle, money, lineage, evidence, sensitivity, and legal-hold surfaces.
 - Component test output covering normal, restricted, corrected, and incomplete-evidence states.
+
+Implementation evidence for User Story 3 is recorded in
+`docs/verification/DLV-UX-001-us3-record-context-lifecycle-money-evidence-privacy.md`.
 
 ## 8. User Story 4 — Build worklist, action, settlement, exception, progress, and result components
 

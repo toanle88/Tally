@@ -41,6 +41,16 @@ User Story 2 adds:
 - stale-scope guards plus the integration point for canceling work and clearing
   scope-bound query state.
 
+User Story 3 adds:
+
+- typed record identity, lifecycle, money, correction-lineage, evidence,
+  sensitive-data, and legal-hold component wrappers;
+- a synthetic established-record detail example at `/development/examples`;
+- decimal-string money props with distinct transaction, functional, and
+  presentation roles plus supplied rate and rounding evidence; and
+- default masking for restricted values with fixture-controlled authorized
+  reveal/export actions.
+
 The application still does not provide Entra authentication, authorization
 policy evaluation, finance capabilities, API mutations, database readiness, or
 authoritative financial records. The development examples and fixtures are not

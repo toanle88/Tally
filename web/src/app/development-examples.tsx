@@ -13,6 +13,8 @@ import {
 } from '@/components/ui'
 import { useScopeContext, type ScopeSnapshot } from '@/lib/scope/scope-context'
 
+import { RecordDetailExample } from './record-detail-example'
+
 const semanticStates: readonly SemanticState[] = [
   'success', 'warning', 'error', 'info', 'pending', 'reconciled', 'restricted', 'disabled',
 ]
@@ -104,6 +106,8 @@ export function DevelopmentExamples() {
           onCancel={() => undefined}
         />
       </div>
+
+      <RecordDetailExample />
     </>
   )
 }
