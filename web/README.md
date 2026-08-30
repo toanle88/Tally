@@ -51,6 +51,18 @@ User Story 3 adds:
 - default masking for restricted values with fixture-controlled authorized
   reveal/export actions.
 
+User Story 4 adds:
+
+- typed operational fixtures and wrappers for worklists, saved filters,
+  state-aware actions, settlement/reconciliation, exception resolution, result
+  lookup, and process progress;
+- a TanStack Table-backed worklist with exact decimal-string filtering,
+  pagination, sorting, column visibility, fixture views, and eligibility-aware
+  selection; and
+- explicit pending, unavailable, rejected, partial, reconciled, duplicate,
+  conflict, exception, owner, and next-action presentation without API
+  mutation or authoritative finance state.
+
 The application still does not provide Entra authentication, authorization
 policy evaluation, finance capabilities, API mutations, database readiness, or
 authoritative financial records. The development examples and fixtures are not

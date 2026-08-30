@@ -14,6 +14,7 @@ import {
 import { useScopeContext, type ScopeSnapshot } from '@/lib/scope/scope-context'
 
 import { RecordDetailExample } from './record-detail-example'
+import { OperationalExample } from './operational-example'
 
 const semanticStates: readonly SemanticState[] = [
   'success', 'warning', 'error', 'info', 'pending', 'reconciled', 'restricted', 'disabled',
@@ -90,7 +91,7 @@ export function DevelopmentExamples() {
             <Field id="foundation-example" label="Example field" description="This field demonstrates label and help-text association." defaultValue="Example value" />
           </div>
         </Panel>
-        <Panel title="Semantic table" description="Static accessible table primitive; advanced worklist behavior is deferred.">
+        <Panel title="Semantic table" description="Static accessible table primitive used as the foundation for operational worklists.">
           <DataTable caption="Foundation surfaces" columns={surfaceColumns} rows={surfaceRows} getRowKey={(row) => row.surface} />
         </Panel>
       </div>
@@ -108,6 +109,7 @@ export function DevelopmentExamples() {
       </div>
 
       <RecordDetailExample />
+      <OperationalExample />
     </>
   )
 }

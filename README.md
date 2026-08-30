@@ -239,7 +239,7 @@ The technology baseline (from the approved solution architecture):
 | Area | Current | Planned |
 |---|---|---|
 | Backend | Go 1.26.3 + chi/v5 5.3.1 | — |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, daisyUI 5, shared semantic UI primitives, routed shell, fixture-backed scope context, operational route seams, and record-context/lifecycle/money/evidence/privacy wrappers | Capability screens |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, daisyUI 5, shared semantic UI primitives, routed shell, fixture-backed scope context, operational route seams, record-context/lifecycle/money/evidence/privacy wrappers, and TanStack Table-backed operational worklist/process fixtures | Capability screens |
 | Package manager | pnpm 11.9.0 | — |
 | Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform queries, seed/verify scripts, migration checksum inventory, focused persistence drift command and CI workflow | Broader PR quality-pipeline integration |
 | Styling | Tailwind CSS 4 as the primary styling/layout system with daisyUI 5 theme and wrapper support | — |
@@ -357,13 +357,22 @@ The technology baseline (from the approved solution architecture):
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── app.tsx                # Router and fixture-backed app composition
-│   │   │   ├── development-examples.tsx # Reusable foundation and record examples
+│   │   │   ├── development-examples.tsx # Reusable foundation and operational examples
+│   │   │   ├── operational-example.tsx # Worklist and process component composition
+│   │   │   ├── operational-fixtures.ts # Synthetic operational component fixtures
 │   │   │   ├── record-detail-example.tsx # Synthetic record-detail composition
 │   │   │   ├── record-detail-fixtures.ts # Typed record-context fixtures
 │   │   │   ├── app-shell.tsx          # Responsive presentational shell
 │   │   │   └── app.test.tsx           # Shell region and theme tests
 │   │   ├── components/accounting-scope-selector/ # Persistent scope context
 │   │   ├── components/record-context/ # Shared record-context types
+│   │   ├── components/operational-context/ # Shared operational presentation types
+│   │   ├── components/worklist-and-saved-filters/ # TanStack Table worklist
+│   │   ├── components/state-aware-action-bar/ # Permitted and blocked actions
+│   │   ├── components/settlement-and-reconciliation-panel/ # Supplied balances and states
+│   │   ├── components/exception-resolution-panel/ # Evidence and authorized resolutions
+│   │   ├── components/result-lookup/ # Established result outcomes
+│   │   ├── components/process-progress-panel/ # Cross-capability progress
 │   │   ├── components/record-identity-header/ # Record identity and ownership
 │   │   ├── components/lifecycle-timeline/ # Chronological state transitions
 │   │   ├── components/money-and-currency-panel/ # Typed money roles and evidence

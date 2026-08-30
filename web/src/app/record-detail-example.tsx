@@ -16,7 +16,7 @@ export function RecordDetailExample() {
   const [privacyMessage, setPrivacyMessage] = useState('No restricted-data action has been attempted.')
 
   return (
-    <section aria-labelledby="record-detail-example-title" className="space-y-6">
+    <section id="record-detail-context-example" aria-label="Record detail context example" className="space-y-6">
       <div>
         <Heading level={2}>Record detail context example</Heading>
         <p className="mt-2 max-w-3xl text-base-content/75">Synthetic presentation-only detail. It demonstrates immutable lineage, amount meaning, evidence access, privacy guards, and legal hold state without establishing a financial fact.</p>
