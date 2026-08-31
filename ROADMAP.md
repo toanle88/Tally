@@ -61,7 +61,8 @@
       - [x] **User Story 1 — Establish the design-system foundation and application shell**
       - [x] **User Story 2 — Establish routed navigation and accounting-scope context**
       - [x] **User Story 3 — Build record context, lifecycle, money, evidence, and privacy components**
-      - User Stories 4–5 remain open.
+      - [x] **User Story 4 — Build worklist, action, settlement, exception, progress, and result components**
+      - User Story 5 remains open.
 
 ## Milestone and epic roadmap
 

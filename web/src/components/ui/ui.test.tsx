@@ -74,7 +74,9 @@ describe('shared UI primitives', () => {
     expect(screen.getByRole('table', { name: 'Test table' })).toBeInTheDocument()
     expect(screen.getByRole('columnheader', { name: 'Name' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Confirm test' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Continue' })).toHaveAttribute('type', 'button')
+    expect(screen.getByRole('button', { name: 'Continue' }))
+      .toHaveAttribute('type', 'button')
+    expect(screen.getByRole('button', { name: 'Continue' })).toHaveClass('min-h-11')
     expect(screen.getByRole('region', { name: 'Confirm test' })).toHaveAttribute(
       'aria-describedby',
     )

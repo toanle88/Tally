@@ -1,4 +1,4 @@
-import { ConfirmationSurface } from '@/components/ui'
+import { ConfirmationSurface, Select } from '@/components/ui'
 import { useScopeContext } from '@/lib/scope/scope-context'
 
 export function AccountingScopeSelector() {
@@ -19,39 +19,26 @@ export function AccountingScopeSelector() {
         <label className="block" htmlFor="accounting-scope-selector">
           <span className="label-text font-medium">Accounting scope</span>
         </label>
-        <div className="relative">
-          <select
-            id="accounting-scope-selector"
-            aria-label="Accounting scope"
-            title={
-              currentScope
-                ? `${currentScope.legalEntity.name} — ${currentScope.accountingBook.name}`
-                : undefined
-            }
-            className="select select-bordered min-h-11 w-full max-w-full truncate appearance-none border-2 border-base-300 bg-base-100 bg-none pr-12 text-base-content focus:border-primary focus:outline-2 focus:outline-offset-1 focus:outline-primary"
-            value={currentScope?.id ?? ''}
-            onChange={(event) => requestScopeChange(event.currentTarget.value)}
-          >
-            <option value="" disabled>
-              Select an accounting scope
+        <Select
+          id="accounting-scope-selector"
+          aria-label="Accounting scope"
+          title={
+            currentScope
+              ? `${currentScope.legalEntity.name} — ${currentScope.accountingBook.name}`
+              : undefined
+          }
+          value={currentScope?.id ?? ''}
+          onChange={(event) => requestScopeChange(event.currentTarget.value)}
+        >
+          <option value="" disabled>
+            Select an accounting scope
+          </option>
+          {availableScopes.map((scope) => (
+            <option key={scope.id} value={scope.id}>
+              {getScopeOptionLabel(scope.legalEntity.name, scope.accountingBook.name)}
             </option>
-            {availableScopes.map((scope) => (
-              <option key={scope.id} value={scope.id}>
-                {getScopeOptionLabel(scope.legalEntity.name, scope.accountingBook.name)}
-              </option>
-            ))}
-          </select>
-          <svg
-            aria-hidden="true"
-            className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-base-content/70"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="m5 7 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
+          ))}
+        </Select>
       </div>
 
       {currentScope ? (

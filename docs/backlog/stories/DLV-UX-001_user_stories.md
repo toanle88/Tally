@@ -8,7 +8,7 @@
 | Milestone | `M0` — Engineering foundation |
 | Artifact version | 1.0 |
 | Review status | Ready for implementation — story breakdown created from the approved baselines |
-| Implementation status | User Stories 1–3 complete; User Stories 4–5 remain open |
+| Implementation status | User Stories 1–4 complete; User Story 5 remains open |
 | Delivery profile | Solo, part-time, local-first learning project |
 | Dependency position | `DLV-PLAT-001` is complete; `DLV-UX-002` remains a separate follow-up delivery item. |
 | Authoritative deliverable | Implement the Tailwind/daisyUI application shell and shared UX component abstractions. |
@@ -187,22 +187,25 @@ Implementation evidence for User Story 3 is recorded in
 
 ### Acceptance criteria
 
-- [ ] `CMP-014` supports applicable scope, state, owner, date, amount, currency, exception, and approval filters, with sorting, pagination, column visibility, saved fixture-backed views, and eligible-row selection.
-- [ ] Worklist examples show the responsible owner, age, amount/currency where applicable, next action, and authoritative record link.
-- [ ] Bulk actions are available only when every selected fixture row is eligible; the component does not imply that client eligibility replaces server validation.
-- [ ] `CMP-003` displays permitted actions and discoverable blocked actions with a reason and safe next action, refreshing after a material result.
-- [ ] `CMP-008` distinguishes gross, returned, reversed, canceled, remaining, net, owner acknowledgement, reconciliation, and exception states.
-- [ ] `CMP-011` displays exception type, scope/amount, owner, evidence, age, authorized resolutions, and resulting state.
-- [ ] `CMP-017` distinguishes safe duplicate, ambiguous outcome, and identity-content conflict and links to the established result or the required new business identity.
-- [ ] `CMP-018` identifies each cross-capability step owner and distinguishes current, pending, failed, partially completed, reconciled, and terminal states without presenting downstream outcomes as synchronous success.
-- [ ] Worklist and process tests cover empty, loading, pending, unavailable, rejected, partial, reconciled, duplicate, conflict, and exception states.
-- [ ] The worklist example supports a result link to the authoritative detail surface and does not become a second mutation surface for another capability.
+- [x] `CMP-014` supports applicable scope, state, owner, date, amount, currency, exception, and approval filters, with sorting, pagination, column visibility, saved fixture-backed views, and eligible-row selection.
+- [x] Worklist examples show the responsible owner, age, amount/currency where applicable, next action, and authoritative record link.
+- [x] Bulk actions are available only when every selected fixture row is eligible; the component does not imply that client eligibility replaces server validation.
+- [x] `CMP-003` displays permitted actions and discoverable blocked actions with a reason and safe next action, refreshing after a material result.
+- [x] `CMP-008` distinguishes gross, returned, reversed, canceled, remaining, net, owner acknowledgement, reconciliation, and exception states.
+- [x] `CMP-011` displays exception type, scope/amount, owner, evidence, age, authorized resolutions, and resulting state.
+- [x] `CMP-017` distinguishes safe duplicate, ambiguous outcome, and identity-content conflict and links to the established result or the required new business identity.
+- [x] `CMP-018` identifies each cross-capability step owner and distinguishes current, pending, failed, partially completed, reconciled, and terminal states without presenting downstream outcomes as synchronous success.
+- [x] Worklist and process tests cover empty, loading, pending, unavailable, rejected, partial, reconciled, duplicate, conflict, and exception states.
+- [x] The worklist example supports a result link to the authoritative detail surface and does not become a second mutation surface for another capability.
 
 ### Evidence
 
 - Worklist, action, settlement, exception, result, and process fixtures.
 - Worklist/detail example showing filtering, assignment, state-aware actions, and process ownership.
 - Component test output covering all required result categories and selection rules.
+
+Implementation evidence for User Story 4 is recorded in
+`docs/verification/DLV-UX-001-us4-worklist-process-components.md`.
 
 ## 9. User Story 5 — Build forms, approval/posting panels, validation, confirmation, and conflict interactions
 
