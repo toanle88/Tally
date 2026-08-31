@@ -63,6 +63,12 @@ User Story 4 adds:
   conflict, exception, owner, and next-action presentation without API
   mutation or authoritative finance state.
 
+User Story 5 adds:
+
+- React Hook Form and Zod material-action examples with locale-aware display and canonical decimal-string submission;
+- validation summaries, approval revalidation, posting/gate evidence, confirmation details, typed problem fixtures, and deliberate conflict recovery; and
+- shared `CMP-005`, `CMP-006`, `CMP-010`, and `CMP-012` wrappers plus the synthetic `CON-SCR-01` workflow route.
+
 The application still does not provide Entra authentication, authorization
 policy evaluation, finance capabilities, API mutations, database readiness, or
 authoritative financial records. The development examples and fixtures are not
