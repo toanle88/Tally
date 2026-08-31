@@ -15,6 +15,7 @@ import { useScopeContext, type ScopeSnapshot } from '@/lib/scope/scope-context'
 
 import { RecordDetailExample } from './record-detail-example'
 import { OperationalExample } from './operational-example'
+import { WorkflowExample } from './workflow-example'
 
 const semanticStates: readonly SemanticState[] = [
   'success', 'warning', 'error', 'info', 'pending', 'reconciled', 'restricted', 'disabled',
@@ -110,6 +111,7 @@ export function DevelopmentExamples() {
 
       <RecordDetailExample />
       <OperationalExample />
+      <WorkflowExample />
     </>
   )
 }

@@ -7,8 +7,8 @@
 | Parent epic | `EP-UX-001` — Shared UX and design system |
 | Milestone | `M0` — Engineering foundation |
 | Artifact version | 1.0 |
-| Review status | Ready for implementation — story breakdown created from the approved baselines |
-| Implementation status | User Stories 1–4 complete; User Story 5 remains open |
+| Review status | Implementation and verification complete for the five-story UX delivery |
+| Implementation status | User Stories 1–5 complete; capability and qualification work remains excluded |
 | Delivery profile | Solo, part-time, local-first learning project |
 | Dependency position | `DLV-PLAT-001` is complete; `DLV-UX-002` remains a separate follow-up delivery item. |
 | Authoritative deliverable | Implement the Tailwind/daisyUI application shell and shared UX component abstractions. |
@@ -220,18 +220,18 @@ Implementation evidence for User Story 4 is recorded in
 
 ### Acceptance criteria
 
-- [ ] Form examples use React Hook Form for local form state and Zod for immediate client validation while preserving the server-authoritative boundary.
-- [ ] Monetary form fields display locale-aware values but submit canonical decimal strings in the fixture submission model.
-- [ ] `CMP-010` groups field, line, business-rule, authorization, dependency, and conflict errors; each error links to its cause and preserves valid input.
-- [ ] Failed submission gives the validation summary a predictable focus target and associates field/line errors with their controls.
-- [ ] `CMP-005` distinguishes approval requested, pending, delegated, escalated, decided, applied, rejected, expired, and invalidated states; a recorded decision is not shown as applied before revalidation.
-- [ ] `CMP-006` distinguishes posting request, pending, established result, rejection, failure, retry eligibility, reversal, and reconciliation, including period/gate evidence where supplied.
-- [ ] Irreversible or high-risk confirmation summarizes record, version, scope, amount/currency, intended state change, accounting owner, approvals, and lineage effect.
-- [ ] `CMP-012` shows expected versus current version/state, changed values, current owner, established-result lookup, and whether a deliberate retry is permitted.
-- [ ] Version conflicts never automatically resubmit a mutation. Identity-content conflicts require a new business identity.
-- [ ] Typed problem fixtures cover success, domain rejection, authorization denial, version conflict, idempotency conflict, dependency unavailability, ambiguous outcome, and unexpected failure with correlation reference.
-- [ ] Form and dialog tests cover keyboard completion, focus restoration, validation association, confirmation cancellation, safe retry, no blind retry, and preserved draft input where permitted.
-- [ ] The integrated example demonstrates worklist-to-detail navigation and renders representative worklist, detail, action, status, form, and dialog states using synthetic data.
+- [x] Form examples use React Hook Form for local form state and Zod for immediate client validation while preserving the server-authoritative boundary.
+- [x] Monetary form fields display locale-aware values but submit canonical decimal strings in the fixture submission model.
+- [x] `CMP-010` groups field, line, business-rule, authorization, dependency, and conflict errors; each error links to its cause and preserves valid input.
+- [x] Failed submission gives the validation summary a predictable focus target and associates field/line errors with their controls.
+- [x] `CMP-005` distinguishes approval requested, pending, delegated, escalated, decided, applied, rejected, expired, and invalidated states; a recorded decision is not shown as applied before revalidation.
+- [x] `CMP-006` distinguishes posting request, pending, established result, rejection, failure, retry eligibility, reversal, and reconciliation, including period/gate evidence where supplied.
+- [x] Irreversible or high-risk confirmation summarizes record, version, scope, amount/currency, intended state change, accounting owner, approvals, and lineage effect.
+- [x] `CMP-012` shows expected versus current version/state, changed values, current owner, established-result lookup, and whether a deliberate retry is permitted.
+- [x] Version conflicts never automatically resubmit a mutation. Identity-content conflicts require a new business identity.
+- [x] Typed problem fixtures cover success, domain rejection, authorization denial, version conflict, idempotency conflict, dependency unavailability, ambiguous outcome, and unexpected failure with correlation reference.
+- [x] Form and dialog tests cover keyboard completion, focus restoration, validation association, confirmation cancellation, safe retry, no blind retry, and preserved draft input where permitted.
+- [x] The integrated example demonstrates worklist-to-detail navigation and renders representative worklist, detail, action, status, form, and dialog states using synthetic data.
 
 ### Evidence
 
@@ -240,18 +240,21 @@ Implementation evidence for User Story 4 is recorded in
 - Vitest/Testing Library output for form, validation, approval, posting, confirmation, and conflict behavior.
 - Frontend build and test output.
 
+Implementation evidence for User Story 5 is recorded in
+`docs/verification/DLV-UX-001-us5-form-approval-posting-validation-conflict.md`.
+
 ## 10. Delivery-item acceptance summary
 
 `DLV-UX-001` is complete only when all five stories are complete and every condition below passes:
 
-- [ ] Tailwind/daisyUI styling and semantic state tokens are installed and reproducible through pnpm.
-- [ ] The routed application shell exposes global navigation, scope context, and shared operational route seams.
-- [ ] All 18 shared components from the frontend technical specification are implemented as typed semantic wrappers and are covered by component tests.
-- [ ] Synthetic examples demonstrate worklist, detail, action, status, form, and dialog behavior.
-- [ ] State, scope, version, ownership, correction, evidence, privacy, currency, conflict, and recovery semantics are represented without introducing finance business logic.
-- [ ] Frontend tests and build pass, and no generated output, secrets, or alternate lockfile is committed.
-- [ ] Basic semantic and keyboard behavior is tested, while the dedicated accessibility harness remains assigned to `DLV-UX-002`.
-- [ ] No finance capability, API endpoint, persistence behavior, authentication implementation, authorization policy, workflow demonstration, or M0 milestone is incorrectly marked complete.
+- [x] Tailwind/daisyUI styling and semantic state tokens are installed and reproducible through pnpm.
+- [x] The routed application shell exposes global navigation, scope context, and shared operational route seams.
+- [x] All 18 shared components from the frontend technical specification are implemented as typed semantic wrappers and are covered by component tests.
+- [x] Synthetic examples demonstrate worklist, detail, action, status, form, and dialog behavior.
+- [x] State, scope, version, ownership, correction, evidence, privacy, currency, conflict, and recovery semantics are represented without introducing finance business logic.
+- [x] Frontend tests and build pass, and no generated output, secrets, or alternate lockfile is committed.
+- [x] Basic semantic and keyboard behavior is tested, while the dedicated accessibility harness remains assigned to `DLV-UX-002`.
+- [x] No finance capability, API endpoint, persistence behavior, authentication implementation, authorization policy, workflow demonstration, or M0 milestone is incorrectly marked complete.
 
 ## 11. Explicit exclusions and follow-on ownership
 

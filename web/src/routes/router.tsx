@@ -3,6 +3,7 @@ import { createBrowserRouter, NavLink, Outlet, type RouteObject } from 'react-ro
 
 import { AppShell } from '@/app/app-shell'
 import { DevelopmentExamples } from '@/app/development-examples'
+import { WorkflowExample } from '@/app/workflow-example'
 import { AccountingScopeSelector } from '@/components/accounting-scope-selector'
 import { StatusBadge } from '@/components/ui'
 import type { AuthScopeResolution } from '@/lib/auth/auth-scope-adapter'
@@ -52,6 +53,7 @@ function AreaPage({ route }: { route: RouteDefinition }) {
 }
 
 function OperationalPage({ route }: { route: RouteDefinition }) {
+  if (route.screenId === 'CON-SCR-01') return <WorkflowExample />
   return <section><p className="text-sm font-semibold uppercase tracking-wide text-primary">{route.screenId}</p><h2 className="mt-1 text-2xl font-semibold">{route.title}</h2><p className="mt-2 max-w-3xl text-base-content/75">Shared operational route contract only. Resolution remains owned by the receiving capability and is not implemented in this story.</p></section>
 }
 
