@@ -30,7 +30,7 @@ export function Field({
   return (
     <div className="form-control w-full gap-2">
       <label className="label cursor-pointer justify-start gap-2" htmlFor={id}>
-        <span className="label-text font-medium">{label}</span>
+        <span className="font-medium text-base-content">{label}</span>
         {rest.required ? <span aria-hidden="true" className="text-error">*</span> : null}
       </label>
       <input

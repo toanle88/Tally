@@ -17,7 +17,7 @@ export function AccountingScopeSelector() {
     <div className="space-y-4">
       <div className="space-y-2">
         <label className="block" htmlFor="accounting-scope-selector">
-          <span className="label-text font-medium">Accounting scope</span>
+          <span className="font-medium text-base-content">Accounting scope</span>
         </label>
         <Select
           id="accounting-scope-selector"

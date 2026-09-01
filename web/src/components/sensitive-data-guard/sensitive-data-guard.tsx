@@ -31,7 +31,7 @@ export function SensitiveDataGuard({ label, classification, value, access, canRe
         <Button variant="ghost" aria-disabled={!revealAllowed} onClick={() => revealAllowed ? setRevealed((current) => !current) : handleDenied('reveal')}>{revealAllowed && revealed ? 'Hide value' : revealAllowed ? 'Reveal value' : 'Reveal unavailable'}</Button>
         <Button variant="ghost" aria-disabled={!exportAllowed} onClick={() => exportAllowed ? onExport() : handleDenied('export')}>{exportAllowed ? 'Export value' : 'Export unavailable'}</Button>
       </div>}
-      {access === 'restricted' ? <p className="mt-3 text-sm text-warning">Access restricted. The protected value remains masked and export is unavailable.</p> : null}
+      {access === 'restricted' ? <p className="mt-3 text-sm text-warning-content">Access restricted. The protected value remains masked and export is unavailable.</p> : null}
     </section>
   )
 }

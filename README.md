@@ -59,6 +59,8 @@ All commands must be run from the repository root.
 | `pnpm test` | Run all tests (API + web) |
 | `pnpm test:api` | `go test ./...` |
 | `pnpm test:web` | `vitest run` (via `pnpm -C web run test`) |
+| `pnpm test:a11y` | Non-watch Playwright + axe scan of the routed shell and synthetic integrated accessibility states |
+| `pnpm test:a11y:negative` | Controlled negative proof that an unlabeled button fails the axe assertion |
 | `pnpm check` | `pnpm run test && pnpm run build` |
 | `pnpm dev-api` | `go run ./cmd/api` |
 | `pnpm dev-web` | `vite` dev server (via `pnpm -C web run dev`) |

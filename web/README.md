@@ -13,7 +13,18 @@ pnpm --dir web install --frozen-lockfile
 pnpm -C web test
 pnpm -C web build
 pnpm dev-web
+
+# Install Chromium once, then run the non-watch accessibility gate
+pnpm --dir web exec playwright install chromium
+pnpm test:a11y
+pnpm test:a11y:negative
 ```
+
+The accessibility harness uses Playwright Test with `@axe-core/playwright`.
+It scans the routed application shell and synthetic integrated examples for
+semantic regions, names, statuses, tables, validation associations, dialogs,
+live regions, and axe violations. The negative command is expected to prove
+that a known unlabeled-button violation makes the assertion fail.
 
 The frontend lockfile is maintained at `web/pnpm-lock.yaml`. pnpm is the only
 supported frontend package manager.
