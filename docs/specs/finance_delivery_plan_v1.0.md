@@ -228,6 +228,12 @@ Priority meanings: `P0` blocks the current milestone; `P1` is required for the d
 | DLV-IAC-002 | EP-IAC-001 | M0 | Create optional Azure dev/demo deployment. | Static Web App, Container App and PostgreSQL exercise deploy and destroy reproducibly. |
 | DLV-CI-001 | EP-PLAT-001 | M0 | Create pull-request CI quality pipeline. | Go, frontend, OpenAPI, SQL, Terraform, security and documentation checks gate merge. |
 
+The `DLV-UX-002` story breakdown and scope boundaries are defined in
+`docs/backlog/stories/DLV-UX-002_user_stories.md`. Its M0 evidence is limited to
+the repeatable accessibility harness and synthetic shared-UI baseline; full
+qualification of all critical workflows remains governed by the accessibility
+and release NFR items.
+
 ### 4. Global functional-control backlog
 
 | Delivery ID | Source | Epic | Milestone | Deliverable |

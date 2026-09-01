@@ -63,6 +63,12 @@
       - [x] **User Story 3 — Build record context, lifecycle, money, evidence, and privacy components**
       - [x] **User Story 4 — Build worklist, action, settlement, exception, progress, and result components**
       - [x] **User Story 5 — Build forms, approval/posting panels, validation, confirmation, and conflict interactions**
+    - [ ] **DLV-UX-002 — Accessibility test harness**
+      - [ ] **User Story 1 — Establish the automated accessibility harness**
+      - [ ] **User Story 2 — Verify keyboard operation and focus behavior**
+      - [ ] **User Story 3 — Establish screen-reader and semantic review coverage**
+      - [ ] **User Story 4 — Verify visual adaptability and motion preferences**
+      - [ ] **User Story 5 — Produce accessibility qualification evidence and defect decisions**
 
 ## Milestone and epic roadmap
 
