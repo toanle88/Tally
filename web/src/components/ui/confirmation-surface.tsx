@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 
 import { Button } from './button'
 import type { ConfirmationDetail } from './types'
@@ -12,6 +12,7 @@ export interface ConfirmationSurfaceProps {
   onConfirm: () => void
   onCancel: () => void
   destructive?: boolean
+  autoFocus?: boolean
   children?: ReactNode
 }
 
@@ -24,14 +25,31 @@ export function ConfirmationSurface({
   onConfirm,
   onCancel,
   destructive = false,
+  autoFocus = false,
   children,
 }: ConfirmationSurfaceProps) {
   const surfaceId = useId()
   const titleId = `${surfaceId}-confirmation-title`
   const descriptionId = `${surfaceId}-confirmation-description`
+  const surfaceRef = useRef<HTMLElement>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (!autoFocus) return
+
+    previousFocusRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null
+    surfaceRef.current?.querySelector<HTMLButtonElement>('button:not([disabled])')?.focus()
+
+    return () => {
+      if (previousFocusRef.current?.isConnected) previousFocusRef.current.focus()
+    }
+  }, [autoFocus])
 
   return (
     <section
+      ref={surfaceRef}
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
       className="rounded-box border border-warning/60 bg-base-100 p-5 shadow-sm"

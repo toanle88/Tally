@@ -62,6 +62,7 @@ export function AccountingScopeSelector() {
 
       {pendingScope ? (
         <ConfirmationSurface
+          autoFocus
           title="Unsaved work in the current scope"
           description={`Switching to ${pendingScope.legalEntity.name} will discard the unsaved fixture work.`}
           details={[

@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { ApprovalPanel } from './approval-panel'
@@ -6,6 +7,7 @@ import { PostingPanel } from './posting-panel'
 import { ValidationSummary } from './validation-summary'
 import { VersionConflictDialog } from './version-conflict-dialog'
 import { approvalFixture, conflictFixture, postingFixture, workflowOutcomeFixtures } from '@/app/workflow-fixtures'
+import { ConfirmationSurface } from './ui'
 import { formatDecimalInput, normalizeDecimalInput } from './workflow-context'
 
 describe('Story 5 workflow components', () => {
@@ -41,6 +43,42 @@ describe('Story 5 workflow components', () => {
     expect(screen.getByRole('dialog')).toHaveAttribute('aria-modal', 'true')
     expect(screen.getByText('settlement-epoch-2026-08-31-03')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Refresh authoritative state' })).toBeInTheDocument()
+  })
+
+  it('focuses dynamic confirmations and restores their triggering control', async () => {
+    function ConfirmationHarness() {
+      const [open, setOpen] = useState(false)
+      return <><button onClick={() => setOpen(true)}>Open confirmation</button>{open ? <ConfirmationSurface autoFocus title="Confirm fixture" description="Confirm fixture action." confirmLabel="Confirm" cancelLabel="Cancel" onConfirm={() => setOpen(false)} onCancel={() => setOpen(false)} /> : null}</>
+    }
+
+    render(<ConfirmationHarness />)
+    const trigger = screen.getByRole('button', { name: 'Open confirmation' })
+    trigger.focus()
+    fireEvent.click(trigger)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus())
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    await waitFor(() => expect(trigger).toHaveFocus())
+  })
+
+  it('traps conflict-dialog focus and restores the opener on Escape', async () => {
+    function ConflictHarness() {
+      const [open, setOpen] = useState(false)
+      return <><button onClick={() => setOpen(true)}>Open conflict</button>{open ? <VersionConflictDialog conflict={conflictFixture} onClose={() => setOpen(false)} onRefresh={() => undefined} onRetry={() => setOpen(false)} /> : null}</>
+    }
+
+    render(<ConflictHarness />)
+    const trigger = screen.getByRole('button', { name: 'Open conflict' })
+    trigger.focus()
+    fireEvent.click(trigger)
+    const dialog = await screen.findByRole('dialog')
+    const close = screen.getByRole('button', { name: 'Close' })
+    const retry = screen.getByRole('button', { name: 'Retry after review' })
+    await waitFor(() => expect(close).toHaveFocus())
+
+    fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: true })
+    expect(retry).toHaveFocus()
+    fireEvent.keyDown(dialog, { key: 'Escape' })
+    await waitFor(() => expect(trigger).toHaveFocus())
   })
 
   it('provides every typed outcome fixture category', () => {
