@@ -57,12 +57,12 @@ The harness uses the existing synthetic examples and shared component vocabulary
 
 ### Acceptance criteria
 
-- [ ] The frontend exposes a documented command for automated accessibility checks that runs in non-watch mode and returns a non-zero result for an accessibility violation.
-- [ ] The automated suite uses the approved frontend test/tooling boundary and scans the shared shell, representative shared components, and the synthetic integrated example with synthetic data.
-- [ ] The suite checks semantic regions, headings, labels, accessible names, status meaning, table structure, validation associations, dialog semantics, and live-region markup where applicable.
-- [ ] The suite does not suppress, broadly disable, or reclassify violations merely to make the baseline pass; any justified rule configuration is narrow, documented, and reviewed.
-- [ ] Test output identifies the target and failing rule sufficiently for a developer to reproduce the finding.
-- [ ] The harness does not log credentials, tokens, restricted values, or sensitive fixture data.
+- [x] The frontend exposes a documented command for automated accessibility checks that runs in non-watch mode and returns a non-zero result for an accessibility violation.
+- [x] The automated suite uses the approved frontend test/tooling boundary and scans the shared shell, representative shared components, and the synthetic integrated example with synthetic data.
+- [x] The suite checks semantic regions, headings, labels, accessible names, status meaning, table structure, validation associations, dialog semantics, and live-region markup where applicable.
+- [x] The suite does not suppress, broadly disable, or reclassify violations merely to make the baseline pass; any justified rule configuration is narrow, documented, and reviewed.
+- [x] Test output identifies the target and failing rule sufficiently for a developer to reproduce the finding.
+- [x] The harness does not log credentials, tokens, restricted values, or sensitive fixture data.
 
 ### Evidence
 
@@ -70,6 +70,12 @@ The harness uses the existing synthetic examples and shared component vocabulary
 - Passing baseline output for shared targets.
 - Controlled negative check proving a known violation fails the command.
 - Rule-configuration review showing no unexplained global exclusions.
+
+### User Story 1 implementation evidence
+
+The implemented harness, target mapping, dependency boundary, passing output,
+and controlled negative proof are recorded in
+[`docs/verification/DLV-UX-002-us1-automated-accessibility-harness.md`](../../verification/DLV-UX-002-us1-automated-accessibility-harness.md).
 
 ## 7. User Story 2 — Verify keyboard operation and focus behavior
 

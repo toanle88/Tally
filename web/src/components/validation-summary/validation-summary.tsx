@@ -22,7 +22,7 @@ export function ValidationSummary({ issues, onFocusTarget }: ValidationSummaryPr
               <Link href={`#${issue.targetId}`} onClick={(event) => { event.preventDefault(); onFocusTarget?.(issue.targetId) }}>
                 <span className="font-medium">{issue.targetLabel}:</span> {issue.message}
               </Link>
-              <span className="ml-2 text-base-content/60">({issue.category})</span>
+              <span className="ml-2 text-base-content">({issue.category})</span>
               {issue.nextAction ? <p className="ml-4 text-base-content/70">Next: {issue.nextAction}</p> : null}
             </li>
           ))}

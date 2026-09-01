@@ -27,7 +27,7 @@ export function DataTable<Row>({
         <thead className="bg-base-200/70">
           <tr>
             {columns.map((column) => (
-              <th key={column.key} scope="col">
+              <th key={column.key} className="text-base-content" scope="col">
                 {column.header}
               </th>
             ))}
