@@ -83,18 +83,24 @@ and controlled negative proof are recorded in
 
 ### Acceptance criteria
 
-- [ ] Keyboard checks cover navigation, scope selection, worklist filtering and selection, tables, row actions, forms, validation summary links, confirmation surfaces, approval/posting panels, and conflict dialogs in the synthetic example.
-- [ ] Checks verify logical tab order, visible focus, escape/cancel behavior, dialog focus trapping, focus restoration, and a safe exit path.
-- [ ] Checks verify that failed submission focuses the validation summary or documented target and preserves valid input.
-- [ ] Checks verify that disabled or blocked actions remain understandable and are not the only way to discover why an action is unavailable.
-- [ ] Async updates do not unexpectedly move focus; material status changes use a documented announcement target.
-- [ ] A keyboard procedure is available for future critical workflows and records the target, steps, expected result, and observed result.
+- [x] Keyboard checks cover navigation, scope selection, worklist filtering and selection, tables, row actions, forms, validation summary links, confirmation surfaces, approval/posting panels, and conflict dialogs in the synthetic example.
+- [x] Checks verify logical tab order, visible focus, escape/cancel behavior, dialog focus trapping, focus restoration, and a safe exit path.
+- [x] Checks verify that failed submission focuses the validation summary or documented target and preserves valid input.
+- [x] Checks verify that disabled or blocked actions remain understandable and are not the only way to discover why an action is unavailable.
+- [x] Async updates do not unexpectedly move focus; material status changes use a documented announcement target.
+- [x] A keyboard procedure is available for future critical workflows and records the target, steps, expected result, and observed result.
 
 ### Evidence
 
 - Playwright or equivalent interaction tests for the shared example.
 - Focus-order and dialog behavior results.
 - Manual keyboard checklist template for future workflow journeys.
+
+### User Story 2 implementation evidence
+
+The keyboard interaction tests, shared focus behavior, procedure, and
+verification record are documented in
+[`docs/verification/DLV-UX-002-us2-keyboard-focus-behavior.md`](../../verification/DLV-UX-002-us2-keyboard-focus-behavior.md).
 
 ## 8. User Story 3 — Establish screen-reader and semantic review coverage
 

@@ -52,6 +52,6 @@ globally disabled or reclassified.
 
 ## Deferred scope
 
-Keyboard operation/focus behavior, screen-reader review, visual adaptability
-and motion preferences, and formal accessibility qualification evidence remain
-the separately tracked DLV-UX-002 User Stories 2–5.
+Screen-reader review, visual adaptability and motion preferences, and formal
+accessibility qualification evidence remain the separately tracked DLV-UX-002
+User Stories 3–5.

@@ -32,5 +32,6 @@ export function ExceptionResolutionPanel({ exception, resolutionResult, onResolv
 }
 
 function ButtonForResolution({ resolution, onResolve }: { resolution: ActionState; onResolve: (resolution: ActionState) => void }) {
-  return <Button variant="secondary" disabled={!resolution.permitted} aria-describedby={!resolution.permitted ? `${resolution.id}-reason` : undefined} onClick={() => resolution.permitted ? onResolve(resolution) : undefined}>{resolution.label}{!resolution.permitted ? <span className="sr-only"> unavailable</span> : null}{!resolution.permitted ? <span id={`${resolution.id}-reason`} className="sr-only">{resolution.blockingReason ?? 'Resolution unavailable.'}</span> : null}</Button>
+  const reasonId = `${resolution.id}-reason`
+  return <div className="space-y-1"><Button variant="secondary" disabled={!resolution.permitted} aria-describedby={!resolution.permitted ? reasonId : undefined} onClick={() => resolution.permitted ? onResolve(resolution) : undefined}>{resolution.label}{!resolution.permitted ? <span className="sr-only"> unavailable</span> : null}</Button>{!resolution.permitted ? <p id={reasonId} className="max-w-xs text-sm text-base-content/70">{resolution.blockingReason ?? 'Resolution unavailable.'}{resolution.safeNextAction ? ` Next: ${resolution.safeNextAction}` : null}</p> : null}</div>
 }

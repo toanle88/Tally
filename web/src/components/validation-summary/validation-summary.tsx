@@ -15,7 +15,7 @@ export function ValidationSummary({ issues, onFocusTarget }: ValidationSummaryPr
   if (issues.length === 0) return null
   return (
     <Panel title="Review the highlighted issues" description="Submission was not sent. Resolve each issue, then try again." className="border-error/50" state="error">
-      <div ref={summaryRef} id={titleId} tabIndex={-1} className="mt-3" role="alert">
+      <div ref={summaryRef} id={titleId} tabIndex={-1} className="mt-3 rounded-box focus:outline-2 focus:outline-offset-1 focus:outline-error" role="alert">
         <ul className="space-y-2 text-sm">
           {issues.map((issue) => (
             <li key={issue.id}>
