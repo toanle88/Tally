@@ -63,11 +63,11 @@
       - [x] **User Story 3 — Build record context, lifecycle, money, evidence, and privacy components**
       - [x] **User Story 4 — Build worklist, action, settlement, exception, progress, and result components**
       - [x] **User Story 5 — Build forms, approval/posting panels, validation, confirmation, and conflict interactions**
-    - [ ] **DLV-UX-002 — Accessibility test harness**
+    - [x] **DLV-UX-002 — Accessibility test harness** (M0 owner-approved scope; witnessed screen-reader and actual 400% browser-zoom reviews deferred to release qualification)
       - [x] **User Story 1 — Establish the automated accessibility harness**
       - [x] **User Story 2 — Verify keyboard operation and focus behavior**
-      - [ ] **User Story 3 — Establish screen-reader and semantic review coverage** (repository semantic coverage implemented; witnessed SR-01/SR-02 review pending)
-      - [ ] **User Story 4 — Verify visual adaptability and motion preferences** (automated baseline passes; actual 400% browser-zoom review pending)
+      - [x] **User Story 3 — Establish screen-reader and semantic review coverage** (repository semantic coverage and review procedure complete; witnessed SR-01/SR-02 review deferred)
+      - [x] **User Story 4 — Verify visual adaptability and motion preferences** (automated baseline complete; actual 400% browser-zoom review deferred)
       - [x] **User Story 5 — Produce accessibility qualification evidence and defect decisions**
 
 ## Milestone and epic roadmap
