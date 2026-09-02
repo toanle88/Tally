@@ -4,6 +4,10 @@
 
 Provide a repeatable accessibility verification boundary for the TALLY frontend. The harness shall combine automated checks, keyboard interaction checks, screen-reader procedures, zoom/reflow and reduced-motion checks, and documented evidence without claiming that future finance capabilities are already accessible or implemented.
 
+**M0 scope decision:** The owner has removed the witnessed screen-reader sessions
+and actual browser-zoom session from this delivery item's completion scope. They
+remain deferred qualification work and are not represented as passed evidence.
+
 ## 2. Learning objective
 
 Learn how to turn accessibility requirements into executable frontend checks and witnessed review evidence while keeping component ownership, workflow ownership, and release qualification boundaries explicit.
@@ -121,7 +125,7 @@ verification record are documented in
 - Witnessed review record for the shared shell and integrated example.
 - Sample finding and remediation-trace record using synthetic data.
 
-Repository matrix, procedure, and sample trace: [`docs/verification/DLV-UX-002-us3-screen-reader-semantic-review.md`](../../verification/DLV-UX-002-us3-screen-reader-semantic-review.md). The witnessed review record remains pending until SR-01 and SR-02 are executed.
+Repository matrix, procedure, and sample trace: [`docs/verification/DLV-UX-002-us3-screen-reader-semantic-review.md`](../../verification/DLV-UX-002-us3-screen-reader-semantic-review.md). Witnessed SR-01 and SR-02 execution is deferred to later qualification.
 
 ## 9. User Story 4 — Verify visual adaptability and motion preferences
 
@@ -130,7 +134,7 @@ Repository matrix, procedure, and sample trace: [`docs/verification/DLV-UX-002-u
 ### Acceptance criteria
 
 - [x] Checks cover applicable text and interactive-component contrast requirements for light and dark themes, including status and disabled/restricted states.
-- [ ] Representative dense tables, forms, dialogs, and status/process surfaces remain usable at 200 percent text size and 400 percent browser zoom without loss of information or action. Automated narrow-viewport proxy passes; actual browser-zoom review remains pending.
+- [x] Representative dense tables, forms, dialogs, and status/process surfaces pass the automated 200 percent text and 400 percent browser-zoom-equivalent checks. Actual browser-zoom review is deferred to later qualification.
 - [x] Reflow checks identify horizontal clipping, obscured controls, lost table meaning, and inaccessible overflow; any intentional responsive transformation remains semantically understandable.
 - [x] Reduced-motion checks confirm that nonessential animation can be reduced or disabled and that no critical meaning depends on motion.
 - [x] The test procedure records viewport, zoom/text-size setting, motion preference, browser, target, result, and finding reference.
@@ -168,15 +172,15 @@ Implementation and verification evidence: [`docs/verification/DLV-UX-002-us5-acc
 
 ## 11. Delivery-item acceptance summary
 
-`DLV-UX-002` is complete only when all five stories are complete and:
+`DLV-UX-002` is complete for its revised M0 scope when all five stories are complete and:
 
-- [ ] The automated accessibility command, keyboard procedure, screen-reader procedure, visual-adaptation checks, and evidence template are reproducible from a clean checkout.
-- [ ] Shared shell, representative components, and the synthetic integrated example have passing baseline evidence or explicitly recorded findings.
-- [ ] A controlled negative check proves that the automated gate fails on a known violation.
-- [ ] Keyboard, focus, semantic, announcement, zoom/reflow, contrast, and reduced-motion expectations are represented in executable checks or witnessed procedures.
-- [ ] Accessibility findings have severity, ownership, remediation or exception decisions, and retest traceability.
-- [ ] No future finance workflow, capability, authorization rule, or production qualification result is incorrectly marked complete.
-- [ ] No credentials, sensitive fixtures, dependency directories, build output, or local-only configuration is committed.
+- [x] The automated accessibility command, keyboard procedure, screen-reader procedure, visual-adaptation checks, and evidence template are reproducible from a clean checkout.
+- [x] Shared shell, representative components, and the synthetic integrated example have passing baseline evidence or explicitly recorded findings.
+- [x] A controlled negative check proves that the automated gate fails on a known violation.
+- [x] Keyboard, focus, semantic, announcement, zoom/reflow, contrast, and reduced-motion expectations are represented in executable checks or documented procedures. Witnessed screen-reader and actual browser-zoom execution is deferred.
+- [x] Accessibility findings have severity, ownership, remediation or exception decisions, and retest traceability.
+- [x] No future finance workflow, capability, authorization rule, or production qualification result is incorrectly marked complete.
+- [x] No credentials, sensitive fixtures, dependency directories, build output, or local-only configuration is committed.
 
 ## 12. Definition of Ready
 
@@ -188,13 +192,13 @@ Implementation and verification evidence: [`docs/verification/DLV-UX-002-us5-acc
 
 ## 13. Definition of Done
 
-- [ ] Every acceptance criterion in Sections 6–10 passes or has an explicitly recorded, approved exception within scope.
-- [ ] Automated, keyboard, screen-reader, visual-adaptation, and evidence checks are documented and repeatable.
-- [ ] The baseline report links results to the applicable UX and NFR requirements.
-- [ ] The harness fails safely and visibly when a required automated check cannot run or a known violation is introduced.
-- [ ] Manual evidence identifies the exact browser and assistive-technology combination used.
-- [ ] Full critical-workflow qualification remains assigned to release/NFR qualification and is not silently deferred inside this item.
-- [ ] No critical or high unresolved defect remains within this delivery item without an approved exception.
+- [x] Every acceptance criterion in Sections 6–10 passes or has an explicitly recorded M0 scope decision; deferred manual qualification remains assigned to later release qualification.
+- [x] Automated, keyboard, screen-reader, visual-adaptation, and evidence checks are documented and repeatable.
+- [x] The baseline report links results to the applicable UX and NFR requirements.
+- [x] The harness fails safely and visibly when a required automated check cannot run or a known violation is introduced.
+- [x] Manual evidence requirements identify the exact browser and assistive-technology combination to use when deferred qualification runs.
+- [x] Full critical-workflow qualification remains assigned to release/NFR qualification and is explicitly deferred from this item.
+- [x] No critical or high unresolved defect remains within this delivery item without an approved exception.
 
 ## 14. Traceability
 
@@ -218,6 +222,7 @@ Implementation and verification evidence: [`docs/verification/DLV-UX-002-us5-acc
 | Full review of all 22 critical workflows | Applicable workflow and release qualification items |
 | Annual/high-risk specialist review | NFR-ACC-012 / full-system qualification |
 | Production accessibility monitoring and support process | `EP-OPS-001` and applicable quality gates |
+| Deferred witnessed screen-reader and actual browser-zoom qualification | `EP-QUAL-001` / applicable release qualification gate |
 
 ## 16. Source references
 

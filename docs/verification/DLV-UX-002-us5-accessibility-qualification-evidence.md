@@ -143,8 +143,9 @@ This User Story does not mark the following work complete:
 - full review of all 22 critical workflows `WF-6.1` through `WF-7.15`.
 
 Those checks remain release/NFR qualification obligations when the applicable
-capabilities and workflows are implemented. `DLV-UX-002` remains open until
-its other user stories and delivery-item evidence are complete.
+capabilities and workflows are implemented. They were removed from the revised
+M0 completion scope by the project owner; this does not represent them as
+passed evidence.
 
 ## Verification record
 
