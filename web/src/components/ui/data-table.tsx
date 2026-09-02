@@ -40,7 +40,9 @@ export function DataTable<Row>({
                 key={getRowKey(row, index)}
                 className="border-b border-base-300/80 odd:bg-base-200/35 transition-colors hover:bg-info/10"
               >
-                {columns.map((column) => (
+                {columns.map((column) => column.rowHeader ? (
+                  <th key={column.key} scope="row">{column.render(row)}</th>
+                ) : (
                   <td key={column.key}>{column.render(row)}</td>
                 ))}
               </tr>

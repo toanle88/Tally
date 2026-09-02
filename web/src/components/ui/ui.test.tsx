@@ -45,7 +45,7 @@ describe('shared UI primitives', () => {
         <Panel title="Test panel">Panel content</Panel>
         <DataTable
           caption="Test table"
-          columns={[{ key: 'name', header: 'Name', render: (row: { name: string }) => row.name }]}
+          columns={[{ key: 'name', header: 'Name', rowHeader: true, render: (row: { name: string }) => row.name }]}
           rows={[{ name: 'Example' }]}
           getRowKey={(row) => row.name}
         />
@@ -73,6 +73,7 @@ describe('shared UI primitives', () => {
     expect(screen.getByRole('link', { name: 'Records' })).toHaveAttribute('href', '/records')
     expect(screen.getByRole('table', { name: 'Test table' })).toBeInTheDocument()
     expect(screen.getByRole('columnheader', { name: 'Name' })).toBeInTheDocument()
+    expect(screen.getByRole('rowheader', { name: 'Example' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Confirm test' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Continue' }))
       .toHaveAttribute('type', 'button')

@@ -22,6 +22,7 @@ export type ControlSize = 'sm' | 'md' | 'lg'
 export interface TableColumn<Row> {
   key: string
   header: string
+  rowHeader?: boolean
   render: (row: Row) => ReactNode
 }
 
