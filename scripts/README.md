@@ -31,7 +31,8 @@ scripts/
 │   ├── outbox-dispatch.sh # DLV-PLAT-007 User Story 4 dispatch gate
 │   ├── outbox-worker.sh # DLV-PLAT-007 User Story 5 worker/replay gate
 │   ├── openapi-story1.sh # OpenAPI User Story 1 verification
-│   └── accessibility-negative.sh # Controlled axe failure proof
+│   ├── accessibility-negative.sh # Controlled axe failure proof
+│   └── accessibility-qualification.sh # Focused/full accessibility qualification runner
 └── README.md
 ```
 
@@ -117,6 +118,23 @@ make db-verify
 ---
 
 # Verification Scripts
+
+## Accessibility qualification
+
+The root `pnpm test:a11y:qualification` command runs all accessibility checks
+and the controlled negative proof by default. Use an explicit target for a
+focused rerun after an interaction change:
+
+```bash
+pnpm test:a11y:qualification -- --list-targets
+pnpm test:a11y:qualification -- --target semantic
+pnpm test:a11y:qualification -- --target all
+```
+
+The runner prints the affected target and verification-document paths. Its
+result template, requirement traceability, defect decisions, and retest
+example are recorded in
+`docs/verification/DLV-UX-002-us5-accessibility-qualification-evidence.md`.
 
 ## openapi-story1.sh
 

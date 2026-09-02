@@ -1,6 +1,8 @@
 # DLV-UX-002 User Story 3 — Screen-reader and semantic review coverage
 
 Status: repository coverage implemented; witnessed assistive-technology review is pending.
+Qualification evidence and defect decisions are recorded in
+[`DLV-UX-002-us5-accessibility-qualification-evidence.md`](./DLV-UX-002-us5-accessibility-qualification-evidence.md).
 
 This document defines repeatable review coverage for the shared shell and
 synthetic integrated examples. It does not claim that a real NVDA or VoiceOver
@@ -58,7 +60,7 @@ either row Pass, Fail, or Blocked.
 
 | Field | Synthetic sample |
 | --- | --- |
-| Finding ID / severity | SR-SAMPLE-001 / Moderate |
+| Finding ID / severity | SR-SAMPLE-001 / Medium |
 | AT, browser, OS | NVDA / Firefox / Windows 11 — sample only, not witnessed |
 | Target and steps | Table row identity; navigate the `Foundation surfaces` table by rows |
 | Expected / observed | Expected each row announces its identity from a row header; observed before remediation: data cells only |

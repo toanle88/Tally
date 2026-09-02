@@ -1,6 +1,6 @@
 # DLV-UX-002 User Story 4 — Visual adaptability and motion preferences
 
-Status: automated baseline verified 2026-09-02. User Story 4 remains open until manual browser-zoom confirmation is recorded.
+Status: automated baseline verified 2026-09-02. User Story 4 remains open until manual browser-zoom confirmation is recorded. Qualification evidence and defect decisions are recorded in [`DLV-UX-002-us5-accessibility-qualification-evidence.md`](./DLV-UX-002-us5-accessibility-qualification-evidence.md).
 
 ## Scope and evidence
 

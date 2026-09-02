@@ -18,6 +18,7 @@
     "test:web": "pnpm -C web run test",
     "test:a11y": "pnpm --dir web --ignore-workspace run test:a11y",
     "test:a11y:negative": "bash scripts/verify/accessibility-negative.sh",
+    "test:a11y:qualification": "bash scripts/verify/accessibility-qualification.sh",
     "check": "pnpm run test && pnpm run build",
     "dev-api": "go run ./cmd/api",
     "dev-web": "pnpm -C web run dev",
