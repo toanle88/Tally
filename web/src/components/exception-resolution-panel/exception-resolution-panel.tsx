@@ -20,7 +20,7 @@ export function ExceptionResolutionPanel({ exception, resolutionResult, onResolv
       </dl>
       <div className="mt-4">
         <h3 className="font-medium">Evidence</h3>
-        {exception.evidence.length === 0 ? <p className="mt-2 text-sm text-base-content/70">No evidence supplied.</p> : <ul className="mt-2 space-y-1 text-sm">{exception.evidence.map((item) => <li key={item.id}>{item.access === 'available' && item.href ? <Link href={item.href}>{item.label} ({item.reference})</Link> : item.access === 'restricted' ? <span className="text-warning-content">Evidence restricted: {item.restrictionReason ?? item.label}</span> : <span className="text-base-content/70">Evidence unavailable: {item.label} ({item.reference})</span>}</li>)}</ul>}
+        {exception.evidence.length === 0 ? <p className="mt-2 text-sm text-base-content/70">No evidence supplied.</p> : <ul className="mt-2 space-y-1 text-sm">{exception.evidence.map((item) => <li key={item.id}>{item.access === 'available' && item.href ? <Link href={item.href}>{item.label} ({item.reference})</Link> : item.access === 'restricted' ? <span className="text-base-content/75">Evidence restricted: {item.restrictionReason ?? item.label}</span> : <span className="text-base-content/70">Evidence unavailable: {item.label} ({item.reference})</span>}</li>)}</ul>}
       </div>
       <div className="mt-4">
         <h3 className="font-medium">Authorized resolutions</h3>

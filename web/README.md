@@ -23,14 +23,17 @@ pnpm test:a11y:negative
 The accessibility harness uses Playwright Test with `@axe-core/playwright`.
 It scans the routed application shell and synthetic integrated examples for
 semantic regions, names, statuses, tables, validation associations, dialogs,
-live regions, axe violations, keyboard operation, logical tab order, visible
-focus, focus restoration, and safe dialog exit. The negative command is
+live regions, axe violations, contrast, visual reflow, reduced motion,
+keyboard operation, logical tab order, visible focus, focus restoration, and
+safe dialog exit. The negative command is
 expected to prove that a known unlabeled-button violation makes the assertion
 fail. The repeatable keyboard procedure and synthetic baseline are recorded in
 `docs/verification/DLV-UX-002-us2-keyboard-focus-behavior.md`. The screen-reader/browser
 matrix, semantic review procedure, and synthetic finding trace are recorded in
 `docs/verification/DLV-UX-002-us3-screen-reader-semantic-review.md`; real NVDA
-and VoiceOver sessions remain explicitly pending.
+and VoiceOver sessions remain explicitly pending. The visual adaptability and
+motion-preference matrix is recorded in
+`docs/verification/DLV-UX-002-us4-visual-adaptability-motion.md`.
 
 The frontend lockfile is maintained at `web/pnpm-lock.yaml`. pnpm is the only
 supported frontend package manager.

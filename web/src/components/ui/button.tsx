@@ -42,7 +42,7 @@ export function Button({
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={classNames(
-        'btn focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+        'btn max-w-full whitespace-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
         variantClasses[variant],
         sizeClasses[size],
         className,

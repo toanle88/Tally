@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 import { classNames } from './class-names'
 import type { TableColumn } from './types'
 
@@ -18,10 +20,18 @@ export function DataTable<Row>({
   emptyMessage = 'No rows to display.',
   className,
 }: DataTableProps<Row>) {
+  const captionId = `${useId()}-table-caption`
+
   return (
-    <div className="overflow-x-auto">
+    <div
+      role="region"
+      aria-labelledby={captionId}
+      tabIndex={0}
+      data-a11y-scroll-region
+      className="overflow-x-auto"
+    >
       <table className={classNames('table min-w-full', className)}>
-        <caption className="caption-top pb-3 text-left text-sm font-semibold">
+        <caption id={captionId} className="caption-top pb-3 text-left text-sm font-semibold">
           {caption}
         </caption>
         <thead className="bg-base-200/70">

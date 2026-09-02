@@ -59,7 +59,7 @@ All commands must be run from the repository root.
 | `pnpm test` | Run all tests (API + web) |
 | `pnpm test:api` | `go test ./...` |
 | `pnpm test:web` | `vitest run` (via `pnpm -C web run test`) |
-| `pnpm test:a11y` | Non-watch Playwright + axe and keyboard/focus checks for the routed shell and synthetic integrated accessibility states |
+| `pnpm test:a11y` | Non-watch Playwright + axe checks for contrast, visual reflow, reduced motion, routed-shell semantics, and keyboard/focus behavior |
 | `pnpm test:a11y:negative` | Controlled negative proof that an unlabeled button fails the axe assertion |
 | `pnpm docs:check` | Build the repository documentation site |
 | `pnpm check` | `pnpm run test && pnpm run build` |
@@ -237,6 +237,9 @@ procedure, and synthetic finding trace are recorded in
 [`docs/verification/DLV-UX-002-us3-screen-reader-semantic-review.md`](./docs/verification/DLV-UX-002-us3-screen-reader-semantic-review.md).
 Repository semantic proxy coverage is implemented; witnessed NVDA and
 VoiceOver sessions remain pending and are not represented as passed evidence.
+The User Story 4 visual adaptability, contrast, reflow, and reduced-motion
+automated baseline is recorded in
+[`docs/verification/DLV-UX-002-us4-visual-adaptability-motion.md`](./docs/verification/DLV-UX-002-us4-visual-adaptability-motion.md).
 
 Tally uses a **modular-monolith** architecture: a single deployable Go
 application with enforced bounded-context module boundaries under
