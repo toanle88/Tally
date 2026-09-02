@@ -45,7 +45,7 @@ export function StatusBadge({
       aria-label={label}
       data-state={state}
       className={classNames(
-        'badge min-h-6 min-w-16 justify-center whitespace-nowrap border-0 px-2 py-1 text-xs font-semibold leading-5',
+        'badge min-h-6 min-w-16 max-w-full justify-center break-words whitespace-normal text-center border-0 px-2 py-1 text-xs font-semibold leading-5',
         stateClasses[state],
         className,
       )}

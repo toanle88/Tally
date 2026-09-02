@@ -67,7 +67,7 @@
       - [x] **User Story 1 — Establish the automated accessibility harness**
       - [x] **User Story 2 — Verify keyboard operation and focus behavior**
       - [ ] **User Story 3 — Establish screen-reader and semantic review coverage** (repository semantic coverage implemented; witnessed SR-01/SR-02 review pending)
-      - [ ] **User Story 4 — Verify visual adaptability and motion preferences**
+      - [ ] **User Story 4 — Verify visual adaptability and motion preferences** (automated baseline passes; actual 400% browser-zoom review pending)
       - [ ] **User Story 5 — Produce accessibility qualification evidence and defect decisions**
 
 ## Milestone and epic roadmap

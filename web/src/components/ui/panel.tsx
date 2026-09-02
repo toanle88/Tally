@@ -24,7 +24,7 @@ export function Panel({
     <section
       aria-labelledby={titleId}
       data-state={state}
-      className={classNames('card border border-base-300 bg-base-100 shadow-sm', className)}
+      className={classNames('card min-w-0 border border-base-300 bg-base-100 shadow-sm', className)}
     >
       <div className="card-body">
         <h2 id={titleId} className="card-title">

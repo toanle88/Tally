@@ -32,7 +32,7 @@ describe('shared UI primitives', () => {
     expect(badge).toHaveAttribute('data-state', state)
     expect(badge).toHaveAccessibleName(badge.textContent ?? '')
     expect(badge).toHaveTextContent(badge.textContent ?? '')
-    expect(badge).toHaveClass('min-w-16', 'justify-center', 'whitespace-nowrap')
+    expect(badge).toHaveClass('min-w-16', 'max-w-full', 'whitespace-normal')
   })
 
   it('preserves semantic controls and associations across primitives', () => {
@@ -72,6 +72,7 @@ describe('shared UI primitives', () => {
     )
     expect(screen.getByRole('link', { name: 'Records' })).toHaveAttribute('href', '/records')
     expect(screen.getByRole('table', { name: 'Test table' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Test table' })).toHaveAttribute('tabindex', '0')
     expect(screen.getByRole('columnheader', { name: 'Name' })).toBeInTheDocument()
     expect(screen.getByRole('rowheader', { name: 'Example' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Confirm test' })).toBeInTheDocument()

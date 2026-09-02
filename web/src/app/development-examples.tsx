@@ -85,7 +85,7 @@ export function DevelopmentExamples() {
         </div>
       </Panel>
 
-      <div className="grid items-start gap-6 xl:grid-cols-2">
+      <div className="grid min-w-0 items-start gap-6 xl:grid-cols-2">
         {(['finance-light', 'finance-dark'] as const).map((theme) => (
           <Panel key={theme} title={theme === 'finance-light' ? 'Light theme' : 'Dark theme'} description={`${theme} tokens and semantic states.`}>
             <div data-theme={theme} className="rounded-box bg-base-200 p-4">
@@ -95,7 +95,7 @@ export function DevelopmentExamples() {
         ))}
       </div>
 
-      <div className="grid items-start gap-6 xl:grid-cols-2">
+      <div className="grid min-w-0 items-start gap-6 xl:grid-cols-2">
         <Panel title="Shared primitives" description="Common controls with semantic support.">
           <div className="space-y-5">
             <div className="flex flex-wrap items-center gap-3"><Button>Primary action</Button><Button variant="secondary">Secondary action</Button><Link href="#confirmation">View confirmation example</Link></div>

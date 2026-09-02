@@ -23,12 +23,12 @@ export function RecordDetailExample() {
       </div>
 
       <RecordIdentityHeader identity={recordIdentityFixture} />
-      <div className="grid items-start gap-6 xl:grid-cols-2"><MoneyAndCurrencyPanel amounts={moneyFixture} gainLoss={{ amount: '-25.00', currency: 'USD', signConvention: 'Negative means loss; positive means gain.' }} /><LegalHoldIndicator status="active" holdReference="HOLD-FIX-00042" appliedAt="2026-08-30T09:35:00Z" destructionAction={{ label: 'Destroy retained content', onActivate: () => setPrivacyMessage('Fixture destruction action accepted after hold release.') }} /></div>
+      <div className="grid min-w-0 items-start gap-6 xl:grid-cols-2"><MoneyAndCurrencyPanel amounts={moneyFixture} gainLoss={{ amount: '-25.00', currency: 'USD', signConvention: 'Negative means loss; positive means gain.' }} /><LegalHoldIndicator status="active" holdReference="HOLD-FIX-00042" appliedAt="2026-08-30T09:35:00Z" destructionAction={{ label: 'Destroy retained content', onActivate: () => setPrivacyMessage('Fixture destruction action accepted after hold release.') }} /></div>
       <LifecycleTimeline transitions={lifecycleFixture} />
       <CorrectionLineagePanel original={{ recordId: recordIdentityFixture.recordId, label: 'Original established customer receipt', href: '#original', establishedAt: recordIdentityFixture.lastMaterialChange }} corrections={lineageReferences} />
       <Panel title="Evidence access" description="The drawer contains only fixture-supplied references and access decisions."><EvidenceDrawer open={evidenceOpen} evidence={evidenceFixture} onOpenChange={setEvidenceOpen} /></Panel>
       <Panel title="Sensitive data examples" description="Restricted values remain masked; authorized reveal and export require explicit fixture permission.">
-        <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <div className="mt-4 grid min-w-0 gap-4 xl:grid-cols-2">
           <SensitiveDataGuard label="Restricted provider reference" classification="Bank-sensitive" value="SYNTHETIC-RESTRICTED-REF" access="restricted" canReveal={true} canExport={true} onAccessDenied={(action) => setPrivacyMessage(`Denied ${action} access to the restricted fixture value.`)} />
           <SensitiveDataGuard label="Authorized detail reference" classification="Synthetic personal reference" value="SYNTHETIC-AUTHORIZED-REF" access="authorized" canReveal={true} canExport={true} onExport={() => setPrivacyMessage('Fixture export permitted; no data was downloaded.')} onAccessDenied={(action) => setPrivacyMessage(`Denied ${action} access to the authorized fixture value.`)} />
         </div>

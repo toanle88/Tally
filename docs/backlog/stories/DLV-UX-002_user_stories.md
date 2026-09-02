@@ -129,18 +129,20 @@ Repository matrix, procedure, and sample trace: [`docs/verification/DLV-UX-002-u
 
 ### Acceptance criteria
 
-- [ ] Checks cover applicable text and interactive-component contrast requirements for light and dark themes, including status and disabled/restricted states.
-- [ ] Representative dense tables, forms, dialogs, and status/process surfaces remain usable at 200 percent text size and 400 percent browser zoom without loss of information or action.
-- [ ] Reflow checks identify horizontal clipping, obscured controls, lost table meaning, and inaccessible overflow; any intentional responsive transformation remains semantically understandable.
-- [ ] Reduced-motion checks confirm that nonessential animation can be reduced or disabled and that no critical meaning depends on motion.
-- [ ] The test procedure records viewport, zoom/text-size setting, motion preference, browser, target, result, and finding reference.
-- [ ] Screenshots or other visual evidence contain no secrets or sensitive finance values.
+- [x] Checks cover applicable text and interactive-component contrast requirements for light and dark themes, including status and disabled/restricted states.
+- [ ] Representative dense tables, forms, dialogs, and status/process surfaces remain usable at 200 percent text size and 400 percent browser zoom without loss of information or action. Automated narrow-viewport proxy passes; actual browser-zoom review remains pending.
+- [x] Reflow checks identify horizontal clipping, obscured controls, lost table meaning, and inaccessible overflow; any intentional responsive transformation remains semantically understandable.
+- [x] Reduced-motion checks confirm that nonessential animation can be reduced or disabled and that no critical meaning depends on motion.
+- [x] The test procedure records viewport, zoom/text-size setting, motion preference, browser, target, result, and finding reference.
+- [x] Screenshots or other visual evidence contain no secrets or sensitive finance values.
 
 ### Evidence
 
 - Automated or scripted checks where practical, plus manual checklist.
 - Representative light/dark, zoom/reflow, and reduced-motion evidence.
 - Documented contrast or responsive exceptions with owner and remediation status.
+
+Implementation and automated verification record: [`docs/verification/DLV-UX-002-us4-visual-adaptability-motion.md`](../../verification/DLV-UX-002-us4-visual-adaptability-motion.md).
 
 ## 10. User Story 5 — Produce accessibility qualification evidence and defect decisions
 
