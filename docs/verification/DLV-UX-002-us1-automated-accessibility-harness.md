@@ -52,6 +52,7 @@ globally disabled or reclassified.
 
 ## Deferred scope
 
-Screen-reader review, visual adaptability and motion preferences, and formal
-accessibility qualification evidence remain the separately tracked DLV-UX-002
-User Stories 3–5.
+Screen-reader review and visual adaptability manual qualification remain the
+separately tracked DLV-UX-002 User Stories 3–4. Qualification evidence and
+defect decisions are recorded in
+[`DLV-UX-002-us5-accessibility-qualification-evidence.md`](./DLV-UX-002-us5-accessibility-qualification-evidence.md).

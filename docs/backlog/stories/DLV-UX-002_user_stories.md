@@ -150,19 +150,21 @@ Implementation and automated verification record: [`docs/verification/DLV-UX-002
 
 ### Acceptance criteria
 
-- [ ] A result template maps each check to its target, requirement or UX acceptance criterion, verification method, environment, owner, result, and evidence reference.
-- [ ] Evidence distinguishes pass, fail, blocked, not applicable, and not yet implemented; blocked or not-yet-implemented future workflows are not counted as passes.
-- [ ] Findings blocking a Class A workflow are classified as release-blocking critical defects in accordance with NFR-ACC-011; other WCAG AA failures receive an approved remediation decision before release claims.
-- [ ] The process records severity, impact, affected workflow/class, owner, corrective action, due date or exception expiry, compensating control where applicable, and retest result.
-- [ ] The harness supports rerunning checks after interaction changes and identifies the changed target and affected accessibility evidence.
-- [ ] The delivery evidence explicitly states that full review of all 22 critical workflows remains a release qualification obligation when those workflows are implemented.
+- [x] A result template maps each check to its target, requirement or UX acceptance criterion, verification method, environment, owner, result, and evidence reference.
+- [x] Evidence distinguishes pass, fail, blocked, not applicable, and not yet implemented; blocked or not-yet-implemented future workflows are not counted as passes.
+- [x] Findings blocking a Class A workflow are classified as release-blocking critical defects in accordance with NFR-ACC-011; other WCAG AA failures receive an approved remediation decision before release claims.
+- [x] The process records severity, impact, affected workflow/class, owner, corrective action, due date or exception expiry, compensating control where applicable, and retest result.
+- [x] The harness supports rerunning checks after interaction changes and identifies the changed target and affected accessibility evidence.
+- [x] The delivery evidence explicitly states that full review of all 22 critical workflows remains a release qualification obligation when those workflows are implemented.
 
 ### Evidence
 
-- Accessibility verification report template and one completed synthetic baseline report.
-- Requirement-to-check traceability for NFR-ACC-001–012 and NFR-TST-007 as applicable to this item.
-- Defect classification and retest example.
-- Clear list of deferred/full-release qualification work.
+- [x] Accessibility verification report template and one completed synthetic baseline report.
+- [x] Requirement-to-check traceability for NFR-ACC-001–012 and NFR-TST-007 as applicable to this item.
+- [x] Defect classification and retest example.
+- [x] Clear list of deferred/full-release qualification work.
+
+Implementation and verification evidence: [`docs/verification/DLV-UX-002-us5-accessibility-qualification-evidence.md`](../../verification/DLV-UX-002-us5-accessibility-qualification-evidence.md).
 
 ## 11. Delivery-item acceptance summary
 

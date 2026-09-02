@@ -41,8 +41,10 @@ viewport, target, observed result, and evidence reference for each run.
 
 This procedure is a repeatable keyboard baseline for shared UI only. Screen
 reader, zoom/reflow, contrast, reduced-motion, and full critical-workflow
-qualification remain owned by the later DLV-UX-002 stories and release/NFR
-qualification.
+qualification remain owned by User Stories 3–4 and release/NFR qualification.
+The evidence template, defect decisions, and focused rerun command are
+recorded in
+[`DLV-UX-002-us5-accessibility-qualification-evidence.md`](./DLV-UX-002-us5-accessibility-qualification-evidence.md).
 
 ## Verification record
 

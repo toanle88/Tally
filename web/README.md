@@ -18,6 +18,7 @@ pnpm dev-web
 pnpm --dir web exec playwright install chromium
 pnpm test:a11y
 pnpm test:a11y:negative
+pnpm test:a11y:qualification -- --target keyboard
 ```
 
 The accessibility harness uses Playwright Test with `@axe-core/playwright`.
@@ -34,6 +35,10 @@ matrix, semantic review procedure, and synthetic finding trace are recorded in
 and VoiceOver sessions remain explicitly pending. The visual adaptability and
 motion-preference matrix is recorded in
 `docs/verification/DLV-UX-002-us4-visual-adaptability-motion.md`.
+The qualification runner supports `shell`, `examples`, `keyboard`, `semantic`,
+`visual`, `negative`, and `all` targets and prints the affected evidence paths;
+the result template and defect decisions are recorded in
+`docs/verification/DLV-UX-002-us5-accessibility-qualification-evidence.md`.
 
 The frontend lockfile is maintained at `web/pnpm-lock.yaml`. pnpm is the only
 supported frontend package manager.
