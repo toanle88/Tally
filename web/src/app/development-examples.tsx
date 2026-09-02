@@ -29,8 +29,18 @@ const surfaceRows = [
 ]
 
 const surfaceColumns = [
-  { key: 'surface', header: 'Surface', render: (row: (typeof surfaceRows)[number]) => row.surface },
+  { key: 'surface', header: 'Surface', rowHeader: true, render: (row: (typeof surfaceRows)[number]) => row.surface },
   { key: 'purpose', header: 'Purpose', render: (row: (typeof surfaceRows)[number]) => row.purpose },
+] as const
+
+const directionRows = [
+  { direction: 'Debit', meaning: 'Debit line direction is stated explicitly in text; do not infer it from color.' },
+  { direction: 'Credit', meaning: 'Credit line direction is stated explicitly in text; do not infer it from color.' },
+] as const
+
+const directionColumns = [
+  { key: 'direction', header: 'Direction', rowHeader: true, render: (row: (typeof directionRows)[number]) => row.direction },
+  { key: 'meaning', header: 'Meaning', render: (row: (typeof directionRows)[number]) => row.meaning },
 ] as const
 
 export function DevelopmentExamples() {
@@ -96,6 +106,10 @@ export function DevelopmentExamples() {
           <DataTable caption="Foundation surfaces" columns={surfaceColumns} rows={surfaceRows} getRowKey={(row) => row.surface} />
         </Panel>
       </div>
+
+      <Panel title="Ledger direction semantics" description="Synthetic labels only; no journal or financial fact is created.">
+        <DataTable caption="Debit and credit meaning" columns={directionColumns} rows={directionRows} getRowKey={(row) => row.direction} />
+      </Panel>
 
       <div id="confirmation">
         <ConfirmationSurface

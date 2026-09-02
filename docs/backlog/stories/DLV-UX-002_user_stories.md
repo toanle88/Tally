@@ -108,18 +108,20 @@ verification record are documented in
 
 ### Acceptance criteria
 
-- [ ] The repository documents at least two approved screen-reader/browser combinations for the accessibility review matrix.
-- [ ] The manual procedure covers landmarks, heading hierarchy, labels, descriptions, table headers and row identity, selection state, status/severity meaning, validation errors, dialogs, progress, and dynamic announcements.
-- [ ] The procedure covers restricted and masked values without requiring protected content to be exposed in accessible names, errors, or empty states.
-- [ ] Representative checks confirm that state, approval, reconciliation, exception, gain/loss, and debit/credit meaning is available as text or an equivalent accessible representation and does not rely on color alone.
-- [ ] Manual findings record assistive technology, browser, operating system, target, steps, expected result, observed result, severity, owner, and evidence location.
-- [ ] The procedure distinguishes an untested future capability workflow from a tested shared interaction and never records an unexecuted journey as passed.
+- [x] The repository documents at least two approved screen-reader/browser combinations for the accessibility review matrix.
+- [x] The manual procedure covers landmarks, heading hierarchy, labels, descriptions, table headers and row identity, selection state, status/severity meaning, validation errors, dialogs, progress, and dynamic announcements.
+- [x] The procedure covers restricted and masked values without requiring protected content to be exposed in accessible names, errors, or empty states.
+- [x] Representative checks confirm that state, approval, reconciliation, exception, gain/loss, and debit/credit meaning is available as text or an equivalent accessible representation and does not rely on color alone.
+- [x] Manual findings record assistive technology, browser, operating system, target, steps, expected result, observed result, severity, owner, and evidence location.
+- [x] The procedure distinguishes an untested future capability workflow from a tested shared interaction and never records an unexecuted journey as passed.
 
 ### Evidence
 
 - Versioned screen-reader/browser matrix and manual procedure.
 - Witnessed review record for the shared shell and integrated example.
 - Sample finding and remediation-trace record using synthetic data.
+
+Repository matrix, procedure, and sample trace: [`docs/verification/DLV-UX-002-us3-screen-reader-semantic-review.md`](../../verification/DLV-UX-002-us3-screen-reader-semantic-review.md). The witnessed review record remains pending until SR-01 and SR-02 are executed.
 
 ## 9. User Story 4 — Verify visual adaptability and motion preferences
 
