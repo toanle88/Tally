@@ -69,6 +69,19 @@
       - [x] **User Story 3 — Establish screen-reader and semantic review coverage** (repository semantic coverage and review procedure complete; witnessed SR-01/SR-02 review deferred)
       - [x] **User Story 4 — Verify visual adaptability and motion preferences** (automated baseline complete; actual 400% browser-zoom review deferred)
       - [x] **User Story 5 — Produce accessibility qualification evidence and defect decisions**
+  - [ ] **EP-IAC-001 — Terraform and Azure learning environment**
+    - [ ] **DLV-IAC-001 — Terraform modules and local state bootstrap**
+      - [x] **User Story 1 — Establish the Terraform repository boundary**
+      - [ ] **User Story 2 — Bootstrap protected remote state**
+      - [ ] **User Story 3 — Implement reusable low-cost modules**
+      - [ ] **User Story 4 — Define environment profiles safely**
+      - [ ] **User Story 5 — Verify plans, policy, drift, and cost controls**
+    - [ ] **DLV-IAC-002 — Optional Azure dev/demo deployment**
+      - [ ] **User Story 6 — Deploy the optional learning environment**
+      - [ ] **User Story 7 — Federate CI/CD without long-lived secrets**
+      - [ ] **User Story 8 — Smoke-test deployment readiness**
+      - [ ] **User Story 9 — Destroy disposable resources safely**
+      - [ ] **User Story 10 — Recover state and document operations**
 
 ## Milestone and epic roadmap
 
