@@ -10,6 +10,7 @@ A modern double-entry accounting application — currently in early engineering 
 - [Node.js](https://nodejs.org/) 24 LTS or later
 - [pnpm](https://pnpm.io/installation) 11.9.0 (`corepack enable pnpm` or `npm install -g pnpm@11.9.0`)
 - [Docker Engine](https://docs.docker.com/engine/install/) and [Docker Compose v2](https://docs.docker.com/compose/)
+- [Terraform](https://developer.hashicorp.com/terraform/install) `>= 1.8, < 2.0`
 
 ---
 
@@ -104,6 +105,7 @@ All commands must be run from the repository root.
 | `make api-ts-generate` | Generate the TypeScript Fetch client and types from the OpenAPI contract |
 | `make api-ts-check` | Validate deterministic TypeScript generation, inventory, markers, and frontend compilation |
 | `make api-check` | Run the focused OpenAPI contract and generated-artifact drift gate |
+| `make terraform-check` | Format and validate every Terraform root against its reviewed provider lockfile |
 | `make money-check` | Run focused exact-decimal money and currency primitive tests |
 | `make accounting-scope-check` | Run focused accounting-scope identity and serialization tests |
 | `make aggregate-version-check` | Run focused aggregate-version and boundary tests |
@@ -229,6 +231,24 @@ The GitHub Actions workflow at `.github/workflows/openapi.yml` invokes
 is focused DLV-PLAT-004 drift detection; it does not complete the broader
 DLV-CI-001 pull-request quality pipeline.
 
+## Terraform Repository Boundary
+
+The Terraform boundary is established under `infra/terraform/` with separate
+bootstrap and `dev`, `demo`, and `prod-reference` roots. Each root pins the
+approved Terraform and provider constraints and carries its own reviewed
+`.terraform.lock.hcl` file.
+
+Run the focused local gate with:
+
+```bash
+make terraform-check
+```
+
+The gate initializes providers with `-backend=false`, then runs formatting and
+validation for every root. It does not require Azure credentials, access an
+Azure subscription, create resources, or configure remote state. Remote-state
+bootstrap and reusable Azure modules remain planned follow-on work.
+
 ---
 
 ## Architecture
@@ -261,7 +281,7 @@ The technology baseline (from the approved solution architecture):
 | Styling | Tailwind CSS 4 as the primary styling/layout system with daisyUI 5 theme and wrapper support | — |
 | Client state | — | TanStack Query |
 | API contract | OpenAPI 3.1 source with generated Go and TypeScript artifacts; runtime currently exposes GET /health/live; focused contract/generated-artifact drift CI | — |
-| Infrastructure | — | Terraform + Azure |
+| Infrastructure | Terraform repository boundary, provider contract, and per-root lockfiles; no Azure resources | Terraform modules, remote state, and Azure dev/demo/reference environments |
 | CI/CD | — | GitHub Actions |
 
 ---
@@ -295,6 +315,14 @@ The technology baseline (from the approved solution architecture):
 │   └── seeds/
 │       └── local/
 │           └── v1.sql                 # Synthetic seed data
+├── infra/
+│   └── terraform/
+│       ├── bootstrap/                  # Future remote-state bootstrap root
+│       ├── modules/                    # Leaf modules are introduced by DLV-IAC-001 US3
+│       └── environments/
+│           ├── dev/                    # Learning environment root
+│           ├── demo/                   # Disposable environment root
+│           └── prod-reference/         # Production topology reference root
 ├── internal/
 │   ├── .gitkeep
 │   └── platform/
@@ -368,6 +396,7 @@ The technology baseline (from the approved solution architecture):
 │       ├── outbox-inbox-persistence.sh  # Outbox/inbox persistence verification
 │       ├── request-fingerprint.sh       # Request fingerprint verification
 │       ├── shared-primitives.sh         # Shared primitive verification
+│       ├── terraform.sh                  # Terraform boundary verification
 │       └── transactional-coordination.sh # Transactional coordination verification
 ├── web/
 │   ├── src/

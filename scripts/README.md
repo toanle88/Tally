@@ -26,6 +26,7 @@ scripts/
 │   └── typescript-negative-check.sh  # TypeScript negative generation checks
 ├── verify/
 │   ├── database.sh      # End-to-end database verification
+│   ├── terraform.sh     # Terraform boundary verification
 │   ├── outbox-inbox-persistence.sh # DLV-PLAT-007 User Story 2 persistence gate
 │   ├── transactional-coordination.sh # DLV-PLAT-007 User Story 3 transaction gate
 │   ├── outbox-dispatch.sh # DLV-PLAT-007 User Story 4 dispatch gate
@@ -118,6 +119,18 @@ make db-verify
 ---
 
 # Verification Scripts
+
+## Terraform boundary
+
+The Terraform User Story 1 gate checks the four applicable roots, exact
+Terraform/provider constraints, reviewed provider lockfiles, formatting,
+backend-disabled initialization, validation, and the absence of resources,
+credentials, state, plans, variables, generated output, and application/domain
+code:
+
+```bash
+make terraform-check
+```
 
 ## Accessibility qualification
 

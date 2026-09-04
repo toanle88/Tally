@@ -66,15 +66,22 @@ migrations, observability semantics, or release qualification.
 provider/tooling contract, so that infrastructure changes are reviewable and
 reproducible.**
 
-- [ ] The repository contains the approved `infra/terraform/bootstrap`,
+- [x] The repository contains the approved `infra/terraform/bootstrap`,
   `modules`, and `environments/dev`, `demo`, and `prod-reference` boundaries.
-- [ ] Terraform requires `>= 1.8, < 2.0` and the approved AzureRM, AzureAD, and
+- [x] Terraform requires `>= 1.8, < 2.0` and the approved AzureRM, AzureAD, and
   Random provider major versions.
-- [ ] `terraform fmt -check` and `terraform validate` run for every applicable
+- [x] `terraform fmt -check` and `terraform validate` run for every applicable
   root module.
-- [ ] Provider and module versions are constrained and lock files are reviewed.
-- [ ] The layout does not contain credentials, generated build output, or
+- [x] Provider and module versions are constrained and lock files are reviewed.
+- [x] The layout does not contain credentials, generated build output, or
   application/domain code.
+
+User Story 1 is limited to the repository boundary and provider contract. No
+module calls or module sources are introduced, so the verification records the
+module-version check as not applicable to this slice. Leaf-module naming and
+implementation remain deferred to User Story 3 because the approved system and
+technical specifications currently use different leaf names. See the focused
+[verification record](../../verification/DLV-IAC-001-us1-terraform-repository-boundary.md).
 
 ### User Story 2 — Bootstrap protected remote state
 
