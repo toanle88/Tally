@@ -106,6 +106,7 @@ All commands must be run from the repository root.
 | `make api-ts-check` | Validate deterministic TypeScript generation, inventory, markers, and frontend compilation |
 | `make api-check` | Run the focused OpenAPI contract and generated-artifact drift gate |
 | `make terraform-check` | Format and validate every Terraform root against its reviewed provider lockfile |
+| `make terraform-modules-check` | Validate the 11 reusable low-cost Terraform module contracts without credentials |
 | `make money-check` | Run focused exact-decimal money and currency primitive tests |
 | `make accounting-scope-check` | Run focused accounting-scope identity and serialization tests |
 | `make aggregate-version-check` | Run focused aggregate-version and boundary tests |
@@ -289,7 +290,7 @@ The technology baseline (from the approved solution architecture):
 | Styling | Tailwind CSS 4 as the primary styling/layout system with daisyUI 5 theme and wrapper support | — |
 | Client state | — | TanStack Query |
 | API contract | OpenAPI 3.1 source with generated Go and TypeScript artifacts; runtime currently exposes GET /health/live; focused contract/generated-artifact drift CI | — |
-| Infrastructure | Terraform provider contract, per-root lockfiles, protected Blob remote-state bootstrap, isolated state keys and identities | Reusable Terraform modules and Azure dev/demo/reference environments |
+| Infrastructure | Terraform provider contract, per-root lockfiles, protected Blob remote-state bootstrap, isolated state keys and identities, reusable low-cost module contracts | Azure dev/demo/reference environment composition and live deployment |
 | CI/CD | — | GitHub Actions |
 
 ---
@@ -326,7 +327,7 @@ The technology baseline (from the approved solution architecture):
 ├── infra/
 │   └── terraform/
 │       ├── bootstrap/                  # Protected remote-state bootstrap root
-│       ├── modules/                    # Leaf modules are introduced by DLV-IAC-001 US3
+│       ├── modules/                    # DLV-IAC-001 US3 reusable leaf modules
 │       └── environments/
 │           ├── dev/                    # Learning environment root
 │           ├── demo/                   # Disposable environment root

@@ -1,0 +1,6 @@
+{
+  "modules": ["resource-group", "log-analytics", "container-registry", "container-app-environment", "container-app", "static-web-app", "postgresql", "key-vault", "managed-identity", "budget", "github-federation"],
+  "required_tags": ["application", "environment", "owner", "cost_center", "managed_by", "data_classification"],
+  "required_files": ["main.tf", "variables.tf", "outputs.tf", "versions.tf"],
+  "test_modules": ["container-app", "postgresql"]
+}

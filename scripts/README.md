@@ -27,6 +27,7 @@ scripts/
 ├── verify/
 │   ├── database.sh      # End-to-end database verification
 │   ├── terraform.sh     # Terraform boundary verification
+│   ├── terraform-modules.sh # Reusable module contract and validation gate
 │   ├── outbox-inbox-persistence.sh # DLV-PLAT-007 User Story 2 persistence gate
 │   ├── transactional-coordination.sh # DLV-PLAT-007 User Story 3 transaction gate
 │   ├── outbox-dispatch.sh # DLV-PLAT-007 User Story 4 dispatch gate
@@ -131,6 +132,7 @@ code in workload roots:
 
 ```bash
 make terraform-check
+make terraform-modules-check
 ```
 
 ## Accessibility qualification
