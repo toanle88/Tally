@@ -89,15 +89,23 @@ technical specifications currently use different leaf names. See the focused
 workload resources, so that state is locked, encrypted, access-controlled, and
 isolated per environment.**
 
-- [ ] Bootstrap creates the minimum Azure Blob state resources with encryption,
+- [x] Bootstrap creates the minimum Azure Blob state resources with encryption,
   restricted RBAC, and state locking.
-- [ ] Bootstrap state is separate from workload state and can be initialized
+- [x] Bootstrap state is separate from workload state and can be initialized
   before the environment roots.
 - [ ] Each environment uses a separate state key and identity; workspaces are
   not the sole isolation mechanism.
-- [ ] Bootstrap instructions document prerequisites, plan review, recovery, and
+- [x] Bootstrap instructions document prerequisites, plan review, recovery, and
   ownership without embedding secrets.
-- [ ] State outputs and plans are treated as confidential and are not committed.
+- [x] State outputs and plans are treated as confidential and are not committed.
+
+User Story 2 is verified by the focused [protected remote-state verification
+record](../../verification/DLV-IAC-001-us2-protected-remote-state.md). The local
+gate is credential-free: it validates the Terraform contract, security settings,
+state boundaries, and forbidden artifacts. A live Azure plan/apply remains an
+environment-dependent exercise and is not claimed by this repository gate. The
+identity-authentication criterion remains pending until an Azure runner proves
+that each environment root uses its matching state identity.
 
 ### User Story 3 — Implement reusable low-cost modules
 
