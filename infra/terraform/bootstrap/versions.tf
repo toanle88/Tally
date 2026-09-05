@@ -16,7 +16,10 @@ terraform {
     }
   }
 
-  backend "azurerm" {}
+  backend "azurerm" {
+    use_azuread_auth = true
+    key              = "bootstrap/terraform.tfstate"
+  }
 }
 
 provider "azurerm" {

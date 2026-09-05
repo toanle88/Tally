@@ -231,12 +231,18 @@ The GitHub Actions workflow at `.github/workflows/openapi.yml` invokes
 is focused DLV-PLAT-004 drift detection; it does not complete the broader
 DLV-CI-001 pull-request quality pipeline.
 
-## Terraform Repository Boundary
+## Terraform and Protected Remote State
 
 The Terraform boundary is established under `infra/terraform/` with separate
 bootstrap and `dev`, `demo`, and `prod-reference` roots. Each root pins the
 approved Terraform and provider constraints and carries its own reviewed
 `.terraform.lock.hcl` file.
+
+The bootstrap root owns the dedicated Azure Blob state resource group, storage
+account, private state containers, per-environment state identities, and
+container-scoped Blob Data Contributor assignments. Bootstrap, `dev`, `demo`,
+and `prod-reference` use distinct state keys; Terraform workspaces are not the
+isolation boundary.
 
 Run the focused local gate with:
 
@@ -244,10 +250,12 @@ Run the focused local gate with:
 make terraform-check
 ```
 
-The gate initializes providers with `-backend=false`, then runs formatting and
-validation for every root. It does not require Azure credentials, access an
-Azure subscription, create resources, or configure remote state. Remote-state
-bootstrap and reusable Azure modules remain planned follow-on work.
+The gate initializes providers with `-backend=false`, then runs formatting,
+validation, bootstrap contract checks, state-key checks, security assertions,
+and forbidden-artifact checks for every root. It does not require Azure
+credentials, access an Azure subscription, create resources, or configure
+remote state. See the [User Story 2 verification record](./docs/verification/DLV-IAC-001-us2-protected-remote-state.md)
+for the two-phase bootstrap and recovery procedure.
 
 ---
 
@@ -281,7 +289,7 @@ The technology baseline (from the approved solution architecture):
 | Styling | Tailwind CSS 4 as the primary styling/layout system with daisyUI 5 theme and wrapper support | — |
 | Client state | — | TanStack Query |
 | API contract | OpenAPI 3.1 source with generated Go and TypeScript artifacts; runtime currently exposes GET /health/live; focused contract/generated-artifact drift CI | — |
-| Infrastructure | Terraform repository boundary, provider contract, and per-root lockfiles; no Azure resources | Terraform modules, remote state, and Azure dev/demo/reference environments |
+| Infrastructure | Terraform provider contract, per-root lockfiles, protected Blob remote-state bootstrap, isolated state keys and identities | Reusable Terraform modules and Azure dev/demo/reference environments |
 | CI/CD | — | GitHub Actions |
 
 ---
@@ -317,7 +325,7 @@ The technology baseline (from the approved solution architecture):
 │           └── v1.sql                 # Synthetic seed data
 ├── infra/
 │   └── terraform/
-│       ├── bootstrap/                  # Future remote-state bootstrap root
+│       ├── bootstrap/                  # Protected remote-state bootstrap root
 │       ├── modules/                    # Leaf modules are introduced by DLV-IAC-001 US3
 │       └── environments/
 │           ├── dev/                    # Learning environment root

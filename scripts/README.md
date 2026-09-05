@@ -120,13 +120,14 @@ make db-verify
 
 # Verification Scripts
 
-## Terraform boundary
+## Terraform and protected remote state
 
-The Terraform User Story 1 gate checks the four applicable roots, exact
-Terraform/provider constraints, reviewed provider lockfiles, formatting,
-backend-disabled initialization, validation, and the absence of resources,
+The Terraform gate checks the four applicable roots, exact Terraform/provider
+constraints, reviewed provider lockfiles, formatting, backend-disabled
+initialization, validation, the protected bootstrap resource contract, distinct
+state keys and identities, required security settings, and the absence of
 credentials, state, plans, variables, generated output, and application/domain
-code:
+code in workload roots:
 
 ```bash
 make terraform-check
