@@ -47,7 +47,8 @@
 	outbox-dispatch-check \
 	outbox-worker-check \
 	event-envelope-check \
-	terraform-check
+	terraform-check \
+	terraform-modules-check
 
 
 DB_SERVICE := postgres
@@ -275,3 +276,6 @@ outbox-worker-check:
 
 terraform-check:
 	@bash scripts/verify/terraform.sh
+
+terraform-modules-check:
+	@bash scripts/verify/terraform-modules.sh

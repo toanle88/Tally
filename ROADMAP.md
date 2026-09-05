@@ -73,7 +73,7 @@
     - [ ] **DLV-IAC-001 — Terraform modules and local state bootstrap**
       - [x] **User Story 1 — Establish the Terraform repository boundary**
       - [ ] **User Story 2 — Bootstrap protected remote state** (local contract verified; Azure plan and per-environment identity authentication pending)
-      - [ ] **User Story 3 — Implement reusable low-cost modules**
+      - [x] **User Story 3 — Implement reusable low-cost modules**
       - [ ] **User Story 4 — Define environment profiles safely**
       - [ ] **User Story 5 — Verify plans, policy, drift, and cost controls**
     - [ ] **DLV-IAC-002 — Optional Azure dev/demo deployment**

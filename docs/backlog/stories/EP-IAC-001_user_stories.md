@@ -113,16 +113,16 @@ that each environment root uses its matching state identity.
 outputs, so that the Azure environment can be composed without hidden portal
 configuration.**
 
-- [ ] Modules cover resource group, monitoring/log analytics, container
+- [x] Modules cover resource group, monitoring/log analytics, container
   registry, Container Apps environment/app, Static Web Apps, PostgreSQL,
   Key Vault, managed identity, budget, and GitHub federation as applicable.
-- [ ] Module interfaces match the approved technical specification and expose
+- [x] Module interfaces match the approved technical specification and expose
   resource identifiers rather than secret values.
-- [ ] Required naming and tags include application, environment, owner,
+- [x] Required naming and tags include application, environment, owner,
   cost-center, `managed_by=terraform`, data classification, and demo expiry.
-- [ ] PostgreSQL is version 18, TLS is required, and environment-specific
+- [x] PostgreSQL is version 18, TLS is required, and environment-specific
   backup/network settings are explicit.
-- [ ] Container images use immutable digests; ACR admin access is disabled and
+- [x] Container images use immutable digests; ACR admin access is disabled and
   workload identity is used for pulls and secret references.
 
 ### User Story 4 — Define environment profiles safely
