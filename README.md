@@ -105,7 +105,8 @@ All commands must be run from the repository root.
 | `make api-ts-generate` | Generate the TypeScript Fetch client and types from the OpenAPI contract |
 | `make api-ts-check` | Validate deterministic TypeScript generation, inventory, markers, and frontend compilation |
 | `make api-check` | Run the focused OpenAPI contract and generated-artifact drift gate |
-| `make terraform-check` | Format and validate every Terraform root against its reviewed provider lockfile |
+| `make terraform-check` | Format, validate, and verify every Terraform root and environment profile against its reviewed provider lockfile |
+| `make terraform-environments-check` | Verify dev, demo, and prod-reference composition, profile safety, and focused Terraform tests |
 | `make terraform-modules-check` | Validate the 11 reusable low-cost Terraform module contracts without credentials |
 | `make money-check` | Run focused exact-decimal money and currency primitive tests |
 | `make accounting-scope-check` | Run focused accounting-scope identity and serialization tests |
@@ -252,8 +253,9 @@ make terraform-check
 ```
 
 The gate initializes providers with `-backend=false`, then runs formatting,
-validation, bootstrap contract checks, state-key checks, security assertions,
-and forbidden-artifact checks for every root. It does not require Azure
+validation, bootstrap and environment contract checks, state-key checks,
+security assertions, focused root tests, and forbidden-artifact checks for every
+root. It does not require Azure
 credentials, access an Azure subscription, create resources, or configure
 remote state. See the [User Story 2 verification record](./docs/verification/DLV-IAC-001-us2-protected-remote-state.md)
 for the two-phase bootstrap and recovery procedure.
@@ -290,7 +292,7 @@ The technology baseline (from the approved solution architecture):
 | Styling | Tailwind CSS 4 as the primary styling/layout system with daisyUI 5 theme and wrapper support | — |
 | Client state | — | TanStack Query |
 | API contract | OpenAPI 3.1 source with generated Go and TypeScript artifacts; runtime currently exposes GET /health/live; focused contract/generated-artifact drift CI | — |
-| Infrastructure | Terraform provider contract, per-root lockfiles, protected Blob remote-state bootstrap, isolated state keys and identities, reusable low-cost module contracts | Azure dev/demo/reference environment composition and live deployment |
+| Infrastructure | Terraform provider contract, per-root lockfiles, protected Blob remote-state bootstrap, isolated state keys and identities, reusable low-cost module contracts, and dev/demo/prod-reference profile composition | Live Azure deployment |
 | CI/CD | — | GitHub Actions |
 
 ---
@@ -406,6 +408,7 @@ The technology baseline (from the approved solution architecture):
 │       ├── request-fingerprint.sh       # Request fingerprint verification
 │       ├── shared-primitives.sh         # Shared primitive verification
 │       ├── terraform.sh                  # Terraform boundary verification
+│       ├── terraform-environments.sh     # Environment profile verification
 │       └── transactional-coordination.sh # Transactional coordination verification
 ├── web/
 │   ├── src/

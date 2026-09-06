@@ -1,7 +1,13 @@
 variable "name" { type = string }
 variable "resource_group_name" { type = string }
 variable "location" { type = string }
-variable "roles" { type = set(object({ role_definition_name = string, scope = string })) }
+variable "roles" {
+  type = set(object({ role_definition_name = string, scope = string }))
+  validation {
+    condition     = length(distinct([for role in var.roles : role.role_definition_name])) == length(var.roles)
+    error_message = "Managed identity role_definition_name values must be unique."
+  }
+}
 variable "tags" {
   type = map(string)
   validation {

@@ -48,6 +48,7 @@
 	outbox-worker-check \
 	event-envelope-check \
 	terraform-check \
+	terraform-environments-check \
 	terraform-modules-check
 
 
@@ -276,6 +277,10 @@ outbox-worker-check:
 
 terraform-check:
 	@bash scripts/verify/terraform.sh
+	@bash scripts/verify/terraform-environments.sh
+
+terraform-environments-check:
+	@bash scripts/verify/terraform-environments.sh
 
 terraform-modules-check:
 	@bash scripts/verify/terraform-modules.sh

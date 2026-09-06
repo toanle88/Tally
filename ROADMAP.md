@@ -74,7 +74,7 @@
       - [x] **User Story 1 — Establish the Terraform repository boundary**
       - [ ] **User Story 2 — Bootstrap protected remote state** (local contract verified; Azure plan and per-environment identity authentication pending)
       - [x] **User Story 3 — Implement reusable low-cost modules**
-      - [ ] **User Story 4 — Define environment profiles safely**
+      - [x] **User Story 4 — Define environment profiles safely** (local composition and safety contracts implemented; live Azure plan evidence remains pending)
       - [ ] **User Story 5 — Verify plans, policy, drift, and cost controls**
     - [ ] **DLV-IAC-002 — Optional Azure dev/demo deployment**
       - [ ] **User Story 6 — Deploy the optional learning environment**
