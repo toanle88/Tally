@@ -156,21 +156,12 @@ check_backend_key "${terraform_root}/environments/dev" "dev/terraform.tfstate"
 check_backend_key "${terraform_root}/environments/demo" "demo/terraform.tfstate"
 check_backend_key "${terraform_root}/environments/prod-reference" "prod-reference/terraform.tfstate"
 
-for environment_root in \
-	"${terraform_root}/environments/dev" \
-	"${terraform_root}/environments/demo" \
-	"${terraform_root}/environments/prod-reference"; do
-	if rg -n '^[[:space:]]*(resource|data|module)[[:space:]]+"' "${environment_root}" --glob '*.tf' --glob '!.terraform/**'; then
-		fail "workload resources are out of scope for User Story 2: ${environment_root}"
-	fi
-done
-
 echo "== Boundary and artifact verification =="
 source_files="$(rg --files --hidden -g '!.terraform/**' "${terraform_root}" || true)"
 while IFS= read -r file; do
 	[[ -z "${file}" ]] && continue
 	case "${file}" in
-		*.tf|*.terraform.lock.hcl|*.gitkeep) ;;
+		*.tf|*.tftest.hcl|*.terraform.lock.hcl|*.gitkeep) ;;
 		*) fail "unexpected infrastructure artifact: ${file}" ;;
 	esac
 done <<<"${source_files}"

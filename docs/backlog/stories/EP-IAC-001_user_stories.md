@@ -131,16 +131,16 @@ configuration.**
 be visibly different, so that a learning environment cannot be mistaken for a
 production authorization.**
 
-- [ ] `dev` uses the smallest suitable burstable and scale-to-zero learning
+- [x] `dev` uses the smallest suitable burstable and scale-to-zero learning
   profile.
-- [ ] `demo` is disposable, uses synthetic data, and carries an expiry tag and
+- [x] `demo` is disposable, uses synthetic data, and carries an expiry tag and
   destroy procedure.
-- [ ] `prod-reference` prohibits casual destruction, uses private database
+- [x] `prod-reference` prohibits casual destruction, uses private database
   access, and represents the approved reference topology without claiming
   qualification.
-- [ ] Environment variables and sensitive inputs are supplied externally and
+- [x] Environment variables and sensitive inputs are supplied externally and
   validated without being written to source.
-- [ ] Public database access is absent from the production-reference profile;
+- [x] Public database access is absent from the production-reference profile;
   learning-profile exceptions are explicit and restricted.
 
 ### User Story 5 — Verify plans, policy, drift, and cost controls

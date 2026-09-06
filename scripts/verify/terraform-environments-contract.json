@@ -1,0 +1,51 @@
+{
+  "required_modules": [
+    "resource_group",
+    "log_analytics",
+    "container_registry",
+    "container_app_environment",
+    "api_identity",
+    "worker_identity",
+    "api",
+    "worker",
+    "static_web_app",
+    "postgresql",
+    "key_vault"
+  ],
+  "required_outputs": [
+    "environment_profile",
+    "resource_group_id",
+    "static_web_app_hostname",
+    "api_url",
+    "worker_id",
+    "postgres_server_fqdn",
+    "database_id",
+    "key_vault_uri",
+    "api_identity_principal_id",
+    "worker_identity_principal_id",
+    "production_deletion_lock_enabled"
+  ],
+  "profiles": {
+    "dev": {
+      "network_mode": "public",
+      "postgres_mode": "public",
+      "data_classification": "synthetic",
+      "requires_expiry": false,
+      "requires_lock": false
+    },
+    "demo": {
+      "network_mode": "public",
+      "postgres_mode": "public",
+      "data_classification": "synthetic",
+      "requires_expiry": true,
+      "requires_lock": false
+    },
+    "prod-reference": {
+      "network_mode": "private",
+      "postgres_mode": "private",
+      "data_classification": "confidential",
+      "requires_expiry": false,
+      "requires_lock": true
+    }
+  }
+}

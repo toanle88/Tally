@@ -1,0 +1,11 @@
+output "environment_profile" { value = local.profile }
+output "resource_group_id" { value = module.resource_group.id }
+output "static_web_app_hostname" { value = module.static_web_app.hostname }
+output "api_url" { value = module.api.url }
+output "worker_id" { value = module.worker.id }
+output "postgres_server_fqdn" { value = module.postgresql.server_fqdn }
+output "database_id" { value = module.postgresql.database_id }
+output "key_vault_uri" { value = module.key_vault.vault_uri }
+output "api_identity_principal_id" { value = module.api_identity.principal_id }
+output "worker_identity_principal_id" { value = module.worker_identity.principal_id }
+output "production_deletion_lock_enabled" { value = false }
