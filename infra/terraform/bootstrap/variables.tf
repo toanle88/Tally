@@ -3,6 +3,16 @@ variable "location" {
   type        = string
 }
 
+variable "subscription_id" {
+  description = "Azure subscription receiving the aggregate learning budget."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", var.subscription_id))
+    error_message = "subscription_id must be a UUID."
+  }
+}
+
 variable "resource_group_name" {
   description = "Dedicated resource group name for Terraform state resources."
   type        = string
@@ -68,4 +78,40 @@ variable "tags" {
   description = "Additional non-sensitive tags merged with the required baseline tags."
   type        = map(string)
   default     = {}
+}
+
+variable "learning_budget_name" {
+  description = "Stable name of the subscription-scoped monthly learning budget."
+  type        = string
+  default     = "tally-learning-monthly"
+}
+
+variable "monthly_learning_budget_amount" {
+  description = "Monthly learning budget amount in the Azure subscription currency."
+  type        = number
+  default     = 20
+
+  validation {
+    condition     = var.monthly_learning_budget_amount > 0
+    error_message = "monthly_learning_budget_amount must be positive."
+  }
+}
+
+variable "budget_contacts" {
+  description = "At least one Azure budget notification recipient."
+  type = object({
+    contact_emails = set(string)
+    contact_roles  = set(string)
+    contact_groups = set(string)
+  })
+  default = {
+    contact_emails = []
+    contact_roles  = []
+    contact_groups = []
+  }
+
+  validation {
+    condition     = length(var.budget_contacts.contact_emails) + length(var.budget_contacts.contact_roles) + length(var.budget_contacts.contact_groups) > 0
+    error_message = "budget_contacts must contain at least one email, role, or action-group recipient."
+  }
 }

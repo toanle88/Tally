@@ -1,0 +1,21 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.15.2",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "module.learning_budget.azurerm_consumption_budget_subscription.this",
+          "type": "azurerm_consumption_budget_subscription",
+          "values": {
+            "notification": [
+              { "threshold": 50 },
+              { "threshold": 80 },
+              { "threshold": 100 }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

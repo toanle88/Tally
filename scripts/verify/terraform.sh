@@ -117,6 +117,7 @@ for resource_pattern in \
 	'resource[[:space:]]+"azurerm_storage_container"[[:space:]]+"state"' \
 	'resource[[:space:]]+"azurerm_user_assigned_identity"[[:space:]]+"state"' \
 	'resource[[:space:]]+"azurerm_role_assignment"[[:space:]]+"bootstrap_operator"' \
+	'resource[[:space:]]+"azurerm_role_assignment"[[:space:]]+"bootstrap_budget_operator"' \
 	'resource[[:space:]]+"azurerm_role_assignment"[[:space:]]+"environment_state"'; do
 	require_text "${resource_pattern}" "${bootstrap_root}" "bootstrap resource ${resource_pattern}"
 done
@@ -147,8 +148,12 @@ check_exact_collection "${bootstrap_root}/main.tf" "workload_environments" dev d
 require_text 'scope[[:space:]]*=[[:space:]]*azurerm_storage_container\.state\[each\.key\]\.id' "${bootstrap_root}" "environment container-scoped RBAC"
 require_text 'principal_id[[:space:]]*=[[:space:]]*azurerm_user_assigned_identity\.state\[each\.key\]\.principal_id' "${bootstrap_root}" "environment identity-scoped RBAC"
 
-if rg -n '^[[:space:]]*(module|data)[[:space:]]+"' "${bootstrap_root}" --glob '*.tf' --glob '!.terraform/**'; then
-	fail "bootstrap must not depend on modules or data sources"
+if rg -n '^[[:space:]]*data[[:space:]]+"' "${bootstrap_root}" --glob '*.tf' --glob '!.terraform/**'; then
+	fail "bootstrap must not depend on data sources"
+fi
+bootstrap_modules="$(rg -o '^[[:space:]]*module[[:space:]]+"[^"]+"' "${bootstrap_root}" --glob '*.tf' --glob '!.terraform/**' | sed -E 's/.*module[[:space:]]+"([^"]+)"/\1/' | sort)"
+if [[ "${bootstrap_modules}" != "learning_budget" ]]; then
+	fail "bootstrap may only depend on the learning_budget module"
 fi
 
 check_backend_key "${terraform_root}/bootstrap" "bootstrap/terraform.tfstate"

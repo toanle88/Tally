@@ -1,0 +1,39 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.15.2",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "module.api.azurerm_container_app.this",
+          "type": "azurerm_container_app",
+          "values": {
+            "template": [{ "min_replicas": 0, "max_replicas": 0 }],
+            "tags": { "application": "tally" }
+          }
+        },
+        {
+          "address": "module.worker.azurerm_container_app.this",
+          "type": "azurerm_container_app",
+          "values": { "template": [{ "min_replicas": 0, "max_replicas": 0 }] }
+        },
+        {
+          "address": "module.postgresql.azurerm_postgresql_flexible_server.this",
+          "type": "azurerm_postgresql_flexible_server",
+          "values": {
+            "id": "/subscriptions/test/resourceGroups/rg/providers/Microsoft.DBforPostgreSQL/flexibleServers/prod-pg",
+            "public_network_access_enabled": true
+          }
+        },
+        {
+          "address": "module.postgresql.azurerm_monitor_diagnostic_setting.this",
+          "type": "azurerm_monitor_diagnostic_setting",
+          "values": {
+            "target_resource_id": "/subscriptions/test/resourceGroups/rg/providers/Microsoft.DBforPostgreSQL/flexibleServers/other-pg",
+            "log_analytics_workspace_id": "/subscriptions/test/resourceGroups/rg/providers/Microsoft.OperationalInsights/workspaces/test"
+          }
+        }
+      ]
+    }
+  }
+}

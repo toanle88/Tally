@@ -7,7 +7,7 @@ trap 'rm -rf "$test_root"' EXIT
 terraform version >/dev/null
 node "$repo_root/scripts/verify/terraform-modules-contract.js"
 terraform -chdir="$modules_root" fmt -check -recursive
-for test_module in container-app postgresql; do
+for test_module in budget container-app postgresql; do
   cp -R "$modules_root/$test_module" "$test_root/$test_module"
   terraform -chdir="$test_root/$test_module" init -backend=false -input=false -upgrade=false
   terraform -chdir="$test_root/$test_module" validate

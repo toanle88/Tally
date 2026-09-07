@@ -108,6 +108,10 @@ All commands must be run from the repository root.
 | `make terraform-check` | Format, validate, and verify every Terraform root and environment profile against its reviewed provider lockfile |
 | `make terraform-environments-check` | Verify dev, demo, and prod-reference composition, profile safety, and focused Terraform tests |
 | `make terraform-modules-check` | Validate the 11 reusable low-cost Terraform module contracts without credentials |
+| `make terraform-tools-check` | Verify pinned Terraform, TFLint, Checkov, and Infracost versions |
+| `make terraform-lint-check` | Run TFLint across Terraform roots and modules |
+| `make terraform-security-check` | Run Checkov with the reviewed policy-exception manifest |
+| `make terraform-plan-policy-check` | Run credential-free plan-policy fixture checks |
 | `make money-check` | Run focused exact-decimal money and currency primitive tests |
 | `make accounting-scope-check` | Run focused accounting-scope identity and serialization tests |
 | `make aggregate-version-check` | Run focused aggregate-version and boundary tests |
@@ -251,6 +255,10 @@ Run the focused local gate with:
 ```bash
 make terraform-check
 ```
+
+User Story 5 plan-policy, budget, drift, cost, and external-evidence boundaries
+are recorded in
+[`docs/verification/DLV-IAC-001-us5-plan-policy-drift-cost.md`](./docs/verification/DLV-IAC-001-us5-plan-policy-drift-cost.md).
 
 The gate initializes providers with `-backend=false`, then runs formatting,
 validation, bootstrap and environment contract checks, state-key checks,
