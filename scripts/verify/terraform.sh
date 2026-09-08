@@ -166,6 +166,7 @@ source_files="$(rg --files --hidden -g '!**/.terraform/**' "${terraform_root}" |
 while IFS= read -r file; do
 	[[ -z "${file}" ]] && continue
 	case "${file}" in
+		*/.terraform/*) continue ;;
 		*.tf|*.tftest.hcl|*.terraform.lock.hcl|*.gitkeep) ;;
 		*) fail "unexpected infrastructure artifact: ${file}" ;;
 	esac
