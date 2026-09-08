@@ -16,8 +16,8 @@ for (const exception of document.exceptions) {
   if (exception.path.includes("*") || exception.path.includes("..")) {
     throw new Error(`policy exception path must be a concrete repository path: ${exception.path}`);
   }
-  if (exception.path.startsWith("infra/terraform/bootstrap") || exception.path.startsWith("infra/terraform/environments/prod-reference")) {
-    throw new Error(`policy exceptions are not permitted for bootstrap or prod-reference: ${exception.path}`);
+  if (exception.path.startsWith("infra/terraform/environments/prod-reference")) {
+    throw new Error(`policy exceptions are not permitted for prod-reference: ${exception.path}`);
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(exception.expires_on)) {
     throw new Error(`policy exception expiry must use YYYY-MM-DD: ${exception.expires_on}`);

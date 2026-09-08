@@ -33,7 +33,7 @@ scheduled state access: [terraform.yml](../../.github/workflows/terraform.yml).
 | --- | --- | --- |
 | Format, validation, provider locks | `scripts/verify/terraform.sh` | All roots use backend-disabled init, format, validate, and lock checks. |
 | Lint | `scripts/verify/terraform-lint.sh` | TFLint runs against bootstrap, environments, and modules. |
-| Security scan | `scripts/verify/terraform-security.sh` | Checkov scans each root; only exact rule/path exceptions from the rationale, owner, and expiry manifest are filtered. |
+| Security scan | `scripts/verify/terraform-security.sh` | Checkov scans each root; only observed exact rule/path exceptions from the rationale, owner, and expiry manifest are filtered. Production-reference cannot be excepted. |
 | Plan policy | `scripts/verify/terraform-plan-policy.js` | Standard `terraform show -json` input; versioned valid/invalid fixtures run in every local gate. |
 | Shared budget | `infra/terraform/bootstrap` and `modules/budget` | One subscription budget, default monthly amount 20, thresholds 50/80/100, at least one recipient. |
 | Drift | `scripts/verify/terraform-drift.sh` | `ENVIRONMENT=dev|demo|prod-reference`; authenticated refresh-only plan, exit 0 clean / 2 drift / 1 error. |
