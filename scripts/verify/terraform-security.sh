@@ -11,11 +11,12 @@ node "${root}/scripts/verify/terraform-security-filter.js" --self-test
 
 for terraform_root in bootstrap environments/dev environments/demo environments/prod-reference; do
   echo "== Checkov ${terraform_root} =="
-  report_file="$(mktemp "${TMPDIR:-/tmp}/tally-checkov.XXXXXX.json")"
-  trap 'rm -f "${report_file}"' EXIT
+  report_dir="$(mktemp -d "${TMPDIR:-/tmp}/tally-checkov.XXXXXX")"
+  trap 'rm -rf "${report_dir}"' EXIT
+  report_file="${report_dir}/results_json.json"
   scan_root="${root}/infra/terraform/${terraform_root}"
   set +e
-  "${checkov_bin}" --directory "${scan_root}" --framework terraform --config-file "${root}/.checkov.yaml" --output json --output-file-path "${report_file}" --quiet
+  "${checkov_bin}" --directory "${scan_root}" --framework terraform --config-file "${root}/.checkov.yaml" --output json --output-file-path "${report_dir}" --quiet
   checkov_status=$?
   set -e
   case "${checkov_status}" in
