@@ -15,6 +15,7 @@ for terraform_root in bootstrap environments/dev environments/demo environments/
   trap 'rm -rf "${report_dir}"' EXIT
   report_file="${report_dir}/results_json.json"
   scan_root="${root}/infra/terraform/${terraform_root}"
+  environment="${terraform_root##*/}"
   set +e
   "${checkov_bin}" --directory "${scan_root}" --framework terraform --config-file "${root}/.checkov.yaml" --output json --output-file-path "${report_dir}" --quiet
   checkov_status=$?
@@ -27,6 +28,7 @@ for terraform_root in bootstrap environments/dev environments/demo environments/
   node "${root}/scripts/verify/terraform-security-filter.js" \
     --report "${report_file}" \
     --manifest "${manifest}" \
+    --environment "${environment}" \
     --scan-root "${scan_root}" \
     --repository-root "${root}"
 done

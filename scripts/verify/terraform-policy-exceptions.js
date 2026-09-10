@@ -8,10 +8,16 @@ if (document.schema_version !== 1 || !Array.isArray(document.exceptions)) {
 }
 
 for (const exception of document.exceptions) {
-  for (const field of ["rule_id", "path", "rationale", "owner", "expires_on"]) {
+  for (const field of ["environment", "rule_id", "path", "rationale", "owner", "expires_on"]) {
     if (typeof exception[field] !== "string" || exception[field].length === 0) {
       throw new Error(`policy exception is missing ${field}`);
     }
+  }
+  if (!["bootstrap", "dev", "demo", "prod-reference"].includes(exception.environment)) {
+    throw new Error(`policy exception environment is invalid: ${exception.environment}`);
+  }
+  if (exception.environment === "prod-reference") {
+    throw new Error("policy exceptions are not permitted for prod-reference");
   }
   if (exception.path.includes("*") || exception.path.includes("..")) {
     throw new Error(`policy exception path must be a concrete repository path: ${exception.path}`);

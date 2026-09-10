@@ -2,6 +2,7 @@
   "schema_version": 1,
   "exceptions": [
     {
+      "environment": "bootstrap",
       "rule_id": "CKV_AZURE_59",
       "path": "infra/terraform/bootstrap/main.tf",
       "rationale": "Bootstrap remote-state access uses a public endpoint in the approved low-cost credentialed setup; HTTPS, TLS1.2, OAuth-only access, RBAC, private containers, versioning, and encryption remain enabled.",
@@ -9,6 +10,7 @@
       "expires_on": "2026-12-31"
     },
     {
+      "environment": "bootstrap",
       "rule_id": "CKV_AZURE_33",
       "path": "infra/terraform/bootstrap/main.tf",
       "rationale": "Bootstrap remote-state storage has an observed Checkov finding under the approved low-cost state design; HTTPS, TLS1.2, OAuth-only access, RBAC, private containers, versioning, and encryption remain enabled.",
@@ -16,6 +18,7 @@
       "expires_on": "2026-12-31"
     },
     {
+      "environment": "bootstrap",
       "rule_id": "CKV_AZURE_206",
       "path": "infra/terraform/bootstrap/main.tf",
       "rationale": "Bootstrap remote-state storage uses cost-minimal LRS in the approved learning baseline; versioning, retention, OAuth-only access, RBAC, and private containers remain enabled.",
@@ -23,6 +26,7 @@
       "expires_on": "2026-12-31"
     },
     {
+      "environment": "bootstrap",
       "rule_id": "CKV2_AZURE_33",
       "path": "infra/terraform/bootstrap/main.tf",
       "rationale": "A private endpoint is not provisioned in the credentialed bootstrap baseline; the state account remains protected by OAuth-only access, RBAC, private containers, HTTPS, TLS1.2, versioning, and encryption.",
@@ -30,6 +34,7 @@
       "expires_on": "2026-12-31"
     },
     {
+      "environment": "bootstrap",
       "rule_id": "CKV2_AZURE_1",
       "path": "infra/terraform/bootstrap/main.tf",
       "rationale": "Bootstrap remote-state storage has an observed graph-policy finding under the approved low-cost state design; OAuth-only access, RBAC, private containers, HTTPS, TLS1.2, versioning, and encryption remain enabled.",
@@ -37,9 +42,114 @@
       "expires_on": "2026-12-31"
     },
     {
+      "environment": "bootstrap",
       "rule_id": "CKV2_AZURE_21",
       "path": "infra/terraform/bootstrap/main.tf",
       "rationale": "The four bootstrap state containers are intentionally private and are reported by Checkov through the module graph; container access is private and access is constrained by OAuth-only RBAC.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "dev",
+      "rule_id": "CKV_AZURE_237",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The dev profile uses the approved low-cost Basic container registry; premium-only resilience and security features are deferred while immutable image digests and admin access disabled remain enforced.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "dev",
+      "rule_id": "CKV_AZURE_167",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The dev profile uses the approved low-cost Basic container registry; premium-only resilience and security features are deferred while immutable image digests and admin access disabled remain enforced.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "dev",
+      "rule_id": "CKV_AZURE_166",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The dev profile uses the approved low-cost Basic container registry; premium-only image quarantine is deferred while immutable image digests and admin access disabled remain enforced.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "dev",
+      "rule_id": "CKV_AZURE_163",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The dev profile uses the approved low-cost Basic container registry; registry image scanning is deferred while immutable image digests and admin access disabled remain enforced.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "dev",
+      "rule_id": "CKV_AZURE_233",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The dev profile uses the approved low-cost Basic container registry; zone redundancy is deferred for the learning environment.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "dev",
+      "rule_id": "CKV_AZURE_164",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The dev profile uses the approved low-cost Basic container registry; the observed scanner finding is accepted only for this disposable learning profile and remains subject to expiry review.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "dev",
+      "rule_id": "CKV_AZURE_139",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The dev profile uses the approved low-cost Basic container registry; the observed scanner finding is accepted only for this disposable learning profile and remains subject to expiry review.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "dev",
+      "rule_id": "CKV_AZURE_165",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The dev profile uses the approved low-cost Basic container registry; the observed scanner finding is accepted only for this disposable learning profile and remains subject to expiry review.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "dev",
+      "rule_id": "CKV_AZURE_110",
+      "path": "infra/terraform/modules/key-vault/main.tf",
+      "rationale": "The dev profile uses a deny-by-default Key Vault with explicit learning IP rules and RBAC; private endpoint and production retention posture are deferred from the low-cost profile.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "dev",
+      "rule_id": "CKV_AZURE_42",
+      "path": "infra/terraform/modules/key-vault/main.tf",
+      "rationale": "The dev profile is disposable and uses the approved seven-day Key Vault retention setting; longer production retention is configured only in prod-reference.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "dev",
+      "rule_id": "CKV_AZURE_136",
+      "path": "infra/terraform/modules/key-vault/main.tf",
+      "rationale": "The dev profile uses a deny-by-default Key Vault with explicit learning IP rules; private endpoint deployment is deferred from the low-cost profile.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "dev",
+      "rule_id": "CKV2_AZURE_32",
+      "path": "infra/terraform/modules/key-vault/main.tf",
+      "rationale": "The dev profile uses a deny-by-default Key Vault with explicit learning IP rules; private endpoint deployment is deferred from the low-cost profile.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "dev",
+      "rule_id": "CKV2_AZURE_57",
+      "path": "infra/terraform/modules/postgresql/main.tf",
+      "rationale": "The dev profile intentionally uses restricted public PostgreSQL access for learning; firewall rules are externally supplied, single-host restricted, and reject all-address input.",
       "owner": "TALLY platform owner",
       "expires_on": "2026-12-31"
     }
