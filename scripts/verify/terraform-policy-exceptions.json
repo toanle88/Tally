@@ -152,6 +152,14 @@
       "rationale": "The dev profile intentionally uses restricted public PostgreSQL access for learning; firewall rules are externally supplied, single-host restricted, and reject all-address input.",
       "owner": "TALLY platform owner",
       "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "dev",
+      "rule_id": "CKV_AZURE_136",
+      "path": "infra/terraform/modules/postgresql/main.tf",
+      "rationale": "The dev profile intentionally uses restricted public PostgreSQL access for learning; firewall rules are externally supplied, single-host restricted, and reject all-address input.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
     }
   ]
 }

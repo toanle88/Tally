@@ -38,6 +38,8 @@ function selfTest() {
   const observedReport = { results: { failed_checks: observedRuleIds.map((check_id) => ({ check_id, file_path: check_id.startsWith("CKV_AZURE_23") || check_id === "CKV_AZURE_237" || check_id === "CKV_AZURE_167" || check_id === "CKV_AZURE_166" || check_id === "CKV_AZURE_163" || check_id === "CKV_AZURE_164" || check_id === "CKV_AZURE_139" || check_id === "CKV_AZURE_165" ? "/../../modules/container-registry/main.tf" : check_id === "CKV2_AZURE_57" ? "/../../modules/postgresql/main.tf" : "/../../modules/key-vault/main.tf" })) } };
   const observedResult = filterReport(observedReport, loadManifest(path.join(__dirname, "terraform-policy-exceptions.json")), "dev", path.join(process.cwd(), "infra/terraform/environments/dev"), process.cwd());
   if (observedResult.remaining.length !== 0) throw new Error("observed Checkov exception filtering self-test failed");
+  const duplicateRuleResult = filterReport({ results: { failed_checks: [{ check_id: "CKV_AZURE_136", file_path: "/../../modules/postgresql/main.tf" }] } }, loadManifest(path.join(__dirname, "terraform-policy-exceptions.json")), "dev", path.join(process.cwd(), "infra/terraform/environments/dev"), process.cwd());
+  if (duplicateRuleResult.remaining.length !== 0) throw new Error("path-specific duplicate rule exception self-test failed");
   console.log("Terraform security exception filtering self-test passed.");
 }
 
