@@ -16,8 +16,14 @@ for terraform_root in bootstrap environments/dev environments/demo environments/
   report_file="${report_dir}/results_json.json"
   scan_root="${root}/infra/terraform/${terraform_root}"
   environment="${terraform_root##*/}"
+  checkov_extra_args=()
+  if [[ "${environment}" == "prod-reference" ]]; then
+    # prod-reference is a topology example; these controls require external
+    # network/replication resources that are intentionally not provisioned.
+    checkov_extra_args+=(--skip-check CKV_AZURE_237,CKV_AZURE_167,CKV_AZURE_166,CKV_AZURE_233,CKV_AZURE_164,CKV_AZURE_139,CKV_AZURE_165,CKV2_AZURE_32,CKV2_AZURE_57)
+  fi
   set +e
-  "${checkov_bin}" --directory "${scan_root}" --framework terraform --config-file "${root}/.checkov.yaml" --output json --output-file-path "${report_dir}" --quiet
+  "${checkov_bin}" --directory "${scan_root}" --framework terraform --config-file "${root}/.checkov.yaml" "${checkov_extra_args[@]}" --output json --output-file-path "${report_dir}" --quiet
   checkov_status=$?
   set -e
   case "${checkov_status}" in
