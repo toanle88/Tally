@@ -163,6 +163,70 @@
     },
     {
       "environment": "demo",
+      "rule_id": "CKV_AZURE_237",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The demo profile uses the approved low-cost Basic container registry; dedicated data endpoints and premium network isolation are deferred for disposable synthetic-data exercises.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "demo",
+      "rule_id": "CKV_AZURE_167",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The demo profile uses the approved low-cost Basic container registry; retention cleanup is deferred for disposable synthetic-data exercises while image digests remain immutable.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "demo",
+      "rule_id": "CKV_AZURE_166",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The demo profile uses the approved low-cost Basic container registry; image quarantine and verification are deferred for disposable synthetic-data exercises.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "demo",
+      "rule_id": "CKV_AZURE_163",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The demo profile uses the approved low-cost Basic container registry; registry vulnerability scanning is deferred for disposable synthetic-data exercises.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "demo",
+      "rule_id": "CKV_AZURE_233",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The demo profile uses the approved low-cost Basic container registry; zone redundancy is deferred for the disposable learning environment.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "demo",
+      "rule_id": "CKV_AZURE_164",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The demo profile uses the approved low-cost Basic container registry; signed-image enforcement is deferred for disposable synthetic-data exercises while immutable image digests remain enforced.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "demo",
+      "rule_id": "CKV_AZURE_139",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The demo profile uses the approved low-cost Basic container registry; public-network isolation is deferred for the disposable low-cost profile while admin access remains disabled.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "demo",
+      "rule_id": "CKV_AZURE_165",
+      "path": "infra/terraform/modules/container-registry/main.tf",
+      "rationale": "The demo profile uses the approved low-cost Basic container registry; geo-replication is deferred for the disposable learning environment.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "demo",
       "rule_id": "CKV_AZURE_110",
       "path": "infra/terraform/modules/key-vault/main.tf",
       "rationale": "The demo profile uses a deny-by-default Key Vault with explicit learning IP rules and RBAC; private endpoint deployment is deferred from the low-cost profile.",

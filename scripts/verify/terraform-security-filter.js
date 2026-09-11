@@ -40,8 +40,8 @@ function selfTest() {
   if (observedResult.remaining.length !== 0) throw new Error("observed Checkov exception filtering self-test failed");
   const duplicateRuleResult = filterReport({ results: { failed_checks: [{ check_id: "CKV_AZURE_136", file_path: "/../../modules/postgresql/main.tf" }] } }, loadManifest(path.join(__dirname, "terraform-policy-exceptions.json")), "dev", path.join(process.cwd(), "infra/terraform/environments/dev"), process.cwd());
   if (duplicateRuleResult.remaining.length !== 0) throw new Error("path-specific duplicate rule exception self-test failed");
-  const demoRuleIds = ["CKV_AZURE_110", "CKV_AZURE_42", "CKV_AZURE_136", "CKV2_AZURE_32", "CKV2_AZURE_57"];
-  const demoReport = { results: { failed_checks: demoRuleIds.map((check_id) => ({ check_id, file_path: check_id === "CKV_AZURE_136" || check_id === "CKV2_AZURE_57" ? "/../../modules/postgresql/main.tf" : "/../../modules/key-vault/main.tf" })) } };
+  const demoRuleIds = ["CKV_AZURE_237", "CKV_AZURE_167", "CKV_AZURE_166", "CKV_AZURE_163", "CKV_AZURE_233", "CKV_AZURE_164", "CKV_AZURE_139", "CKV_AZURE_165", "CKV_AZURE_110", "CKV_AZURE_42", "CKV_AZURE_136", "CKV2_AZURE_32", "CKV2_AZURE_57"];
+  const demoReport = { results: { failed_checks: demoRuleIds.map((check_id) => ({ check_id, file_path: check_id === "CKV_AZURE_136" || check_id === "CKV2_AZURE_57" ? "/../../modules/postgresql/main.tf" : check_id === "CKV_AZURE_237" || check_id === "CKV_AZURE_167" || check_id === "CKV_AZURE_166" || check_id === "CKV_AZURE_163" || check_id === "CKV_AZURE_233" || check_id === "CKV_AZURE_164" || check_id === "CKV_AZURE_139" || check_id === "CKV_AZURE_165" ? "/../../modules/container-registry/main.tf" : "/../../modules/key-vault/main.tf" })) } };
   const demoResult = filterReport(demoReport, loadManifest(path.join(__dirname, "terraform-policy-exceptions.json")), "demo", path.join(process.cwd(), "infra/terraform/environments/demo"), process.cwd());
   if (demoResult.remaining.length !== 0) throw new Error("demo Checkov exception filtering self-test failed");
   console.log("Terraform security exception filtering self-test passed.");

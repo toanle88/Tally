@@ -301,6 +301,10 @@ terraform-lint-check:
 terraform-security-check:
 	@bash scripts/verify/terraform-security.sh
 
+terraform-security-check-docker:
+	@docker compose config --quiet
+	@CHECKOV_BIN="$(CURDIR)/scripts/verify/checkov-docker.sh" bash scripts/verify/terraform-security.sh
+
 terraform-plan-policy-check:
 	@node scripts/verify/terraform-plan-policy.js --self-test
 

@@ -111,6 +111,7 @@ All commands must be run from the repository root.
 | `make terraform-tools-check` | Verify pinned Terraform, TFLint, Checkov, and Infracost versions |
 | `make terraform-lint-check` | Run TFLint across Terraform roots and modules |
 | `make terraform-security-check` | Run Checkov with the reviewed policy-exception manifest |
+| `make terraform-security-check-docker` | Run the same pinned Checkov security gate through Docker Compose |
 | `make terraform-plan-policy-check` | Run credential-free plan-policy fixture checks |
 | `make money-check` | Run focused exact-decimal money and currency primitive tests |
 | `make accounting-scope-check` | Run focused accounting-scope identity and serialization tests |
