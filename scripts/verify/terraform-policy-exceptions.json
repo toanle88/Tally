@@ -160,6 +160,46 @@
       "rationale": "The dev profile intentionally uses restricted public PostgreSQL access for learning; firewall rules are externally supplied, single-host restricted, and reject all-address input.",
       "owner": "TALLY platform owner",
       "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "demo",
+      "rule_id": "CKV_AZURE_110",
+      "path": "infra/terraform/modules/key-vault/main.tf",
+      "rationale": "The demo profile uses a deny-by-default Key Vault with explicit learning IP rules and RBAC; private endpoint deployment is deferred from the low-cost profile.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "demo",
+      "rule_id": "CKV_AZURE_42",
+      "path": "infra/terraform/modules/key-vault/main.tf",
+      "rationale": "The demo profile is disposable and uses the approved seven-day Key Vault retention setting; longer production retention is configured only in prod-reference.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "demo",
+      "rule_id": "CKV_AZURE_136",
+      "path": "infra/terraform/modules/postgresql/main.tf",
+      "rationale": "The demo profile intentionally uses restricted public PostgreSQL access for learning; firewall rules are externally supplied, single-host restricted, and reject all-address input.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "demo",
+      "rule_id": "CKV2_AZURE_32",
+      "path": "infra/terraform/modules/key-vault/main.tf",
+      "rationale": "The demo profile uses a deny-by-default Key Vault with explicit learning IP rules; private endpoint deployment is deferred from the low-cost profile.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
+    },
+    {
+      "environment": "demo",
+      "rule_id": "CKV2_AZURE_57",
+      "path": "infra/terraform/modules/postgresql/main.tf",
+      "rationale": "The demo profile intentionally uses restricted public PostgreSQL access for learning; firewall rules are externally supplied, single-host restricted, and reject all-address input.",
+      "owner": "TALLY platform owner",
+      "expires_on": "2026-12-31"
     }
   ]
 }
