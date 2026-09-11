@@ -5,6 +5,10 @@ resource "azurerm_consumption_budget_subscription" "this" {
   subscription_id = var.scope.id
   amount          = var.amount
   time_grain      = "Monthly"
+  time_period {
+    start_date = var.start_date
+    end_date   = var.end_date
+  }
   dynamic "notification" {
     for_each = local.notifications
     content {
@@ -23,6 +27,10 @@ resource "azurerm_consumption_budget_resource_group" "this" {
   resource_group_id = var.scope.id
   amount            = var.amount
   time_grain        = "Monthly"
+  time_period {
+    start_date = var.start_date
+    end_date   = var.end_date
+  }
   dynamic "notification" {
     for_each = local.notifications
     content {

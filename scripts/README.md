@@ -29,6 +29,12 @@ scripts/
 │   ├── terraform.sh     # Terraform boundary verification
 │   ├── terraform-environments.sh # Environment profile verification
 │   ├── terraform-modules.sh # Reusable module contract and validation gate
+│   ├── terraform-tools.sh # Pinned Terraform verification tool check
+│   ├── terraform-lint.sh # TFLint gate
+│   ├── terraform-security.sh # Checkov gate and exception manifest validation
+│   ├── terraform-plan-policy.js # Credential-free Terraform plan policy gate
+│   ├── terraform-drift.sh # Authenticated refresh-only drift procedure
+│   └── terraform-cost.sh # External-plan Infracost review gate
 │   ├── outbox-inbox-persistence.sh # DLV-PLAT-007 User Story 2 persistence gate
 │   ├── transactional-coordination.sh # DLV-PLAT-007 User Story 3 transaction gate
 │   ├── outbox-dispatch.sh # DLV-PLAT-007 User Story 4 dispatch gate
@@ -135,7 +141,17 @@ code in workload roots:
 make terraform-check
 make terraform-modules-check
 make terraform-environments-check
+make terraform-tools-check
+make terraform-lint-check
+make terraform-security-check
+
+# Authenticated, external-state operations; do not run without an approved environment.
+ENVIRONMENT=dev make terraform-drift-check
+ACTIVE_MONTH_COST=15 PLAN_JSON=/path/to/terraform-show.json make terraform-cost-check
 ```
+
+The complete Story 5 evidence boundary and plan-review record are documented
+in [DLV-IAC-001 User Story 5 verification](../docs/verification/DLV-IAC-001-us5-plan-policy-drift-cost.md).
 
 ## Accessibility qualification
 

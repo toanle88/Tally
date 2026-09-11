@@ -49,7 +49,7 @@ require_text() {
 	local pattern="$1"
 	local file="$2"
 	local description="$3"
-	if ! rg -q --glob '*.tf' --glob '!.terraform/**' "${pattern}" "${file}"; then
+	if ! rg -q --glob '*.tf' --glob '!**/.terraform/**' "${pattern}" "${file}"; then
 		fail "missing ${description}: ${file}"
 	fi
 }
@@ -117,6 +117,7 @@ for resource_pattern in \
 	'resource[[:space:]]+"azurerm_storage_container"[[:space:]]+"state"' \
 	'resource[[:space:]]+"azurerm_user_assigned_identity"[[:space:]]+"state"' \
 	'resource[[:space:]]+"azurerm_role_assignment"[[:space:]]+"bootstrap_operator"' \
+	'resource[[:space:]]+"azurerm_role_assignment"[[:space:]]+"bootstrap_budget_operator"' \
 	'resource[[:space:]]+"azurerm_role_assignment"[[:space:]]+"environment_state"'; do
 	require_text "${resource_pattern}" "${bootstrap_root}" "bootstrap resource ${resource_pattern}"
 done
@@ -147,8 +148,12 @@ check_exact_collection "${bootstrap_root}/main.tf" "workload_environments" dev d
 require_text 'scope[[:space:]]*=[[:space:]]*azurerm_storage_container\.state\[each\.key\]\.id' "${bootstrap_root}" "environment container-scoped RBAC"
 require_text 'principal_id[[:space:]]*=[[:space:]]*azurerm_user_assigned_identity\.state\[each\.key\]\.principal_id' "${bootstrap_root}" "environment identity-scoped RBAC"
 
-if rg -n '^[[:space:]]*(module|data)[[:space:]]+"' "${bootstrap_root}" --glob '*.tf' --glob '!.terraform/**'; then
-	fail "bootstrap must not depend on modules or data sources"
+	if rg -n '^[[:space:]]*data[[:space:]]+"' "${bootstrap_root}" --glob '*.tf' --glob '!**/.terraform/**'; then
+	fail "bootstrap must not depend on data sources"
+fi
+bootstrap_modules="$(rg -o '^[[:space:]]*module[[:space:]]+"[^"]+"' "${bootstrap_root}" --glob '*.tf' --glob '!**/.terraform/**' | sed -E 's/.*module[[:space:]]+"([^"]+)"/\1/' | sort)"
+if [[ "${bootstrap_modules}" != "learning_budget" ]]; then
+	fail "bootstrap may only depend on the learning_budget module"
 fi
 
 check_backend_key "${terraform_root}/bootstrap" "bootstrap/terraform.tfstate"
@@ -157,20 +162,21 @@ check_backend_key "${terraform_root}/environments/demo" "demo/terraform.tfstate"
 check_backend_key "${terraform_root}/environments/prod-reference" "prod-reference/terraform.tfstate"
 
 echo "== Boundary and artifact verification =="
-source_files="$(rg --files --hidden -g '!.terraform/**' "${terraform_root}" || true)"
+source_files="$(rg --files --hidden -g '!**/.terraform/**' "${terraform_root}" || true)"
 while IFS= read -r file; do
 	[[ -z "${file}" ]] && continue
 	case "${file}" in
+		*/.terraform/*) continue ;;
 		*.tf|*.tftest.hcl|*.terraform.lock.hcl|*.gitkeep) ;;
 		*) fail "unexpected infrastructure artifact: ${file}" ;;
 	esac
 done <<<"${source_files}"
 
-if rg -n -i '(client_secret|access_key|secret_value|password)[[:space:]]*=[[:space:]]*"[^$]' "${terraform_root}" --glob '*.tf' --glob '!.terraform/**'; then
+if rg -n -i '(client_secret|access_key|secret_value|password)[[:space:]]*=[[:space:]]*"[^$]' "${terraform_root}" --glob '*.tf' --glob '!**/.terraform/**'; then
 	fail "literal credential material found in Terraform source"
 fi
 
-if rg -n -i '(primary_access_key|connection_string|secret_value|client_secret|password)[[:space:]]*=' "${bootstrap_root}" --glob '*.tf' --glob '!.terraform/**'; then
+if rg -n -i '(primary_access_key|connection_string|secret_value|client_secret|password)[[:space:]]*=' "${bootstrap_root}" --glob '*.tf' --glob '!**/.terraform/**'; then
 	fail "secret or credential output/configuration found in bootstrap source"
 fi
 

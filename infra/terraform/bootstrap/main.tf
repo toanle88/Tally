@@ -93,10 +93,30 @@ resource "azurerm_role_assignment" "bootstrap_operator" {
   principal_id         = var.bootstrap_principal_object_id
 }
 
+resource "azurerm_role_assignment" "bootstrap_budget_operator" {
+  scope                = "/subscriptions/${var.subscription_id}"
+  role_definition_name = "Cost Management Contributor"
+  principal_id         = var.bootstrap_principal_object_id
+}
+
 resource "azurerm_role_assignment" "environment_state" {
   for_each = local.workload_environments
 
   scope                = azurerm_storage_container.state[each.key].id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_user_assigned_identity.state[each.key].principal_id
+}
+
+module "learning_budget" {
+  source = "../modules/budget"
+
+  name   = var.learning_budget_name
+  scope  = { kind = "subscription", id = "/subscriptions/${var.subscription_id}" }
+  amount = var.monthly_learning_budget_amount
+  thresholds = toset([
+    50,
+    80,
+    100,
+  ])
+  contacts = var.budget_contacts
 }

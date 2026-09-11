@@ -1,4 +1,12 @@
 services:
+  checkov:
+    image: bridgecrew/checkov:3.3.8
+    entrypoint: ["checkov"]
+    working_dir: /workspace
+    volumes:
+      - .:/workspace:ro
+      - ${TALLY_CHECKOV_TMP_DIR:-/tmp}:/tmp
+
   postgres:
     image: postgres:18.4-bookworm
     restart: unless-stopped

@@ -49,7 +49,13 @@
 	event-envelope-check \
 	terraform-check \
 	terraform-environments-check \
-	terraform-modules-check
+	terraform-modules-check \
+	terraform-tools-check \
+	terraform-lint-check \
+	terraform-security-check \
+	terraform-plan-policy-check \
+	terraform-drift-check \
+	terraform-cost-check
 
 
 DB_SERVICE := postgres
@@ -278,9 +284,32 @@ outbox-worker-check:
 terraform-check:
 	@bash scripts/verify/terraform.sh
 	@bash scripts/verify/terraform-environments.sh
+	@node scripts/verify/terraform-plan-policy.js --self-test
 
 terraform-environments-check:
 	@bash scripts/verify/terraform-environments.sh
 
 terraform-modules-check:
 	@bash scripts/verify/terraform-modules.sh
+
+terraform-tools-check:
+	@bash scripts/verify/terraform-tools.sh
+
+terraform-lint-check:
+	@bash scripts/verify/terraform-lint.sh
+
+terraform-security-check:
+	@bash scripts/verify/terraform-security.sh
+
+terraform-security-check-docker:
+	@docker compose config --quiet
+	@CHECKOV_BIN="$(CURDIR)/scripts/verify/checkov-docker.sh" bash scripts/verify/terraform-security.sh
+
+terraform-plan-policy-check:
+	@node scripts/verify/terraform-plan-policy.js --self-test
+
+terraform-drift-check:
+	@bash scripts/verify/terraform-drift.sh
+
+terraform-cost-check:
+	@bash scripts/verify/terraform-cost.sh
