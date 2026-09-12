@@ -143,10 +143,16 @@ production authorization.**
 - [x] Public database access is absent from the production-reference profile;
   learning-profile exceptions are explicit and restricted.
 
-### User Story 5 — Verify plans, policy, drift, and cost controls
+### User Story 5 — Verify plans, policy, drift, and cost controls *(deferred after repository scope)*
 
 **As the project owner, I want infrastructure safety checks before apply, so
 that drift, accidental exposure, and runaway learning cost are visible.**
+
+<!--
+The following acceptance criteria are retained for historical traceability but
+are intentionally deferred. The repository-side implementation is complete;
+live Azure qualification, external tool execution, and operational evidence
+are not pursued for this learning project.
 
 - [ ] Formatting, validation, provider-lock, lint, security scanning, and
   policy checks are documented and executable.
@@ -157,13 +163,14 @@ that drift, accidental exposure, and runaway learning cost are visible.**
   environments.
 - [ ] A plan review records environment, commit, resource changes, estimated
   cost, data classification, and approval decision.
+-->
 
 Implementation and verification evidence is recorded in
 [`docs/verification/DLV-IAC-001-us5-plan-policy-drift-cost.md`](../../verification/DLV-IAC-001-us5-plan-policy-drift-cost.md).
-The repository and pull-request gates are implemented; authenticated Azure
-plan, budget deployment, Infracost, and daily refresh-only drift evidence
-remain open because they require external subscription and state-backend
-access.
+The repository and pull-request gates, including credential-free drift and cost
+wrapper self-tests, are implemented. Authenticated Azure plan, budget
+deployment, Infracost, and daily refresh-only drift evidence are intentionally
+deferred and are not part of the remaining delivery scope.
 
 ## 8. Delivery item: DLV-IAC-002 — Optional Azure dev/demo deployment
 
