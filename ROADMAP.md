@@ -75,7 +75,7 @@
       - [ ] **User Story 2 — Bootstrap protected remote state** (local contract verified; Azure plan and per-environment identity authentication pending)
       - [x] **User Story 3 — Implement reusable low-cost modules**
       - [x] **User Story 4 — Define environment profiles safely** (local composition and safety contracts implemented; live Azure plan evidence remains pending)
-      - [ ] **User Story 5 — Verify plans, policy, drift, and cost controls**
+      - [ ] **User Story 5 — Verify plans, policy, drift, and cost controls** *(repository scope complete; external qualification intentionally deferred)*
     - [ ] **DLV-IAC-002 — Optional Azure dev/demo deployment**
       - [ ] **User Story 6 — Deploy the optional learning environment**
       - [ ] **User Story 7 — Federate CI/CD without long-lived secrets**

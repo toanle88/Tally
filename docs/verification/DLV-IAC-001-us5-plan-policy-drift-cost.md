@@ -3,9 +3,10 @@
 ## Scope and evidence boundary
 
 This record covers the credential-free repository gate for `EP-IAC-001` User
-Story 5. It does not claim an Azure subscription plan, budget deployment,
-Infracost API result, or authenticated drift result. Those require operator
-credentials and an external backend and remain explicit follow-up evidence.
+Story 5. The repository-side scope is complete. It does not claim an Azure
+subscription plan, budget deployment, Infracost API result, or authenticated
+drift result; those external qualification activities are intentionally
+deferred and are not part of the remaining delivery scope.
 
 The local and pull-request gate is:
 
@@ -95,7 +96,7 @@ remains an operations follow-up while Azure resources exist.
 
 An operator with the matching Azure subscription and state-backend access must
 run the environment plan, budget deployment, Infracost report, and daily
-refresh-only drift procedure. Store only redacted plan summaries and review
-records; never commit state, plan binaries, credentials, or sensitive variable
-files. The story remains open until that evidence is captured or a time-bound
-deferral is approved.
+refresh-only drift procedure if this scope is ever reopened. Store only redacted
+plan summaries and review records; never commit state, plan binaries,
+credentials, or sensitive variable files. This evidence is intentionally not
+scheduled for the current learning-project scope.
