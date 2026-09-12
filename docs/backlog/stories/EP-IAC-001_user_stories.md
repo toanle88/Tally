@@ -160,10 +160,10 @@ that drift, accidental exposure, and runaway learning cost are visible.**
 
 Implementation and verification evidence is recorded in
 [`docs/verification/DLV-IAC-001-us5-plan-policy-drift-cost.md`](../../verification/DLV-IAC-001-us5-plan-policy-drift-cost.md).
-The repository and pull-request gates are implemented; authenticated Azure
-plan, budget deployment, Infracost, and daily refresh-only drift evidence
-remain open because they require external subscription and state-backend
-access.
+The repository and pull-request gates, including credential-free drift and cost
+wrapper self-tests, are implemented; authenticated Azure plan, budget
+deployment, Infracost, and daily refresh-only drift evidence remain open
+because they require external subscription and state-backend access.
 
 ## 8. Delivery item: DLV-IAC-002 — Optional Azure dev/demo deployment
 

@@ -34,7 +34,8 @@ scripts/
 │   ├── terraform-security.sh # Checkov gate and exception manifest validation
 │   ├── terraform-plan-policy.js # Credential-free Terraform plan policy gate
 │   ├── terraform-drift.sh # Authenticated refresh-only drift procedure
-│   └── terraform-cost.sh # External-plan Infracost review gate
+│   ├── terraform-cost.sh # External-plan Infracost review gate
+│   └── terraform-cost-policy.js # Exact-decimal Infracost cost policy helper
 │   ├── outbox-inbox-persistence.sh # DLV-PLAT-007 User Story 2 persistence gate
 │   ├── transactional-coordination.sh # DLV-PLAT-007 User Story 3 transaction gate
 │   ├── outbox-dispatch.sh # DLV-PLAT-007 User Story 4 dispatch gate
@@ -145,8 +146,15 @@ make terraform-tools-check
 make terraform-lint-check
 make terraform-security-check
 
+# terraform-check also runs credential-free drift and cost wrapper self-tests.
+bash scripts/verify/terraform-drift.sh --self-test
+bash scripts/verify/terraform-cost.sh --self-test
+
 # Authenticated, external-state operations; do not run without an approved environment.
-ENVIRONMENT=dev make terraform-drift-check
+ENVIRONMENT=dev \
+TF_STATE_RESOURCE_GROUP=<state-resource-group> \
+TF_STATE_STORAGE_ACCOUNT=<state-storage-account> \
+make terraform-drift-check
 ACTIVE_MONTH_COST=15 PLAN_JSON=/path/to/terraform-show.json make terraform-cost-check
 ```
 

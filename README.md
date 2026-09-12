@@ -105,7 +105,7 @@ All commands must be run from the repository root.
 | `make api-ts-generate` | Generate the TypeScript Fetch client and types from the OpenAPI contract |
 | `make api-ts-check` | Validate deterministic TypeScript generation, inventory, markers, and frontend compilation |
 | `make api-check` | Run the focused OpenAPI contract and generated-artifact drift gate |
-| `make terraform-check` | Format, validate, and verify every Terraform root and environment profile against its reviewed provider lockfile |
+| `make terraform-check` | Format, validate, and verify every Terraform root/profile plus credential-free plan, drift, and cost wrapper self-tests |
 | `make terraform-environments-check` | Verify dev, demo, and prod-reference composition, profile safety, and focused Terraform tests |
 | `make terraform-modules-check` | Validate the 11 reusable low-cost Terraform module contracts without credentials |
 | `make terraform-tools-check` | Verify pinned Terraform, TFLint, Checkov, and Infracost versions |
@@ -113,6 +113,8 @@ All commands must be run from the repository root.
 | `make terraform-security-check` | Run Checkov with the reviewed policy-exception manifest |
 | `make terraform-security-check-docker` | Run the same pinned Checkov security gate through Docker Compose |
 | `make terraform-plan-policy-check` | Run credential-free plan-policy fixture checks |
+| `make terraform-drift-check` | Run an authenticated refresh-only drift check for a selected environment |
+| `make terraform-cost-check` | Compare an Infracost plan delta with the active-month cost review threshold |
 | `make money-check` | Run focused exact-decimal money and currency primitive tests |
 | `make accounting-scope-check` | Run focused accounting-scope identity and serialization tests |
 | `make aggregate-version-check` | Run focused aggregate-version and boundary tests |

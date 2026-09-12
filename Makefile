@@ -285,6 +285,8 @@ terraform-check:
 	@bash scripts/verify/terraform.sh
 	@bash scripts/verify/terraform-environments.sh
 	@node scripts/verify/terraform-plan-policy.js --self-test
+	@bash scripts/verify/terraform-drift.sh --self-test
+	@bash scripts/verify/terraform-cost.sh --self-test
 
 terraform-environments-check:
 	@bash scripts/verify/terraform-environments.sh

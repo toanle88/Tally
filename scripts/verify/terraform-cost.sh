@@ -2,6 +2,58 @@
 
 set -Eeuo pipefail
 
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+if [[ "${1:-}" == "--self-test" ]]; then
+  node "${root}/scripts/verify/terraform-cost-policy.js" --self-test
+
+  self_test_root="$(mktemp -d "${TMPDIR:-/tmp}/tally-cost-self-test.XXXXXX")"
+  trap 'rm -rf "${self_test_root}"' EXIT
+  plan_fixture="${self_test_root}/plan.json"
+  report_fixture="${self_test_root}/report.json"
+  fake_infracost="${self_test_root}/infracost"
+  printf '%s\n' '{}' >"${plan_fixture}"
+  printf '%s\n' '{"currency":"USD","totalMonthlyCost":"100","diffTotalMonthlyCost":"1"}' >"${report_fixture}"
+  cat >"${fake_infracost}" <<'FAKE_INFRACOST'
+#!/usr/bin/env bash
+set -euo pipefail
+output_file=""
+for argument in "$@"; do
+  if [[ "${previous_argument:-}" == "--out-file" ]]; then output_file="$argument"; fi
+  previous_argument="$argument"
+done
+[[ -n "$output_file" ]] || exit 1
+cp "${FAKE_INFRACOST_REPORT}" "$output_file"
+FAKE_INFRACOST
+  chmod +x "${fake_infracost}"
+
+  set +e
+  PLAN_JSON="${plan_fixture}" ACTIVE_MONTH_COST=49 ACTIVE_MONTH_COST_LIMIT=50 \
+    INFRACOST_BIN="${fake_infracost}" FAKE_INFRACOST_REPORT="${report_fixture}" COST_APPROVAL= \
+    bash "$0" >/dev/null
+  status=$?
+  set -e
+  [[ "$status" == 0 ]] || { echo "cost self-test wrapper smoke case failed" >&2; exit 1; }
+
+  set +e
+  PLAN_JSON="${plan_fixture}" ACTIVE_MONTH_COST=50 ACTIVE_MONTH_COST_LIMIT=50 \
+    INFRACOST_BIN="${fake_infracost}" FAKE_INFRACOST_REPORT="${report_fixture}" COST_APPROVAL= \
+    bash "$0" >/dev/null
+  status=$?
+  set -e
+  [[ "$status" == 2 ]] || { echo "cost self-test did not require approval above the threshold" >&2; exit 1; }
+
+  set +e
+  PLAN_JSON="${plan_fixture}" ACTIVE_MONTH_COST=50 ACTIVE_MONTH_COST_LIMIT=50 \
+    INFRACOST_BIN="${fake_infracost}" FAKE_INFRACOST_REPORT="${report_fixture}" COST_APPROVAL=approved \
+    bash "$0" >/dev/null
+  status=$?
+  set -e
+  [[ "$status" == 0 ]] || { echo "cost self-test rejected an explicitly approved over-threshold result" >&2; exit 1; }
+  echo "Terraform cost self-test passed."
+  exit 0
+fi
+
 plan_json="${PLAN_JSON:-}"
 infracost_bin="${INFRACOST_BIN:-infracost}"
 active_month_cost="${ACTIVE_MONTH_COST:-}"
@@ -16,19 +68,4 @@ trap 'rm -rf "${output_dir}"' EXIT
 output_file="${output_dir}/breakdown.json"
 "${infracost_bin}" breakdown --path "${plan_json}" --format json --out-file "${output_file}"
 
-node - "${output_file}" "${active_month_cost}" "${active_month_limit}" <<'NODE'
-const fs = require("fs");
-const report = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
-const current = Number(process.argv[3]);
-const limit = Number(process.argv[4]);
-const projectTotals = (report.projects ?? []).map((project) => Number(project.breakdown?.totalMonthlyCost)).filter(Number.isFinite);
-const delta = projectTotals.length > 0 ? projectTotals.reduce((sum, value) => sum + value, 0) : Number(report.totalMonthlyCost ?? report.breakdown?.totalMonthlyCost ?? 0);
-const activeMonthTotal = current + delta;
-console.log(`Current active-month cost: USD ${current.toFixed(2)}`);
-console.log(`Estimated plan delta: USD ${delta.toFixed(2)}`);
-console.log(`Estimated active-month total: USD ${activeMonthTotal.toFixed(2)}`);
-if (activeMonthTotal > limit && process.env.COST_APPROVAL !== "approved") {
-  console.error(`Estimated active-month total exceeds USD ${limit.toFixed(2)}; set COST_APPROVAL=approved only after recorded review.`);
-  process.exit(2);
-}
-NODE
+node "${root}/scripts/verify/terraform-cost-policy.js" "${output_file}" "${active_month_cost}" "${active_month_limit}"
