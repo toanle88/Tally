@@ -43,3 +43,17 @@ output "state_identity_principal_ids" {
     for environment, identity in azurerm_user_assigned_identity.state : environment => identity.principal_id
   }
 }
+
+output "github_federation_client_ids" {
+  description = "Client IDs of the environment-specific GitHub Actions OIDC applications."
+  value = {
+    for environment, federation in module.github_federation : environment => federation.client_id
+  }
+}
+
+output "github_federation_principal_ids" {
+  description = "Object IDs of the environment-specific GitHub Actions OIDC service principals."
+  value = {
+    for environment, federation in module.github_federation : environment => federation.principal_id
+  }
+}

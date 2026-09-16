@@ -122,6 +122,9 @@ for resource_pattern in \
 	require_text "${resource_pattern}" "${bootstrap_root}" "bootstrap resource ${resource_pattern}"
 done
 
+require_text 'resource[[:space:]]+"azurerm_role_assignment"[[:space:]]+"github_state"' "${bootstrap_root}" "GitHub state RBAC"
+require_text 'subject[[:space:]]*=[[:space:]]*local\.github_subjects\[each\.key\]' "${bootstrap_root}" "environment-specific GitHub subjects"
+
 for setting in \
 	'https_traffic_only_enabled[[:space:]]*=[[:space:]]*true' \
 	'min_tls_version[[:space:]]*=[[:space:]]*\"TLS1_2\"' \
@@ -152,8 +155,8 @@ require_text 'principal_id[[:space:]]*=[[:space:]]*azurerm_user_assigned_identit
 	fail "bootstrap must not depend on data sources"
 fi
 bootstrap_modules="$(rg -o '^[[:space:]]*module[[:space:]]+"[^"]+"' "${bootstrap_root}" --glob '*.tf' --glob '!**/.terraform/**' | sed -E 's/.*module[[:space:]]+"([^"]+)"/\1/' | sort)"
-if [[ "${bootstrap_modules}" != "learning_budget" ]]; then
-	fail "bootstrap may only depend on the learning_budget module"
+if [[ "${bootstrap_modules}" != $'github_federation\nlearning_budget' ]]; then
+	fail "bootstrap must depend only on learning_budget and github_federation modules"
 fi
 
 check_backend_key "${terraform_root}/bootstrap" "bootstrap/terraform.tfstate"

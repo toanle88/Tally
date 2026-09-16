@@ -25,10 +25,11 @@ locals {
 }
 
 module "resource_group" {
-  source   = "../../modules/resource-group"
-  name     = "${local.prefix}-rg-01"
-  location = var.location
-  tags     = local.tags
+  source                     = "../../modules/resource-group"
+  name                       = "${local.prefix}-rg-01"
+  location                   = var.location
+  tags                       = local.tags
+  ci_deployment_principal_id = var.ci_deployment_principal_id
 }
 
 module "log_analytics" {

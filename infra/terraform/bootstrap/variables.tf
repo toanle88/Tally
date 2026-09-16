@@ -74,6 +74,16 @@ variable "demo_expires_on" {
   }
 }
 
+variable "github_repository" {
+  description = "Exact GitHub owner/repository trusted by environment-specific OIDC credentials."
+  type        = string
+
+  validation {
+    condition     = var.github_repository == "toanle88/Tally"
+    error_message = "github_repository must be the exact repository identity toanle88/Tally."
+  }
+}
+
 variable "tags" {
   description = "Additional non-sensitive tags merged with the required baseline tags."
   type        = map(string)

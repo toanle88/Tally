@@ -2,6 +2,11 @@
 
 This directory contains repository automation used for local development, database lifecycle management, verification, and project tooling.
 
+`scripts/deploy/terraform-apply.sh` is the protected CI entry point. It
+accepts only `dev`, `demo`, or `prod-reference`, uses the AzureAD-authenticated
+Terraform backend, keeps raw plans temporary, applies the exact generated plan,
+and writes only a sanitized summary for the workflow artifact.
+
 The **Makefile** is the supported developer interface. Most scripts are implementation details and should normally be invoked through their corresponding `make` targets.
 
 ---

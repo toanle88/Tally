@@ -1,0 +1,96 @@
+name: Terraform protected apply
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to apply
+        required: true
+        type: choice
+        options:
+          - dev
+          - demo
+          - prod-reference
+
+concurrency:
+  group: terraform-apply-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      AZURE_CORE_OUTPUT: none
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      TF_STATE_RESOURCE_GROUP: ${{ vars.TF_STATE_RESOURCE_GROUP }}
+      TF_STATE_STORAGE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
+      TF_VAR_organization: ${{ vars.TF_VAR_ORGANIZATION }}
+      TF_VAR_location: ${{ vars.TF_VAR_LOCATION }}
+      TF_VAR_region_code: ${{ vars.TF_VAR_REGION_CODE }}
+      TF_VAR_owner: ${{ vars.TF_VAR_OWNER }}
+      TF_VAR_cost_center: ${{ vars.TF_VAR_COST_CENTER }}
+      TF_VAR_tenant_id: ${{ vars.TF_VAR_TENANT_ID }}
+      TF_VAR_ci_deployment_principal_id: ${{ vars.TF_VAR_CI_DEPLOYMENT_PRINCIPAL_ID }}
+      TF_VAR_api_image_repository: ${{ vars.TF_VAR_API_IMAGE_REPOSITORY }}
+      TF_VAR_api_image_digest: ${{ vars.TF_VAR_API_IMAGE_DIGEST }}
+      TF_VAR_worker_image_repository: ${{ vars.TF_VAR_WORKER_IMAGE_REPOSITORY }}
+      TF_VAR_worker_image_digest: ${{ vars.TF_VAR_WORKER_IMAGE_DIGEST }}
+      TF_VAR_worker_backlog_rule: ${{ vars.TF_VAR_WORKER_BACKLOG_RULE }}
+      TF_VAR_postgres_administrator_login: ${{ vars.TF_VAR_POSTGRES_ADMINISTRATOR_LOGIN }}
+      TF_VAR_postgres_administrator_password_wo: ${{ secrets.TF_VAR_POSTGRES_ADMINISTRATOR_PASSWORD_WO }}
+      TF_VAR_postgres_administrator_password_wo_version: ${{ vars.TF_VAR_POSTGRES_ADMINISTRATOR_PASSWORD_WO_VERSION }}
+      TF_VAR_postgres_database_name: ${{ vars.TF_VAR_POSTGRES_DATABASE_NAME }}
+      TF_VAR_learning_firewall_rules: ${{ vars.TF_VAR_LEARNING_FIREWALL_RULES }}
+      TF_VAR_learning_key_vault_ip_rules: ${{ vars.TF_VAR_LEARNING_KEY_VAULT_IP_RULES }}
+      TF_VAR_demo_expires_on: ${{ vars.TF_VAR_DEMO_EXPIRES_ON }}
+      TF_VAR_prod_container_apps_subnet_id: ${{ vars.TF_VAR_PROD_CONTAINER_APPS_SUBNET_ID }}
+      TF_VAR_prod_postgres_subnet_id: ${{ vars.TF_VAR_PROD_POSTGRES_SUBNET_ID }}
+      TF_VAR_prod_postgres_private_dns_zone_id: ${{ vars.TF_VAR_PROD_POSTGRES_PRIVATE_DNS_ZONE_ID }}
+      TF_VAR_prod_key_vault_subnet_ids: ${{ vars.TF_VAR_PROD_KEY_VAULT_SUBNET_IDS }}
+      TF_VAR_prod_postgres_sku_name: ${{ vars.TF_VAR_PROD_POSTGRES_SKU_NAME }}
+      TF_VAR_prod_postgres_storage_mb: ${{ vars.TF_VAR_PROD_POSTGRES_STORAGE_MB }}
+      TF_VAR_prod_api_max_replicas: ${{ vars.TF_VAR_PROD_API_MAX_REPLICAS }}
+      TF_VAR_prod_worker_max_replicas: ${{ vars.TF_VAR_PROD_WORKER_MAX_REPLICAS }}
+      TF_VAR_prod_primary_availability_zone: ${{ vars.TF_VAR_PROD_PRIMARY_AVAILABILITY_ZONE }}
+      TF_VAR_prod_standby_availability_zone: ${{ vars.TF_VAR_PROD_STANDBY_AVAILABILITY_ZONE }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.2
+          terraform_wrapper: false
+
+      - name: Log in to Azure with OIDC
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Plan and apply selected environment
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: bash scripts/deploy/terraform-apply.sh
+
+      - name: Upload sanitized plan summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan-summary-${{ inputs.environment }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/tally-${{ inputs.environment }}-plan-summary.json
+          if-no-files-found: error
+          retention-days: 7

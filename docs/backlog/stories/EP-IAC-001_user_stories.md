@@ -211,6 +211,17 @@ so that deployment does not depend on stored Azure client secrets.**
 - [ ] Federation subjects are least-privilege and repository/environment
   specific.
 
+Repository-side federation, protected manual-apply workflow, credential-free
+pull-request plan checks, scoped role interfaces, secret-hygiene contracts,
+and setup guidance are implemented in
+[`docs/verification/DLV-IAC-002-us7-ci-oidc-federation.md`](../../verification/DLV-IAC-002-us7-ci-oidc-federation.md).
+The story remains open for live Azure token-exchange, remote-state, GitHub
+environment-approval, and protected-apply evidence.
+The branch review also recorded successful Terraform validation, affected
+mock-provider tests, contract self-tests, formatting, shell syntax, and diff
+checks; host-tool limitations prevented the aggregate Make and documentation
+build checks from completing locally.
+
 ### User Story 8 — Smoke-test deployment readiness
 
 **As a release learner, I want a deployment smoke test, so that a successful

@@ -21,10 +21,12 @@ for (const name of contract.modules) {
   if (name === "container-app" && !variables.includes('sensitive')) fail("Container App secret reference inputs must be marked sensitive");
   if (name === "postgresql" && (!/version\s*=\s*var\.postgres_version/.test(main) || !/value\s*=\s*"ON"/.test(main) || !/value\s*=\s*"TLSv1.2"/.test(main))) fail("PostgreSQL baseline is incomplete");
   if (name === "key-vault" && (!main.includes("default_action") || !main.includes("azurerm_role_assignment"))) fail("Key Vault network or role contract is incomplete");
+  if (name === "resource-group" && !main.includes('resource "azurerm_role_assignment" "ci_deployer"')) fail("Resource groups must support scoped CI deployment access");
   if (name === "postgresql" && (!main.includes('dynamic "high_availability"') || !main.includes("primary_availability_zone"))) fail("PostgreSQL HA zones must be wired");
   if (name === "postgresql" && !variables.includes('sensitive')) fail("PostgreSQL password input must be marked sensitive");
   if (name === "container-app-environment" && !variables.includes("network_mode")) fail("Container Apps network mode must be explicit");
   if (name === "github-federation" && (!main.includes("token.actions.githubusercontent.com") || main.includes("subject = " + "\"*\""))) fail("GitHub federation must use fixed issuer and non-wildcard subject");
+  if (name === "github-federation" && !fs.readFileSync(path.join(dir, "outputs.tf"), "utf8").includes("principal_id")) fail("GitHub federation must expose its service-principal object ID");
   if (/password\s*=|secret_value\s*=|repository_token\s*=\s*"/.test(main)) fail(`${name}: secret values must not be defined in module code`);
 }
 for (const name of contract.test_modules) {

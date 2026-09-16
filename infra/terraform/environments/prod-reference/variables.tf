@@ -16,6 +16,14 @@ variable "region_code" {
 }
 variable "owner" { type = string }
 variable "cost_center" { type = string }
+variable "ci_deployment_principal_id" {
+  type    = string
+  default = null
+  validation {
+    condition     = var.ci_deployment_principal_id == null || can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", var.ci_deployment_principal_id))
+    error_message = "ci_deployment_principal_id must be a UUID when supplied."
+  }
+}
 variable "tenant_id" { type = string }
 variable "api_image_repository" { type = string }
 variable "api_image_digest" {
