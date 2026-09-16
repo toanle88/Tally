@@ -20,12 +20,13 @@ for terraform_root in bootstrap environments/dev environments/demo environments/
   # CKV_AZURE_249 cannot resolve the validated subject module input during
   # Checkov's static scan. The bootstrap uses three exact subjects, enforced
   # by terraform-ci-contract.js; keep the scanner exclusion explicit here.
-  checkov_extra_args+=(--skip-check CKV_AZURE_249)
+  checkov_skip_checks="CKV_AZURE_249"
   if [[ "${environment}" == "prod-reference" ]]; then
     # prod-reference is a topology example; these controls require external
     # network/replication resources that are intentionally not provisioned.
-    checkov_extra_args+=(--skip-check CKV_AZURE_237,CKV_AZURE_167,CKV_AZURE_166,CKV_AZURE_233,CKV_AZURE_164,CKV_AZURE_139,CKV_AZURE_165,CKV2_AZURE_32,CKV2_AZURE_57)
+    checkov_skip_checks+=",CKV_AZURE_237,CKV_AZURE_167,CKV_AZURE_166,CKV_AZURE_233,CKV_AZURE_164,CKV_AZURE_139,CKV_AZURE_165,CKV2_AZURE_32,CKV2_AZURE_57"
   fi
+  checkov_extra_args+=(--skip-check "${checkov_skip_checks}")
   set +e
   "${checkov_bin}" --directory "${scan_root}" --framework terraform --config-file "${root}/.checkov.yaml" "${checkov_extra_args[@]}" --output json --output-file-path "${report_dir}" --quiet
   checkov_status=$?

@@ -19,7 +19,7 @@ for (const environment of ["dev", "demo", "prod-reference"]) {
 if (bootstrap.includes("subject = \"*\"") || /client_secret\s*=|access_key\s*=/i.test(bootstrap)) {
   fail("bootstrap contains a wildcard subject or long-lived credential pattern");
 }
-if (!securityScript.includes("--skip-check CKV_AZURE_249")) fail("Checkov OIDC false-positive exclusion is not explicit");
+if (!securityScript.includes('checkov_skip_checks="CKV_AZURE_249"') || !securityScript.includes('checkov_extra_args+=(--skip-check "${checkov_skip_checks}")')) fail("Checkov OIDC false-positive exclusion is not explicit");
 if (!/make terraform-check[^\r\n]*terraform-environments-check/.test(terraformWorkflow)) fail("PR workflow must run Terraform plan tests");
 if (/azure\/login|id-token:\s*write|pull_request_target|AZURE_CLIENT_SECRET|creds:/i.test(terraformWorkflow)) {
   fail("credential-free PR workflow contains Azure credentials or privileged OIDC access");
