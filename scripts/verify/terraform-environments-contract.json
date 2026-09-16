@@ -23,6 +23,9 @@
     "key_vault_uri",
     "api_identity_principal_id",
     "worker_identity_principal_id",
+    "container_registry_id",
+    "container_registry_login_server",
+    "container_registry_name",
     "production_deletion_lock_enabled"
   ],
   "profiles": {

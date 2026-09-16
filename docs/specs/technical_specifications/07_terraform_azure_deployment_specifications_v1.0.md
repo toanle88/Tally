@@ -79,6 +79,7 @@ Resource names follow `<org>-fin-<env>-<region>-<resource>-<nn>`. Required tags:
 ## 6. Container Apps baseline
 
 - API listens on 8080 and exposes `/health/live`, `/health/ready`, `/metrics` only on approved ingress paths.
+- Learning-profile exception: until the owning API delivery adds a distinct readiness contract, `dev` and disposable `demo` may configure both Container Apps probes to `/health/live`; this exception is not valid for `prod-reference` or production qualification.
 - Learning CPU/memory starts at 0.5 vCPU/1 GiB and is adjusted by measurement.
 - Images are deployed by immutable digest from ACR.
 - Managed identity reads Key Vault and pulls images.

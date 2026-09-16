@@ -8,4 +8,7 @@ output "database_id" { value = module.postgresql.database_id }
 output "key_vault_uri" { value = module.key_vault.vault_uri }
 output "api_identity_principal_id" { value = module.api_identity.principal_id }
 output "worker_identity_principal_id" { value = module.worker_identity.principal_id }
+output "container_registry_id" { value = module.container_registry.id }
+output "container_registry_login_server" { value = module.container_registry.login_server }
+output "container_registry_name" { value = module.container_registry.name }
 output "production_deletion_lock_enabled" { value = true }

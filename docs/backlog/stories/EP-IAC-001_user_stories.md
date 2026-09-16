@@ -191,6 +191,13 @@ dependency.**
 - [ ] Apply output identifies created resources and safe next steps without
   printing secrets.
 
+Repository workflow implementation is present through the optional
+`make azure-learning-plan` and `make azure-learning-apply` commands. It uses a
+two-phase ACR image-import sequence, external immutable image inputs, and the
+existing `/health/live` endpoint. Authenticated Azure apply evidence remains
+environment-dependent and is recorded separately; this story is not marked
+complete until that evidence is available.
+
 ### User Story 7 — Federate CI/CD without long-lived secrets
 
 **As the project owner, I want GitHub Actions to authenticate through OIDC,
