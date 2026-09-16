@@ -52,7 +52,7 @@ check "workload_scaling" {
 
 check "api_ingress" {
   assert {
-    condition     = var.workload_type != "api" || (var.ingress != null && var.health_paths != null && var.ingress.target_port == 8080 && var.ingress.transport == "http" && !var.ingress.allow_insecure_connections && var.health_paths.live == "/health/live" && var.health_paths.ready == "/health/ready")
-    error_message = "API workloads must use secure HTTP ingress on port 8080 and the approved health paths."
+    condition     = var.workload_type != "api" || (var.ingress != null && var.health_paths != null && var.ingress.target_port == 8080 && var.ingress.transport == "http" && !var.ingress.allow_insecure_connections && var.health_paths.live == "/health/live" && contains(["/health/live", "/health/ready"], var.health_paths.ready))
+    error_message = "API workloads must use secure HTTP ingress on port 8080 and the approved learning or production health paths."
   }
 }

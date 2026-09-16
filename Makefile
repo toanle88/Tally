@@ -55,7 +55,10 @@
 	terraform-security-check \
 	terraform-plan-policy-check \
 	terraform-drift-check \
-	terraform-cost-check
+	terraform-cost-check \
+	azure-learning-plan \
+	azure-learning-apply \
+	azure-learning-deployment-check
 
 
 DB_SERVICE := postgres
@@ -315,3 +318,14 @@ terraform-drift-check:
 
 terraform-cost-check:
 	@bash scripts/verify/terraform-cost.sh
+
+azure-learning-plan:
+	@ENVIRONMENT="$(ENVIRONMENT)" bash scripts/deploy/azure-learning.sh plan
+
+azure-learning-apply:
+	@ENVIRONMENT="$(ENVIRONMENT)" CONFIRM_APPLY="$(CONFIRM_APPLY)" bash scripts/deploy/azure-learning.sh apply
+
+azure-learning-deployment-check:
+	@bash scripts/deploy/azure-learning.sh --self-test
+	@bash scripts/deploy/azure-learning.test.sh
+	@bash -n scripts/deploy/azure-learning.sh

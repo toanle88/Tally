@@ -115,6 +115,9 @@ All commands must be run from the repository root.
 | `make terraform-plan-policy-check` | Run credential-free plan-policy fixture checks |
 | `make terraform-drift-check` | Run an authenticated refresh-only drift check for a selected environment |
 | `make terraform-cost-check` | Compare an Infracost plan delta with the active-month cost review threshold |
+| `make azure-learning-plan ENVIRONMENT=dev|demo` | Initialize isolated Azure state and produce a reviewed learning-environment plan |
+| `make azure-learning-apply ENVIRONMENT=dev|demo CONFIRM_APPLY=dev|demo` | Provision the selected learning environment after ACR image import and explicit confirmation |
+| `make azure-learning-deployment-check` | Run credential-free deployment-wrapper self-tests and shell validation |
 | `make money-check` | Run focused exact-decimal money and currency primitive tests |
 | `make accounting-scope-check` | Run focused accounting-scope identity and serialization tests |
 | `make aggregate-version-check` | Run focused aggregate-version and boundary tests |
@@ -271,6 +274,50 @@ credentials, access an Azure subscription, create resources, or configure
 remote state. See the [User Story 2 verification record](./docs/verification/DLV-IAC-001-us2-protected-remote-state.md)
 for the two-phase bootstrap and recovery procedure.
 
+### Optional Azure learning deployment
+
+Azure is optional; local development does not depend on it. The learning
+deployment accepts only `dev` or disposable `demo` and authenticates through
+the Azure CLI. Set the required `ARM_*`, `TF_STATE_*`, and `TF_VAR_*`
+environment variables externally, including a sensitive PostgreSQL password.
+Do not create or commit `.tfvars`, state, plan, or credential files.
+
+The apply workflow first creates the resource group and ACR, imports the
+externally supplied API and worker images by immutable digest, then runs the
+full Terraform plan and apply. Source images must be supplied through
+`AZURE_API_SOURCE_IMAGE` and `AZURE_WORKER_SOURCE_IMAGE`; no image build or
+frontend content deployment is included yet.
+
+Apply also requires `AZURE_LEARNING_ESTIMATED_MONTHLY_COST_USD`, an
+operator-supplied non-negative estimate. The estimate is printed as
+unverified context before the final interactive confirmation; it is not an
+Azure billing quote.
+
+```bash
+make azure-learning-plan ENVIRONMENT=demo
+CONFIRM_APPLY=demo make azure-learning-apply ENVIRONMENT=demo
+```
+
+The apply command requires confirmation before the foundation apply and pauses
+again after the complete Terraform plan, requiring the operator to type the
+selected environment name again. These are the explicit review gates for the
+resource and cost impact before either apply.
+
+The command prints only non-sensitive resource outputs and checks the existing
+API `GET /health/live` endpoint. It does not run migrations or seed finance
+data. The approved deployment specification also names `/health/ready`, but
+the current API does not implement it; the learning profile therefore uses
+`/health/live` for both Container Apps probes until the owning API/platform
+delivery adds a distinct readiness contract. This is not production
+qualification, CI federation, smoke-test qualification, destroy, or recovery
+evidence.
+
+The wrapper uses the authenticated Azure CLI operator for this learning
+workflow. Per-environment state identities are provisioned by the bootstrap
+root, but matching identity authentication remains a pending Story 2/7
+qualification; the wrapper claims separate state keys and containers, not
+completion of that identity criterion.
+
 ---
 
 ## Architecture
@@ -303,7 +350,7 @@ The technology baseline (from the approved solution architecture):
 | Styling | Tailwind CSS 4 as the primary styling/layout system with daisyUI 5 theme and wrapper support | — |
 | Client state | — | TanStack Query |
 | API contract | OpenAPI 3.1 source with generated Go and TypeScript artifacts; runtime currently exposes GET /health/live; focused contract/generated-artifact drift CI | — |
-| Infrastructure | Terraform provider contract, per-root lockfiles, protected Blob remote-state bootstrap, isolated state keys and identities, reusable low-cost module contracts, and dev/demo/prod-reference profile composition | Live Azure deployment |
+| Infrastructure | Terraform provider contract, per-root lockfiles, protected Blob remote-state bootstrap, isolated state keys and identities, reusable low-cost module contracts, dev/demo/prod-reference profile composition, and optional dev/demo deployment wrapper | Live Azure apply evidence and production qualification |
 | CI/CD | — | GitHub Actions |
 
 ---

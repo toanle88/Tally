@@ -111,7 +111,7 @@ module "api" {
     transport                  = "http"
     allow_insecure_connections = false
   }
-  health_paths = { live = "/health/live", ready = "/health/ready" }
+  health_paths = { live = "/health/live", ready = "/health/live" }
   secret_refs  = []
   tags         = local.tags
 }

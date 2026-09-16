@@ -10,6 +10,9 @@ The **Makefile** is the supported developer interface. Most scripts are implemen
 
 ```text
 scripts/
+├── deploy/
+│   ├── azure-learning.sh             # Explicit-confirmation Azure dev/demo deployment
+│   └── azure-learning.test.sh        # Credential-free deployment failure-path tests
 ├── db/
 │   ├── migrate.sh      # Goose migration workflow
 │   ├── seed.sh         # Local database seed
@@ -160,6 +163,30 @@ ACTIVE_MONTH_COST=15 PLAN_JSON=/path/to/terraform-show.json make terraform-cost-
 
 The complete Story 5 evidence boundary and plan-review record are documented
 in [DLV-IAC-001 User Story 5 verification](../docs/verification/DLV-IAC-001-us5-plan-policy-drift-cost.md).
+
+## Optional Azure learning deployment
+
+The supported deployment interface is:
+
+```bash
+ENVIRONMENT=dev make azure-learning-plan
+CONFIRM_APPLY=dev ENVIRONMENT=dev make azure-learning-apply
+make azure-learning-deployment-check
+```
+
+The wrapper accepts only `dev` and `demo`. It requires Azure CLI access to the
+requested subscription, the matching remote-state resource group and storage
+account, all environment `TF_VAR_*` inputs, and immutable source references in
+`AZURE_API_SOURCE_IMAGE` and `AZURE_WORKER_SOURCE_IMAGE`. Demo also requires
+`TF_VAR_demo_expires_on`.
+
+Apply is intentionally two-phase: it creates only the resource group and ACR,
+imports both source images, verifies their sha256 digests, and then applies the
+complete profile. Temporary plans are deleted on exit. Output is limited to
+non-sensitive resource identifiers and the existing API `/health/live`
+response. The wrapper does not build images, deploy Static Web Apps content,
+run migrations, seed data, accept `prod-reference`, or perform destroy/recovery
+operations.
 
 ## Accessibility qualification
 
