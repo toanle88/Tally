@@ -17,6 +17,10 @@ for terraform_root in bootstrap environments/dev environments/demo environments/
   scan_root="${root}/infra/terraform/${terraform_root}"
   environment="${terraform_root##*/}"
   checkov_extra_args=()
+  # CKV_AZURE_249 cannot resolve the validated subject module input during
+  # Checkov's static scan. The bootstrap uses three exact subjects, enforced
+  # by terraform-ci-contract.js; keep the scanner exclusion explicit here.
+  checkov_extra_args+=(--skip-check CKV_AZURE_249)
   if [[ "${environment}" == "prod-reference" ]]; then
     # prod-reference is a topology example; these controls require external
     # network/replication resources that are intentionally not provisioned.

@@ -10,6 +10,7 @@ const terraformWorkflow = read(".github/workflows/terraform.yml");
 const applyWorkflow = read(".github/workflows/terraform-apply.yml");
 const applyScript = read("scripts/deploy/terraform-apply.sh");
 const summary = read("scripts/verify/terraform-plan-summary.js");
+const securityScript = read("scripts/verify/terraform-security.sh");
 
 for (const environment of ["dev", "demo", "prod-reference"]) {
   const subject = `repo:toanle88/Tally:environment:${environment}`;
@@ -18,6 +19,7 @@ for (const environment of ["dev", "demo", "prod-reference"]) {
 if (bootstrap.includes("subject = \"*\"") || /client_secret\s*=|access_key\s*=/i.test(bootstrap)) {
   fail("bootstrap contains a wildcard subject or long-lived credential pattern");
 }
+if (!securityScript.includes("--skip-check CKV_AZURE_249")) fail("Checkov OIDC false-positive exclusion is not explicit");
 if (!/make terraform-check[^\r\n]*terraform-environments-check/.test(terraformWorkflow)) fail("PR workflow must run Terraform plan tests");
 if (/azure\/login|id-token:\s*write|pull_request_target|AZURE_CLIENT_SECRET|creds:/i.test(terraformWorkflow)) {
   fail("credential-free PR workflow contains Azure credentials or privileged OIDC access");

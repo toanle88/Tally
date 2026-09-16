@@ -30,10 +30,11 @@ The issuer is `https://token.actions.githubusercontent.com` and the audience
 is `api://AzureADTokenExchange`. Wildcard subjects and long-lived Azure client
 secrets are prohibited.
 
-The federation module contains a narrowly scoped `CKV_AZURE_249` suppression
-because Checkov cannot resolve the validated `subject` module input during its
-static scan. The bootstrap root supplies the three exact subjects above, and
-the CI contract test fails if any subject is missing or changed.
+The security wrapper explicitly excludes `CKV_AZURE_249` because Checkov cannot
+resolve the validated `subject` module input during its static scan. This is
+limited to the scanner invocation; the bootstrap root supplies the three exact
+subjects above, and the CI contract test fails if any subject is missing or
+changed.
 
 Each principal receives `Storage Blob Data Contributor` only on its matching
 Terraform state container. The matching environment root can grant that
