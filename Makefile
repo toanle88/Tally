@@ -56,6 +56,7 @@
 	terraform-plan-policy-check \
 	terraform-drift-check \
 	terraform-cost-check \
+	terraform-ci-check \
 	azure-learning-plan \
 	azure-learning-apply \
 	azure-learning-deployment-check
@@ -318,6 +319,10 @@ terraform-drift-check:
 
 terraform-cost-check:
 	@bash scripts/verify/terraform-cost.sh
+
+terraform-ci-check:
+	@node scripts/verify/terraform-ci-contract.js
+	@bash -n scripts/deploy/terraform-apply.sh
 
 azure-learning-plan:
 	@ENVIRONMENT="$(ENVIRONMENT)" bash scripts/deploy/azure-learning.sh plan

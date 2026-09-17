@@ -5,6 +5,7 @@ on:
     paths:
       - "infra/terraform/**"
       - "scripts/verify/terraform*"
+      - "scripts/deploy/terraform-apply*"
       - ".checkov.yaml"
       - ".tflint.hcl"
       - "Makefile"
@@ -14,6 +15,7 @@ on:
     paths:
       - "infra/terraform/**"
       - "scripts/verify/terraform*"
+      - "scripts/deploy/terraform-apply*"
       - ".checkov.yaml"
       - ".tflint.hcl"
       - "Makefile"
@@ -72,7 +74,7 @@ jobs:
         run: make terraform-tools-check
 
       - name: Run Terraform repository checks
-        run: make terraform-check terraform-modules-check
+        run: make terraform-check terraform-environments-check terraform-modules-check terraform-ci-check
 
       - name: Run Terraform lint and security checks
         run: make terraform-lint-check terraform-security-check

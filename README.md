@@ -115,6 +115,7 @@ All commands must be run from the repository root.
 | `make terraform-plan-policy-check` | Run credential-free plan-policy fixture checks |
 | `make terraform-drift-check` | Run an authenticated refresh-only drift check for a selected environment |
 | `make terraform-cost-check` | Compare an Infracost plan delta with the active-month cost review threshold |
+| `make terraform-ci-check` | Verify OIDC subjects, protected apply workflow, credential-free PR workflow, and plan-summary hygiene |
 | `make azure-learning-plan ENVIRONMENT=dev|demo` | Initialize isolated Azure state and produce a reviewed learning-environment plan |
 | `make azure-learning-apply ENVIRONMENT=dev|demo CONFIRM_APPLY=dev|demo` | Provision the selected learning environment after ACR image import and explicit confirmation |
 | `make azure-learning-deployment-check` | Run credential-free deployment-wrapper self-tests and shell validation |
@@ -265,6 +266,11 @@ make terraform-check
 User Story 5 plan-policy, budget, drift, cost, and external-evidence boundaries
 are recorded in
 [`docs/verification/DLV-IAC-001-us5-plan-policy-drift-cost.md`](./docs/verification/DLV-IAC-001-us5-plan-policy-drift-cost.md).
+
+User Story 7 adds credential-free PR Terraform plan tests and a manually
+dispatched, `main`-only protected apply workflow using Azure OIDC. Its
+repository evidence and external GitHub/Azure setup checklist are recorded in
+[`docs/verification/DLV-IAC-002-us7-ci-oidc-federation.md`](./docs/verification/DLV-IAC-002-us7-ci-oidc-federation.md).
 
 The gate initializes providers with `-backend=false`, then runs formatting,
 validation, bootstrap and environment contract checks, state-key checks,

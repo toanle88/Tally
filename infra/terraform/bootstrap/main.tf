@@ -37,6 +37,12 @@ locals {
   state_keys = {
     for container in local.state_containers : container => "${container}/terraform.tfstate"
   }
+
+  github_subjects = {
+    dev            = "repo:toanle88/Tally:environment:dev"
+    demo           = "repo:toanle88/Tally:environment:demo"
+    prod-reference = "repo:toanle88/Tally:environment:prod-reference"
+  }
 }
 
 resource "azurerm_resource_group" "state" {
@@ -105,6 +111,24 @@ resource "azurerm_role_assignment" "environment_state" {
   scope                = azurerm_storage_container.state[each.key].id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_user_assigned_identity.state[each.key].principal_id
+}
+
+module "github_federation" {
+  for_each = local.workload_environments
+  source   = "../modules/github-federation"
+
+  name        = "tally-github-${each.key}"
+  repository  = var.github_repository
+  environment = each.key
+  subject     = local.github_subjects[each.key]
+}
+
+resource "azurerm_role_assignment" "github_state" {
+  for_each = local.workload_environments
+
+  scope                = azurerm_storage_container.state[each.key].id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = module.github_federation[each.key].principal_id
 }
 
 module "learning_budget" {
