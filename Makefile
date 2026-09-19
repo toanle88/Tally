@@ -59,7 +59,9 @@
 	terraform-ci-check \
 	azure-learning-plan \
 	azure-learning-apply \
-	azure-learning-deployment-check
+	azure-learning-deployment-check \
+	azure-learning-smoke \
+	azure-learning-smoke-check
 
 
 DB_SERVICE := postgres
@@ -334,3 +336,11 @@ azure-learning-deployment-check:
 	@bash scripts/deploy/azure-learning.sh --self-test
 	@bash scripts/deploy/azure-learning.test.sh
 	@bash -n scripts/deploy/azure-learning.sh
+
+azure-learning-smoke:
+	@ENVIRONMENT="$(ENVIRONMENT)" bash scripts/deploy/azure-learning-smoke.sh run
+
+azure-learning-smoke-check:
+	@bash scripts/deploy/azure-learning-smoke.sh --self-test
+	@bash scripts/deploy/azure-learning-smoke.test.sh
+	@bash -n scripts/deploy/azure-learning-smoke.sh

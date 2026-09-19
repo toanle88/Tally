@@ -18,6 +18,8 @@ scripts/
 ├── deploy/
 │   ├── azure-learning.sh             # Explicit-confirmation Azure dev/demo deployment
 │   └── azure-learning.test.sh        # Credential-free deployment failure-path tests
+│   ├── azure-learning-smoke.sh       # Read-only Azure dev/demo readiness smoke test
+│   └── azure-learning-smoke.test.sh  # Credential-free smoke contract tests
 ├── db/
 │   ├── migrate.sh      # Goose migration workflow
 │   ├── seed.sh         # Local database seed
@@ -177,7 +179,21 @@ The supported deployment interface is:
 ENVIRONMENT=dev make azure-learning-plan
 CONFIRM_APPLY=dev ENVIRONMENT=dev make azure-learning-apply
 make azure-learning-deployment-check
+ENVIRONMENT=dev make azure-learning-smoke
+make azure-learning-smoke-check
 ```
+
+The smoke command requires an authenticated Azure CLI, Terraform, Node.js,
+`ARM_SUBSCRIPTION_ID`, `ARM_TENANT_ID`, `TF_STATE_RESOURCE_GROUP`, and
+`TF_STATE_STORAGE_ACCOUNT`. It reads only the selected `dev` or `demo` state
+and resources; it never runs Terraform mutation commands, writes Azure
+resources, migrations, seeds, or finance state. A redacted report is written
+to `artifacts/deployment-smoke/<environment>.json`. Reports are smoke evidence
+only, not production qualification. Migration status remains
+`not-verified`/blocked until a separately owned release step supplies evidence.
+Do not put passwords, tokens, connection strings, Terraform state, or raw Azure
+CLI error payloads in the report; resource IDs and immutable image digests are
+the intended non-secret evidence.
 
 The wrapper accepts only `dev` and `demo`. It requires Azure CLI access to the
 requested subscription, the matching remote-state resource group and storage
