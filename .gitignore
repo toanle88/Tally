@@ -124,3 +124,4 @@ logs/
 .cache/
 .task/
 .artifacts/
+artifacts/
