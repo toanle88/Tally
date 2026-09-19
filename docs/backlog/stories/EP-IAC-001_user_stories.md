@@ -237,6 +237,14 @@ Terraform apply is not confused with a usable environment.**
 - [ ] Results record commit, environment, resource versions, test outcome, and
   cleanup status.
 
+The repository smoke runner, credential-free contract tests, stable Terraform
+output contracts, and verification-record template are implemented in
+[`docs/verification/DLV-IAC-002-us8-deployment-smoke-test.md`](../../verification/DLV-IAC-002-us8-deployment-smoke-test.md).
+It is read-only, writes a redacted report with `cleanup_status: not-run`, and
+keeps `/health/live` as the learning-profile probe. The story remains open for
+authenticated Azure evidence and the separately owned controlled migration
+release evidence; local `make db-migrate` is not substituted for that evidence.
+
 ### User Story 9 — Destroy disposable resources safely
 
 **As the project owner, I want demo resources to be easy to destroy, so that

@@ -119,6 +119,8 @@ All commands must be run from the repository root.
 | `make azure-learning-plan ENVIRONMENT=dev|demo` | Initialize isolated Azure state and produce a reviewed learning-environment plan |
 | `make azure-learning-apply ENVIRONMENT=dev|demo CONFIRM_APPLY=dev|demo` | Provision the selected learning environment after ACR image import and explicit confirmation |
 | `make azure-learning-deployment-check` | Run credential-free deployment-wrapper self-tests and shell validation |
+| `ENVIRONMENT=dev make azure-learning-smoke` | Read-only smoke-test of deployment readiness and resource contracts |
+| `make azure-learning-smoke-check` | Run credential-free smoke-runner safety and input tests |
 | `make money-check` | Run focused exact-decimal money and currency primitive tests |
 | `make accounting-scope-check` | Run focused accounting-scope identity and serialization tests |
 | `make aggregate-version-check` | Run focused aggregate-version and boundary tests |
@@ -323,6 +325,32 @@ workflow. Per-environment state identities are provisioned by the bootstrap
 root, but matching identity authentication remains a pending Story 2/7
 qualification; the wrapper claims separate state keys and containers, not
 completion of that identity criterion.
+
+### Deployment smoke evidence
+
+After an approved `dev` or disposable `demo` apply, run:
+
+```bash
+ENVIRONMENT=dev make azure-learning-smoke
+```
+
+This read-only command distinguishes “Terraform applied” from “environment
+usable.” It checks the selected state outputs, Azure resources and provisioning
+states, HTTPS certificate validation and `GET /health/live`, immutable image
+digests and ACR manifests, managed identity role assignments, and monitoring
+diagnostics. It checks Static Web App resource existence only; Story 6 does not
+deploy frontend content. It never runs plan/apply/destroy, migrations, seeds,
+or finance writes. The redacted report is written to
+`artifacts/deployment-smoke/<environment>.json` and records cleanup as
+`not-run` because destruction belongs to User Story 9.
+
+The report is smoke evidence, not production or release qualification. Database
+migration evidence is separately owned and therefore remains
+`not-verified`/blocked unless an approved release step supplies evidence; local
+`make db-migrate` is not Azure release evidence. Reports must remain redacted:
+never add passwords, tokens, connection strings, Terraform state, or raw Azure
+CLI error payloads. Resource IDs and immutable image digests are the intended
+non-secret evidence.
 
 ---
 
