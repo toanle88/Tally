@@ -98,7 +98,17 @@
   - Scope: Tailwind, daisyUI abstractions, routing, forms, tables, accessibility and shared operational surfaces.
 - [x] **EP-IAC-001 — Terraform and Azure learning environment** *(closed by owner decision; remaining live Azure qualification and optional external exercises explicitly deferred)*
   - Scope: Terraform state bootstrap, low-cost Azure modules, budget controls and ephemeral demo deployment.
-- [ ] **EP-OPS-001 — Observability and operational foundation**
+  - [ ] **EP-OPS-001 — Observability and operational foundation**
+    - [ ] **DLV-OPS-001 — Structured logging, correlation, and OpenTelemetry**
+      - [ ] **User Story 1 — Define telemetry context and propagation**
+      - [ ] **User Story 2 — Emit redacted structured logs**
+      - [ ] **User Story 3 — Instrument traces and bounded platform metrics**
+      - [ ] **User Story 4 — Prove telemetry failure and sensitive-data boundaries**
+    - [ ] **DLV-OPS-002 — Baseline operational dashboard and runbook foundation**
+      - [ ] **User Story 1 — Define baseline operational health views**
+      - [ ] **User Story 2 — Define alert severity, ownership, and escalation**
+      - [ ] **User Story 3 — Establish the runbook template and initial platform runbooks**
+      - [ ] **User Story 4 — Produce operational readiness evidence**
   - Scope: Structured logs, traces, metrics, dashboards, runbooks and operational evidence.
 
 ### - [ ] M1 — Identity and accounting configuration
