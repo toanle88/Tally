@@ -69,7 +69,7 @@
       - [x] **User Story 3 — Establish screen-reader and semantic review coverage** (repository semantic coverage and review procedure complete; witnessed SR-01/SR-02 review deferred)
       - [x] **User Story 4 — Verify visual adaptability and motion preferences** (automated baseline complete; actual 400% browser-zoom review deferred)
       - [x] **User Story 5 — Produce accessibility qualification evidence and defect decisions**
-  - [ ] **EP-IAC-001 — Terraform and Azure learning environment**
+  - [x] **EP-IAC-001 — Terraform and Azure learning environment** *(closed by owner decision; remaining live Azure qualification and optional external exercises explicitly deferred)*
     - [ ] **DLV-IAC-001 — Terraform modules and local state bootstrap**
       - [x] **User Story 1 — Establish the Terraform repository boundary**
       - [ ] **User Story 2 — Bootstrap protected remote state** (local contract verified; Azure plan and per-environment identity authentication pending)
@@ -95,7 +95,7 @@
   - Scope: Repository, Go/React applications, Docker Compose, migrations, sqlc, OpenAPI, testing and conventions.
 - [ ] **EP-UX-001 — Shared UX and design system**
   - Scope: Tailwind, daisyUI abstractions, routing, forms, tables, accessibility and shared operational surfaces.
-- [ ] **EP-IAC-001 — Terraform and Azure learning environment**
+- [x] **EP-IAC-001 — Terraform and Azure learning environment** *(closed by owner decision; remaining live Azure qualification and optional external exercises explicitly deferred)*
   - Scope: Terraform state bootstrap, low-cost Azure modules, budget controls and ephemeral demo deployment.
 - [ ] **EP-OPS-001 — Observability and operational foundation**
   - Scope: Structured logs, traces, metrics, dashboards, runbooks and operational evidence.
