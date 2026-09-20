@@ -1,8 +1,6 @@
 name: Documentation site
 
 on:
-  pull_request:
-    paths: ['docs-site/**', 'package.json', 'pnpm-lock.yaml', '.github/workflows/docs-site.yml']
   push:
     branches: [main]
     paths: ['docs-site/**', 'package.json', 'pnpm-lock.yaml', '.github/workflows/docs-site.yml']
@@ -19,12 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with: { version: 11.9.0 }
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
-          cache: pnpm
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v4
+        with: { version: 11.9.0 }
       - run: pnpm install --frozen-lockfile
       - run: pnpm docs:build
       - uses: actions/upload-pages-artifact@v3

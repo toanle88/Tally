@@ -36,6 +36,8 @@ scripts/
 │   ├── typescript-client-check.sh    # TypeScript generation, drift, and compile check
 │   └── typescript-negative-check.sh  # TypeScript negative generation checks
 ├── verify/
+│   ├── ci-contract.js # Aggregate pull-request workflow contract
+│   ├── repository-integrity.sh # Forbidden-artifact and workflow safety gate
 │   ├── database.sh      # End-to-end database verification
 │   ├── terraform.sh     # Terraform boundary verification
 │   ├── terraform-environments.sh # Environment profile verification

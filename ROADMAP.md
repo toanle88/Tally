@@ -56,6 +56,7 @@
       - [x] **User Story 4 — Dispatch due outbox work with leases and typed retries**
       - [x] **User Story 5 — Prove worker lifecycle, crash recovery, duplicate delivery, and replay**
       - Semantic payload safety is a separate deferred follow-up; DLV-PLAT-007 is verified by `make outbox-worker-check`.
+    - [ ] **DLV-CI-001 — Pull-request CI quality pipeline** (aggregate workflow implemented; hosted CI qualification pending)
   - [ ] **EP-UX-001 — Shared UX and design system**
     - [x] **DLV-UX-001 — Shared UX and design system application shell and component abstractions**
       - [x] **User Story 1 — Establish the design-system foundation and application shell**

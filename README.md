@@ -18,7 +18,7 @@ A modern double-entry accounting application — currently in early engineering 
 
 ```bash
 # Install frontend dependencies
-pnpm --dir web install --frozen-lockfile
+pnpm --dir web --ignore-workspace install --frozen-lockfile
 
 # Start PostgreSQL (background, waits for health check)
 make db-up
@@ -105,7 +105,7 @@ All commands must be run from the repository root.
 | `make api-ts-generate` | Generate the TypeScript Fetch client and types from the OpenAPI contract |
 | `make api-ts-check` | Validate deterministic TypeScript generation, inventory, markers, and frontend compilation |
 | `make api-check` | Run the focused OpenAPI contract and generated-artifact drift gate |
-| `make terraform-check` | Format, validate, and verify every Terraform root/profile plus credential-free plan, drift, and cost wrapper self-tests |
+| `make terraform-check` | Format, validate, and verify every Terraform root/profile plus credential-free drift and cost wrapper self-tests |
 | `make terraform-environments-check` | Verify dev, demo, and prod-reference composition, profile safety, and focused Terraform tests |
 | `make terraform-modules-check` | Validate the 11 reusable low-cost Terraform module contracts without credentials |
 | `make terraform-tools-check` | Verify pinned Terraform, TFLint, Checkov, and Infracost versions |
@@ -113,6 +113,7 @@ All commands must be run from the repository root.
 | `make terraform-security-check` | Run Checkov with the reviewed policy-exception manifest |
 | `make terraform-security-check-docker` | Run the same pinned Checkov security gate through Docker Compose |
 | `make terraform-plan-policy-check` | Run credential-free plan-policy fixture checks |
+| `make terraform-pr-check` | Run the credential-free Terraform pull-request validation, policy, security, and repository contract gates |
 | `make terraform-drift-check` | Run an authenticated refresh-only drift check for a selected environment |
 | `make terraform-cost-check` | Compare an Infracost plan delta with the active-month cost review threshold |
 | `make terraform-ci-check` | Verify OIDC subjects, protected apply workflow, credential-free PR workflow, and plan-summary hygiene |
@@ -131,6 +132,8 @@ All commands must be run from the repository root.
 | `make outbox-dispatch-check` | Run outbox lease, typed retry, fencing, and managed-exception checks |
 | `make outbox-worker-check` | Run worker lifecycle, crash recovery, duplicate delivery, replay, migration, and SQLC checks |
 | `make check` | Run migration validation, checksum check, and `go test ./...` |
+| `make ci-check` | Verify the aggregate pull-request workflow contract and repository artifact safety |
+| `make repository-integrity-check` | Reject forbidden local, Terraform, dependency, and build artifacts |
 | `make verify-database` | Run end-to-end database verification from current state |
 | `make verify-database-clean` | Delete volume, recreate, and run full verification from scratch |
 
@@ -243,8 +246,30 @@ failures in temporary copies.
 
 The GitHub Actions workflow at `.github/workflows/openapi.yml` invokes
 `make api-check` after frozen root and frontend dependency installation. This
-is focused DLV-PLAT-004 drift detection; it does not complete the broader
-DLV-CI-001 pull-request quality pipeline.
+is focused DLV-PLAT-004 drift detection. The aggregate
+`.github/workflows/pull-request-quality.yml` invokes the same gate as part of
+the required `Pull-request quality / required` pull-request status check.
+
+## Pull-request CI Quality Pipeline
+
+`.github/workflows/pull-request-quality.yml` is the repository-owned aggregate
+pull-request gate for `DLV-CI-001`. It runs Go and frontend tests/builds,
+automated accessibility checks, OpenAPI/generated-artifact verification,
+PostgreSQL 18 Testcontainers persistence verification, credential-free
+Terraform validation and policy checks, repository integrity and security
+scanning, and the documentation build.
+
+The workflow uses only read-only repository permissions and does not log in to
+Azure, access remote Terraform state, apply or destroy infrastructure, run
+authenticated drift checks, or publish raw plans, state, secrets, or provider
+errors. The six quality jobs fan into the stable
+`Pull-request quality / required` job, which fails when any dependency fails,
+is cancelled, or is skipped.
+
+Focused OpenAPI, persistence, Terraform, and documentation workflows remain
+available for push/manual verification but no longer create duplicate
+pull-request checks. Actual GitHub branch-protection configuration is external
+repository state and is not claimed by this workflow change.
 
 ## Terraform and Protected Remote State
 
@@ -269,7 +294,7 @@ User Story 5 plan-policy, budget, drift, cost, and external-evidence boundaries
 are recorded in
 [`docs/verification/DLV-IAC-001-us5-plan-policy-drift-cost.md`](./docs/verification/DLV-IAC-001-us5-plan-policy-drift-cost.md).
 
-User Story 7 adds credential-free PR Terraform plan tests and a manually
+User Story 7 adds credential-free PR Terraform validation and policy checks and a manually
 dispatched, `main`-only protected apply workflow using Azure OIDC. Its
 repository evidence and external GitHub/Azure setup checklist are recorded in
 [`docs/verification/DLV-IAC-002-us7-ci-oidc-federation.md`](./docs/verification/DLV-IAC-002-us7-ci-oidc-federation.md).
@@ -414,12 +439,12 @@ The technology baseline (from the approved solution architecture):
 | Backend | Go 1.26.3 + chi/v5 5.3.1 | — |
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, daisyUI 5, shared semantic UI primitives, routed shell, fixture-backed scope context, operational route seams, record-context/lifecycle/money/evidence/privacy wrappers, and TanStack Table-backed operational worklist/process fixtures | Capability screens |
 | Package manager | pnpm 11.9.0 | — |
-| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform queries, seed/verify scripts, migration checksum inventory, focused persistence drift command and CI workflow | Broader PR quality-pipeline integration |
+| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform queries, seed/verify scripts, migration checksum inventory, focused persistence drift command and aggregate PR quality workflow | — |
 | Styling | Tailwind CSS 4 as the primary styling/layout system with daisyUI 5 theme and wrapper support | — |
 | Client state | — | TanStack Query |
 | API contract | OpenAPI 3.1 source with generated Go and TypeScript artifacts; runtime currently exposes GET /health/live; focused contract/generated-artifact drift CI | — |
 | Infrastructure | Terraform provider contract, per-root lockfiles, protected Blob remote-state bootstrap, isolated state keys and identities, reusable low-cost module contracts, dev/demo/prod-reference profile composition, and optional dev/demo deployment wrapper | Deferred: live Azure apply evidence and production qualification |
-| CI/CD | — | GitHub Actions |
+| CI/CD | Aggregate pull-request quality workflow with focused push/manual verification workflows | Protected deployment and release qualification |
 
 ---
 
@@ -520,6 +545,7 @@ The technology baseline (from the approved solution architecture):
 │   ├── tools/
 │   │   └── sqlc.sh                    # Pinned sqlc launcher
 │   └── verify/
+│       ├── ci-contract.js              # Aggregate CI workflow contract verification
 │       ├── accounting-scope.sh         # Accounting-scope verification
 │       ├── aggregate-version.sh        # Aggregate-version verification
 │       ├── database.sh                 # End-to-end database verification workflow
@@ -532,6 +558,7 @@ The technology baseline (from the approved solution architecture):
 │       ├── outbox-worker.sh             # Worker lifecycle and replay verification
 │       ├── outbox-inbox-persistence.sh  # Outbox/inbox persistence verification
 │       ├── request-fingerprint.sh       # Request fingerprint verification
+│       ├── repository-integrity.sh       # Forbidden-artifact and workflow safety checks
 │       ├── shared-primitives.sh         # Shared primitive verification
 │       ├── terraform.sh                  # Terraform boundary verification
 │       ├── terraform-environments.sh     # Environment profile verification

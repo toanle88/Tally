@@ -18,7 +18,7 @@ CI drift enforcement or complete `DLV-PLAT-004` delivery.
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm --dir web install --frozen-lockfile
+pnpm --dir web --ignore-workspace install --frozen-lockfile
 make api-ts-generate
 make api-ts-check
 pnpm --dir web run build

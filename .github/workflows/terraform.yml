@@ -1,16 +1,6 @@
 name: Terraform verification
 
 on:
-  pull_request:
-    paths:
-      - "infra/terraform/**"
-      - "scripts/verify/terraform*"
-      - "scripts/deploy/terraform-apply*"
-      - "scripts/deploy/azure-learning*"
-      - ".checkov.yaml"
-      - ".tflint.hcl"
-      - "Makefile"
-      - ".github/workflows/terraform.yml"
   push:
     branches: [main]
     paths:

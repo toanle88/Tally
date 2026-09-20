@@ -9,7 +9,7 @@ theme foundation and is used behind shared UI wrappers.
 Run these commands from the repository root:
 
 ```bash
-pnpm --dir web install --frozen-lockfile
+pnpm --dir web --ignore-workspace install --frozen-lockfile
 pnpm -C web test
 pnpm -C web build
 pnpm dev-web
