@@ -55,8 +55,15 @@ for (const required of [
   "-refresh=false",
   "TF_DATA_DIR=",
   "mktemp -d",
+  "use_cli = false",
+  "use_msi = false",
+  "use_oidc = false",
+  "ci-only-placeholder-value",
 ]) {
   if (!pullRequestPlan.includes(required)) fail(`credential-free PR plan is missing ${required}`);
+}
+if (!pullRequestPlan.includes(String.raw`resource_provider_registrations = \"none\"`)) {
+  fail("credential-free PR plan must disable automatic resource-provider registration");
 }
 if (/terraform[^\n]*(apply|destroy)/i.test(pullRequestPlan) || /azure\/login|id-token:\s*write|AZURE_CLIENT_SECRET|AZURE_CREDENTIALS/i.test(pullRequestPlan)) {
   fail("credential-free PR plan contains a live infrastructure or credential pattern");

@@ -66,10 +66,13 @@ hosted rerun remains pending because this working tree is uncommitted.
 
 The Terraform correction copies the complete `infra/terraform` tree to
 temporary runner storage, removes only the `azurerm` backend blocks there, and
-keeps module-relative paths intact. A local wrapper smoke test moved past
-backend initialization and reached Terraform provider-registry resolution;
-full provider-backed plan verification remains blocked locally by unavailable
-registry DNS.
+keeps module-relative paths intact. It also injects explicit non-production
+provider settings in that temporary tree: CLI, MSI, OIDC, and automatic
+resource-provider registration are disabled, with synthetic IDs and a
+non-secret placeholder used only to construct the provider client. A local
+wrapper smoke test moved past backend initialization and reached Terraform
+provider-registry resolution; full provider-backed plan verification remains
+blocked locally by unavailable registry DNS.
 
 ## Verification not completed locally
 

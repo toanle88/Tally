@@ -112,6 +112,39 @@ prepare_backend_disabled_root() {
 	if grep -R -l -E '^[[:space:]]*backend[[:space:]]+"azurerm"[[:space:]]*\{' "${destination_root}" --include='*.tf' >/dev/null 2>&1; then
 		fail "temporary Terraform root still contains an azurerm backend"
 	fi
+
+	while IFS= read -r provider_file; do
+		local configured_file="${provider_file}.tmp"
+		awk '
+			/^[[:space:]]*provider[[:space:]]+"azurerm"[[:space:]]*\{/ {
+				print
+				print "  subscription_id = \"00000000-0000-0000-0000-000000000001\""
+				print "  tenant_id = \"00000000-0000-0000-0000-000000000003\""
+				print "  client_id = \"00000000-0000-0000-0000-000000000004\""
+				print "  client_secret = \"ci-only-placeholder-value\""
+				print "  use_cli = false"
+				print "  use_msi = false"
+				print "  use_oidc = false"
+				print "  resource_provider_registrations = \"none\""
+				next
+			}
+
+			/^[[:space:]]*provider[[:space:]]+"azuread"[[:space:]]*\{[[:space:]]*\}[[:space:]]*$/ {
+				print "provider \"azuread\" {"
+				print "  tenant_id = \"00000000-0000-0000-0000-000000000003\""
+				print "  client_id = \"00000000-0000-0000-0000-000000000004\""
+				print "  client_secret = \"ci-only-placeholder-value\""
+				print "  use_cli = false"
+				print "  use_msi = false"
+				print "  use_oidc = false"
+				print "}"
+				next
+			}
+
+			{ print }
+		' "${provider_file}" >"${configured_file}"
+		mv "${configured_file}" "${provider_file}"
+	done < <(find "${destination_root}" -type f -name 'versions.tf' -print)
 }
 
 run_plan() {
@@ -136,8 +169,7 @@ run_plan() {
 			ARM_USE_AZUREAD=false \
 			ARM_SUBSCRIPTION_ID=00000000-0000-0000-0000-000000000001 \
 			ARM_TENANT_ID=00000000-0000-0000-0000-000000000003 \
-			ARM_SKIP_CREDENTIALS_VALIDATION=true \
-			ARM_SKIP_PROVIDER_REGISTRATION=true \
+			ARM_RESOURCE_PROVIDER_REGISTRATIONS=none \
 		"${terraform_bin}" -chdir="${terraform_root}" plan \
 			-refresh=false \
 			-input=false \
