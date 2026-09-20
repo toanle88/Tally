@@ -18,7 +18,7 @@ A modern double-entry accounting application — currently in early engineering 
 
 ```bash
 # Install frontend dependencies
-pnpm --dir web install --frozen-lockfile
+pnpm --dir web --ignore-workspace install --frozen-lockfile
 
 # Start PostgreSQL (background, waits for health check)
 make db-up

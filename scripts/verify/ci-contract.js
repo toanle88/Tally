@@ -63,6 +63,13 @@ const workflowFiles = fs.readdirSync(workflowDirectory).filter((file) => file.en
 for (const file of workflowFiles) {
   const text = fs.readFileSync(path.join(workflowDirectory, file), "utf8");
   if (/\t/.test(text)) fail(`workflow contains a tab character: ${file}`);
+  if (/package-manager-cache:\s*true/.test(text)) fail(`workflow enables setup-node package-manager caching: ${file}`);
+  const setupNodeCount = (text.match(/uses:\s*actions\/setup-node@/g) || []).length;
+  const disabledPackageManagerCacheCount = (text.match(/package-manager-cache:\s*false/g) || []).length;
+  if (setupNodeCount !== disabledPackageManagerCacheCount) {
+    fail(`every setup-node step must explicitly disable package-manager caching: ${file}`);
+  }
+  if (/cache:\s*pnpm/.test(text)) fail(`workflow uses pnpm cache configuration: ${file}`);
 }
 
 console.log("CI contract verification passed.");

@@ -50,6 +50,20 @@ and no raw plan/state artifact publication.
 | Aggregate fan-in simulation with success, skipped, failed, and cancelled dependency results | Passed; only all-success input is accepted |
 | `git diff --check` | Passed |
 
+## Hosted diagnostic run
+
+The hosted run for the earlier pull-request merge revision
+`3406824a968de594f7c85109aae8818638a495a5` (head branch revision
+`949b3be2827ebe928d28371fb86e3e5cb430286f`) was inspected with
+`gh run view 35487515660 --json jobs` and its job logs. Contracts, persistence,
+and documentation passed. Application quality failed because the frontend
+install did not populate `web/node_modules`, while infrastructure and security
+failed because `actions/setup-node@v5` implicitly enabled pnpm caching before
+pnpm was installed. The working-tree correction disables that implicit cache in
+every setup-node step and installs the standalone frontend with
+`pnpm --dir web --ignore-workspace install --frozen-lockfile`. A corrected
+hosted rerun remains pending because this working tree is uncommitted.
+
 ## Verification not completed locally
 
 | Evidence | Result | Limitation |
