@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/toanle88/Tally/internal/platform/httpx"
+	"github.com/toanle88/Tally/internal/platform/telemetry"
 )
 
 const (
@@ -39,7 +40,7 @@ func run() error {
 
 	server := &http.Server{
 		Addr:              address,
-		Handler:           router,
+		Handler:           telemetry.Middleware(router),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 

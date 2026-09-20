@@ -49,6 +49,7 @@
 	outbox-dispatch-check \
 	outbox-worker-check \
 	event-envelope-check \
+	telemetry-context-check \
 	terraform-check \
 	terraform-environments-check \
 	terraform-modules-check \
@@ -282,6 +283,9 @@ idempotency-check:
 
 event-envelope-check:
 	@bash scripts/verify/event-envelope.sh
+
+telemetry-context-check:
+	@bash scripts/verify/telemetry-context.sh
 
 idempotency-persistence-check:
 	@bash scripts/verify/idempotency-persistence.sh

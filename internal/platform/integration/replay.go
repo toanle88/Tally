@@ -142,26 +142,30 @@ func (c *Coordinator) consumeReplay(ctx context.Context, delivery Delivery, effe
 	if err := validateDelivery(delivery); err != nil {
 		return Outcome{}, false, err
 	}
-	tx, err := c.db.BeginTx(ctx, pgx.TxOptions{})
+	workCtx, err := withEventContext(ctx, delivery.Event)
+	if err != nil {
+		return Outcome{}, false, fmt.Errorf("establish replay context: %w", err)
+	}
+	tx, err := c.db.BeginTx(workCtx, pgx.TxOptions{})
 	if err != nil {
 		return Outcome{}, false, err
 	}
 	committed := false
 	defer func() {
 		if !committed {
-			_ = tx.Rollback(ctx)
+			_ = tx.Rollback(workCtx)
 		}
 	}()
 
 	queries := platformdb.New(tx)
-	if _, err := tx.Exec(ctx, "SELECT set_config($1, 'on', true)", replayTransactionSetting); err != nil {
+	if _, err := tx.Exec(workCtx, "SELECT set_config($1, 'on', true)", replayTransactionSetting); err != nil {
 		return Outcome{}, false, err
 	}
-	inbox, insertErr := queries.InsertInboxIfAbsent(ctx, inboxInsertParams(delivery))
+	inbox, insertErr := queries.InsertInboxIfAbsent(workCtx, inboxInsertParams(delivery))
 	existing := false
 	if errors.Is(insertErr, pgx.ErrNoRows) {
 		existing = true
-		inbox, err = queries.GetInboxForUpdate(ctx, inboxIdentityParams(delivery))
+		inbox, err = queries.GetInboxForUpdate(workCtx, inboxIdentityParams(delivery))
 		if err != nil {
 			return Outcome{}, false, err
 		}
@@ -176,16 +180,16 @@ func (c *Coordinator) consumeReplay(ctx context.Context, delivery Delivery, effe
 		return Outcome{}, false, insertErr
 	}
 
-	result, effectErr := effect(ctx, tx, delivery.Event)
+	result, effectErr := effect(workCtx, tx, delivery.Event)
 	if effectErr != nil {
-		_ = rollbackTransaction(tx, ctx)
-		return Outcome{State: OutcomeFailed}, existing, c.recordFailure(ctx, delivery, effectErr)
+		_ = rollbackTransaction(tx, workCtx)
+		return Outcome{State: OutcomeFailed}, existing, c.recordFailure(workCtx, delivery, effectErr)
 	}
-	if err := establishInbox(ctx, tx, delivery, result); err != nil {
-		_ = rollbackTransaction(tx, ctx)
-		return Outcome{State: OutcomeFailed}, existing, c.recordFailure(ctx, delivery, err)
+	if err := establishInbox(workCtx, tx, delivery, result); err != nil {
+		_ = rollbackTransaction(tx, workCtx)
+		return Outcome{State: OutcomeFailed}, existing, c.recordFailure(workCtx, delivery, err)
 	}
-	if err := tx.Commit(ctx); err != nil {
+	if err := tx.Commit(workCtx); err != nil {
 		return Outcome{}, existing, fmt.Errorf("%w: %v", ErrCommitAmbiguous, err)
 	}
 	committed = true

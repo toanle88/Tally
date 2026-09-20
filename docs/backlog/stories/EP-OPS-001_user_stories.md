@@ -82,7 +82,47 @@ allowing telemetry failure to create a misleading financial result.
 and correlation across the API and worker, so that later workflows can be
 diagnosed without exposing sensitive data or changing business outcomes.**
 
-### 6.1 Acceptance criteria
+### 6.1 User Story 1 — Define telemetry context and propagation
+
+**As the TALLY developer, I want one technical context model across HTTP,
+commands, transactions, messages, and workers, so that later telemetry can
+connect work without carrying sensitive business payloads.**
+
+#### Outcome and scope
+
+- `internal/platform/telemetry` owns identifier-only runtime context values.
+- HTTP middleware accepts or generates `X-Correlation-Id`, preserves valid W3C
+  trace context, and returns a sanitized correlation support reference.
+- Command, database, outbox/inbox, replay, and worker seams bridge existing
+  correlation and causation identifiers into `context.Context`.
+- The existing event envelope and outbox schema remain unchanged.
+
+#### Explicit exclusions
+
+- Structured logs, span creation/export, metrics, exporters, dashboards, and
+  telemetry persistence remain later `DLV-OPS-001` stories.
+- No finance commands, authorization policy, audit evidence, API route, or
+  database migration is introduced.
+
+#### Acceptance criteria
+
+- [x] `TelemetryContext` validates optional trace/span identifiers and required
+  correlation identifiers without storing payloads or mutable global state.
+- [x] Missing HTTP correlation IDs are generated; malformed supplied IDs are
+  rejected; valid W3C trace context can be extracted and injected.
+- [x] Command causation and existing event correlation/causation IDs reach
+  transaction, inbox, outbox, replay, and worker callbacks.
+- [x] Retries and replay preserve business correlation/causation identity.
+- [ ] Focused unit, propagation, negative, race, vet, and diff checks pass.
+
+#### Implementation status
+
+Implemented on `feat/dlv-ops-001-us1-telemetry-context`; non-race Go tests and
+vet pass through the installed Windows Go toolchain. The focused Make gate and
+race checks remain open because the Linux `go` command is unavailable and the
+Windows toolchain has CGO disabled.
+
+### 6.2 Acceptance criteria
 
 - [ ] A documented context model propagates `trace_id`, `span_id`,
   `correlation_id`, and `causation_id` across HTTP requests, command handling,
@@ -112,7 +152,7 @@ diagnosed without exposing sensitive data or changing business outcomes.**
 - [ ] Tests prove context propagation, redaction, bounded labels, exporter
   failure behavior, and clean shutdown without a remote telemetry service.
 
-### 6.2 Contract and impact analysis
+### 6.3 Contract and impact analysis
 
 | Area | Planned impact |
 |---|---|
@@ -124,7 +164,7 @@ diagnosed without exposing sensitive data or changing business outcomes.**
 | Frontend | No new finance behavior. Existing client error handling may preserve a safe support reference when the API provides one. |
 | Observability | This item owns the structured telemetry, context, redaction, instrumentation, and metric contracts. |
 
-### 6.3 Suggested implementation steps
+### 6.4 Suggested implementation steps
 
 1. Confirm the trace/correlation field contract and data-classification rules
    against the technical observability specification.
@@ -137,7 +177,7 @@ diagnosed without exposing sensitive data or changing business outcomes.**
 5. Record the metric/span inventory and verification results in a dedicated
    evidence document.
 
-### 6.4 Required test evidence
+### 6.5 Required test evidence
 
 - Unit tests for field normalization, classification, redaction, and context
   propagation.

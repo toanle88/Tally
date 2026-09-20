@@ -334,6 +334,10 @@ func (d *Dispatcher) process(ctx context.Context, row platformdb.IntegrationOutb
 
 	handlerCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
+	handlerCtx, err = withEventContext(handlerCtx, event)
+	if err != nil {
+		return d.manage(ctx, row, owner, string(DataIntegrityMismatch), dispatchManaged)
+	}
 	handlerDone := make(chan error, 1)
 	leaseLost := make(chan error, 1)
 	go func() { handlerDone <- registration.Handler(handlerCtx, event) }()
