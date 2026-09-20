@@ -311,12 +311,36 @@ again after the complete Terraform plan, requiring the operator to type the
 selected environment name again. These are the explicit review gates for the
 resource and cost impact before either apply.
 
+Disposable environments have a separate guarded destroy command. It accepts
+only the selected `dev` or `demo` state, requires
+`CONFIRM_DESTROY=<environment>` before Azure or Terraform remote-state access,
+prints a value-free resource-address destroy summary, and requires the
+environment name again before proceeding. If PostgreSQL remains in the
+selected state, it creates and verifies a uniquely named Azure-managed
+on-demand backup before applying the exact temporary destroy plan.
+
+```bash
+CONFIRM_DESTROY=demo make azure-learning-destroy ENVIRONMENT=demo
+make azure-learning-destroy-check
+```
+
+The command verifies the selected subscription, environment profile, resource
+group, PostgreSQL identity, empty post-destroy state, resource-group absence,
+and a follow-up remote-state lock operation. It never uses `az group delete`,
+manual lock deletion, force-unlock, bootstrap state, or Docker, and a `demo`
+destroy cannot implicitly touch `dev`. Destroy reports are redacted and
+written to `artifacts/deployment-destroy/<environment>.json`; temporary
+plans, logs, and backup metadata are removed on exit. The Azure CLI reference
+exposes the backup option as `--name`, while Microsoft's how-to page currently
+shows `--backup-name`; the command checks the installed CLI help and fails
+closed if `--name` is unavailable.
+
 The command prints only non-sensitive resource outputs and checks the existing
 API `GET /health/live` endpoint. It does not run migrations or seed finance
 data. The approved deployment specification also names `/health/ready`, but
 the current API does not implement it; the learning profile therefore uses
 `/health/live` for both Container Apps probes until the owning API/platform
-delivery adds a distinct readiness contract. This is not production
+delivery adds a distinct readiness contract. This apply procedure is not production
 qualification, CI federation, smoke-test qualification, destroy, or recovery
 evidence.
 

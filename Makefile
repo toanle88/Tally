@@ -59,7 +59,9 @@
 	terraform-ci-check \
 	azure-learning-plan \
 	azure-learning-apply \
+	azure-learning-destroy \
 	azure-learning-deployment-check \
+	azure-learning-destroy-check \
 	azure-learning-smoke \
 	azure-learning-smoke-check
 
@@ -332,9 +334,17 @@ azure-learning-plan:
 azure-learning-apply:
 	@ENVIRONMENT="$(ENVIRONMENT)" CONFIRM_APPLY="$(CONFIRM_APPLY)" bash scripts/deploy/azure-learning.sh apply
 
+azure-learning-destroy:
+	@ENVIRONMENT="$(ENVIRONMENT)" CONFIRM_DESTROY="$(CONFIRM_DESTROY)" bash scripts/deploy/azure-learning.sh destroy
+
 azure-learning-deployment-check:
 	@bash scripts/deploy/azure-learning.sh --self-test
 	@bash scripts/deploy/azure-learning.test.sh
+	@bash -n scripts/deploy/azure-learning.sh
+
+azure-learning-destroy-check:
+	@bash scripts/deploy/azure-learning.sh --self-test
+	@bash scripts/deploy/azure-learning-destroy.test.sh
 	@bash -n scripts/deploy/azure-learning.sh
 
 azure-learning-smoke:

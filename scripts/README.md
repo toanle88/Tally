@@ -16,8 +16,9 @@ The **Makefile** is the supported developer interface. Most scripts are implemen
 ```text
 scripts/
 ├── deploy/
-│   ├── azure-learning.sh             # Explicit-confirmation Azure dev/demo deployment
-│   └── azure-learning.test.sh        # Credential-free deployment failure-path tests
+│   ├── azure-learning.sh             # Explicit-confirmation Azure dev/demo deployment and destroy
+│   ├── azure-learning.test.sh        # Credential-free deployment failure-path tests
+│   ├── azure-learning-destroy.test.sh # Credential-free destroy contract tests
 │   ├── azure-learning-smoke.sh       # Read-only Azure dev/demo readiness smoke test
 │   └── azure-learning-smoke.test.sh  # Credential-free smoke contract tests
 ├── db/
@@ -207,7 +208,24 @@ complete profile. Temporary plans are deleted on exit. Output is limited to
 non-sensitive resource identifiers and the existing API `/health/live`
 response. The wrapper does not build images, deploy Static Web Apps content,
 run migrations, seed data, accept `prod-reference`, or perform destroy/recovery
-operations.
+operations through the apply path.
+
+The supported disposable-resource destroy interface is:
+
+~~~bash
+CONFIRM_DESTROY=demo ENVIRONMENT=demo make azure-learning-destroy
+make azure-learning-destroy-check
+~~~
+
+Destroy is limited to dev and demo. It initializes only the selected Azure
+Blob state container, verifies subscription/profile/resource identities,
+requires two environment-name confirmations, creates and verifies an
+Azure-managed PostgreSQL backup when the selected state still contains the
+server, applies a temporary terraform plan -destroy, and verifies empty state,
+resource-group absence, and remote lock release. It never uses az group
+delete, force-unlock, manual lock deletion, Docker, bootstrap state, or another
+environment root. Output and artifacts/deployment-destroy/<environment>.json
+are redacted; raw plans, state, secrets, and Azure errors are not emitted.
 
 ## Accessibility qualification
 

@@ -258,6 +258,16 @@ release evidence; local `make db-migrate` is not substituted for that evidence.
   state-lock cleanup was skipped.
 - [ ] The dev environment is not destroyed implicitly by demo cleanup.
 
+The guarded destroy workflow, credential-free fake CLI tests, redacted evidence
+template, and Azure CLI backup-option discrepancy record are implemented in
+[DLV-IAC-002-us9-destroy-disposable-resources.md](../../verification/DLV-IAC-002-us9-destroy-disposable-resources.md).
+The command is limited to the selected dev or demo Terraform state, requires
+two environment confirmations, verifies scope and lock release, and preserves
+state for Story 10 recovery if destruction fails. User Story 9 remains open
+until an authenticated disposable demo deployment is backed up, destroyed, and
+post-destroy verified with synthetic data; repository tests alone do not mark
+the story complete.
+
 ### User Story 10 — Recover state and document operations
 
 **As the project owner, I want state and deployment recovery instructions, so
