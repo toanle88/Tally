@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -22,14 +22,33 @@ const (
 )
 
 func main() {
-	if err := run(); err != nil {
-		log.Printf("API stopped with error: %v", err)
+	logger, err := telemetry.NewLogger(telemetry.LoggerConfig{
+		Service: "tally-api",
+		Writer:  os.Stderr,
+	})
+	if err != nil {
 		os.Exit(1)
 	}
-
+	if err := run(logger); err != nil {
+		logAPIStoppedWithError(logger, err)
+		os.Exit(1)
+	}
 }
 
-func run() error {
+func logAPIStoppedWithError(logger *telemetry.Logger, _ error) {
+	logger.Emit(context.Background(), slog.LevelError, telemetry.Event{
+		Message:   "api_stopped_with_error",
+		Module:    "platform.http",
+		Operation: "serve",
+		Result:    "failure",
+		ErrorCode: "api_stopped_with_error",
+	})
+}
+
+func run(logger *telemetry.Logger) error {
+	if logger == nil {
+		return errors.New("logger is required")
+	}
 	address := os.Getenv("HTTP_ADDR")
 	if address == "" {
 		address = defaultHTTPAddress
@@ -39,8 +58,10 @@ func run() error {
 	router.Get("/health/live", httpx.Liveness)
 
 	server := &http.Server{
-		Addr:              address,
-		Handler:           telemetry.Middleware(router),
+		Addr: address,
+		Handler: telemetry.Middleware(
+			telemetry.RequestLoggingMiddleware(logger)(router),
+		),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
@@ -50,7 +71,12 @@ func run() error {
 	listenError := make(chan error, 1)
 
 	go func() {
-		log.Printf("API listening on %s", address)
+		logger.Emit(context.Background(), slog.LevelInfo, telemetry.Event{
+			Message:   "api_listening",
+			Module:    "platform.http",
+			Operation: "serve",
+			Result:    "started",
+		})
 		listenError <- server.ListenAndServe()
 	}()
 
@@ -62,7 +88,12 @@ func run() error {
 
 		return fmt.Errorf("listen and serve: %w", err)
 	case <-shutdownSignal.Done():
-		log.Printf("API shutting down with timeout %s", shutdownTimeout)
+		logger.Emit(context.Background(), slog.LevelInfo, telemetry.Event{
+			Message:   "api_shutdown_requested",
+			Module:    "platform.http",
+			Operation: "shutdown",
+			Result:    "started",
+		})
 	}
 
 	shutdownContext, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
@@ -77,6 +108,11 @@ func run() error {
 		return fmt.Errorf("server stopped: %w", err)
 	}
 
-	log.Printf("API stopped gracefully")
+	logger.Emit(context.Background(), slog.LevelInfo, telemetry.Event{
+		Message:   "api_stopped_gracefully",
+		Module:    "platform.http",
+		Operation: "shutdown",
+		Result:    "success",
+	})
 	return nil
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"strconv"
@@ -14,6 +14,7 @@ import (
 	"github.com/toanle88/Tally/internal/platform/database"
 	"github.com/toanle88/Tally/internal/platform/database/platformdb"
 	"github.com/toanle88/Tally/internal/platform/integration"
+	"github.com/toanle88/Tally/internal/platform/telemetry"
 	platformworker "github.com/toanle88/Tally/internal/platform/worker"
 )
 
@@ -30,13 +31,33 @@ var ErrNoRegisteredConsumers = errors.New("no registered integration consumers")
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	if err := run(ctx); err != nil {
-		log.Printf("worker stopped with error: %v", err)
+	logger, err := telemetry.NewLogger(telemetry.LoggerConfig{
+		Service: "tally-worker",
+		Writer:  os.Stderr,
+	})
+	if err != nil {
+		os.Exit(1)
+	}
+	if err := run(ctx, logger); err != nil {
+		logWorkerStoppedWithError(logger, ctx, err)
 		os.Exit(1)
 	}
 }
 
-func run(ctx context.Context) error {
+func logWorkerStoppedWithError(logger *telemetry.Logger, ctx context.Context, err error) {
+	logger.Emit(ctx, slog.LevelError, telemetry.Event{
+		Message:   "worker_stopped",
+		Module:    "platform.worker",
+		Operation: "run",
+		Result:    "failure",
+		ErrorCode: workerErrorCode(err),
+	})
+}
+
+func run(ctx context.Context, logger *telemetry.Logger) error {
+	if logger == nil {
+		return errors.New("logger is required")
+	}
 	registrations := registeredConsumers()
 	if len(registrations) == 0 {
 		return ErrNoRegisteredConsumers
@@ -95,12 +116,37 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return host.Run(ctx)
+	logger.Emit(ctx, slog.LevelInfo, telemetry.Event{
+		Message:   "worker_started",
+		Module:    "platform.worker",
+		Operation: "run",
+		Result:    "started",
+	})
+	err = host.Run(ctx)
+	if err == nil {
+		logger.Emit(ctx, slog.LevelInfo, telemetry.Event{
+			Message:   "worker_stopped",
+			Module:    "platform.worker",
+			Operation: "run",
+			Result:    "success",
+		})
+	}
+	return err
 }
 
 // The platform currently has no finance capability consumers. Capability
 // packages will provide registrations when they are delivered.
 func registeredConsumers() []integration.HandlerRegistration { return nil }
+
+func workerErrorCode(err error) string {
+	if errors.Is(err, ErrNoRegisteredConsumers) {
+		return "no_registered_consumers"
+	}
+	if errors.Is(err, platformworker.ErrShutdownTimeout) {
+		return "worker_shutdown_timeout"
+	}
+	return "worker_run_failed"
+}
 
 func envInt(name string, fallback int) (int, error) {
 	value := os.Getenv(name)

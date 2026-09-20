@@ -40,7 +40,7 @@ references, defensive copying, and ownership boundaries.
 
 Verification basis: branch `feat/dlv-plat-006-scoped-idempotency-metadata`,
 `HEAD` `e2f818f198bd2ed6d470750b7d972f01264515b3`. Working-tree changes are:
-`ROADMAP.md`, `docs/backlog/stories/DLV-PLAT-006_user_stories.md`,
+`ROADMAP.md`, `docs/backlog/stories/EP-PLAT-001_user_stories.md`,
 `docs/specs/technical_specifications/03_database_persistence_specifications_v1.0.md`,
 `docs/verification/DLV-PLAT-006-scoped-idempotency-metadata.md`,
 `internal/platform/idempotency/metadata.go`, and

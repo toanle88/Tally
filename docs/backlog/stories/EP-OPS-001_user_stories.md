@@ -114,6 +114,9 @@ connect work without carrying sensitive business payloads.**
   transaction, inbox, outbox, replay, and worker callbacks.
 - [x] Retries and replay preserve business correlation/causation identity.
 - [ ] Focused unit, propagation, negative, race, vet, and diff checks pass.
+- [ ] A documented context model propagates `trace_id`, `span_id`,
+  `correlation_id`, and `causation_id` across HTTP requests, command handling,
+  database transactions, outbox/inbox dispatch, and external-call seams.
 
 #### Implementation status
 
@@ -122,21 +125,48 @@ vet pass through the installed Windows Go toolchain. The focused Make gate and
 race checks remain open because the Linux `go` command is unavailable and the
 Windows toolchain has CGO disabled.
 
-### 6.2 Acceptance criteria
+### 6.2 User Story 2 — Emit redacted structured logs
 
-- [ ] A documented context model propagates `trace_id`, `span_id`,
-  `correlation_id`, and `causation_id` across HTTP requests, command handling,
-  database transactions, outbox/inbox dispatch, and external-call seams.
-- [ ] Structured logs use RFC3339 UTC timestamps and stable fields for service,
+**As the TALLY developer, I want structured logs with stable, redacted fields,
+so that operators can diagnose technical failures without exposing sensitive
+business data.**
+
+#### Acceptance criteria
+
+- [x] Structured logs use RFC3339 UTC timestamps and stable fields for service,
   module, operation, result, error code, retryability, and data classification.
-- [ ] Material actions include pseudonymous actor and accounting-scope
+- [x] Material actions include pseudonymous actor and accounting-scope
   identifiers only when the owning authorization contract permits them.
-- [ ] Aggregate type, identifier, and version are represented as bounded
+- [x] Aggregate type, identifier, and version are represented as bounded
   diagnostic references; unrestricted request, event, SQL, or response bodies
   are not logged.
-- [ ] Tokens, credentials, bank details, payroll values, unrestricted tax
+- [x] Tokens, credentials, bank details, payroll values, unrestricted tax
   identifiers, secrets, and verification credentials are rejected or redacted
   by deterministic negative tests.
+
+#### Implementation status
+
+Implemented on `feat/dlv-ops-001-us2-redacted-structured-logs-main`. The
+technical logger uses Go `slog` with a strict JSON field allow-list, typed
+UUID/aggregate references, existing telemetry-context propagation, and safe
+API/worker lifecycle logging. Sensitive and unknown attributes are rejected;
+raw errors and request/event/SQL/response payloads are not emitted.
+
+Focused non-race tests and vet pass through the installed Windows Go toolchain.
+The race gate remains open because the available toolchain has CGO disabled;
+the repository-native Make gate remains open because Linux `go` is unavailable.
+Strict review status: `APPROVE` at `91/100`, with no blocking findings. The
+remaining review limitations are the unavailable race gate and the inherited
+repository-native Make environment limitation.
+
+### 6.3 User Story 3 — Instrument traces and bounded platform metrics
+
+**As the TALLY developer, I want traces and bounded platform metrics at existing
+technical seams, so that service health and workflow progress can be measured
+without creating unbounded cardinality or changing domain ownership.**
+
+#### Acceptance criteria
+
 - [ ] Required technical spans cover HTTP request, authorization decision seam,
   idempotency lookup seam, command handler, repository operation, PostgreSQL
   transaction, outbox claim/delivery, inbox handling, provider call, report
@@ -146,13 +176,22 @@ Windows toolchain has CGO disabled.
 - [ ] The approved metric catalogue is represented with bounded labels for
   latency, command outcomes, transactions, outbox/inbox backlog, and platform
   failure classes. Domain-specific metrics remain owned by later capabilities.
+
+### 6.4 User Story 4 — Prove telemetry failure and sensitive-data boundaries
+
+**As the TALLY maintainer, I want telemetry failure and sensitive-data tests,
+so that diagnostics cannot create a false business result, duplicate an
+operation, or leak protected values.**
+
+#### Acceptance criteria
+
 - [ ] Telemetry exporter failure, timeout, or shutdown does not create a
   successful business result, duplicate authoritative operation, or unbounded
   retry loop.
 - [ ] Tests prove context propagation, redaction, bounded labels, exporter
   failure behavior, and clean shutdown without a remote telemetry service.
 
-### 6.3 Contract and impact analysis
+### 6.5 Contract and impact analysis
 
 | Area | Planned impact |
 |---|---|
@@ -164,7 +203,7 @@ Windows toolchain has CGO disabled.
 | Frontend | No new finance behavior. Existing client error handling may preserve a safe support reference when the API provides one. |
 | Observability | This item owns the structured telemetry, context, redaction, instrumentation, and metric contracts. |
 
-### 6.4 Suggested implementation steps
+### 6.6 Suggested implementation steps
 
 1. Confirm the trace/correlation field contract and data-classification rules
    against the technical observability specification.
@@ -177,7 +216,7 @@ Windows toolchain has CGO disabled.
 5. Record the metric/span inventory and verification results in a dedicated
    evidence document.
 
-### 6.5 Required test evidence
+### 6.7 Required test evidence
 
 - Unit tests for field normalization, classification, redaction, and context
   propagation.
@@ -194,7 +233,13 @@ Windows toolchain has CGO disabled.
 and repeatable runbooks, so that I can identify and recover from platform
 problems without guessing or requesting sensitive data.**
 
-### 7.1 Acceptance criteria
+### 7.1 User Story 1 — Define baseline operational health views
+
+**As an authorized operator, I want separate health views for service
+availability, pending work, errors, exceptions, and capacity, so that I can
+identify the kind of operational problem before choosing a recovery action.**
+
+#### Acceptance criteria
 
 - [ ] A dashboard contract defines panels for API health/latency, PostgreSQL
   health, outbox/inbox backlog and age, error classes, capacity, and current
@@ -204,12 +249,30 @@ problems without guessing or requesting sensitive data.**
 - [ ] Health views distinguish availability, latency, errors, pending work,
   aging, exceptions, and capacity; they do not collapse all failures into one
   generic error rate.
+
+### 7.2 User Story 2 — Define alert severity, ownership, and escalation
+
+**As an authorized operator, I want alerts to identify severity, ownership,
+response targets, and escalation paths, so that operational failures receive a
+clear and safe response.**
+
+#### Acceptance criteria
+
 - [ ] Alert definitions use P1–P4 severity, owner, response target, runbook
   link, suppression/maintenance behavior, escalation path, and completion
   evidence.
 - [ ] Alert rules cover integrity uncertainty, critical control failure,
   outbox/backlog age, database saturation, dependency failure, and capacity
   risk without asserting unsupported production thresholds.
+
+### 7.3 User Story 3 — Establish the runbook template and initial platform runbooks
+
+**As an authorized operator, I want safe, repeatable runbooks for foundation
+failures, so that recovery preserves evidence and does not create an unsafe
+financial or infrastructure change.**
+
+#### Acceptance criteria
+
 - [ ] A runbook template captures owner, prerequisites, detection, decision
   points, safe commands, evidence to preserve, escalation, recovery checks,
   reconciliation requirements, and closure criteria.
@@ -220,6 +283,15 @@ problems without guessing or requesting sensitive data.**
 - [ ] Runbooks explicitly prohibit direct destructive financial edits,
   unreviewed portal changes, secret disclosure, and treating telemetry as
   authoritative financial evidence.
+
+### 7.4 User Story 4 — Produce operational readiness evidence
+
+**As the TALLY maintainer, I want reproducible verification evidence for
+dashboard, alert, and runbook contracts, so that operational readiness can be
+reviewed without Azure or production credentials.**
+
+#### Acceptance criteria
+
 - [ ] A local verification fixture proves dashboard/alert/runbook contracts,
   missing-data behavior, and failure propagation without Azure or production
   credentials.
@@ -227,7 +299,7 @@ problems without guessing or requesting sensitive data.**
   failure location, deferred qualification scope, and no raw telemetry
   payloads, secrets, connection strings, or sensitive values.
 
-### 7.2 Contract and impact analysis
+### 7.5 Contract and impact analysis
 
 | Area | Planned impact |
 |---|---|
@@ -238,7 +310,7 @@ problems without guessing or requesting sensitive data.**
 | Frontend | No operational console UI is required for this item; dashboard format/provider is an implementation choice within the approved contract. |
 | Documentation | Owns dashboard definitions, alert catalogue, runbook template, initial runbooks, and verification evidence. |
 
-### 7.3 Suggested implementation steps
+### 7.6 Suggested implementation steps
 
 1. Translate the approved metric catalogue and NFR freshness requirements into
    a versioned dashboard/panel contract.
@@ -250,7 +322,7 @@ problems without guessing or requesting sensitive data.**
 5. Record local evidence and list the external monitoring and quarterly alert
    exercises that remain deferred.
 
-### 7.4 Required test evidence
+### 7.7 Required test evidence
 
 - Dashboard and alert contract validation.
 - Negative fixtures for missing owner, severity, runbook, suppression, or

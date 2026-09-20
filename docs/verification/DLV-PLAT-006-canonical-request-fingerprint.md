@@ -44,7 +44,7 @@ Command evidence:
 - Focused vet: passed (exit status 0).
 - `make request-fingerprint-check`: passed.
 - `git diff --check`: passed; Git emitted only an unrelated existing CRLF
-  normalization warning for `DLV-PLAT-003_user_stories.md`.
+  normalization warning for the consolidated `EP-PLAT-001_user_stories.md`.
 - `make api-check`: not completed in the restricted environment.
 - `go test ./...`: previously failed because sandbox networking forbids local
   TCP listeners in database tests; not claimed as passed.
