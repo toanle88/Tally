@@ -18,6 +18,8 @@
 	db-migrate-check \
 	db-migrate-inventory \
 	check \
+	ci-check \
+	repository-integrity-check \
 	verify-database \
 	verify-database-clean \
 	db-sqlc-version \
@@ -57,6 +59,7 @@
 	terraform-drift-check \
 	terraform-cost-check \
 	terraform-ci-check \
+	terraform-pr-check \
 	azure-learning-plan \
 	azure-learning-apply \
 	azure-learning-destroy \
@@ -177,6 +180,12 @@ db-migrate-inventory:
 
 check: db-migrate-validate db-migrate-check
 	go test ./...
+
+ci-check: repository-integrity-check
+	@node scripts/verify/ci-contract.js
+
+repository-integrity-check:
+	@bash scripts/verify/repository-integrity.sh
 
 verify-database:
 	./scripts/verify/database.sh
@@ -327,6 +336,9 @@ terraform-cost-check:
 terraform-ci-check:
 	@node scripts/verify/terraform-ci-contract.js
 	@bash -n scripts/deploy/terraform-apply.sh
+
+terraform-pr-check: terraform-check terraform-modules-check terraform-tools-check terraform-ci-check terraform-lint-check terraform-security-check
+	@bash scripts/verify/terraform-pr-plan.sh
 
 azure-learning-plan:
 	@ENVIRONMENT="$(ENVIRONMENT)" bash scripts/deploy/azure-learning.sh plan

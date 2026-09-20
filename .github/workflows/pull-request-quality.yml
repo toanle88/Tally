@@ -1,0 +1,302 @@
+name: Pull-request quality
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pull-request-quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  application:
+    name: Go and frontend quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24.x
+          cache: pnpm
+
+      - name: Install root dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install frontend dependencies
+        run: pnpm --dir web install --frozen-lockfile
+
+      - name: Run Go and frontend tests
+        run: pnpm test
+
+      - name: Build API and frontend
+        run: pnpm build
+
+      - name: Install Chromium for accessibility checks
+        run: pnpm --dir web exec playwright install --with-deps chromium
+
+      - name: Run automated accessibility checks
+        run: pnpm test:a11y
+
+  contracts:
+    name: OpenAPI and generated-artifact drift
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24.x
+          cache: pnpm
+
+      - name: Install root dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install frontend dependencies
+        run: pnpm --dir web install --frozen-lockfile
+
+      - name: Run OpenAPI and generated-artifact verification
+        run: make api-check
+
+  persistence:
+    name: PostgreSQL and SQL drift
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Verify Docker availability
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          docker info >/dev/null
+          docker version --format 'Docker server {{.Server.Version}}'
+
+      - name: Run persistence verification
+        run: make persistence-check
+
+  infrastructure:
+    name: Terraform credential-free plan and policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24.x
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.2
+          terraform_wrapper: false
+
+      - name: Set up TFLint
+        uses: terraform-linters/setup-tflint@v5
+        with:
+          tflint_version: v0.64.0
+
+      - name: Set up Infracost
+        uses: infracost/actions/setup@v3
+        with:
+          version: 0.10.45
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Checkov
+        run: python -m pip install --disable-pip-version-check checkov==3.3.8
+
+      - name: Install repository verification utility
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ripgrep
+
+      - name: Run Terraform pull-request gate
+        run: make terraform-pr-check
+
+  security:
+    name: Security and repository integrity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24.x
+
+      - name: Run repository CI and artifact contract checks
+        run: make ci-check
+
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294
+        with:
+          fail-on-severity: high
+
+      - name: Scan repository for secrets
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+          GITLEAKS_ENABLE_SUMMARY: "false"
+          GITLEAKS_VERSION: "8.30.1"
+
+  documentation:
+    name: Documentation quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24.x
+          cache: pnpm
+
+      - name: Install documentation dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build documentation
+        run: pnpm docs:check
+
+  required:
+    name: required
+    if: ${{ always() }}
+    needs:
+      - application
+      - contracts
+      - persistence
+      - infrastructure
+      - security
+      - documentation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Fail closed when a required gate did not pass
+        env:
+          APPLICATION_RESULT: ${{ needs.application.result }}
+          CONTRACTS_RESULT: ${{ needs.contracts.result }}
+          PERSISTENCE_RESULT: ${{ needs.persistence.result }}
+          INFRASTRUCTURE_RESULT: ${{ needs.infrastructure.result }}
+          SECURITY_RESULT: ${{ needs.security.result }}
+          DOCUMENTATION_RESULT: ${{ needs.documentation.result }}
+        run: |
+          set -Eeuo pipefail
+          failed=0
+          failed_jobs=()
+          for result in \
+            "application=${APPLICATION_RESULT}" \
+            "contracts=${CONTRACTS_RESULT}" \
+            "persistence=${PERSISTENCE_RESULT}" \
+            "infrastructure=${INFRASTRUCTURE_RESULT}" \
+            "security=${SECURITY_RESULT}" \
+            "documentation=${DOCUMENTATION_RESULT}"; do
+            if [[ "${result#*=}" != "success" ]]; then
+              echo "Required pull-request gate did not pass: ${result}" >&2
+              failed=1
+              failed_jobs+=("${result}")
+            fi
+          done
+
+          aggregate_result=passed
+          failure_location=none
+          if [[ "${failed}" -ne 0 ]]; then
+            aggregate_result=failed
+            failure_location="${failed_jobs[*]}"
+          fi
+
+          {
+            echo "## Pull-request quality"
+            echo "- Commit: ${GITHUB_SHA}"
+            echo "- Aggregate result: ${aggregate_result}"
+            echo "- Required gate: Pull-request quality / required"
+            echo "- Safe failure location: ${failure_location}"
+            echo ""
+            echo "| Job | Result | Declared command/tooling |"
+            echo "|---|---|---|"
+            echo "| application | ${APPLICATION_RESULT} | Go 1.26.3; Node 24.x; pnpm 11.9.0; pnpm test; pnpm build; pnpm test:a11y |"
+            echo "| contracts | ${CONTRACTS_RESULT} | Go 1.26.3; Node 24.x; pnpm 11.9.0; make api-check |"
+            echo "| persistence | ${PERSISTENCE_RESULT} | Go 1.26.3; Docker/PostgreSQL 18 Testcontainers; make persistence-check |"
+            echo "| infrastructure | ${INFRASTRUCTURE_RESULT} | Terraform 1.15.2; TFLint 0.64.0; Checkov 3.3.8; Infracost 0.10.45; make terraform-pr-check |"
+            echo "| security | ${SECURITY_RESULT} | Node 24.x; make ci-check; Dependency Review; Gitleaks |"
+            echo "| documentation | ${DOCUMENTATION_RESULT} | Node 24.x; pnpm 11.9.0; pnpm docs:check |"
+            echo "- No Azure, production, remote-state, apply, destroy, or raw-plan operation was performed."
+          } >>"${GITHUB_STEP_SUMMARY}"
+
+          if [[ "${failed}" -ne 0 ]]; then
+            exit 1
+          fi

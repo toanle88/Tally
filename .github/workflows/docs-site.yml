@@ -1,8 +1,6 @@
 name: Documentation site
 
 on:
-  pull_request:
-    paths: ['docs-site/**', 'package.json', 'pnpm-lock.yaml', '.github/workflows/docs-site.yml']
   push:
     branches: [main]
     paths: ['docs-site/**', 'package.json', 'pnpm-lock.yaml', '.github/workflows/docs-site.yml']
