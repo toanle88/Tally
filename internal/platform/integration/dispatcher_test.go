@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/toanle88/Tally/internal/platform/database/platformdb"
 	"github.com/toanle88/Tally/internal/platform/events"
+	"github.com/toanle88/Tally/internal/platform/telemetry"
 	platformworker "github.com/toanle88/Tally/internal/platform/worker"
 )
 
@@ -153,6 +154,36 @@ func TestDispatcherFencesLostEstablishment(t *testing.T) {
 	report, err := dispatcher.DispatchOnce(context.Background())
 	if !errors.Is(err, ErrLeaseLost) || report.LeaseLost != 1 {
 		t.Fatalf("report = %#v, error = %v, want lease lost", report, err)
+	}
+}
+
+func TestDispatcherPropagatesEnvelopeContextToHandler(t *testing.T) {
+	row := dispatcherOutboxRow(t, 1)
+	store := &dispatcherStore{rows: []platformdb.IntegrationOutbox{row}, establishRows: 1}
+	var got telemetry.TelemetryContext
+	var present bool
+	dispatcher, err := NewDispatcher(store, []HandlerRegistration{{
+		Key: HandlerKey{EventType: row.EventType, EventVersion: int(row.EventVersion)},
+		Handler: func(ctx context.Context, _ events.Envelope) error {
+			got, present = telemetry.FromContext(ctx)
+			return nil
+		},
+	}}, DispatcherConfig{
+		LeaseDuration:      30 * time.Second,
+		HandlerP99Duration: time.Second,
+		BatchSize:          1,
+		Concurrency:        1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := dispatcher.DispatchOnce(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	correlationID := uuid.UUID(row.CorrelationID.Bytes)
+	causationID := uuid.UUID(row.CausationID.Bytes)
+	if !present || got.CorrelationID != correlationID || got.CausationID != causationID {
+		t.Fatalf("handler context = %#v, present = %v, want correlation=%s causation=%s", got, present, correlationID, causationID)
 	}
 }
 

@@ -1,12 +1,15 @@
 package integration
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/toanle88/Tally/internal/platform/events"
+	"github.com/toanle88/Tally/internal/platform/telemetry"
 )
 
 func testEnvelope(t *testing.T, messageID string, payload []byte) events.Envelope {
@@ -70,4 +73,57 @@ func TestValidationRejectsInvalidDeliveryAndPublication(t *testing.T) {
 	if err := validatePublication(Publication{Event: envelope}); !errors.Is(err, ErrInvalidPublication) {
 		t.Fatalf("invalid publication error = %v", err)
 	}
+}
+
+func TestPublishPropagatesEnvelopeContextToTransactionBoundary(t *testing.T) {
+	envelope := testEnvelope(t, uuid.NewString(), []byte(`{"event":"test"}`))
+	beginErr := errors.New("begin failed")
+	beginner := &capturingTxBeginner{err: beginErr}
+
+	err := NewCoordinator(beginner).Publish(context.Background(), Publication{
+		Event:       envelope,
+		AvailableAt: time.Now().UTC(),
+	}, func(context.Context, pgx.Tx) error {
+		t.Fatal("source effect was called after transaction begin failed")
+		return nil
+	})
+	if !errors.Is(err, beginErr) {
+		t.Fatalf("publish error = %v, want %v", err, beginErr)
+	}
+	value, ok := telemetry.FromContext(beginner.ctx)
+	if !ok {
+		t.Fatal("transaction boundary did not receive telemetry context")
+	}
+	correlationID, _ := uuid.Parse(envelope.CorrelationID())
+	causationID, _ := uuid.Parse(envelope.CausationID())
+	if value.CorrelationID != correlationID || value.CausationID != causationID {
+		t.Fatalf("transaction context = %#v, want correlation=%s causation=%s", value, correlationID, causationID)
+	}
+}
+
+func TestWithEventContextBridgesEnvelopeIdentity(t *testing.T) {
+	envelope := testEnvelope(t, uuid.NewString(), []byte(`{"event":"test"}`))
+	ctx, err := withEventContext(context.Background(), envelope)
+	if err != nil {
+		t.Fatal(err)
+	}
+	value, ok := telemetry.FromContext(ctx)
+	if !ok {
+		t.Fatal("event context is missing")
+	}
+	correlationID, _ := uuid.Parse(envelope.CorrelationID())
+	causationID, _ := uuid.Parse(envelope.CausationID())
+	if value.CorrelationID != correlationID || value.CausationID != causationID {
+		t.Fatalf("event context = %#v, want correlation=%s causation=%s", value, correlationID, causationID)
+	}
+}
+
+type capturingTxBeginner struct {
+	ctx context.Context
+	err error
+}
+
+func (b *capturingTxBeginner) BeginTx(ctx context.Context, _ pgx.TxOptions) (pgx.Tx, error) {
+	b.ctx = ctx
+	return nil, b.err
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/toanle88/Tally/internal/platform/database/platformdb"
 	"github.com/toanle88/Tally/internal/platform/events"
+	"github.com/toanle88/Tally/internal/platform/telemetry"
 )
 
 var (
@@ -128,25 +129,29 @@ func (c *Coordinator) Publish(ctx context.Context, publication Publication, effe
 	if effect == nil {
 		return ErrInvalidCoordinator
 	}
+	workCtx, err := withEventContext(ctx, publication.Event)
+	if err != nil {
+		return fmt.Errorf("establish publication context: %w", err)
+	}
 
-	tx, err := c.db.BeginTx(ctx, pgx.TxOptions{})
+	tx, err := c.db.BeginTx(workCtx, pgx.TxOptions{})
 	if err != nil {
 		return err
 	}
 	committed := false
 	defer func() {
 		if !committed {
-			_ = tx.Rollback(ctx)
+			_ = tx.Rollback(workCtx)
 		}
 	}()
 
-	if err := callSourceEffect(ctx, tx, effect); err != nil {
+	if err := callSourceEffect(workCtx, tx, effect); err != nil {
 		return err
 	}
-	if err := insertPublication(ctx, tx, publication); err != nil {
+	if err := insertPublication(workCtx, tx, publication); err != nil {
 		return err
 	}
-	if err := tx.Commit(ctx); err != nil {
+	if err := tx.Commit(workCtx); err != nil {
 		return fmt.Errorf("%w: %v", ErrCommitAmbiguous, err)
 	}
 	committed = true
@@ -165,22 +170,26 @@ func (c *Coordinator) Consume(ctx context.Context, delivery Delivery, effect Con
 	if effect == nil {
 		return Outcome{}, ErrInvalidCoordinator
 	}
+	workCtx, err := withEventContext(ctx, delivery.Event)
+	if err != nil {
+		return Outcome{}, fmt.Errorf("establish delivery context: %w", err)
+	}
 
-	tx, err := c.db.BeginTx(ctx, pgx.TxOptions{})
+	tx, err := c.db.BeginTx(workCtx, pgx.TxOptions{})
 	if err != nil {
 		return Outcome{}, err
 	}
 	committed := false
 	defer func() {
 		if !committed {
-			_ = tx.Rollback(ctx)
+			_ = tx.Rollback(workCtx)
 		}
 	}()
 
 	queries := platformdb.New(tx)
-	inbox, insertErr := queries.InsertInboxIfAbsent(ctx, inboxInsertParams(delivery))
+	inbox, insertErr := queries.InsertInboxIfAbsent(workCtx, inboxInsertParams(delivery))
 	if errors.Is(insertErr, pgx.ErrNoRows) {
-		inbox, err = queries.GetInboxForUpdate(ctx, inboxIdentityParams(delivery))
+		inbox, err = queries.GetInboxForUpdate(workCtx, inboxIdentityParams(delivery))
 		if err != nil {
 			return Outcome{}, err
 		}
@@ -193,20 +202,20 @@ func (c *Coordinator) Consume(ctx context.Context, delivery Delivery, effect Con
 		return Outcome{}, insertErr
 	}
 
-	result, publications, effectErr := callConsumerEffect(ctx, tx, effect)
+	result, publications, effectErr := callConsumerEffect(workCtx, tx, effect)
 	if effectErr != nil {
-		_ = rollbackTransaction(tx, ctx)
-		return Outcome{State: OutcomeFailed}, c.recordFailure(ctx, delivery, effectErr)
+		_ = rollbackTransaction(tx, workCtx)
+		return Outcome{State: OutcomeFailed}, c.recordFailure(workCtx, delivery, effectErr)
 	}
-	if err := insertPublications(ctx, tx, publications); err != nil {
-		_ = rollbackTransaction(tx, ctx)
-		return Outcome{State: OutcomeFailed}, c.recordFailure(ctx, delivery, err)
+	if err := insertPublications(workCtx, tx, publications); err != nil {
+		_ = rollbackTransaction(tx, workCtx)
+		return Outcome{State: OutcomeFailed}, c.recordFailure(workCtx, delivery, err)
 	}
-	if err := establishInbox(ctx, tx, delivery, result); err != nil {
-		_ = rollbackTransaction(tx, ctx)
-		return Outcome{State: OutcomeFailed}, c.recordFailure(ctx, delivery, err)
+	if err := establishInbox(workCtx, tx, delivery, result); err != nil {
+		_ = rollbackTransaction(tx, workCtx)
+		return Outcome{State: OutcomeFailed}, c.recordFailure(workCtx, delivery, err)
 	}
-	if err := tx.Commit(ctx); err != nil {
+	if err := tx.Commit(workCtx); err != nil {
 		return Outcome{}, fmt.Errorf("%w: %v", ErrCommitAmbiguous, err)
 	}
 	committed = true
@@ -231,20 +240,24 @@ func (c *Coordinator) ReconcileAndRetry(
 	if lookup == nil || effect == nil {
 		return Outcome{}, ErrInvalidCoordinator
 	}
+	workCtx, err := withEventContext(ctx, delivery.Event)
+	if err != nil {
+		return Outcome{}, fmt.Errorf("establish delivery context: %w", err)
+	}
 
-	tx, err := c.db.BeginTx(ctx, pgx.TxOptions{})
+	tx, err := c.db.BeginTx(workCtx, pgx.TxOptions{})
 	if err != nil {
 		return Outcome{}, err
 	}
 	committed := false
 	defer func() {
 		if !committed {
-			_ = tx.Rollback(ctx)
+			_ = tx.Rollback(workCtx)
 		}
 	}()
 
 	queries := platformdb.New(tx)
-	inbox, err := queries.GetInboxForUpdate(ctx, inboxIdentityParams(delivery))
+	inbox, err := queries.GetInboxForUpdate(workCtx, inboxIdentityParams(delivery))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Outcome{}, ErrInboxNotFound
 	}
@@ -261,35 +274,35 @@ func (c *Coordinator) ReconcileAndRetry(
 		return Outcome{}, fmt.Errorf("%w: state=%s", ErrInvalidCoordinator, inbox.State)
 	}
 
-	result, found, err := lookup(ctx, tx)
+	result, found, err := lookup(workCtx, tx)
 	if err != nil {
 		return Outcome{}, err
 	}
 	if found {
-		if err := establishInbox(ctx, tx, delivery, result); err != nil {
+		if err := establishInbox(workCtx, tx, delivery, result); err != nil {
 			return Outcome{}, err
 		}
-		if err := tx.Commit(ctx); err != nil {
+		if err := tx.Commit(workCtx); err != nil {
 			return Outcome{}, fmt.Errorf("%w: %v", ErrCommitAmbiguous, err)
 		}
 		committed = true
 		return NewOutcome(OutcomeEstablished, result), nil
 	}
 
-	result, publications, effectErr := callConsumerEffect(ctx, tx, effect)
+	result, publications, effectErr := callConsumerEffect(workCtx, tx, effect)
 	if effectErr != nil {
-		_ = rollbackTransaction(tx, ctx)
-		return Outcome{State: OutcomeFailed}, c.recordFailure(ctx, delivery, effectErr)
+		_ = rollbackTransaction(tx, workCtx)
+		return Outcome{State: OutcomeFailed}, c.recordFailure(workCtx, delivery, effectErr)
 	}
-	if err := insertPublications(ctx, tx, publications); err != nil {
-		_ = rollbackTransaction(tx, ctx)
-		return Outcome{State: OutcomeFailed}, c.recordFailure(ctx, delivery, err)
+	if err := insertPublications(workCtx, tx, publications); err != nil {
+		_ = rollbackTransaction(tx, workCtx)
+		return Outcome{State: OutcomeFailed}, c.recordFailure(workCtx, delivery, err)
 	}
-	if err := establishInbox(ctx, tx, delivery, result); err != nil {
-		_ = rollbackTransaction(tx, ctx)
-		return Outcome{State: OutcomeFailed}, c.recordFailure(ctx, delivery, err)
+	if err := establishInbox(workCtx, tx, delivery, result); err != nil {
+		_ = rollbackTransaction(tx, workCtx)
+		return Outcome{State: OutcomeFailed}, c.recordFailure(workCtx, delivery, err)
 	}
-	if err := tx.Commit(ctx); err != nil {
+	if err := tx.Commit(workCtx); err != nil {
 		return Outcome{}, fmt.Errorf("%w: %v", ErrCommitAmbiguous, err)
 	}
 	committed = true
@@ -304,7 +317,7 @@ func (c *Coordinator) validate(ctx context.Context) error {
 }
 
 func (c *Coordinator) recordFailure(ctx context.Context, delivery Delivery, cause error) error {
-	recoveryCtx, cancel := context.WithTimeout(context.Background(), failureRecordTimeout)
+	recoveryCtx, cancel := context.WithTimeout(telemetry.Detach(ctx), failureRecordTimeout)
 	defer cancel()
 
 	tx, err := c.db.BeginTx(recoveryCtx, pgx.TxOptions{})
