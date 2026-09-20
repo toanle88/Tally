@@ -50,6 +50,7 @@
 	outbox-worker-check \
 	event-envelope-check \
 	telemetry-context-check \
+	structured-logs-check \
 	terraform-check \
 	terraform-environments-check \
 	terraform-modules-check \
@@ -286,6 +287,9 @@ event-envelope-check:
 
 telemetry-context-check:
 	@bash scripts/verify/telemetry-context.sh
+
+structured-logs-check:
+	@bash scripts/verify/structured-logs.sh
 
 idempotency-persistence-check:
 	@bash scripts/verify/idempotency-persistence.sh

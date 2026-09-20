@@ -612,18 +612,15 @@ The technology baseline (from the approved solution architecture):
 │   ├── .gitignore
 │   └── README.md                      # Vite scaffold notice (unused)
 ├── docs/
-│   ├── backlog/                       # User stories (DLV-PLAT-001 through DLV-PLAT-007)
+│   ├── backlog/                       # Epic and delivery-item user stories
 │   │   ├── epic-template.md
 │   │   ├── milestone-template.md
 │   │   ├── story-template.md
 │   │   └── stories/
-│   │       ├── DLV-PLAT-001_user_stories.md
-│   │       ├── DLV-PLAT-002_user_stories.md
-│   │       ├── DLV-PLAT-003_user_stories.md
-│   │       ├── DLV-PLAT-004_user_stories.md
-│   │       ├── DLV-PLAT-005_user_stories.md
-│   │       ├── DLV-PLAT-006_user_stories.md
-│   │       └── DLV-PLAT-007_user_stories.md
+│   │       ├── EP-PLAT-001_user_stories.md
+│   │       ├── EP-UX-001_user_stories.md
+│   │       ├── EP-IAC-001_user_stories.md
+│   │       └── EP-OPS-001_user_stories.md
 │   ├── specs/                         # PRD, domain model, UX, NFR,
 │   │                                  # system design, technical specs
 │   └── verification/                  # Clean-clone and reproducibility evidence
