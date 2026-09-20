@@ -344,10 +344,20 @@ delivery adds a distinct readiness contract. This apply procedure is not product
 qualification, CI federation, smoke-test qualification, destroy, or recovery
 evidence.
 
+User Story 10 documents the supported recovery paths for state locks, drift,
+failed apply/destroy, identity rotation, resource-group recovery, and
+backup/restore evidence in
+[`docs/verification/DLV-IAC-002-us10-recover-state-and-document-operations.md`](./docs/verification/DLV-IAC-002-us10-recover-state-and-document-operations.md).
+The runbook preserves Terraform ownership, keeps bootstrap state separate, and
+does not claim authenticated Azure recovery or production qualification.
+EP-IAC-001 is closed by owner decision; remaining live Azure qualification and
+optional external exercises are explicitly deferred for this project.
+
 The wrapper uses the authenticated Azure CLI operator for this learning
 workflow. Per-environment state identities are provisioned by the bootstrap
-root, but matching identity authentication remains a pending Story 2/7
-qualification; the wrapper claims separate state keys and containers, not
+root, but matching identity authentication remains unverified. Because
+EP-IAC-001 is closed by owner decision, no further live identity qualification
+is planned; the wrapper claims separate state keys and containers, not
 completion of that identity criterion.
 
 ### Deployment smoke evidence
@@ -408,7 +418,7 @@ The technology baseline (from the approved solution architecture):
 | Styling | Tailwind CSS 4 as the primary styling/layout system with daisyUI 5 theme and wrapper support | — |
 | Client state | — | TanStack Query |
 | API contract | OpenAPI 3.1 source with generated Go and TypeScript artifacts; runtime currently exposes GET /health/live; focused contract/generated-artifact drift CI | — |
-| Infrastructure | Terraform provider contract, per-root lockfiles, protected Blob remote-state bootstrap, isolated state keys and identities, reusable low-cost module contracts, dev/demo/prod-reference profile composition, and optional dev/demo deployment wrapper | Live Azure apply evidence and production qualification |
+| Infrastructure | Terraform provider contract, per-root lockfiles, protected Blob remote-state bootstrap, isolated state keys and identities, reusable low-cost module contracts, dev/demo/prod-reference profile composition, and optional dev/demo deployment wrapper | Deferred: live Azure apply evidence and production qualification |
 | CI/CD | — | GitHub Actions |
 
 ---
@@ -689,6 +699,9 @@ Semantic payload safety is tracked as a separate deferred follow-up. Focused gat
 `make outbox-worker-check`, and
 `make api-check`; focused contract/generated-artifact drift is also enforced by
 `.github/workflows/openapi.yml`.
+The optional Terraform and Azure learning-environment epic, `EP-IAC-001`, is
+closed by owner decision; remaining live Azure qualification and optional
+external exercises are explicitly deferred for this project.
 
 ---
 

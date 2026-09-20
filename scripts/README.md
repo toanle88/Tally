@@ -227,6 +227,12 @@ delete, force-unlock, manual lock deletion, Docker, bootstrap state, or another
 environment root. Output and artifacts/deployment-destroy/<environment>.json
 are redacted; raw plans, state, secrets, and Azure errors are not emitted.
 
+State-lock, drift, failed-apply, failed-destroy, identity-rotation,
+resource-group, and backup/restore recovery guidance is recorded in
+[`docs/verification/DLV-IAC-002-us10-recover-state-and-document-operations.md`](../docs/verification/DLV-IAC-002-us10-recover-state-and-document-operations.md).
+The recovery record is credential-free repository guidance; authenticated Azure
+recovery and production qualification remain separate operator evidence.
+
 ## Accessibility qualification
 
 The root `pnpm test:a11y:qualification` command runs all accessibility checks

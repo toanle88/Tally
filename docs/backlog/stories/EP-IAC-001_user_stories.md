@@ -1,5 +1,7 @@
 # EP-IAC-001 — Terraform and Azure Learning Environment User Stories
 
+> **Status — closed by owner decision (2026-09-20).** No further implementation or live qualification work is planned for this epic. Any remaining authenticated Azure exercises or external qualification evidence are explicitly deferred and do not block project closure.
+
 ## 1. Outcome
 
 Provide a low-cost, repeatable Terraform and Azure learning environment for
@@ -284,7 +286,19 @@ that an infrastructure exercise can be repeated after failure.**
 - [ ] The documentation distinguishes learning-profile limitations from
   production-reference requirements.
 
-## 9. Epic acceptance summary
+The repository runbook, recovery decision paths, backup/restore obligations,
+evidence template, and learning-versus-production boundary are implemented in
+[`DLV-IAC-002-us10-recover-state-and-document-operations.md`](../../verification/DLV-IAC-002-us10-recover-state-and-document-operations.md).
+User Story 10's authenticated recovery qualification remains unverified and is
+explicitly deferred for this project; repository checks alone do not mark the
+story complete, and no further recovery exercise is planned.
+
+## 9. Epic acceptance summary and closure decision
+
+EP-IAC-001 is closed by owner decision on 2026-09-20. The acceptance and
+evidence checklists below remain an historical record of what was verified and
+what was not; unchecked live-qualification items are intentionally deferred and
+are not future delivery obligations.
 
 - [ ] Both delivery items and all ten stories pass their applicable criteria.
 - [ ] `fmt`, `validate`, lint, security, policy, provider-lock, and plan checks
@@ -319,6 +333,11 @@ that an infrastructure exercise can be repeated after failure.**
 - [ ] No production credentials or sensitive data are required.
 
 ## 12. Definition of Done
+
+For this project, the epic is considered closed by the owner decision above.
+This checklist remains an evidence inventory, so deferred or unverified
+external exercises are not relabeled as completed merely because the epic is
+closed.
 
 - [ ] All child stories pass review with evidence attached.
 - [ ] No critical/high infrastructure or security defect remains unresolved.
