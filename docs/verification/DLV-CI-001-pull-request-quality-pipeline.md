@@ -64,6 +64,13 @@ every setup-node step and installs the standalone frontend with
 `pnpm --dir web --ignore-workspace install --frozen-lockfile`. A corrected
 hosted rerun remains pending because this working tree is uncommitted.
 
+The Terraform correction copies the complete `infra/terraform` tree to
+temporary runner storage, removes only the `azurerm` backend blocks there, and
+keeps module-relative paths intact. A local wrapper smoke test moved past
+backend initialization and reached Terraform provider-registry resolution;
+full provider-backed plan verification remains blocked locally by unavailable
+registry DNS.
+
 ## Verification not completed locally
 
 | Evidence | Result | Limitation |

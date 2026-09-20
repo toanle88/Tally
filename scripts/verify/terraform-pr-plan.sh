@@ -77,9 +77,46 @@ write_environment_vars() {
 	fi
 }
 
+prepare_backend_disabled_root() {
+	local source_root="$1"
+	local destination_root="$2"
+
+	mkdir -p "${destination_root}"
+	cp -a "${source_root}/." "${destination_root}/"
+	find "${destination_root}" -type d -name '.terraform' -prune -exec rm -rf -- {} +
+
+	while IFS= read -r terraform_file; do
+		local filtered_file="${terraform_file}.tmp"
+		awk '
+			function brace_delta(line, opens, closes) {
+				opens = gsub(/\{/, "", line)
+				closes = gsub(/\}/, "", line)
+				return opens - closes
+			}
+
+			/^[[:space:]]*backend[[:space:]]+"azurerm"[[:space:]]*\{/ {
+				skip_depth = brace_delta($0)
+				next
+			}
+
+			skip_depth > 0 {
+				skip_depth += brace_delta($0)
+				next
+			}
+
+			{ print }
+		' "${terraform_file}" >"${filtered_file}"
+		mv "${filtered_file}" "${terraform_file}"
+	done < <(find "${destination_root}" -type f -name '*.tf' -print)
+
+	if grep -R -l -E '^[[:space:]]*backend[[:space:]]+"azurerm"[[:space:]]*\{' "${destination_root}" --include='*.tf' >/dev/null 2>&1; then
+		fail "temporary Terraform root still contains an azurerm backend"
+	fi
+}
+
 run_plan() {
 	local environment="$1"
-	local terraform_root="${root}/infra/terraform/${environment}"
+	local terraform_root="${plan_root}/terraform-config/${environment}"
 	local vars_file="${plan_root}/${environment}.tfvars"
 	local plan_file="${plan_root}/${environment}.tfplan"
 	local json_file="${plan_root}/${environment}.json"
@@ -111,6 +148,8 @@ run_plan() {
 	"${terraform_bin}" -chdir="${terraform_root}" show -json "${plan_file}" >"${json_file}"
 	node "${root}/scripts/verify/terraform-plan-policy.js" --environment "${environment}" --plan-json "${json_file}" >/dev/null
 }
+
+prepare_backend_disabled_root "${root}/infra/terraform" "${plan_root}/terraform-config"
 
 for environment in bootstrap dev demo prod-reference; do
 	run_plan "${environment}"
