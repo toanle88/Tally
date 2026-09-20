@@ -338,7 +338,6 @@ terraform-ci-check:
 	@bash -n scripts/deploy/terraform-apply.sh
 
 terraform-pr-check: terraform-check terraform-modules-check terraform-tools-check terraform-ci-check terraform-lint-check terraform-security-check
-	@bash scripts/verify/terraform-pr-plan.sh
 
 azure-learning-plan:
 	@ENVIRONMENT="$(ENVIRONMENT)" bash scripts/deploy/azure-learning.sh plan

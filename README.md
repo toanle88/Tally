@@ -105,7 +105,7 @@ All commands must be run from the repository root.
 | `make api-ts-generate` | Generate the TypeScript Fetch client and types from the OpenAPI contract |
 | `make api-ts-check` | Validate deterministic TypeScript generation, inventory, markers, and frontend compilation |
 | `make api-check` | Run the focused OpenAPI contract and generated-artifact drift gate |
-| `make terraform-check` | Format, validate, and verify every Terraform root/profile plus credential-free plan, drift, and cost wrapper self-tests |
+| `make terraform-check` | Format, validate, and verify every Terraform root/profile plus credential-free drift and cost wrapper self-tests |
 | `make terraform-environments-check` | Verify dev, demo, and prod-reference composition, profile safety, and focused Terraform tests |
 | `make terraform-modules-check` | Validate the 11 reusable low-cost Terraform module contracts without credentials |
 | `make terraform-tools-check` | Verify pinned Terraform, TFLint, Checkov, and Infracost versions |
@@ -113,7 +113,7 @@ All commands must be run from the repository root.
 | `make terraform-security-check` | Run Checkov with the reviewed policy-exception manifest |
 | `make terraform-security-check-docker` | Run the same pinned Checkov security gate through Docker Compose |
 | `make terraform-plan-policy-check` | Run credential-free plan-policy fixture checks |
-| `make terraform-pr-check` | Run the complete credential-free Terraform pull-request gate, including temporary synthetic plans |
+| `make terraform-pr-check` | Run the credential-free Terraform pull-request validation, policy, security, and repository contract gates |
 | `make terraform-drift-check` | Run an authenticated refresh-only drift check for a selected environment |
 | `make terraform-cost-check` | Compare an Infracost plan delta with the active-month cost review threshold |
 | `make terraform-ci-check` | Verify OIDC subjects, protected apply workflow, credential-free PR workflow, and plan-summary hygiene |
@@ -256,7 +256,7 @@ the required `Pull-request quality / required` pull-request status check.
 pull-request gate for `DLV-CI-001`. It runs Go and frontend tests/builds,
 automated accessibility checks, OpenAPI/generated-artifact verification,
 PostgreSQL 18 Testcontainers persistence verification, credential-free
-Terraform validation and synthetic plans, repository integrity and security
+Terraform validation and policy checks, repository integrity and security
 scanning, and the documentation build.
 
 The workflow uses only read-only repository permissions and does not log in to
@@ -294,7 +294,7 @@ User Story 5 plan-policy, budget, drift, cost, and external-evidence boundaries
 are recorded in
 [`docs/verification/DLV-IAC-001-us5-plan-policy-drift-cost.md`](./docs/verification/DLV-IAC-001-us5-plan-policy-drift-cost.md).
 
-User Story 7 adds credential-free PR Terraform plan tests and a manually
+User Story 7 adds credential-free PR Terraform validation and policy checks and a manually
 dispatched, `main`-only protected apply workflow using Azure OIDC. Its
 repository evidence and external GitHub/Azure setup checklist are recorded in
 [`docs/verification/DLV-IAC-002-us7-ci-oidc-federation.md`](./docs/verification/DLV-IAC-002-us7-ci-oidc-federation.md).
@@ -562,7 +562,6 @@ The technology baseline (from the approved solution architecture):
 │       ├── shared-primitives.sh         # Shared primitive verification
 │       ├── terraform.sh                  # Terraform boundary verification
 │       ├── terraform-environments.sh     # Environment profile verification
-│       ├── terraform-pr-plan.sh           # Credential-free synthetic Terraform PR plans
 │       └── transactional-coordination.sh # Transactional coordination verification
 ├── web/
 │   ├── src/

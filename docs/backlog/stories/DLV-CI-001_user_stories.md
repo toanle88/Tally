@@ -379,13 +379,14 @@ Repository implementation complete on branch
   push/manual verification without duplicate pull-request triggers.
 - `make ci-check`, `make repository-integrity-check`, and
   `make terraform-pr-check` expose the repository-owned CI contracts.
-- `scripts/verify/ci-contract.js`, `scripts/verify/repository-integrity.sh`,
-  and `scripts/verify/terraform-pr-plan.sh` provide static safety, forbidden
-  artifact, and temporary synthetic Terraform-plan checks.
+- `scripts/verify/ci-contract.js` and `scripts/verify/repository-integrity.sh`
+  provide workflow, static-safety, and forbidden-artifact checks; Terraform
+  provider-backed planning remains outside credential-free PR scope.
 - Implementation evidence is recorded in
   `docs/verification/DLV-CI-001-pull-request-quality-pipeline.md`.
 
 Hosted CI evidence remains required for the clean run, command failure
-propagation, generated/migration drift, Terraform provider plan execution,
-scanner execution, documentation failure propagation, and aggregate skipped-job
-behavior. External GitHub branch-protection activation remains unverified.
+propagation, generated/migration drift, scanner execution, documentation
+failure propagation, and aggregate skipped-job behavior. Authenticated
+Terraform provider planning is deferred to protected Azure qualification.
+External GitHub branch-protection activation remains unverified.

@@ -13,14 +13,14 @@ qualification, or external GitHub branch-protection configuration.
 - Required status check: `Pull-request quality / required`
 - Repository CI contract: `scripts/verify/ci-contract.js`
 - Repository integrity gate: `scripts/verify/repository-integrity.sh`
-- Terraform PR plan gate: `scripts/verify/terraform-pr-plan.sh`
+- Terraform validation and policy gate: `make terraform-pr-check`
 - Focused workflow coordination: `.github/workflows/openapi.yml`,
   `.github/workflows/persistence.yml`, `.github/workflows/terraform.yml`, and
   `.github/workflows/docs-site.yml`
 
 The aggregate workflow uses read-only repository permissions, commit-pinned
 Dependency Review and Gitleaks actions, committed pnpm lockfiles, temporary
-synthetic Terraform variables, backend-disabled and refresh-disabled plans,
+backend-disabled Terraform initialization and validation, policy self-tests,
 and no raw plan/state artifact publication.
 
 ## Revision and declared tool versions
@@ -41,7 +41,7 @@ and no raw plan/state artifact publication.
 
 | Command | Result |
 |---|---|
-| `bash -n scripts/verify/repository-integrity.sh scripts/verify/terraform-pr-plan.sh scripts/deploy/terraform-apply.sh` | Passed |
+| `bash -n scripts/verify/repository-integrity.sh scripts/deploy/terraform-apply.sh` | Passed |
 | `bash scripts/verify/repository-integrity.sh --self-test` | Passed |
 | `bash scripts/verify/repository-integrity.sh` | Passed |
 | Python YAML parse and aggregate/focused-workflow contract assertions | Passed |
@@ -64,15 +64,14 @@ every setup-node step and installs the standalone frontend with
 `pnpm --dir web --ignore-workspace install --frozen-lockfile`. A corrected
 hosted rerun remains pending because this working tree is uncommitted.
 
-The Terraform correction copies the complete `infra/terraform` tree to
-temporary runner storage, removes only the `azurerm` backend blocks there, and
-keeps module-relative paths intact. It also injects explicit non-production
-provider settings in that temporary tree: CLI, MSI, OIDC, and automatic
-resource-provider registration are disabled, with synthetic IDs and a
-non-secret placeholder used only to construct the provider client. A local
-wrapper smoke test moved past backend initialization and reached Terraform
-provider-registry resolution; full provider-backed plan verification remains
-blocked locally by unavailable registry DNS.
+The provider-backed Terraform plan experiment was removed from the required PR
+gate. AzureRM and AzureAD provider configuration requires a real tenant/token,
+even with refresh disabled; synthetic placeholders caused real Entra token
+requests and were not credential-free. The required PR gate therefore stops at
+backend-disabled initialization, formatting, validation, lock/tool checks,
+module/environment contracts, plan-policy fixtures, Checkov, and repository
+integrity. Authenticated provider-backed plans remain deferred to protected
+Azure qualification and are not run by pull-request CI.
 
 ## Verification not completed locally
 

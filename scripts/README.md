@@ -46,7 +46,6 @@ scripts/
 │   ├── terraform-lint.sh # TFLint gate
 │   ├── terraform-security.sh # Checkov gate and exception manifest validation
 │   ├── terraform-plan-policy.js # Credential-free Terraform plan policy gate
-│   ├── terraform-pr-plan.sh # Synthetic backend-disabled Terraform PR plans
 │   ├── terraform-drift.sh # Authenticated refresh-only drift procedure
 │   ├── terraform-cost.sh # External-plan Infracost review gate
 │   └── terraform-cost-policy.js # Exact-decimal Infracost cost policy helper

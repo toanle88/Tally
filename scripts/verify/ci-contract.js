@@ -18,7 +18,7 @@ const requiredJobs = {
   application: "Go and frontend quality",
   contracts: "OpenAPI and generated-artifact drift",
   persistence: "PostgreSQL and SQL drift",
-  infrastructure: "Terraform credential-free plan and policy",
+  infrastructure: "Terraform validation and policy",
   security: "Security and repository integrity",
   documentation: "Documentation quality",
   required: "required",

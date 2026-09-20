@@ -11,7 +11,6 @@ const applyWorkflow = read(".github/workflows/terraform-apply.yml");
 const applyScript = read("scripts/deploy/terraform-apply.sh");
 const summary = read("scripts/verify/terraform-plan-summary.js");
 const securityScript = read("scripts/verify/terraform-security.sh");
-const pullRequestPlan = read("scripts/verify/terraform-pr-plan.sh");
 
 for (const environment of ["dev", "demo", "prod-reference"]) {
   const subject = `repo:toanle88/Tally:environment:${environment}`;
@@ -48,25 +47,6 @@ if (!applyScript.includes("RUNNER_TEMP") || !applyScript.includes("show -json") 
 }
 if (!summary.includes("sensitive_values_included: false") || summary.includes("change.before") || summary.includes("change.after")) {
   fail("plan summary must exclude resource values");
-}
-for (const required of [
-  "prepare_backend_disabled_root",
-  "init -backend=false",
-  "-refresh=false",
-  "TF_DATA_DIR=",
-  "mktemp -d",
-  "use_cli = false",
-  "use_msi = false",
-  "use_oidc = false",
-  "ci-only-placeholder-value",
-]) {
-  if (!pullRequestPlan.includes(required)) fail(`credential-free PR plan is missing ${required}`);
-}
-if (!pullRequestPlan.includes(String.raw`resource_provider_registrations = \"none\"`)) {
-  fail("credential-free PR plan must disable automatic resource-provider registration");
-}
-if (/terraform[^\n]*(apply|destroy)/i.test(pullRequestPlan) || /azure\/login|id-token:\s*write|AZURE_CLIENT_SECRET|AZURE_CREDENTIALS/i.test(pullRequestPlan)) {
-  fail("credential-free PR plan contains a live infrastructure or credential pattern");
 }
 
 console.log("Terraform CI/OIDC contract passed.");
