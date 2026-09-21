@@ -305,6 +305,43 @@ func (q *Queries) ListExpiredOutbox(ctx context.Context, maxRows int32) ([]Integ
 	return items, nil
 }
 
+const listOutboxBacklogMetrics = `-- name: ListOutboxBacklogMetrics :many
+SELECT event_type,
+       count(*)::bigint AS pending_count,
+       EXTRACT(EPOCH FROM (clock_timestamp() - min(created_at)))::double precision AS oldest_age_seconds
+FROM integration.outbox
+WHERE established_at IS NULL
+  AND managed_exception_at IS NULL
+GROUP BY event_type
+ORDER BY event_type
+`
+
+type ListOutboxBacklogMetricsRow struct {
+	EventType        string
+	PendingCount     int64
+	OldestAgeSeconds float64
+}
+
+func (q *Queries) ListOutboxBacklogMetrics(ctx context.Context) ([]ListOutboxBacklogMetricsRow, error) {
+	rows, err := q.db.Query(ctx, listOutboxBacklogMetrics)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListOutboxBacklogMetricsRow
+	for rows.Next() {
+		var i ListOutboxBacklogMetricsRow
+		if err := rows.Scan(&i.EventType, &i.PendingCount, &i.OldestAgeSeconds); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listOutboxForReplay = `-- name: ListOutboxForReplay :many
 SELECT outbox_id, event_type, event_version, source_context, aggregate_id, aggregate_version, accounting_scope_id, correlation_id, causation_id, payload, payload_fingerprint, available_at, claimed_until, claim_owner, attempt_count, established_at, last_error_code, created_at, occurred_at, data_classification, managed_exception_at
 FROM integration.outbox

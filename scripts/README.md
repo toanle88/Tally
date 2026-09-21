@@ -54,6 +54,7 @@ scripts/
 │   ├── outbox-dispatch.sh # DLV-PLAT-007 User Story 4 dispatch gate
 │   ├── outbox-worker.sh # DLV-PLAT-007 User Story 5 worker/replay gate
 │   ├── structured-logs.sh # DLV-OPS-001 User Story 2 structured-log gate
+│   ├── traces-metrics.sh # DLV-OPS-001 User Story 3 traces/metrics gate
 │   ├── openapi-story1.sh # OpenAPI User Story 1 verification
 │   ├── accessibility-negative.sh # Controlled axe failure proof
 │   └── accessibility-qualification.sh # Focused/full accessibility qualification runner

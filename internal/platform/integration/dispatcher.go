@@ -11,7 +11,9 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/toanle88/Tally/internal/platform/database/platformdb"
 	"github.com/toanle88/Tally/internal/platform/events"
+	"github.com/toanle88/Tally/internal/platform/telemetry"
 	platformworker "github.com/toanle88/Tally/internal/platform/worker"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -33,6 +35,10 @@ type OutboxStore interface {
 	EstablishOutbox(context.Context, platformdb.EstablishOutboxParams) (int64, error)
 	RescheduleOutbox(context.Context, platformdb.RescheduleOutboxParams) (int64, error)
 	MarkOutboxManagedException(context.Context, platformdb.MarkOutboxManagedExceptionParams) (int64, error)
+}
+
+type outboxBacklogStore interface {
+	ListOutboxBacklogMetrics(context.Context) ([]platformdb.ListOutboxBacklogMetricsRow, error)
 }
 
 // Handler processes one valid event envelope. Business effects remain owned by
@@ -127,6 +133,7 @@ type DispatcherConfig struct {
 	Admission            platformworker.Admission
 	ConcurrencyAdmission platformworker.Admission
 	Clock                Clock
+	Instrumentation      *telemetry.Instrumentation
 }
 
 type DispatchReport struct {
@@ -143,6 +150,7 @@ type Dispatcher struct {
 	config               DispatcherConfig
 	admission            platformworker.Admission
 	concurrencyAdmission platformworker.Admission
+	instrumentation      *telemetry.Instrumentation
 }
 
 func NewDispatcher(store OutboxStore, registrations []HandlerRegistration, config DispatcherConfig) (*Dispatcher, error) {
@@ -207,7 +215,14 @@ func NewDispatcher(store OutboxStore, registrations []HandlerRegistration, confi
 		handlers[registration.Key] = registration
 	}
 
-	return &Dispatcher{store: store, handlers: handlers, config: config, admission: config.Admission, concurrencyAdmission: config.ConcurrencyAdmission}, nil
+	return &Dispatcher{
+		store:                store,
+		handlers:             handlers,
+		config:               config,
+		admission:            config.Admission,
+		concurrencyAdmission: config.ConcurrencyAdmission,
+		instrumentation:      config.Instrumentation,
+	}, nil
 }
 
 // DispatchOnce claims and processes one bounded batch. Item failures are
@@ -227,14 +242,35 @@ func (d *Dispatcher) DispatchOnce(ctx context.Context) (DispatchReport, error) {
 	if batchSize > d.config.Concurrency {
 		batchSize = d.config.Concurrency
 	}
-	claimed, err := d.store.ClaimDueOutbox(ctx, platformdb.ClaimDueOutboxParams{
+	claimContext := ctx
+	var claimSpan trace.Span
+	if d.instrumentation != nil {
+		claimContext, claimSpan = d.instrumentation.StartSpan(ctx, "outbox.claim", telemetry.SpanAttributes{
+			Module:    "platform.integration",
+			Operation: "outbox_claim",
+		})
+	}
+	claimed, err := d.store.ClaimDueOutbox(claimContext, platformdb.ClaimDueOutboxParams{
 		LeaseDuration: intervalValue(d.config.LeaseDuration),
 		ClaimOwner:    pgtype.Text{String: owner, Valid: true},
 		BatchSize:     int32(batchSize),
 	})
+	if claimSpan != nil {
+		result := "success"
+		if err != nil {
+			result = "failure"
+		}
+		d.instrumentation.SetSpanAttributes(claimSpan, telemetry.SpanAttributes{
+			Module:    "platform.integration",
+			Operation: "outbox_claim",
+			Result:    result,
+		})
+		claimSpan.End()
+	}
 	if err != nil {
 		return DispatchReport{}, err
 	}
+	d.recordOutboxBacklog(ctx)
 
 	report := DispatchReport{Claimed: len(claimed)}
 	results := make(chan dispatchResult, len(claimed))
@@ -285,6 +321,43 @@ func (d *Dispatcher) DispatchOnce(ctx context.Context) (DispatchReport, error) {
 	return report, joined
 }
 
+func (d *Dispatcher) recordOutboxBacklog(ctx context.Context) {
+	if d == nil || d.instrumentation == nil {
+		return
+	}
+	store, ok := d.store.(outboxBacklogStore)
+	if !ok {
+		return
+	}
+	workCtx, span := d.instrumentation.StartSpan(ctx, "outbox.backlog", telemetry.SpanAttributes{
+		Module:    "platform.integration",
+		Operation: "outbox_backlog",
+	})
+	defer span.End()
+	rows, err := store.ListOutboxBacklogMetrics(workCtx)
+	result := "success"
+	if err != nil {
+		result = "failure"
+	}
+	d.instrumentation.SetSpanAttributes(span, telemetry.SpanAttributes{
+		Module:    "platform.integration",
+		Operation: "outbox_backlog",
+		Result:    result,
+	})
+	if err != nil {
+		return
+	}
+	points := make([]telemetry.OutboxBacklogPoint, 0, len(rows))
+	for _, row := range rows {
+		points = append(points, telemetry.OutboxBacklogPoint{
+			EventType: row.EventType,
+			Pending:   row.PendingCount,
+			OldestAge: time.Duration(row.OldestAgeSeconds * float64(time.Second)),
+		})
+	}
+	d.instrumentation.SetOutboxBacklogSnapshot(workCtx, points)
+}
+
 // Run polls the dispatcher until cancellation or a claim-level persistence
 // failure. Lease loss for an individual item is expected under contention.
 func (d *Dispatcher) Run(ctx context.Context, pollInterval time.Duration) error {
@@ -322,21 +395,40 @@ type dispatchResult struct {
 	err     error
 }
 
-func (d *Dispatcher) process(ctx context.Context, row platformdb.IntegrationOutbox, owner string) dispatchResult {
+func (d *Dispatcher) process(ctx context.Context, row platformdb.IntegrationOutbox, owner string) (result dispatchResult) {
+	workCtx := ctx
+	var deliverySpan trace.Span
+	if d.instrumentation != nil {
+		workCtx, deliverySpan = d.instrumentation.StartSpan(ctx, "outbox.delivery", telemetry.SpanAttributes{
+			Module:    "platform.integration",
+			Operation: "outbox_delivery",
+		})
+		defer func() {
+			d.instrumentation.SetSpanAttributes(deliverySpan, telemetry.SpanAttributes{
+				Module:    "platform.integration",
+				Operation: "outbox_delivery",
+				Result:    dispatchResultLabel(result.outcome),
+			})
+			deliverySpan.End()
+		}()
+	}
 	event, err := envelopeFromOutbox(row)
 	if err != nil {
-		return d.manage(ctx, row, owner, string(DataIntegrityMismatch), dispatchManaged)
+		return d.manage(workCtx, row, owner, string(DataIntegrityMismatch), dispatchManaged)
 	}
 	registration, ok := d.handlers[HandlerKey{EventType: event.EventType(), EventVersion: event.EventVersion()}]
 	if !ok {
-		return d.manage(ctx, row, owner, "handler_not_registered", dispatchManaged)
+		return d.manage(workCtx, row, owner, "handler_not_registered", dispatchManaged)
 	}
 
-	handlerCtx, cancel := context.WithCancel(ctx)
+	if deliverySpan != nil {
+		d.instrumentation.SetSpanAttributes(deliverySpan, telemetry.SpanAttributes{EventType: event.EventType()})
+	}
+	handlerCtx, cancel := context.WithCancel(workCtx)
 	defer cancel()
 	handlerCtx, err = withEventContext(handlerCtx, event)
 	if err != nil {
-		return d.manage(ctx, row, owner, string(DataIntegrityMismatch), dispatchManaged)
+		return d.manage(workCtx, row, owner, string(DataIntegrityMismatch), dispatchManaged)
 	}
 	handlerDone := make(chan error, 1)
 	leaseLost := make(chan error, 1)
@@ -350,7 +442,7 @@ func (d *Dispatcher) process(ctx context.Context, row platformdb.IntegrationOutb
 		return dispatchResult{outcome: dispatchLeaseLost, err: err}
 	}
 	if err == nil {
-		rows, establishErr := d.store.EstablishOutbox(ctx, platformdb.EstablishOutboxParams{OutboxID: row.OutboxID, ClaimOwner: pgtype.Text{String: owner, Valid: true}})
+		rows, establishErr := d.store.EstablishOutbox(workCtx, platformdb.EstablishOutboxParams{OutboxID: row.OutboxID, ClaimOwner: pgtype.Text{String: owner, Valid: true}})
 		if establishErr != nil {
 			return dispatchResult{outcome: dispatchLeaseLost, err: establishErr}
 		}
@@ -375,14 +467,14 @@ func (d *Dispatcher) process(ctx context.Context, row platformdb.IntegrationOutb
 		} else if typedFailure && failure.Code != "" {
 			code = "invalid_failure_code"
 		}
-		return d.manage(ctx, row, owner, code, dispatchManaged)
+		return d.manage(workCtx, row, owner, code, dispatchManaged)
 	}
 	if row.AttemptCount >= maxOutboxAttempts {
-		return d.manage(ctx, row, owner, failureCode, dispatchManaged)
+		return d.manage(workCtx, row, owner, failureCode, dispatchManaged)
 	}
 
 	availableAt := d.config.Clock.Now().Add(registration.RetryPolicy.delayForAttempt(row.AttemptCount))
-	rows, rescheduleErr := d.store.RescheduleOutbox(ctx, platformdb.RescheduleOutboxParams{
+	rows, rescheduleErr := d.store.RescheduleOutbox(workCtx, platformdb.RescheduleOutboxParams{
 		AvailableAt:   timestamptzValue(availableAt),
 		LastErrorCode: pgtype.Text{String: failureCode, Valid: true},
 		OutboxID:      row.OutboxID,
@@ -469,6 +561,21 @@ func (d *Dispatcher) manage(ctx context.Context, row platformdb.IntegrationOutbo
 		return dispatchResult{outcome: dispatchLeaseLost, err: ErrLeaseLost}
 	}
 	return dispatchResult{outcome: outcome}
+}
+
+func dispatchResultLabel(outcome dispatchOutcome) string {
+	switch outcome {
+	case dispatchEstablished:
+		return "established"
+	case dispatchRescheduled:
+		return "rescheduled"
+	case dispatchManaged:
+		return "managed_exception"
+	case dispatchLeaseLost:
+		return "lease_lost"
+	default:
+		return "failure"
+	}
 }
 
 func envelopeFromOutbox(row platformdb.IntegrationOutbox) (events.Envelope, error) {
