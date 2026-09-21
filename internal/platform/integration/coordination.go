@@ -15,6 +15,7 @@ import (
 	"github.com/toanle88/Tally/internal/platform/database/platformdb"
 	"github.com/toanle88/Tally/internal/platform/events"
 	"github.com/toanle88/Tally/internal/platform/telemetry"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var (
@@ -111,15 +112,20 @@ func (e IdentityContentConflict) Error() string {
 func (e IdentityContentConflict) Unwrap() error { return ErrIdentityContentConflict }
 
 type Coordinator struct {
-	db TxBeginner
+	db              TxBeginner
+	instrumentation *telemetry.Instrumentation
 }
 
 func NewCoordinator(db TxBeginner) *Coordinator {
-	return &Coordinator{db: db}
+	return NewCoordinatorWithInstrumentation(db, nil)
+}
+
+func NewCoordinatorWithInstrumentation(db TxBeginner, instrumentation *telemetry.Instrumentation) *Coordinator {
+	return &Coordinator{db: db, instrumentation: instrumentation}
 }
 
 // Publish commits the source effect and its outbox record together.
-func (c *Coordinator) Publish(ctx context.Context, publication Publication, effect SourceEffect) error {
+func (c *Coordinator) Publish(ctx context.Context, publication Publication, effect SourceEffect) (err error) {
 	if err := c.validate(ctx); err != nil {
 		return err
 	}
@@ -129,29 +135,49 @@ func (c *Coordinator) Publish(ctx context.Context, publication Publication, effe
 	if effect == nil {
 		return ErrInvalidCoordinator
 	}
-	workCtx, err := withEventContext(ctx, publication.Event)
+	workCtx, operationSpan, operationStarted := c.startSpan(ctx, "outbox.publication", telemetry.SpanAttributes{
+		Module:    "platform.integration",
+		Operation: "outbox_publication",
+	})
+	defer func() {
+		c.finishSpan(operationSpan, operationStarted, "platform.integration", "outbox_publication", err)
+	}()
+	workCtx, err = withEventContext(workCtx, publication.Event)
 	if err != nil {
 		return fmt.Errorf("establish publication context: %w", err)
 	}
 
-	tx, err := c.db.BeginTx(workCtx, pgx.TxOptions{})
+	txContext, transactionSpan, transactionStarted := c.startSpan(workCtx, "postgres.transaction", telemetry.SpanAttributes{
+		Module:    "platform.database",
+		Operation: "postgres_transaction",
+	})
+	defer func() {
+		c.finishTransactionSpan(transactionSpan, transactionStarted, txContext, "platform.integration", "outbox_publication", err)
+	}()
+	tx, err := c.db.BeginTx(txContext, pgx.TxOptions{})
 	if err != nil {
 		return err
 	}
 	committed := false
 	defer func() {
 		if !committed {
-			_ = tx.Rollback(workCtx)
+			_ = tx.Rollback(txContext)
 		}
 	}()
 
-	if err := callSourceEffect(workCtx, tx, effect); err != nil {
+	if err := callSourceEffect(txContext, tx, effect); err != nil {
 		return err
 	}
-	if err := insertPublication(workCtx, tx, publication); err != nil {
-		return err
+	repositoryContext, repositorySpan, repositoryStarted := c.startSpan(txContext, "repository.operation", telemetry.SpanAttributes{
+		Module:    "platform.integration",
+		Operation: "outbox_insert",
+	})
+	insertErr := insertPublication(repositoryContext, tx, publication)
+	c.finishSpan(repositorySpan, repositoryStarted, "platform.integration", "outbox_insert", insertErr)
+	if insertErr != nil {
+		return insertErr
 	}
-	if err := tx.Commit(workCtx); err != nil {
+	if err := tx.Commit(txContext); err != nil {
 		return fmt.Errorf("%w: %v", ErrCommitAmbiguous, err)
 	}
 	committed = true
@@ -160,7 +186,7 @@ func (c *Coordinator) Publish(ctx context.Context, publication Publication, effe
 
 // Consume establishes a new delivery, or returns the durable state of an
 // existing delivery without invoking the effect for processing/failed rows.
-func (c *Coordinator) Consume(ctx context.Context, delivery Delivery, effect ConsumerEffect) (Outcome, error) {
+func (c *Coordinator) Consume(ctx context.Context, delivery Delivery, effect ConsumerEffect) (outcome Outcome, err error) {
 	if err := c.validate(ctx); err != nil {
 		return Outcome{}, err
 	}
@@ -170,26 +196,52 @@ func (c *Coordinator) Consume(ctx context.Context, delivery Delivery, effect Con
 	if effect == nil {
 		return Outcome{}, ErrInvalidCoordinator
 	}
-	workCtx, err := withEventContext(ctx, delivery.Event)
+	workCtx, operationSpan, operationStarted := c.startSpan(ctx, "inbox.handling", telemetry.SpanAttributes{
+		Module:    "platform.integration",
+		Operation: "inbox_handling",
+		Consumer:  delivery.ConsumerName,
+	})
+	defer func() { c.finishSpan(operationSpan, operationStarted, "platform.integration", "inbox_handling", err) }()
+	workCtx, err = withEventContext(workCtx, delivery.Event)
 	if err != nil {
 		return Outcome{}, fmt.Errorf("establish delivery context: %w", err)
 	}
 
-	tx, err := c.db.BeginTx(workCtx, pgx.TxOptions{})
+	txContext, transactionSpan, transactionStarted := c.startSpan(workCtx, "postgres.transaction", telemetry.SpanAttributes{
+		Module:    "platform.database",
+		Operation: "postgres_transaction",
+		Consumer:  delivery.ConsumerName,
+	})
+	defer func() {
+		c.finishTransactionSpan(transactionSpan, transactionStarted, txContext, "platform.integration", "inbox_handling", err)
+	}()
+	tx, err := c.db.BeginTx(txContext, pgx.TxOptions{})
 	if err != nil {
 		return Outcome{}, err
 	}
 	committed := false
 	defer func() {
 		if !committed {
-			_ = tx.Rollback(workCtx)
+			_ = tx.Rollback(txContext)
 		}
 	}()
 
 	queries := platformdb.New(tx)
-	inbox, insertErr := queries.InsertInboxIfAbsent(workCtx, inboxInsertParams(delivery))
+	repositoryContext, repositorySpan, repositoryStarted := c.startSpan(txContext, "repository.operation", telemetry.SpanAttributes{
+		Module:    "platform.integration",
+		Operation: "inbox_insert",
+		Consumer:  delivery.ConsumerName,
+	})
+	inbox, insertErr := queries.InsertInboxIfAbsent(repositoryContext, inboxInsertParams(delivery))
+	c.finishSpan(repositorySpan, repositoryStarted, "platform.integration", "inbox_insert", insertErr)
 	if errors.Is(insertErr, pgx.ErrNoRows) {
-		inbox, err = queries.GetInboxForUpdate(workCtx, inboxIdentityParams(delivery))
+		repositoryContext, repositorySpan, repositoryStarted = c.startSpan(txContext, "repository.operation", telemetry.SpanAttributes{
+			Module:    "platform.integration",
+			Operation: "inbox_lookup",
+			Consumer:  delivery.ConsumerName,
+		})
+		inbox, err = queries.GetInboxForUpdate(repositoryContext, inboxIdentityParams(delivery))
+		c.finishSpan(repositorySpan, repositoryStarted, "platform.integration", "inbox_lookup", err)
 		if err != nil {
 			return Outcome{}, err
 		}
@@ -202,20 +254,20 @@ func (c *Coordinator) Consume(ctx context.Context, delivery Delivery, effect Con
 		return Outcome{}, insertErr
 	}
 
-	result, publications, effectErr := callConsumerEffect(workCtx, tx, effect)
+	result, publications, effectErr := callConsumerEffect(txContext, tx, effect)
 	if effectErr != nil {
-		_ = rollbackTransaction(tx, workCtx)
-		return Outcome{State: OutcomeFailed}, c.recordFailure(workCtx, delivery, effectErr)
+		_ = rollbackTransaction(tx, txContext)
+		return Outcome{State: OutcomeFailed}, c.recordFailure(txContext, delivery, effectErr)
 	}
-	if err := insertPublications(workCtx, tx, publications); err != nil {
-		_ = rollbackTransaction(tx, workCtx)
-		return Outcome{State: OutcomeFailed}, c.recordFailure(workCtx, delivery, err)
+	if err := insertPublications(txContext, tx, publications); err != nil {
+		_ = rollbackTransaction(tx, txContext)
+		return Outcome{State: OutcomeFailed}, c.recordFailure(txContext, delivery, err)
 	}
-	if err := establishInbox(workCtx, tx, delivery, result); err != nil {
-		_ = rollbackTransaction(tx, workCtx)
-		return Outcome{State: OutcomeFailed}, c.recordFailure(workCtx, delivery, err)
+	if err := establishInbox(txContext, tx, delivery, result); err != nil {
+		_ = rollbackTransaction(tx, txContext)
+		return Outcome{State: OutcomeFailed}, c.recordFailure(txContext, delivery, err)
 	}
-	if err := tx.Commit(workCtx); err != nil {
+	if err := tx.Commit(txContext); err != nil {
 		return Outcome{}, fmt.Errorf("%w: %v", ErrCommitAmbiguous, err)
 	}
 	committed = true
@@ -230,7 +282,7 @@ func (c *Coordinator) ReconcileAndRetry(
 	delivery Delivery,
 	lookup LocalResultLookup,
 	effect ConsumerEffect,
-) (Outcome, error) {
+) (outcome Outcome, err error) {
 	if err := c.validate(ctx); err != nil {
 		return Outcome{}, err
 	}
@@ -240,24 +292,44 @@ func (c *Coordinator) ReconcileAndRetry(
 	if lookup == nil || effect == nil {
 		return Outcome{}, ErrInvalidCoordinator
 	}
-	workCtx, err := withEventContext(ctx, delivery.Event)
+	workCtx, operationSpan, operationStarted := c.startSpan(ctx, "recovery.action", telemetry.SpanAttributes{
+		Module:    "platform.integration",
+		Operation: "inbox_reconcile",
+		Consumer:  delivery.ConsumerName,
+	})
+	defer func() { c.finishSpan(operationSpan, operationStarted, "platform.integration", "inbox_reconcile", err) }()
+	workCtx, err = withEventContext(workCtx, delivery.Event)
 	if err != nil {
 		return Outcome{}, fmt.Errorf("establish delivery context: %w", err)
 	}
 
-	tx, err := c.db.BeginTx(workCtx, pgx.TxOptions{})
+	txContext, transactionSpan, transactionStarted := c.startSpan(workCtx, "postgres.transaction", telemetry.SpanAttributes{
+		Module:    "platform.database",
+		Operation: "postgres_transaction",
+		Consumer:  delivery.ConsumerName,
+	})
+	defer func() {
+		c.finishTransactionSpan(transactionSpan, transactionStarted, txContext, "platform.integration", "inbox_reconcile", err)
+	}()
+	tx, err := c.db.BeginTx(txContext, pgx.TxOptions{})
 	if err != nil {
 		return Outcome{}, err
 	}
 	committed := false
 	defer func() {
 		if !committed {
-			_ = tx.Rollback(workCtx)
+			_ = tx.Rollback(txContext)
 		}
 	}()
 
 	queries := platformdb.New(tx)
-	inbox, err := queries.GetInboxForUpdate(workCtx, inboxIdentityParams(delivery))
+	repositoryContext, repositorySpan, repositoryStarted := c.startSpan(txContext, "repository.operation", telemetry.SpanAttributes{
+		Module:    "platform.integration",
+		Operation: "inbox_lookup",
+		Consumer:  delivery.ConsumerName,
+	})
+	inbox, err := queries.GetInboxForUpdate(repositoryContext, inboxIdentityParams(delivery))
+	c.finishSpan(repositorySpan, repositoryStarted, "platform.integration", "inbox_lookup", err)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Outcome{}, ErrInboxNotFound
 	}
@@ -274,35 +346,35 @@ func (c *Coordinator) ReconcileAndRetry(
 		return Outcome{}, fmt.Errorf("%w: state=%s", ErrInvalidCoordinator, inbox.State)
 	}
 
-	result, found, err := lookup(workCtx, tx)
+	result, found, err := lookup(txContext, tx)
 	if err != nil {
 		return Outcome{}, err
 	}
 	if found {
-		if err := establishInbox(workCtx, tx, delivery, result); err != nil {
+		if err := establishInbox(txContext, tx, delivery, result); err != nil {
 			return Outcome{}, err
 		}
-		if err := tx.Commit(workCtx); err != nil {
+		if err := tx.Commit(txContext); err != nil {
 			return Outcome{}, fmt.Errorf("%w: %v", ErrCommitAmbiguous, err)
 		}
 		committed = true
 		return NewOutcome(OutcomeEstablished, result), nil
 	}
 
-	result, publications, effectErr := callConsumerEffect(workCtx, tx, effect)
+	result, publications, effectErr := callConsumerEffect(txContext, tx, effect)
 	if effectErr != nil {
-		_ = rollbackTransaction(tx, workCtx)
-		return Outcome{State: OutcomeFailed}, c.recordFailure(workCtx, delivery, effectErr)
+		_ = rollbackTransaction(tx, txContext)
+		return Outcome{State: OutcomeFailed}, c.recordFailure(txContext, delivery, effectErr)
 	}
-	if err := insertPublications(workCtx, tx, publications); err != nil {
-		_ = rollbackTransaction(tx, workCtx)
-		return Outcome{State: OutcomeFailed}, c.recordFailure(workCtx, delivery, err)
+	if err := insertPublications(txContext, tx, publications); err != nil {
+		_ = rollbackTransaction(tx, txContext)
+		return Outcome{State: OutcomeFailed}, c.recordFailure(txContext, delivery, err)
 	}
-	if err := establishInbox(workCtx, tx, delivery, result); err != nil {
-		_ = rollbackTransaction(tx, workCtx)
-		return Outcome{State: OutcomeFailed}, c.recordFailure(workCtx, delivery, err)
+	if err := establishInbox(txContext, tx, delivery, result); err != nil {
+		_ = rollbackTransaction(tx, txContext)
+		return Outcome{State: OutcomeFailed}, c.recordFailure(txContext, delivery, err)
 	}
-	if err := tx.Commit(workCtx); err != nil {
+	if err := tx.Commit(txContext); err != nil {
 		return Outcome{}, fmt.Errorf("%w: %v", ErrCommitAmbiguous, err)
 	}
 	committed = true
@@ -316,20 +388,74 @@ func (c *Coordinator) validate(ctx context.Context) error {
 	return nil
 }
 
-func (c *Coordinator) recordFailure(ctx context.Context, delivery Delivery, cause error) error {
+func (c *Coordinator) startSpan(ctx context.Context, name string, fields telemetry.SpanAttributes) (context.Context, trace.Span, time.Time) {
+	if c == nil || c.instrumentation == nil {
+		return ctx, nil, time.Time{}
+	}
+	workCtx, span := c.instrumentation.StartSpan(ctx, name, fields)
+	return workCtx, span, time.Now()
+}
+
+func (c *Coordinator) finishSpan(span trace.Span, started time.Time, module, operation string, err error) {
+	if c == nil || c.instrumentation == nil || span == nil {
+		return
+	}
+	result := "success"
+	if err != nil {
+		result = "failure"
+	}
+	c.instrumentation.SetSpanAttributes(span, telemetry.SpanAttributes{
+		Module:    module,
+		Operation: operation,
+		Result:    result,
+	})
+	span.End()
+}
+
+func (c *Coordinator) finishTransactionSpan(span trace.Span, started time.Time, ctx context.Context, operationModule, operation string, err error) {
+	if c == nil || c.instrumentation == nil || span == nil {
+		return
+	}
+	result := "success"
+	if err != nil {
+		result = "failure"
+	}
+	c.instrumentation.SetSpanAttributes(span, telemetry.SpanAttributes{
+		Module:    "platform.database",
+		Operation: "postgres_transaction",
+		Result:    result,
+	})
+	c.instrumentation.ObserveDBTransaction(ctx, time.Since(started), operationModule, operation, result)
+	span.End()
+}
+
+func (c *Coordinator) recordFailure(ctx context.Context, delivery Delivery, cause error) (returnErr error) {
 	recoveryCtx, cancel := context.WithTimeout(telemetry.Detach(ctx), failureRecordTimeout)
 	defer cancel()
+	recoveryCtx, recoverySpan, recoveryStarted := c.startSpan(recoveryCtx, "recovery.action", telemetry.SpanAttributes{
+		Module:       "platform.integration",
+		Operation:    "inbox_failure_record",
+		Consumer:     delivery.ConsumerName,
+		FailureClass: "inbox_processing_failed",
+	})
+	defer func() {
+		c.finishSpan(recoverySpan, recoveryStarted, "platform.integration", "inbox_failure_record", returnErr)
+	}()
 
 	tx, err := c.db.BeginTx(recoveryCtx, pgx.TxOptions{})
 	if err != nil {
 		return errors.Join(cause, err)
 	}
-	if _, err := platformdb.New(tx).RecordInboxFailure(recoveryCtx, failureParams(delivery)); err != nil {
+	rows, err := platformdb.New(tx).RecordInboxFailure(recoveryCtx, failureParams(delivery))
+	if err != nil {
 		_ = tx.Rollback(recoveryCtx)
 		return errors.Join(cause, err)
 	}
 	if err := tx.Commit(recoveryCtx); err != nil {
 		return errors.Join(cause, fmt.Errorf("%w: %v", ErrCommitAmbiguous, err))
+	}
+	if rows == 1 && c.instrumentation != nil {
+		c.instrumentation.AddInboxFailure(recoveryCtx, 1, delivery.ConsumerName, "inbox_processing_failed")
 	}
 	return cause
 }

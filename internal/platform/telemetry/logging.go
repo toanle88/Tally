@@ -11,12 +11,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/toanle88/Tally/internal/platform/events"
 	"log/slog"
 )
 
 const (
-	defaultDataClassification = events.Internal
+	defaultDataClassification = "internal"
 	maxStableValueLength      = 128
 	maxAggregateTypeLength    = 64
 )
@@ -60,7 +59,7 @@ type Event struct {
 	Result             string
 	ErrorCode          string
 	Retryable          bool
-	DataClassification events.Classification
+	DataClassification string
 
 	ActorID           *uuid.UUID
 	AccountingScopeID *uuid.UUID
@@ -209,7 +208,7 @@ func (h *jsonHandler) Handle(ctx context.Context, record slog.Record) error {
 		"result":              "",
 		"error_code":          "",
 		"retryable":           false,
-		"data_classification": string(defaultDataClassification),
+		"data_classification": defaultDataClassification,
 	}
 
 	if !h.grouped {
@@ -279,7 +278,7 @@ func addAllowedField(fields map[string]any, attr slog.Attr) {
 		}
 	case "data_classification":
 		if attr.Value.Kind() == slog.KindString {
-			fields[attr.Key] = validClassification(events.Classification(attr.Value.String()))
+			fields[attr.Key] = validClassification(attr.Value.String())
 		}
 	case "actor_id", "accounting_scope_id", "aggregate_id", "trace_id", "span_id", "correlation_id", "causation_id":
 		if attr.Value.Kind() == slog.KindString {
@@ -344,12 +343,12 @@ func containsSensitiveWord(value string) bool {
 	return false
 }
 
-func validClassification(value events.Classification) string {
+func validClassification(value string) string {
 	switch value {
-	case events.Public, events.Internal, events.Confidential, events.HighlyRestricted:
-		return string(value)
+	case "public", "internal", "confidential", "highly_restricted":
+		return value
 	default:
-		return string(defaultDataClassification)
+		return defaultDataClassification
 	}
 }
 

@@ -49,19 +49,24 @@ func run(logger *telemetry.Logger) error {
 	if logger == nil {
 		return errors.New("logger is required")
 	}
+	instrumentation, err := telemetry.NewInstrumentation(telemetry.InstrumentationConfig{Service: "tally-api"})
+	if err != nil {
+		return err
+	}
+	defer func() { _ = instrumentation.Shutdown(context.Background()) }()
 	address := os.Getenv("HTTP_ADDR")
 	if address == "" {
 		address = defaultHTTPAddress
 	}
 
 	router := chi.NewRouter()
+	router.Use(telemetry.RequestTracingMiddleware(instrumentation))
+	router.Use(telemetry.RequestLoggingMiddleware(logger))
 	router.Get("/health/live", httpx.Liveness)
 
 	server := &http.Server{
-		Addr: address,
-		Handler: telemetry.Middleware(
-			telemetry.RequestLoggingMiddleware(logger)(router),
-		),
+		Addr:              address,
+		Handler:           telemetry.Middleware(router),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
@@ -103,7 +108,7 @@ func run(logger *telemetry.Logger) error {
 		return fmt.Errorf("server shutdown: %w", err)
 	}
 
-	err := <-listenError
+	err = <-listenError
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return fmt.Errorf("server stopped: %w", err)
 	}

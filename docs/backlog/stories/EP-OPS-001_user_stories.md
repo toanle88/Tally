@@ -167,15 +167,196 @@ without creating unbounded cardinality or changing domain ownership.**
 
 #### Acceptance criteria
 
-- [ ] Required technical spans cover HTTP request, authorization decision seam,
+- [x] Required technical spans cover HTTP request, authorization decision seam,
   idempotency lookup seam, command handler, repository operation, PostgreSQL
   transaction, outbox claim/delivery, inbox handling, provider call, report
   job, and recovery action where the corresponding component exists.
-- [ ] SQL statement text and external payloads are normalized or redacted; the
+- [x] SQL statement text and external payloads are normalized or redacted; the
   telemetry implementation does not persist raw sensitive payloads.
-- [ ] The approved metric catalogue is represented with bounded labels for
+- [x] The approved metric catalogue is represented with bounded labels for
   latency, command outcomes, transactions, outbox/inbox backlog, and platform
   failure classes. Domain-specific metrics remain owned by later capabilities.
+
+#### Implementation status
+
+Implemented on `feat/dlv-ops-001-us3-traces-bounded-platform-metrics`. The
+implementation evidence is recorded in
+[`docs/verification/DLV-OPS-001-us3-traces-bounded-platform-metrics.md`](../../verification/DLV-OPS-001-us3-traces-bounded-platform-metrics.md).
+Authorization, finance command-handler, provider, and report-job seams remain
+explicitly deferred because those owning components do not yet exist.
+
+Focused and full non-race tests, vet, and sqlc compile/diff checks pass through
+the available Windows Go toolchain. The race gate remains open because the
+available toolchain has CGO disabled; the repository-native Make gate remains
+environment-limited because Linux `go` is unavailable.
+
+#### 6.3.1 Delivery plan (Plan mode — 2026-09-21; implemented)
+
+**Plan status:** Implemented. The acceptance criteria above are complete for
+the corresponding seams that currently exist. This does not complete User
+Story 4 or the parent delivery item.
+
+**Repository baseline at planning time:** `main` at `e26d6f9` contained the
+telemetry context and redacted structured logger from User Stories 1 and 2.
+The implementation below is now the scope authority for the selected seams;
+the approved specifications remain the behavior authority.
+
+**Outcome and learning objective:** Add reusable technical tracing and metrics
+at boundaries already implemented by the platform, so operators can measure
+request latency, command outcomes, transactions, integration backlog, and
+typed platform failures without exposing payloads, creating unbounded metric
+cardinality, changing financial outcomes, or moving ownership out of the
+modular monolith.
+
+**Owning component and boundaries:**
+
+- `internal/platform/telemetry` owns tracer/meter setup, safe attributes and
+  labels, span lifecycle helpers, and provider lifecycle hooks.
+- Composition roots in `cmd/api` and `cmd/worker` provide service identity and
+  lifecycle wiring; they do not own finance metrics or domain rules.
+- Existing platform seams in `internal/platform/database`,
+  `internal/platform/idempotency`, `internal/platform/integration`, and
+  `internal/platform/worker` are instrumented through their existing ports.
+- No domain aggregate, posted financial fact, audit record, event envelope,
+  authorization policy, public API schema, or database schema is owned by this
+  story. No telemetry table or migration is planned.
+
+**Trace and metric contract for implementation:**
+
+| Acceptance area | Planned treatment | Current-component boundary |
+|---|---|---|
+| Required spans | Create child spans with stable names and safe outcome attributes; carry the existing telemetry context and close spans on every success, error, cancellation, and panic path. | HTTP middleware; durable idempotency acquire/finalize; transaction begin/commit/rollback; integration publish/consume/reconcile/replay; outbox claim, delivery, lease, and establishment; worker host lifecycle. |
+| Conditional spans | Add narrow instrumentation hooks only when the owning component is delivered; do not create placeholder finance or IAM code. | Authorization decision, command handler, provider call, and report job are not implemented in the current repository and remain explicit deferrals. Recovery instrumentation is limited to existing integration failure-recording/reconciliation paths. |
+| Safe trace data | Permit stable module, operation, result, error-code, retryability, classification, route template, method, and status class attributes only. Normalize SQL to operation/database metadata; never attach SQL text, request/event/response bodies, credentials, tokens, bank/payroll/tax values, aggregate IDs, customer IDs, or external payloads. | Reuse the User Story 2 allow-list and add trace-specific validation tests rather than serializing arbitrary `slog` or error values. |
+| `finance_http_request_duration_seconds` | Record a histogram using the canonical route template, HTTP method, and status class. Use a bounded fallback for unmatched routes. | Existing request middleware in `internal/platform/telemetry` and `cmd/api`. |
+| `finance_command_total` | Record a counter with bounded module, operation, and result values. Provide the technical helper for future command handlers; instrument only a command seam that exists. | No command-handler seam exists in the current repository; finance command handlers are deferred. |
+| `finance_db_transaction_duration_seconds` | Record a histogram with bounded module, operation, and result values around existing PostgreSQL transaction boundaries. | `internal/platform/database` and `internal/platform/integration`; generated query code remains generated. |
+| `finance_outbox_pending_total` and `finance_outbox_oldest_age_seconds` | Publish gauges from read-only platform queries, grouped only by canonical bounded event type. Unknown or unsupported label values collapse to a safe bounded category. | `db/queries/platform/integration_outbox.sql` and its generated `platformdb` code, without changing the outbox schema or event facts. |
+| `finance_inbox_failure_total` | Record a counter with bounded consumer and normalized error-code labels at the existing failure-recording seam. | `internal/platform/integration/coordination.go` and `db/queries/platform/integration_inbox.sql`; raw message IDs and failure text are excluded. |
+| Domain metrics | Do not implement journal, receipt, payment, settlement, approval, close, or audit-domain metrics in this story. | Later owning capability epics add their own metrics against this contract. |
+
+**Impact and non-functional behavior:** HTTP response and health semantics stay
+unchanged. No frontend behavior or OpenAPI change is required. Existing event
+correlation/causation and outbox/inbox ownership stay unchanged. Telemetry
+recording is diagnostic and must not be allowed to turn a committed business
+effect into a failure, repeat an idempotent operation, extend a transaction
+indefinitely, or create an unbounded retry loop. Metric label normalization is
+performed before recording, and raw identifiers are never used as labels.
+Provider/exporter configuration must be injectable and locally testable; this
+story does not add live Azure credentials, remote monitoring, dashboards, or
+production retention policy. Exporter failure and complete shutdown/failure
+injection qualification remain User Story 4 evidence.
+
+**Ordered implementation steps:**
+
+1. Reconfirm the OpenTelemetry API/provider contract against the pinned Go
+   dependencies, define stable span names and bounded label registries, and
+   decide the local no-remote provider/test-recorder wiring without adding
+   Azure credentials.
+2. Extend `internal/platform/telemetry` with the smallest reusable tracer and
+   meter helpers. Reuse the existing context and redaction rules; reject or
+   collapse invalid, unknown, free-form, or high-cardinality labels.
+3. Add HTTP child-span and request-duration instrumentation while preserving
+   correlation middleware, safe request logging, route behavior, and response
+   writer compatibility.
+4. Instrument existing idempotency, transaction, repository/query, and
+   integration seams. Add only read-only generated queries needed for pending
+   and oldest outbox/inbox measurements; regenerate and check sqlc output
+   rather than editing generated files manually.
+5. Instrument dispatcher, replay, failure-recording, and worker lifecycle
+   outcomes with typed result/failure classes. Ensure cancellation, lease loss,
+   retry, duplicate delivery, and recovery paths close spans and update only
+   bounded counters/gauges.
+6. Wire provider creation and bounded shutdown hooks in `cmd/api` and
+   `cmd/worker`, keeping telemetry setup separate from business transaction
+   success and preserving existing lifecycle logs.
+7. Add focused unit/integration/negative verification, a repository-native
+   verification command, and a dedicated evidence document recording covered
+   seams, metric/span inventory, unimplemented conditional seams, command
+   results, and any toolchain limitations.
+
+**Likely files and packages:**
+
+- `internal/platform/telemetry` — new tracing/metrics helpers and tests beside
+  `context.go`, `http.go`, and `logging.go`.
+- `cmd/api/main.go`, `cmd/worker/main.go` — provider and lifecycle wiring.
+- `internal/platform/database`, `internal/platform/idempotency`,
+  `internal/platform/integration`, and `internal/platform/worker` — existing
+  technical seam instrumentation and tests.
+- `db/queries/platform/integration_outbox.sql` and
+  `db/queries/platform/integration_inbox.sql`, with generated
+  `internal/platform/database/platformdb/*` output only when read-only metric
+  queries are required.
+- `Makefile`, `scripts/verify/`, and `scripts/README.md` — focused verification
+  command and documentation.
+- `docs/verification/DLV-OPS-001-us3-traces-bounded-platform-metrics.md` —
+  implementation evidence and verification limitations.
+
+**Required test evidence:**
+
+- Unit tests for span names, attribute allow-listing, SQL normalization,
+  payload exclusion, label normalization, bounded-cardinality behavior, and
+  status/route classification.
+- HTTP tests proving trace context and correlation continuity, request timing,
+  status-class recording, and unchanged health/error responses.
+- Integration tests with synthetic PostgreSQL/outbox/inbox data proving
+  transaction and worker/integration context continuity, backlog gauges, and
+  typed failure counters without exposing payloads or identifiers.
+- Negative tests scanning captured spans/metrics/logs for request bodies,
+  event bodies, SQL statements, credentials, secrets, unrestricted errors, and
+  aggregate/customer/message identifiers.
+- Focused Go test/vet checks, relevant persistence/sqlc drift checks,
+  `go test ./...`, `git diff --check`, and the new verification script. Run the
+  race gate when the available toolchain supports it and record a limitation if
+  CGO or the repository-native Go command is unavailable.
+
+**Definition of done for this story:**
+
+- The three acceptance criteria are evidenced for every currently implemented
+  corresponding seam, with absent authorization/provider/report/finance seams
+  explicitly listed as deferred rather than simulated.
+- The approved platform metric subset is present with bounded labels, and no
+  domain-specific metric ownership is introduced early.
+- Spans and metrics contain no raw sensitive payloads or unrestricted SQL, no
+  telemetry path changes authoritative business results, and no schema/API/
+  event ownership boundary is bypassed.
+- Focused and repository checks pass, the evidence document is complete, and a
+  strict branch-diff review has no blocking findings.
+
+**Risks and open decisions:**
+
+- The current `go.mod` directly requires OpenTelemetry API packages but does
+  not yet declare a tracing/metrics SDK or exporter. Implementation must choose
+  the smallest pinned provider/test-recorder arrangement consistent with the
+  approved standard; it must not silently introduce live Azure export.
+- The approved catalogue names `event_type` and `consumer` labels, while the
+  current envelope accepts general identifier text. A finite registry or
+  `unknown`/`other` collapse is required before recording; raw event or
+  consumer text must not become an unbounded label.
+- Database backlog gauges can add read-only query code but must not add
+  telemetry persistence or mutate immutable outbox event facts.
+- `EP-IAM-001` owns authorization and later capability epics own command,
+  provider, reporting, and business metrics. Instrumentation must remain
+  adapter-level and wait for those seams.
+
+#### 6.3.2 Traceability for the delivery plan
+
+| Identifier | Relationship to User Story 3 |
+|---|---|
+| `M0` | Engineering foundation milestone. |
+| `EP-OPS-001` | Parent observability and operational foundation epic. |
+| `DLV-OPS-001` | Structured telemetry foundation delivery item. |
+| `GFR-012` | Technical outcomes distinguish intermediate, exception, reconciliation, and terminal integration states. |
+| `ARC-OBS-001` | Trace, correlation, and causation identifiers cross technical boundaries. |
+| `ARC-OBS-002` | Platform and later business health metrics use separate ownership. |
+| `ARC-PRV-001` / `NFR-SEC-010` | Telemetry data minimization and secret/credential exclusion. |
+| `NFR-OBS-003`, `NFR-OBS-004`, `NFR-OBS-008` | Safe support diagnostics, no sensitive telemetry, and typed operational outcomes. |
+| `NFR-MNT-001`, `NFR-TST-003` | Source-to-verification traceability and evidence for each applicable requirement. |
+| `QG-01`, `QG-08`, `QG-10` | Traceability, observability readiness, and release evidence gates. |
+
+This record preserves the story's bounded scope and explicitly separates
+implemented platform seams from deferred authorization, provider, reporting,
+and finance capability seams.
 
 ### 6.4 User Story 4 — Prove telemetry failure and sensitive-data boundaries
 

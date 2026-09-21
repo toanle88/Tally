@@ -10,6 +10,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/toanle88/Tally/internal/platform/database/platformdb"
 	"github.com/toanle88/Tally/internal/platform/events"
+	"github.com/toanle88/Tally/internal/platform/telemetry"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const replayTransactionSetting = "tally.replay"
@@ -50,11 +52,16 @@ type ReplayReport struct {
 }
 
 type Replayer struct {
-	db       TxBeginner
-	handlers map[HandlerKey]ReplayEffect
+	db              TxBeginner
+	handlers        map[HandlerKey]ReplayEffect
+	instrumentation *telemetry.Instrumentation
 }
 
 func NewReplayer(db TxBeginner, registrations []ReplayRegistration) (*Replayer, error) {
+	return NewReplayerWithInstrumentation(db, registrations, nil)
+}
+
+func NewReplayerWithInstrumentation(db TxBeginner, registrations []ReplayRegistration, instrumentation *telemetry.Instrumentation) (*Replayer, error) {
 	if db == nil || len(registrations) == 0 {
 		return nil, ErrInvalidReplay
 	}
@@ -68,10 +75,10 @@ func NewReplayer(db TxBeginner, registrations []ReplayRegistration) (*Replayer, 
 		}
 		handlers[registration.Key] = registration.Effect
 	}
-	return &Replayer{db: db, handlers: handlers}, nil
+	return &Replayer{db: db, handlers: handlers, instrumentation: instrumentation}, nil
 }
 
-func (r *Replayer) Replay(ctx context.Context, request ReplayRequest) (ReplayReport, error) {
+func (r *Replayer) Replay(ctx context.Context, request ReplayRequest) (report ReplayReport, err error) {
 	if r == nil || r.db == nil || ctx == nil {
 		return ReplayReport{}, ErrInvalidReplay
 	}
@@ -81,31 +88,74 @@ func (r *Replayer) Replay(ctx context.Context, request ReplayRequest) (ReplayRep
 		return ReplayReport{}, ErrInvalidReplay
 	}
 	consumerName := request.ConsumerName + replaySeparator + request.Generation
+	workCtx := ctx
+	var replaySpan trace.Span
+	if r.instrumentation != nil {
+		workCtx, replaySpan = r.instrumentation.StartSpan(ctx, "recovery.action", telemetry.SpanAttributes{
+			Module:    "platform.integration",
+			Operation: "integration_replay",
+		})
+		defer func() {
+			result := "success"
+			if err != nil {
+				result = "failure"
+			}
+			r.instrumentation.SetSpanAttributes(replaySpan, telemetry.SpanAttributes{
+				Module:    "platform.integration",
+				Operation: "integration_replay",
+				Result:    result,
+			})
+			replaySpan.End()
+		}()
+	}
 
-	selectionTx, err := r.db.BeginTx(ctx, pgx.TxOptions{AccessMode: pgx.ReadOnly})
+	selectionTx, err := r.db.BeginTx(workCtx, pgx.TxOptions{AccessMode: pgx.ReadOnly})
 	if err != nil {
 		return ReplayReport{}, err
 	}
-	rows, err := platformdb.New(selectionTx).ListOutboxForReplay(ctx, platformdb.ListOutboxForReplayParams{
+	repositoryContext := workCtx
+	var repositorySpan trace.Span
+	var repositoryStarted time.Time
+	if r.instrumentation != nil {
+		repositoryContext, repositorySpan = r.instrumentation.StartSpan(workCtx, "repository.operation", telemetry.SpanAttributes{
+			Module:    "platform.integration",
+			Operation: "outbox_replay_selection",
+		})
+		repositoryStarted = time.Now()
+	}
+	rows, err := platformdb.New(selectionTx).ListOutboxForReplay(repositoryContext, platformdb.ListOutboxForReplayParams{
 		SourceContext: request.SourceContext,
 		FromTime:      timestamptzValue(request.From),
 		ToTime:        timestamptzValue(request.To),
 		MaxEvents:     int32(request.MaxEvents + 1),
 	})
+	if repositorySpan != nil {
+		result := "success"
+		if err != nil {
+			result = "failure"
+		}
+		r.instrumentation.SetSpanAttributes(repositorySpan, telemetry.SpanAttributes{
+			Module:    "platform.integration",
+			Operation: "outbox_replay_selection",
+			Result:    result,
+		})
+		r.instrumentation.ObserveDBTransaction(repositoryContext, time.Since(repositoryStarted), "platform.integration", "outbox_replay_selection", result)
+		repositorySpan.End()
+	}
 	if err != nil {
-		_ = selectionTx.Rollback(ctx)
+		_ = selectionTx.Rollback(workCtx)
 		return ReplayReport{}, err
 	}
-	if err := selectionTx.Commit(ctx); err != nil {
+	if err := selectionTx.Commit(workCtx); err != nil {
 		return ReplayReport{}, fmt.Errorf("%w: %v", ErrCommitAmbiguous, err)
 	}
 	if len(rows) > request.MaxEvents {
 		return ReplayReport{}, ErrReplayRangeTooLarge
 	}
 
-	report := ReplayReport{Selected: len(rows)}
+	report = ReplayReport{Selected: len(rows)}
 	var joined error
-	coordinator := NewCoordinator(r.db)
+	coordinator := NewCoordinatorWithInstrumentation(r.db, r.instrumentation)
 	for _, row := range rows {
 		event, err := envelopeFromOutbox(row)
 		if err != nil {
@@ -119,7 +169,7 @@ func (r *Replayer) Replay(ctx context.Context, request ReplayRequest) (ReplayRep
 			joined = errors.Join(joined, fmt.Errorf("%w: replay handler not registered for %s/%d", ErrReplayIntegrity, event.EventType(), event.EventVersion()))
 			continue
 		}
-		outcome, existing, err := coordinator.consumeReplay(ctx, Delivery{ConsumerName: consumerName, Event: event}, effect)
+		outcome, existing, err := coordinator.consumeReplay(workCtx, Delivery{ConsumerName: consumerName, Event: event}, effect)
 		if err != nil {
 			report.Failed++
 			joined = errors.Join(joined, err)
@@ -135,37 +185,51 @@ func (r *Replayer) Replay(ctx context.Context, request ReplayRequest) (ReplayRep
 	return report, joined
 }
 
-func (c *Coordinator) consumeReplay(ctx context.Context, delivery Delivery, effect ReplayEffect) (Outcome, bool, error) {
+func (c *Coordinator) consumeReplay(ctx context.Context, delivery Delivery, effect ReplayEffect) (outcome Outcome, existing bool, err error) {
 	if err := c.validate(ctx); err != nil || effect == nil {
 		return Outcome{}, false, ErrInvalidCoordinator
 	}
 	if err := validateDelivery(delivery); err != nil {
 		return Outcome{}, false, err
 	}
-	workCtx, err := withEventContext(ctx, delivery.Event)
+	workCtx, operationSpan, operationStarted := c.startSpan(ctx, "inbox.replay", telemetry.SpanAttributes{
+		Module:    "platform.integration",
+		Operation: "inbox_replay",
+		Consumer:  delivery.ConsumerName,
+	})
+	defer func() { c.finishSpan(operationSpan, operationStarted, "platform.integration", "inbox_replay", err) }()
+	workCtx, err = withEventContext(workCtx, delivery.Event)
 	if err != nil {
 		return Outcome{}, false, fmt.Errorf("establish replay context: %w", err)
 	}
-	tx, err := c.db.BeginTx(workCtx, pgx.TxOptions{})
+	txContext, transactionSpan, transactionStarted := c.startSpan(workCtx, "postgres.transaction", telemetry.SpanAttributes{
+		Module:    "platform.database",
+		Operation: "postgres_transaction",
+		Consumer:  delivery.ConsumerName,
+	})
+	defer func() {
+		c.finishTransactionSpan(transactionSpan, transactionStarted, txContext, "platform.integration", "inbox_replay", err)
+	}()
+	tx, err := c.db.BeginTx(txContext, pgx.TxOptions{})
 	if err != nil {
 		return Outcome{}, false, err
 	}
 	committed := false
 	defer func() {
 		if !committed {
-			_ = tx.Rollback(workCtx)
+			_ = tx.Rollback(txContext)
 		}
 	}()
 
 	queries := platformdb.New(tx)
-	if _, err := tx.Exec(workCtx, "SELECT set_config($1, 'on', true)", replayTransactionSetting); err != nil {
+	if _, err := tx.Exec(txContext, "SELECT set_config($1, 'on', true)", replayTransactionSetting); err != nil {
 		return Outcome{}, false, err
 	}
-	inbox, insertErr := queries.InsertInboxIfAbsent(workCtx, inboxInsertParams(delivery))
-	existing := false
+	inbox, insertErr := queries.InsertInboxIfAbsent(txContext, inboxInsertParams(delivery))
+	existing = false
 	if errors.Is(insertErr, pgx.ErrNoRows) {
 		existing = true
-		inbox, err = queries.GetInboxForUpdate(workCtx, inboxIdentityParams(delivery))
+		inbox, err = queries.GetInboxForUpdate(txContext, inboxIdentityParams(delivery))
 		if err != nil {
 			return Outcome{}, false, err
 		}
@@ -180,16 +244,16 @@ func (c *Coordinator) consumeReplay(ctx context.Context, delivery Delivery, effe
 		return Outcome{}, false, insertErr
 	}
 
-	result, effectErr := effect(workCtx, tx, delivery.Event)
+	result, effectErr := effect(txContext, tx, delivery.Event)
 	if effectErr != nil {
-		_ = rollbackTransaction(tx, workCtx)
-		return Outcome{State: OutcomeFailed}, existing, c.recordFailure(workCtx, delivery, effectErr)
+		_ = rollbackTransaction(tx, txContext)
+		return Outcome{State: OutcomeFailed}, existing, c.recordFailure(txContext, delivery, effectErr)
 	}
-	if err := establishInbox(workCtx, tx, delivery, result); err != nil {
-		_ = rollbackTransaction(tx, workCtx)
-		return Outcome{State: OutcomeFailed}, existing, c.recordFailure(workCtx, delivery, err)
+	if err := establishInbox(txContext, tx, delivery, result); err != nil {
+		_ = rollbackTransaction(tx, txContext)
+		return Outcome{State: OutcomeFailed}, existing, c.recordFailure(txContext, delivery, err)
 	}
-	if err := tx.Commit(workCtx); err != nil {
+	if err := tx.Commit(txContext); err != nil {
 		return Outcome{}, existing, fmt.Errorf("%w: %v", ErrCommitAmbiguous, err)
 	}
 	committed = true

@@ -51,6 +51,7 @@
 	event-envelope-check \
 	telemetry-context-check \
 	structured-logs-check \
+	traces-metrics-check \
 	terraform-check \
 	terraform-environments-check \
 	terraform-modules-check \
@@ -290,6 +291,9 @@ telemetry-context-check:
 
 structured-logs-check:
 	@bash scripts/verify/structured-logs.sh
+
+traces-metrics-check:
+	@bash scripts/verify/traces-metrics.sh
 
 idempotency-persistence-check:
 	@bash scripts/verify/idempotency-persistence.sh

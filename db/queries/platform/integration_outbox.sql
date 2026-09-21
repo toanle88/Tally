@@ -123,3 +123,13 @@ WHERE outbox_id = sqlc.arg(outbox_id)
   AND managed_exception_at IS NULL
   AND claim_owner = sqlc.arg(claim_owner)
   AND claimed_until > clock_timestamp();
+
+-- name: ListOutboxBacklogMetrics :many
+SELECT event_type,
+       count(*)::bigint AS pending_count,
+       EXTRACT(EPOCH FROM (clock_timestamp() - min(created_at)))::double precision AS oldest_age_seconds
+FROM integration.outbox
+WHERE established_at IS NULL
+  AND managed_exception_at IS NULL
+GROUP BY event_type
+ORDER BY event_type;

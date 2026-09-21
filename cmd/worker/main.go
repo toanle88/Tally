@@ -62,6 +62,11 @@ func run(ctx context.Context, logger *telemetry.Logger) error {
 	if len(registrations) == 0 {
 		return ErrNoRegisteredConsumers
 	}
+	instrumentation, err := telemetry.NewInstrumentation(telemetry.InstrumentationConfig{Service: "tally-worker"})
+	if err != nil {
+		return err
+	}
+	defer func() { _ = instrumentation.Shutdown(context.Background()) }()
 
 	dbMaxConnections, err := envInt32("DB_MAX_CONNS", defaultDBMaxConnections)
 	if err != nil {
@@ -106,6 +111,7 @@ func run(ctx context.Context, logger *telemetry.Logger) error {
 				Concurrency:          concurrency,
 				Admission:            runtime.DBAdmission,
 				ConcurrencyAdmission: runtime.ConcurrencyAdmission,
+				Instrumentation:      instrumentation,
 			})
 			if err != nil {
 				return err
@@ -122,7 +128,19 @@ func run(ctx context.Context, logger *telemetry.Logger) error {
 		Operation: "run",
 		Result:    "started",
 	})
-	err = host.Run(ctx)
+	workerContext, workerSpan := instrumentation.StartSpan(ctx, "worker.lifecycle", telemetry.SpanAttributes{
+		Module:    "platform.worker",
+		Operation: "run",
+		Result:    "started",
+	})
+	err = host.Run(workerContext)
+	instrumentation.SetSpanAttributes(workerSpan, telemetry.SpanAttributes{
+		Module:    "platform.worker",
+		Operation: "run",
+		Result:    workerResult(err),
+		ErrorCode: workerErrorCodeOrEmpty(err),
+	})
+	workerSpan.End()
 	if err == nil {
 		logger.Emit(ctx, slog.LevelInfo, telemetry.Event{
 			Message:   "worker_stopped",
@@ -132,6 +150,20 @@ func run(ctx context.Context, logger *telemetry.Logger) error {
 		})
 	}
 	return err
+}
+
+func workerResult(err error) string {
+	if err != nil {
+		return "failure"
+	}
+	return "success"
+}
+
+func workerErrorCodeOrEmpty(err error) string {
+	if err == nil {
+		return ""
+	}
+	return workerErrorCode(err)
 }
 
 // The platform currently has no finance capability consumers. Capability

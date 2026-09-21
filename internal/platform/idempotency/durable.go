@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/toanle88/Tally/internal/platform/telemetry"
 )
 
 var (
@@ -56,9 +57,15 @@ type DurableCoordinator interface {
 	Finalize(context.Context, pgx.Tx, DurableAcquisition, CommandResultMetadata) error
 }
 
-type PostgresCoordinator struct{}
+type PostgresCoordinator struct {
+	instrumentation *telemetry.Instrumentation
+}
 
 func NewPostgresCoordinator() *PostgresCoordinator { return &PostgresCoordinator{} }
+
+func NewPostgresCoordinatorWithInstrumentation(instrumentation *telemetry.Instrumentation) *PostgresCoordinator {
+	return &PostgresCoordinator{instrumentation: instrumentation}
+}
 
 func (c *PostgresCoordinator) Acquire(
 	ctx context.Context,
@@ -67,9 +74,28 @@ func (c *PostgresCoordinator) Acquire(
 	fingerprint Fingerprint,
 	operationID string,
 	policy IdempotencyPolicy,
-) (DurableAcquisition, error) {
+) (acquisition DurableAcquisition, returnErr error) {
 	if c == nil || db == nil || ctx == nil {
 		return DurableAcquisition{}, ErrInvalidAcquisition
+	}
+	if c.instrumentation != nil {
+		workCtx, span := c.instrumentation.StartSpan(ctx, "idempotency.lookup", telemetry.SpanAttributes{
+			Module:    "platform.idempotency",
+			Operation: "idempotency_lookup",
+		})
+		defer func() {
+			result := "success"
+			if returnErr != nil {
+				result = "failure"
+			}
+			c.instrumentation.SetSpanAttributes(span, telemetry.SpanAttributes{
+				Module:    "platform.idempotency",
+				Operation: "idempotency_lookup",
+				Result:    result,
+			})
+			span.End()
+		}()
+		ctx = workCtx
 	}
 	if err := policy.validate(); err != nil {
 		return DurableAcquisition{}, err
@@ -184,9 +210,28 @@ func (c *PostgresCoordinator) Acquire(
 	}, nil
 }
 
-func (c *PostgresCoordinator) Finalize(ctx context.Context, tx pgx.Tx, acquisition DurableAcquisition, result CommandResultMetadata) error {
+func (c *PostgresCoordinator) Finalize(ctx context.Context, tx pgx.Tx, acquisition DurableAcquisition, result CommandResultMetadata) (returnErr error) {
 	if c == nil || tx == nil || ctx == nil || acquisition.decision != DecisionExecute || acquisition.ownerToken == uuid.Nil {
 		return ErrInvalidAcquisition
+	}
+	if c.instrumentation != nil {
+		workCtx, span := c.instrumentation.StartSpan(ctx, "idempotency.finalize", telemetry.SpanAttributes{
+			Module:    "platform.idempotency",
+			Operation: "idempotency_finalize",
+		})
+		defer func() {
+			outcome := "success"
+			if returnErr != nil {
+				outcome = "failure"
+			}
+			c.instrumentation.SetSpanAttributes(span, telemetry.SpanAttributes{
+				Module:    "platform.idempotency",
+				Operation: "idempotency_finalize",
+				Result:    outcome,
+			})
+			span.End()
+		}()
+		ctx = workCtx
 	}
 	if result.Identity().Equal(acquisition.identity) == false || result.Fingerprint() != acquisition.fingerprint || result.OperationID() != acquisition.operationID {
 		return ErrInvalidTerminalState

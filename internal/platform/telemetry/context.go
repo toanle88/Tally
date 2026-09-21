@@ -140,4 +140,37 @@ func (value TelemetryContext) SpanContext() trace.SpanContext {
 	})
 }
 
+// startSpan bridges the repository's identifier-only context into the
+// OpenTelemetry context, creates a child span, and mirrors the new span
+// identifiers back into the repository context used by structured logging.
+// It is kept private so callers use Instrumentation.StartSpan and its safe
+// attribute vocabulary.
+func startSpan(ctx context.Context, tracer trace.Tracer, name string) (context.Context, trace.Span) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if tracer == nil {
+		tracer = trace.NewNoopTracerProvider().Tracer("github.com/toanle88/Tally/internal/platform/telemetry")
+	}
+	if value, ok := FromContext(ctx); ok {
+		if spanContext := value.SpanContext(); spanContext.IsValid() {
+			ctx = trace.ContextWithSpanContext(ctx, spanContext)
+		}
+	}
+	spanContext, span := tracer.Start(ctx, name)
+	if value, ok := FromContext(ctx); ok {
+		created := span.SpanContext()
+		if created.IsValid() {
+			value.TraceID = created.TraceID()
+			value.SpanID = created.SpanID()
+			value.TraceFlags = created.TraceFlags()
+			value.TraceState = created.TraceState()
+			if enriched, err := With(spanContext, value); err == nil {
+				return enriched, span
+			}
+		}
+	}
+	return spanContext, span
+}
+
 type contextKey struct{}
