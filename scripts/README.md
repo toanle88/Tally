@@ -59,6 +59,7 @@ scripts/
 │   ├── dashboard-contract.sh # DLV-OPS-002 User Story 1 dashboard contract gate
 │   ├── alert-contract.sh # DLV-OPS-002 User Story 2 alert contract gate
 │   ├── runbook-contract.sh # DLV-OPS-002 User Story 3 runbook contract gate
+│   ├── operational-readiness.sh # DLV-OPS-002 User Story 4 aggregate evidence gate
 │   ├── openapi-story1.sh # OpenAPI User Story 1 verification
 │   ├── accessibility-negative.sh # Controlled axe failure proof
 │   └── accessibility-qualification.sh # Focused/full accessibility qualification runner
@@ -439,6 +440,21 @@ cases cover missing fields, unsafe portal or secret instructions, telemetry
 treated as authoritative evidence, invalid links, and unsupported runbook
 identifiers. The gate is provider-neutral and requires no Azure credentials,
 production data, or paging service.
+
+## operational-readiness.sh
+
+Runs the aggregate DLV-OPS-002 User Story 4 operational-readiness evidence gate:
+
+```bash
+make operational-readiness-check
+```
+
+It composes the dashboard, alert, and runbook contract gates, verifies their
+cross-contract references and missing-data rules, and runs temporary synthetic
+fixtures for unsafe missing-data semantics and failure propagation. Child
+failure output is suppressed to a safe check identifier. The gate uses no
+database, telemetry service, Azure credentials, paging provider, production
+data, or committed evidence artifact.
 
 ---
 

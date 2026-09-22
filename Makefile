@@ -56,6 +56,7 @@
 	dashboard-contract-check \
 	alert-contract-check \
 	runbook-contract-check \
+	operational-readiness-check \
 	terraform-check \
 	terraform-environments-check \
 	terraform-modules-check \
@@ -310,6 +311,9 @@ alert-contract-check:
 
 runbook-contract-check:
 	@bash scripts/verify/runbook-contract.sh
+
+operational-readiness-check:
+	@bash scripts/verify/operational-readiness.sh
 
 idempotency-persistence-check:
 	@bash scripts/verify/idempotency-persistence.sh

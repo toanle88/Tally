@@ -57,6 +57,10 @@ validate_template() {
     'Telemetry is diagnostic and is not authoritative financial'; do
     require_text "$file" "$safety_rule" || return 1
   done
+
+  require_text "$file" 'or stale telemetry is an operational condition; it is never success, zero,' || return 1
+  require_text "$file" 'Distinguish unavailable, stale,' || return 1
+  require_text "$file" 'degraded, pending, failed, and integrity-uncertain states.' || return 1
 }
 
 validate_no_unsafe_content() {
@@ -110,6 +114,11 @@ validate_runbook() {
   require_text "$file" 'are prohibited' || return 1
   require_text "$file" 'Secret disclosure is prohibited' || return 1
   require_text "$file" 'Telemetry is diagnostic and' || return 1
+
+  if ! rg -qi 'unknown|stale|degraded|unavailable' "$file"; then
+    fail "runbook has no missing or unavailable-data behavior: ${file}"
+    return 1
+  fi
 
   validate_no_unsafe_content "$file" || return 1
 }
@@ -227,6 +236,15 @@ sed -i 's#./runbooks/run-001-failed-migration.md#./runbooks/missing.md#' \
   "${temporary_directory}/invalid-link-alert.md"
 expect_rejected 'invalid alert runbook link' "${temporary_directory}/template.md" \
   "$runbook_directory" "${temporary_directory}/invalid-link-alert.md"
+
+cp "${temporary_directory}/template.md" "${temporary_directory}/missing-data-template.md"
+sed -i \
+  -e 's/or stale telemetry is an operational condition/or telemetry is a condition/' \
+  -e 's/Distinguish unavailable, stale,/Distinguish failure states/' \
+  -e 's/degraded, pending, failed, and integrity-uncertain states\./states\./' \
+  "${temporary_directory}/missing-data-template.md"
+expect_rejected 'missing-data behavior' "${temporary_directory}/missing-data-template.md" \
+  "$runbook_directory" "${temporary_directory}/alert.md"
 
 cp -R "$runbook_directory" "${temporary_directory}/unsupported-id-runbooks"
 printf '%s\n' '- RUN-011 — unsupported scenario.' >> \

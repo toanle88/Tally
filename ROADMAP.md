@@ -4,7 +4,7 @@
 > `[x]` means complete or intentionally closed; `[ ]` means open, planned, or awaiting qualification evidence.
 > Workflow and NFR delivery tables do not define an Epic column, so those items are grouped under their primary roadmap epic for navigation.
 
-**Last updated:** 2026-09-20
+**Last updated:** 2026-09-22
 
 ## [ ] EP-PLAT-001 — Engineering foundation (M0)
 
@@ -45,13 +45,17 @@ Closed by owner decision on 2026-09-20. Remaining authenticated Azure exercises 
 - [ ] `DLV-IAC-001` — Create Terraform modules and local state bootstrap.
 - [ ] `DLV-IAC-002` — Create optional Azure dev/demo deployment.
 
-## [ ] EP-OPS-001 — Observability and operational foundation (M0)
+## [x] EP-OPS-001 — Observability and operational foundation (M0)
 
 Structured logs, correlation, OpenTelemetry traces, bounded metrics, operational dashboards, alerts, runbooks, and operational evidence.
 
-- [ ] `DLV-OPS-001` — Implement structured logging, correlation and OpenTelemetry.
-- [ ] `DLV-OPS-002` — Create baseline operational dashboard and runbook template.
-- [ ] `DLV-GFR-012` — GFR-012 — EP-OPS-001
+Locally complete and intentionally closed on 2026-09-22. Environment-dependent
+race/repository-native Go checks, Azure/production qualification, paging,
+retention, and future capability qualification remain deferred.
+
+- [x] `DLV-OPS-001` — Implement structured logging, correlation and OpenTelemetry. (local implementation and evidence complete; race/repository-native Go and production qualification remain deferred)
+- [x] `DLV-OPS-002` — Create baseline operational dashboard and runbook template. (local contracts and readiness evidence complete; external qualification remains deferred)
+- [ ] `DLV-GFR-012` — GFR-012 — EP-OPS-001 (capability-level requirement remains open; not closed by the operational foundation)
 
 ## [ ] EP-IAM-001 — Identity and access (M1)
 
