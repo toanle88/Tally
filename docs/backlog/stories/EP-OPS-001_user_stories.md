@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Epic | `EP-OPS-001` — Observability and operational foundation |
-| Status | Planned — no implementation is claimed by this document |
+| Status | Locally complete and intentionally closed on 2026-09-22; environment-dependent and production qualification remains deferred |
 | Milestone | `M0` — Engineering foundation |
 | Artifact version | 1.0 |
 | Delivery profile | Solo, part-time, local-first learning project |
@@ -20,6 +20,20 @@ and integrity risk without treating operational telemetry as financial truth.
 The epic establishes the telemetry and operational contracts needed by later
 finance capabilities. It does not implement a finance workflow, invent a
 business event, or replace audit evidence.
+
+## Current closure status
+
+The local M0 implementation and evidence scope for `DLV-OPS-001` and
+`DLV-OPS-002` is complete and intentionally closed in the roadmap. This is a
+local delivery closure, not a claim that the environment-dependent race and
+repository-native Go gates, live Azure monitoring, production alerting,
+retention, or release qualification have passed.
+
+`DLV-GFR-012` remains open because its capability-level intermediate,
+exception, reconciliation, and terminal outcomes must be implemented and
+qualified by the owning workflows. This epic supplies the technical
+observability contracts and safe operational evidence; it does not close that
+future capability requirement.
 
 ## 2. Learning objective
 
@@ -121,8 +135,9 @@ connect work without carrying sensitive business payloads.**
 #### Implementation status
 
 Implemented on `feat/dlv-ops-001-us1-telemetry-context`; non-race Go tests and
-vet pass through the installed Windows Go toolchain. The focused Make gate and
-race checks remain open because the Linux `go` command is unavailable and the
+vet pass through the installed Windows Go toolchain. The local delivery scope
+is complete, with the focused Make gate and race checks retained as explicit
+qualification deferrals because the Linux `go` command is unavailable and the
 Windows toolchain has CGO disabled.
 
 ### 6.2 User Story 2 — Emit redacted structured logs
@@ -153,8 +168,10 @@ API/worker lifecycle logging. Sensitive and unknown attributes are rejected;
 raw errors and request/event/SQL/response payloads are not emitted.
 
 Focused non-race tests and vet pass through the installed Windows Go toolchain.
-The race gate remains open because the available toolchain has CGO disabled;
-the repository-native Make gate remains open because Linux `go` is unavailable.
+The local story scope is complete; the race gate remains an explicit
+qualification deferral because the available toolchain has CGO disabled, and
+the repository-native Make gate remains environment-limited because Linux
+`go` is unavailable.
 Strict review status: `APPROVE` at `91/100`, with no blocking findings. The
 remaining review limitations are the unavailable race gate and the inherited
 repository-native Make environment limitation.
@@ -186,15 +203,17 @@ Authorization, finance command-handler, provider, and report-job seams remain
 explicitly deferred because those owning components do not yet exist.
 
 Focused and full non-race tests, vet, and sqlc compile/diff checks pass through
-the available Windows Go toolchain. The race gate remains open because the
-available toolchain has CGO disabled; the repository-native Make gate remains
+the available Windows Go toolchain. The local story scope is complete; the
+race gate remains an explicit qualification deferral because the available
+toolchain has CGO disabled, and the repository-native Make gate remains
 environment-limited because Linux `go` is unavailable.
 
 #### 6.3.1 Delivery plan (Plan mode — 2026-09-21; implemented)
 
 **Plan status:** Implemented. The acceptance criteria above are complete for
-the corresponding seams that currently exist. This does not complete User
-Story 4 or the parent delivery item.
+the corresponding seams that currently exist. This completes the local User
+Story 3 implementation scope; the parent delivery item and production
+qualification are tracked at the closure level below.
 
 **Repository baseline at planning time:** `main` at `e26d6f9` contained the
 telemetry context and redacted structured logger from User Stories 1 and 2.
@@ -381,8 +400,9 @@ cannot replace an application result. Evidence is recorded in
 [`docs/verification/DLV-OPS-001-us4-telemetry-failure-sensitive-data.md`](../../verification/DLV-OPS-001-us4-telemetry-failure-sensitive-data.md).
 
 Live Azure export, remote monitoring, production alerting, and retention
-qualification remain deferred. This story does not mark `EP-OPS-001`,
-`DLV-OPS-001`, `M0`, or `QG-08` complete as a whole.
+qualification remain deferred. This story contributes to the local closure of
+`DLV-OPS-001` and `EP-OPS-001`; it does not close `DLV-GFR-012`, `M0`, or
+production `QG-08` qualification.
 
 ### 6.5 Contract and impact analysis
 
@@ -452,8 +472,9 @@ and the local verification evidence is recorded in
 [`docs/verification/DLV-OPS-002-us1-baseline-operational-health-views.md`](../../verification/DLV-OPS-002-us1-baseline-operational-health-views.md).
 The focused dashboard-contract gate passed with synthetic negative cases for
 missing ownership, unbounded dimensions, collapsed error classes, and unsafe
-missing-data behavior. This does not complete `DLV-OPS-002`, `EP-OPS-001`,
-`QG-08`, or live production monitoring qualification.
+missing-data behavior. This completes the local User Story 1 contract scope
+and contributes to the local closure of `DLV-OPS-002`; live production
+monitoring and production `QG-08` qualification remain deferred.
 
 ### 7.2 User Story 2 — Define alert severity, ownership, and escalation
 
@@ -480,8 +501,9 @@ and the local verification evidence is recorded in
 The focused alert-contract gate validates all six alert categories, complete
 ownership/response/runbook/suppression/escalation/completion metadata, and
 negative cases for missing or unsafe metadata and unsupported thresholds.
-This does not complete `DLV-OPS-002`, `EP-OPS-001`, `QG-08`, User Story 3
-runbook content, or live production monitoring qualification.
+This completes the local User Story 2 contract scope and contributes to the
+local closure of `DLV-OPS-002`; User Story 3 runbook content, live production
+monitoring, and production `QG-08` qualification remain deferred.
 
 ### 7.3 User Story 3 — Establish the runbook template and initial platform runbooks
 
@@ -565,9 +587,9 @@ migration-validation gates remain environment-blocked because Linux `go` is
 unavailable and the installed Windows Go binary cannot be invoked in this WSL
 session; this limitation is recorded in the verification evidence.
 
-This completes User Story 3 documentation and local contract evidence. It does
-not complete User Story 4, `DLV-OPS-002`, `EP-OPS-001`, `QG-08`, or production
-operational qualification.
+This completes User Story 3 documentation and local contract evidence. It
+contributes to the local closure of `DLV-OPS-002` and `EP-OPS-001`; production
+operational qualification remains deferred.
 
 ### 7.4 User Story 4 — Produce operational readiness evidence
 
@@ -577,12 +599,27 @@ reviewed without Azure or production credentials.**
 
 #### Acceptance criteria
 
-- [ ] A local verification fixture proves dashboard/alert/runbook contracts,
+- [x] A local verification fixture proves dashboard/alert/runbook contracts,
   missing-data behavior, and failure propagation without Azure or production
   credentials.
-- [ ] Evidence identifies the commit, commands, tool versions, result, safe
+- [x] Evidence identifies the commit, commands, tool versions, result, safe
   failure location, deferred qualification scope, and no raw telemetry
   payloads, secrets, connection strings, or sensitive values.
+
+#### Implementation status
+
+Implemented on `codex/dlv-ops-002-us4-operational-readiness-evidence`. The
+aggregate `operational-readiness-check` composes the dashboard, alert, and
+runbook contract gates, verifies cross-contract references and missing-data
+rules, and exercises temporary synthetic invalid fixtures with sanitized
+failure propagation. Evidence is recorded in
+[`docs/verification/DLV-OPS-002-us4-operational-readiness-evidence.md`](../../verification/DLV-OPS-002-us4-operational-readiness-evidence.md).
+
+This completes the local contract and evidence scope of `DLV-OPS-002` and
+contributes to the local closure of `EP-OPS-001`. Production `QG-08`, Azure
+Monitor and paging integration, production
+credentials/data, production qualification, retention, quarterly exercises,
+and future finance-domain runbooks remain outside this story.
 
 ### 7.5 Contract and impact analysis
 
@@ -688,9 +725,9 @@ reviewed without Azure or production credentials.**
 - `docs/backlog/epic-template.md`
 - `docs/backlog/story-template.md`
 
-## 13. Planning status
+## 13. Closure status
 
-This is a planning artifact. No branch is created and no roadmap item is
-marked complete by adding this document.
-
-Suggested implementation branch: `codex/ep-ops-001-observability-foundation`
+The local M0 implementation and evidence scope is complete and intentionally
+closed on 2026-09-22. The roadmap closure does not waive the documented
+environment-dependent race/repository-native Go limitations, external Azure
+and production qualification, or the separate `DLV-GFR-012` capability work.
