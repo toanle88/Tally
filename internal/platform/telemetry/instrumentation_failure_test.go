@@ -99,6 +99,12 @@ func (e *controlledMetricExporter) Shutdown(context.Context) error {
 
 func newTestInstrumentation(t *testing.T, tracerProvider *sdktrace.TracerProvider, meterProvider *sdkmetric.MeterProvider) *Instrumentation {
 	t.Helper()
+	if tracerProvider == nil {
+		tracerProvider = sdktrace.NewTracerProvider()
+	}
+	if meterProvider == nil {
+		meterProvider = sdkmetric.NewMeterProvider()
+	}
 	instrumentation, err := NewInstrumentation(InstrumentationConfig{
 		Service:        "tally-test",
 		TracerProvider: tracerProvider,
