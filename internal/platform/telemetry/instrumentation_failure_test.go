@@ -85,6 +85,13 @@ func (e *controlledMetricExporter) Aggregation(kind sdkmetric.InstrumentKind) sd
 	return sdkmetric.DefaultAggregationSelector(kind)
 }
 
+func (e *controlledMetricExporter) ForceFlush(ctx context.Context) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	return e.exportErr
+}
+
 func (e *controlledMetricExporter) Shutdown(context.Context) error {
 	e.shutdownCalls.Add(1)
 	return e.shutdownErr
