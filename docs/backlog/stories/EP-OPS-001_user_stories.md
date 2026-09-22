@@ -491,16 +491,83 @@ financial or infrastructure change.**
 
 #### Acceptance criteria
 
-- [ ] A runbook template captures owner, prerequisites, detection, decision
+- [x] A runbook template captures owner, prerequisites, detection, decision
   points, safe commands, evidence to preserve, escalation, recovery checks,
   reconciliation requirements, and closure criteria.
-- [ ] Initial platform runbooks cover failed migration, outbox backlog/poison
+- [x] Initial platform runbooks cover failed migration, outbox backlog/poison
   item, database restore, telemetry/monitoring failure, and capacity
   saturation. Business-specific payment, close, filing, and audit runbooks are
   assigned to their owning future delivery items.
-- [ ] Runbooks explicitly prohibit direct destructive financial edits,
+- [x] Runbooks explicitly prohibit direct destructive financial edits,
   unreviewed portal changes, secret disclosure, and treating telemetry as
   authoritative financial evidence.
+
+#### 7.3.1 Delivery plan
+
+**Plan status:** Implementation in progress on
+`codex/dlv-ops-002-us3-runbook-foundation`.
+
+**Outcome and learning objective:** Establish a provider-neutral, repeatable
+operational response pattern that preserves evidence and financial integrity
+while teaching safe migration, integration, recovery, telemetry, and capacity
+operations in the local-first learning environment.
+
+**Owning area and boundaries:** Platform Operations owns the runbook template,
+initial platform procedures, alert links, contract verification, and evidence
+record. No finance bounded context, application API, database schema, event,
+worker behavior, authorization policy, or infrastructure resource is changed.
+Authorization enforcement remains owned by `EP-IAM-001`; authoritative finance,
+audit, outbox/inbox, and recovery records remain owned by their existing
+components.
+
+**Initial runbook set:**
+
+- `RUN-001` — Failed migration.
+- `RUN-002` — Outbox backlog or poison item.
+- `RUN-003` — Database restore.
+- Named platform scenario — Telemetry and monitoring failure. This remains
+  unnumbered because the approved catalog defines only `RUN-001` through
+  `RUN-010`.
+- `RUN-010` — Capacity saturation.
+
+**Safety and operational treatment:** Runbooks use repository-supported
+inspection and verification commands, gate state-changing actions behind
+authorization and approval, preserve bounded diagnostic evidence, and direct
+unsupported or missing operator capabilities to escalation. Shared migration
+recovery uses reviewed forward-fix or isolated restore; outbox recovery keeps
+event facts immutable and checks established results before retry/replay;
+restore procedures require isolated validation and reconciliation; telemetry is
+never financial truth; and capacity response protects writes without silently
+dropping work.
+
+**Verification plan:** `scripts/verify/runbook-contract.sh` validates the
+template, five runbooks, mandatory sections, delivered alert links, safe
+commands, approved identifiers, and unsafe-instruction negative cases. The
+repository-native `runbook-contract-check` target is supplemented by the
+existing dashboard, alert, telemetry, worker, migration, and diff checks.
+
+**Traceability:** `M0`, `EP-OPS-001`, `DLV-OPS-002`, `GFR-012`,
+`ARC-OBS-001`, `ARC-OBS-002`, `ARC-PRV-001`, `ARC-CAP-001`, `ARC-REC-001`,
+`ARC-TST-001`, `NFR-OBS-001`–`NFR-OBS-012`, `NFR-MNT-001`, `NFR-MNT-007`,
+`NFR-MNT-010`, applicable `NFR-REC-*`, `NFR-TST-003`, `NFR-TST-008`,
+`NFR-TST-009`, `QG-01`, `QG-08`, and `QG-10`.
+
+#### 7.3.2 Implementation status
+
+Implemented on `codex/dlv-ops-002-us3-runbook-foundation`. The runbook
+template, five initial platform runbooks, delivered alert links, contract
+verifier, Make target, scripts documentation, and verification evidence are
+present in the working tree. `make runbook-contract-check`,
+`make alert-contract-check`, `make dashboard-contract-check`,
+`make repository-integrity-check`, `make db-migrate-check`, and
+`git diff --check` passed. Existing Go-dependent telemetry, worker, and
+migration-validation gates remain environment-blocked because Linux `go` is
+unavailable and the installed Windows Go binary cannot be invoked in this WSL
+session; this limitation is recorded in the verification evidence.
+
+This completes User Story 3 documentation and local contract evidence. It does
+not complete User Story 4, `DLV-OPS-002`, `EP-OPS-001`, `QG-08`, or production
+operational qualification.
 
 ### 7.4 User Story 4 — Produce operational readiness evidence
 

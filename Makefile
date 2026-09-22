@@ -55,6 +55,7 @@
 	telemetry-failure-sensitive-data-check \
 	dashboard-contract-check \
 	alert-contract-check \
+	runbook-contract-check \
 	terraform-check \
 	terraform-environments-check \
 	terraform-modules-check \
@@ -306,6 +307,9 @@ dashboard-contract-check:
 
 alert-contract-check:
 	@bash scripts/verify/alert-contract.sh
+
+runbook-contract-check:
+	@bash scripts/verify/runbook-contract.sh
 
 idempotency-persistence-check:
 	@bash scripts/verify/idempotency-persistence.sh
