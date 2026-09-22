@@ -20,11 +20,9 @@ import (
 func TestInstrumentationUsesAllowListedSpansAndMirrorsTraceContext(t *testing.T) {
 	recorder := tracetest.NewSpanRecorder()
 	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorder))
-	defer func() { _ = tracerProvider.Shutdown(context.Background()) }()
 
 	reader := metric.NewManualReader()
 	meterProvider := metric.NewMeterProvider(metric.WithReader(reader))
-	defer func() { _ = meterProvider.Shutdown(context.Background()) }()
 
 	instrumentation, err := NewInstrumentation(InstrumentationConfig{
 		Service:        "tally-api",
@@ -34,6 +32,7 @@ func TestInstrumentationUsesAllowListedSpansAndMirrorsTraceContext(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer func() { _ = instrumentation.Shutdown(context.Background()) }()
 
 	rawIdentifier := uuid.New().String()
 	rootContext, err := With(context.Background(), NewRoot(uuid.New()))
@@ -72,7 +71,6 @@ func TestInstrumentationUsesAllowListedSpansAndMirrorsTraceContext(t *testing.T)
 func TestInstrumentationPublishesOnlyBoundedPlatformMetrics(t *testing.T) {
 	reader := metric.NewManualReader()
 	meterProvider := metric.NewMeterProvider(metric.WithReader(reader))
-	defer func() { _ = meterProvider.Shutdown(context.Background()) }()
 	instrumentation, err := NewInstrumentation(InstrumentationConfig{
 		Service:       "tally-worker",
 		MeterProvider: meterProvider,
@@ -80,6 +78,7 @@ func TestInstrumentationPublishesOnlyBoundedPlatformMetrics(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer func() { _ = instrumentation.Shutdown(context.Background()) }()
 
 	ctx := context.Background()
 	instrumentation.ObserveHTTPRequest(ctx, 25*time.Millisecond, "/health/live", "GET", "2xx")
@@ -125,10 +124,8 @@ func TestInstrumentationPublishesOnlyBoundedPlatformMetrics(t *testing.T) {
 func TestRequestTracingMiddlewareUsesCanonicalRouteAndStatusClass(t *testing.T) {
 	recorder := tracetest.NewSpanRecorder()
 	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorder))
-	defer func() { _ = tracerProvider.Shutdown(context.Background()) }()
 	reader := metric.NewManualReader()
 	meterProvider := metric.NewMeterProvider(metric.WithReader(reader))
-	defer func() { _ = meterProvider.Shutdown(context.Background()) }()
 	instrumentation, err := NewInstrumentation(InstrumentationConfig{
 		Service:        "tally-api",
 		TracerProvider: tracerProvider,
@@ -137,6 +134,7 @@ func TestRequestTracingMiddlewareUsesCanonicalRouteAndStatusClass(t *testing.T) 
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer func() { _ = instrumentation.Shutdown(context.Background()) }()
 
 	router := chi.NewRouter()
 	router.Use(RequestTracingMiddleware(instrumentation))

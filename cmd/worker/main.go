@@ -66,7 +66,19 @@ func run(ctx context.Context, logger *telemetry.Logger) error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = instrumentation.Shutdown(context.Background()) }()
+	defer func() {
+		shutdownContext, cancel := context.WithTimeout(context.Background(), platformworker.DefaultShutdownTimeout)
+		defer cancel()
+		if err := instrumentation.Shutdown(shutdownContext); err != nil {
+			logger.Emit(context.Background(), slog.LevelWarn, telemetry.Event{
+				Message:   "telemetry_shutdown_failed",
+				Module:    "platform.telemetry",
+				Operation: "shutdown",
+				Result:    "failure",
+				ErrorCode: "telemetry_shutdown_failed",
+			})
+		}
+	}()
 
 	dbMaxConnections, err := envInt32("DB_MAX_CONNS", defaultDBMaxConnections)
 	if err != nil {
