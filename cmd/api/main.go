@@ -53,7 +53,19 @@ func run(logger *telemetry.Logger) error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = instrumentation.Shutdown(context.Background()) }()
+	defer func() {
+		shutdownContext, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancel()
+		if err := instrumentation.Shutdown(shutdownContext); err != nil {
+			logger.Emit(context.Background(), slog.LevelWarn, telemetry.Event{
+				Message:   "telemetry_shutdown_failed",
+				Module:    "platform.telemetry",
+				Operation: "shutdown",
+				Result:    "failure",
+				ErrorCode: "telemetry_shutdown_failed",
+			})
+		}
+	}()
 	address := os.Getenv("HTTP_ADDR")
 	if address == "" {
 		address = defaultHTTPAddress

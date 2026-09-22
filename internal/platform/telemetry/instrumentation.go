@@ -47,6 +47,10 @@ type Instrumentation struct {
 	service string
 	tracer  trace.Tracer
 
+	shutdowners  []providerShutdowner
+	shutdownOnce sync.Once
+	shutdownErr  error
+
 	httpRequestDuration   metric.Float64Histogram
 	commandTotal          metric.Int64Counter
 	dbTransactionDuration metric.Float64Histogram
@@ -61,6 +65,13 @@ type Instrumentation struct {
 	eventTypeLabels       *labelRegistry
 	consumerLabels        *labelRegistry
 	failureClassLabels    *labelRegistry
+}
+
+// providerShutdowner is implemented by OpenTelemetry SDK providers. The API
+// provider interfaces intentionally do not expose lifecycle methods, so
+// Instrumentation only owns shutdown for providers that explicitly support it.
+type providerShutdowner interface {
+	Shutdown(context.Context) error
 }
 
 // SpanAttributes is the complete safe attribute vocabulary for technical
@@ -155,9 +166,18 @@ func NewInstrumentation(config InstrumentationConfig) (*Instrumentation, error) 
 		return nil, err
 	}
 
+	shutdowners := make([]providerShutdowner, 0, 2)
+	if shutdowner, ok := config.TracerProvider.(providerShutdowner); ok {
+		shutdowners = append(shutdowners, shutdowner)
+	}
+	if shutdowner, ok := config.MeterProvider.(providerShutdowner); ok {
+		shutdowners = append(shutdowners, shutdowner)
+	}
+
 	return &Instrumentation{
 		service:               config.Service,
 		tracer:                config.TracerProvider.Tracer(instrumentationName),
+		shutdowners:           shutdowners,
 		httpRequestDuration:   httpRequestDuration,
 		commandTotal:          commandTotal,
 		dbTransactionDuration: dbTransactionDuration,
@@ -175,11 +195,28 @@ func NewInstrumentation(config InstrumentationConfig) (*Instrumentation, error) 
 	}, nil
 }
 
-// Shutdown is intentionally a no-op for provider ownership. Providers are
-// injected by the composition root and are therefore shut down by their owner.
-// Keeping this method lets roots use one lifecycle hook without coupling the
-// platform package to a particular exporter or SDK provider.
-func (i *Instrumentation) Shutdown(context.Context) error { return nil }
+// Shutdown flushes and shuts down injected SDK providers at most once. The
+// provider implementations own exporter behavior and receive the caller's
+// deadline. A shutdown error is diagnostic only; recording methods never
+// return telemetry errors to an authoritative operation.
+func (i *Instrumentation) Shutdown(ctx context.Context) error {
+	if i == nil {
+		return nil
+	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	i.shutdownOnce.Do(func() {
+		shutdownErrors := make([]error, 0, len(i.shutdowners))
+		for _, shutdowner := range i.shutdowners {
+			if err := shutdowner.Shutdown(ctx); err != nil {
+				shutdownErrors = append(shutdownErrors, err)
+			}
+		}
+		i.shutdownErr = errors.Join(shutdownErrors...)
+	})
+	return i.shutdownErr
+}
 
 // StartSpan creates a child technical span and mirrors its current trace/span
 // IDs into the repository telemetry context used by structured logs.

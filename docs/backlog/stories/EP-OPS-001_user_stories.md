@@ -366,11 +366,23 @@ operation, or leak protected values.**
 
 #### Acceptance criteria
 
-- [ ] Telemetry exporter failure, timeout, or shutdown does not create a
+- [x] Telemetry exporter failure, timeout, or shutdown does not create a
   successful business result, duplicate authoritative operation, or unbounded
   retry loop.
-- [ ] Tests prove context propagation, redaction, bounded labels, exporter
+- [x] Tests prove context propagation, redaction, bounded labels, exporter
   failure behavior, and clean shutdown without a remote telemetry service.
+
+#### Implementation status
+
+Implemented on `codex/dlv-ops-001-us4-telemetry-failure-sensitive-data` with
+local synthetic trace and metric exporter failure injection. Provider shutdown
+is at-most-once and deadline-bounded; telemetry errors remain diagnostic and
+cannot replace an application result. Evidence is recorded in
+[`docs/verification/DLV-OPS-001-us4-telemetry-failure-sensitive-data.md`](../../verification/DLV-OPS-001-us4-telemetry-failure-sensitive-data.md).
+
+Live Azure export, remote monitoring, production alerting, and retention
+qualification remain deferred. This story does not mark `EP-OPS-001`,
+`DLV-OPS-001`, `M0`, or `QG-08` complete as a whole.
 
 ### 6.5 Contract and impact analysis
 

@@ -55,6 +55,7 @@ scripts/
 │   ├── outbox-worker.sh # DLV-PLAT-007 User Story 5 worker/replay gate
 │   ├── structured-logs.sh # DLV-OPS-001 User Story 2 structured-log gate
 │   ├── traces-metrics.sh # DLV-OPS-001 User Story 3 traces/metrics gate
+│   ├── telemetry-failure-sensitive-data.sh # DLV-OPS-001 User Story 4 failure/privacy gate
 │   ├── openapi-story1.sh # OpenAPI User Story 1 verification
 │   ├── accessibility-negative.sh # Controlled axe failure proof
 │   └── accessibility-qualification.sh # Focused/full accessibility qualification runner
@@ -374,6 +375,20 @@ It validates worker lifecycle and admission quotas, dispatcher polling,
 crash/restart evidence, duplicate and ordering behavior, replay identity and
 immutability, migration rollback/upgrade behavior, SQLC drift, package
 ownership, and PostgreSQL integration tests.
+
+## telemetry-failure-sensitive-data.sh
+
+Runs the focused DLV-OPS-001 User Story 4 telemetry failure and sensitive-data
+gate:
+
+```bash
+make telemetry-failure-sensitive-data-check
+```
+
+It validates exporter failure and bounded shutdown behavior, telemetry
+propagation and redaction tests, focused package tests, race checks, vet, and
+`git diff --check`. The gate uses synthetic local exporters and does not
+require a remote telemetry service or credentials.
 
 ---
 

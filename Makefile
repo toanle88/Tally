@@ -52,6 +52,7 @@
 	telemetry-context-check \
 	structured-logs-check \
 	traces-metrics-check \
+	telemetry-failure-sensitive-data-check \
 	terraform-check \
 	terraform-environments-check \
 	terraform-modules-check \
@@ -294,6 +295,9 @@ structured-logs-check:
 
 traces-metrics-check:
 	@bash scripts/verify/traces-metrics.sh
+
+telemetry-failure-sensitive-data-check:
+	@bash scripts/verify/telemetry-failure-sensitive-data.sh
 
 idempotency-persistence-check:
 	@bash scripts/verify/idempotency-persistence.sh
