@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Epic | `EP-PLAT-001` — Engineering foundation |
-| Status | Open — `DLV-CI-001` hosted CI qualification remains pending |
+| Status | Locally complete and intentionally closed on 2026-09-22; hosted CI, branch protection, and requirement-level qualification remain deferred |
 | Milestone | `M0` — Engineering foundation |
 | Delivery items | `DLV-CI-001`, `DLV-PLAT-001` through `DLV-PLAT-007` |
 | Source of detail | The consolidated child sections below retain the delivery-item acceptance criteria and evidence. |
@@ -14,6 +14,19 @@ Provide the repository, application shells, local database workflow, API contrac
 workflow, shared finance primitives, idempotency foundation, integration
 transport, workers, and pull-request quality checks required by later finance
 capabilities.
+
+## Current closure status
+
+The local M0 engineering-foundation implementation and evidence scope is
+complete and intentionally closed in the roadmap. `DLV-PLAT-001` through
+`DLV-PLAT-007` have local implementation evidence, and `DLV-CI-001` has its
+repository workflow and contract evidence.
+
+Hosted CI positive/negative/drift/skipped-job qualification, external GitHub
+branch-protection activation, and broader GFR/workflow qualification remain
+explicitly deferred. Those deferrals do not represent missing local platform
+implementation and do not close the separate requirement rows under this
+epic.
 
 ## 2. Learning objective
 
@@ -48,8 +61,8 @@ reproducible verification.
 
 ### `DLV-CI-001` — Pull-request CI quality pipeline
 
-**Status:** Open — aggregate workflow implemented; hosted CI qualification
-pending.
+**Status:** Locally complete and intentionally closed — aggregate workflow and
+repository contract implemented; hosted CI qualification pending.
 
 Detailed story content is consolidated in Section 9 below.
 
