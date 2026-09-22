@@ -58,6 +58,7 @@ scripts/
 │   ├── telemetry-failure-sensitive-data.sh # DLV-OPS-001 User Story 4 failure/privacy gate
 │   ├── dashboard-contract.sh # DLV-OPS-002 User Story 1 dashboard contract gate
 │   ├── alert-contract.sh # DLV-OPS-002 User Story 2 alert contract gate
+│   ├── runbook-contract.sh # DLV-OPS-002 User Story 3 runbook contract gate
 │   ├── openapi-story1.sh # OpenAPI User Story 1 verification
 │   ├── accessibility-negative.sh # Controlled axe failure proof
 │   └── accessibility-qualification.sh # Focused/full accessibility qualification runner
@@ -421,6 +422,23 @@ escalation paths, completion evidence, safe missing-data behavior, and the
 absence of unsupported numeric production thresholds. It also runs temporary
 synthetic negative cases and does not require a paging provider, Azure
 credentials, or production data.
+
+## runbook-contract.sh
+
+Runs the focused DLV-OPS-002 User Story 3 runbook contract gate:
+
+```bash
+make runbook-contract-check
+```
+
+It validates the reusable template, five initial platform runbooks, required
+owner/evidence/recovery sections, direct links for delivered `RUN-001`,
+`RUN-002`, and `RUN-010` alert references, safe command coverage, approved
+runbook identifiers, and prohibited unsafe instructions. Temporary negative
+cases cover missing fields, unsafe portal or secret instructions, telemetry
+treated as authoritative evidence, invalid links, and unsupported runbook
+identifiers. The gate is provider-neutral and requires no Azure credentials,
+production data, or paging service.
 
 ---
 
