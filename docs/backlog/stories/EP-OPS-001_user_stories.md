@@ -434,14 +434,26 @@ identify the kind of operational problem before choosing a recovery action.**
 
 #### Acceptance criteria
 
-- [ ] A dashboard contract defines panels for API health/latency, PostgreSQL
+- [x] A dashboard contract defines panels for API health/latency, PostgreSQL
   health, outbox/inbox backlog and age, error classes, capacity, and current
   operational exceptions.
-- [ ] The dashboard contract identifies source metrics, bounded dimensions,
+- [x] The dashboard contract identifies source metrics, bounded dimensions,
   freshness target, owner, and safe behavior when data is missing.
-- [ ] Health views distinguish availability, latency, errors, pending work,
+- [x] Health views distinguish availability, latency, errors, pending work,
   aging, exceptions, and capacity; they do not collapse all failures into one
   generic error rate.
+
+#### Implementation status
+
+Implemented on `codex/dlv-ops-002-us1-baseline-operational-health-views`.
+The provider-neutral contract is recorded in
+[`docs/operations/dashboard-contract-v1.md`](../../operations/dashboard-contract-v1.md)
+and the local verification evidence is recorded in
+[`docs/verification/DLV-OPS-002-us1-baseline-operational-health-views.md`](../../verification/DLV-OPS-002-us1-baseline-operational-health-views.md).
+The focused dashboard-contract gate passed with synthetic negative cases for
+missing ownership, unbounded dimensions, collapsed error classes, and unsafe
+missing-data behavior. This does not complete `DLV-OPS-002`, `EP-OPS-001`,
+`QG-08`, or live production monitoring qualification.
 
 ### 7.2 User Story 2 — Define alert severity, ownership, and escalation
 

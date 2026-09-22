@@ -56,6 +56,7 @@ scripts/
 │   ├── structured-logs.sh # DLV-OPS-001 User Story 2 structured-log gate
 │   ├── traces-metrics.sh # DLV-OPS-001 User Story 3 traces/metrics gate
 │   ├── telemetry-failure-sensitive-data.sh # DLV-OPS-001 User Story 4 failure/privacy gate
+│   ├── dashboard-contract.sh # DLV-OPS-002 User Story 1 dashboard contract gate
 │   ├── openapi-story1.sh # OpenAPI User Story 1 verification
 │   ├── accessibility-negative.sh # Controlled axe failure proof
 │   └── accessibility-qualification.sh # Focused/full accessibility qualification runner
@@ -389,6 +390,21 @@ It validates exporter failure and bounded shutdown behavior, telemetry
 propagation and redaction tests, focused package tests, race checks, vet, and
 `git diff --check`. The gate uses synthetic local exporters and does not
 require a remote telemetry service or credentials.
+
+## dashboard-contract.sh
+
+Runs the focused DLV-OPS-002 User Story 1 dashboard contract gate:
+
+```bash
+make dashboard-contract-check
+```
+
+It validates the six baseline health panels, source metrics, bounded
+dimensions, freshness and ownership metadata, distinct typed outcomes, and
+safe missing/stale-data behavior. It also runs negative checks for an
+unowned panel, an unbounded dimension, collapsed error classes, and unsafe
+missing-data semantics. The gate uses temporary synthetic contract copies and
+does not require a dashboard provider, Azure credentials, or production data.
 
 ---
 
