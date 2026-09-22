@@ -53,6 +53,7 @@
 	structured-logs-check \
 	traces-metrics-check \
 	telemetry-failure-sensitive-data-check \
+	dashboard-contract-check \
 	terraform-check \
 	terraform-environments-check \
 	terraform-modules-check \
@@ -298,6 +299,9 @@ traces-metrics-check:
 
 telemetry-failure-sensitive-data-check:
 	@bash scripts/verify/telemetry-failure-sensitive-data.sh
+
+dashboard-contract-check:
+	@bash scripts/verify/dashboard-contract.sh
 
 idempotency-persistence-check:
 	@bash scripts/verify/idempotency-persistence.sh
