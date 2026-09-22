@@ -57,6 +57,7 @@ scripts/
 │   ├── traces-metrics.sh # DLV-OPS-001 User Story 3 traces/metrics gate
 │   ├── telemetry-failure-sensitive-data.sh # DLV-OPS-001 User Story 4 failure/privacy gate
 │   ├── dashboard-contract.sh # DLV-OPS-002 User Story 1 dashboard contract gate
+│   ├── alert-contract.sh # DLV-OPS-002 User Story 2 alert contract gate
 │   ├── openapi-story1.sh # OpenAPI User Story 1 verification
 │   ├── accessibility-negative.sh # Controlled axe failure proof
 │   └── accessibility-qualification.sh # Focused/full accessibility qualification runner
@@ -405,6 +406,21 @@ safe missing/stale-data behavior. It also runs negative checks for an
 unowned panel, an unbounded dimension, collapsed error classes, and unsafe
 missing-data semantics. The gate uses temporary synthetic contract copies and
 does not require a dashboard provider, Azure credentials, or production data.
+
+## alert-contract.sh
+
+Runs the focused DLV-OPS-002 User Story 2 alert contract gate:
+
+```bash
+make alert-contract-check
+```
+
+It validates the six alert categories, P1–P4 severity, ownership, response
+targets, dashboard and approved runbook references, suppression metadata,
+escalation paths, completion evidence, safe missing-data behavior, and the
+absence of unsupported numeric production thresholds. It also runs temporary
+synthetic negative cases and does not require a paging provider, Azure
+credentials, or production data.
 
 ---
 

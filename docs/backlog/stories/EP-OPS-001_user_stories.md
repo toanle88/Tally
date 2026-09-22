@@ -463,12 +463,25 @@ clear and safe response.**
 
 #### Acceptance criteria
 
-- [ ] Alert definitions use P1–P4 severity, owner, response target, runbook
+- [x] Alert definitions use P1–P4 severity, owner, response target, runbook
   link, suppression/maintenance behavior, escalation path, and completion
   evidence.
-- [ ] Alert rules cover integrity uncertainty, critical control failure,
+- [x] Alert rules cover integrity uncertainty, critical control failure,
   outbox/backlog age, database saturation, dependency failure, and capacity
   risk without asserting unsupported production thresholds.
+
+#### Implementation status
+
+Implemented on `codex/dlv-ops-002-us2-alert-severity-ownership-escalation`.
+The provider-neutral `alert.v1` contract is recorded in
+[`docs/operations/alert-contract-v1.md`](../../operations/alert-contract-v1.md)
+and the local verification evidence is recorded in
+[`docs/verification/DLV-OPS-002-us2-alert-severity-ownership-escalation.md`](../../verification/DLV-OPS-002-us2-alert-severity-ownership-escalation.md).
+The focused alert-contract gate validates all six alert categories, complete
+ownership/response/runbook/suppression/escalation/completion metadata, and
+negative cases for missing or unsafe metadata and unsupported thresholds.
+This does not complete `DLV-OPS-002`, `EP-OPS-001`, `QG-08`, User Story 3
+runbook content, or live production monitoring qualification.
 
 ### 7.3 User Story 3 — Establish the runbook template and initial platform runbooks
 
