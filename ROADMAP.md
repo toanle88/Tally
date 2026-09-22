@@ -6,9 +6,13 @@
 
 **Last updated:** 2026-09-22
 
-## [ ] EP-PLAT-001 — Engineering foundation (M0)
+## [x] EP-PLAT-001 — Engineering foundation (M0)
 
 Repository, Go and React applications, PostgreSQL, migrations, sqlc, OpenAPI, shared finance primitives, idempotency, integration workers, and pull-request quality checks.
+
+Locally complete and intentionally closed on 2026-09-22. Hosted CI execution,
+external branch-protection verification, and requirement/workflow qualification
+remain deferred.
 
 - [x] `DLV-PLAT-001` — Create monorepo with Go API, React application and shared commands.
 - [x] `DLV-PLAT-002` — Create Docker Compose PostgreSQL development environment.
@@ -17,7 +21,7 @@ Repository, Go and React applications, PostgreSQL, migrations, sqlc, OpenAPI, sh
 - [x] `DLV-PLAT-005` — Implement shared money, currency, accounting-scope, identity and version primitives.
 - [x] `DLV-PLAT-006` — Implement request fingerprint and idempotency foundation. (focused evidence passes; environment-dependent persistence qualification remains)
 - [x] `DLV-PLAT-007` — Implement PostgreSQL outbox/inbox and worker foundation.
-- [ ] `DLV-CI-001` — Create pull-request CI quality pipeline. (hosted CI qualification remains)
+- [x] `DLV-CI-001` — Create pull-request CI quality pipeline. (local workflow implementation and contract evidence complete; hosted CI and branch-protection qualification remain deferred)
 - [ ] `DLV-GFR-001` — GFR-001 — EP-PLAT-001
 - [ ] `DLV-GFR-006` — GFR-006 — EP-PLAT-001
 - [ ] `DLV-GFR-007` — GFR-007 — EP-PLAT-001
@@ -60,6 +64,8 @@ retention, and future capability qualification remain deferred.
 ## [ ] EP-IAM-001 — Identity and access (M1)
 
 Entra authentication, application permissions, accounting-scope authorization, segregation-of-duties controls, and emergency access.
+
+User-story plan: [EP-IAM-001 user stories](docs/backlog/stories/EP-IAM-001_user_stories.md)
 
 - [ ] `DLV-GFR-002` — GFR-002 — EP-IAM-001
 - [ ] `DLV-GFR-003` — GFR-003 — EP-IAM-001
