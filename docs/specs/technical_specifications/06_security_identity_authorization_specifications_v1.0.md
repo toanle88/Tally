@@ -9,7 +9,7 @@
 ## 1. Authentication flow
 
 - SPA uses authorization-code flow with PKCE.
-- API validates issuer, audience, signature, algorithm, expiry and not-before using Entra discovery/JWKS.
+- API validates issuer, audience, signature, algorithm, expiry and not-before using the configured OIDC discovery document; its `issuer` and `jwks_uri` are the trusted validation metadata.
 - Accepted clock skew is 120 seconds.
 - Local development uses a clearly marked local issuer and fixture identities; it is disabled in Azure environments.
 - Service workloads use managed identity or GitHub OIDC federation; long-lived Azure client secrets are prohibited.
@@ -294,6 +294,6 @@ Emergency grants contain actor, permissions/scopes, reason, approver, start, exp
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `6e88c05513a2d01dbf4aa39343be85c400c42d0b71289941d1c0e252d58a4cba` |
+| Verified body SHA-256 | `175f8bb1c67099534a9d833970701ce4d743ca0c3c81ed26e7d48c0f038a247e` |
 | Review status | Passed |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; run the full suite for API, database, event, security, deployment, recovery, or technology-baseline changes. |

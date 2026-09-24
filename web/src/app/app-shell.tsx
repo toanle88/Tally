@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react'
 
-import { Heading } from '@/components/ui'
+import { Button, Heading } from '@/components/ui'
 
 export interface AppShellProps {
   navigation: ReactNode
   scopeContext: ReactNode
   statusFeedback: ReactNode
+  actorLabel?: string
+  onSignOut?: () => void | Promise<void>
   children: ReactNode
 }
 
@@ -13,6 +15,8 @@ export function AppShell({
   navigation,
   scopeContext,
   statusFeedback,
+  actorLabel,
+  onSignOut,
   children,
 }: AppShellProps) {
   return (
@@ -22,16 +26,29 @@ export function AppShell({
       className="min-h-svh bg-base-200 text-base-content"
     >
       <header className="border-b border-base-300 bg-base-100">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-w-0 max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-5 sm:px-6 lg:px-8">
           <div>
             <Heading level={1}>TALLY</Heading>
             <p className="mt-1 text-sm text-base-content/70">
               Shared finance interface foundation
             </p>
           </div>
-          <span className="hidden rounded-full bg-base-200 px-3 py-1 text-xs font-medium sm:inline-flex">
-            Local preview
-          </span>
+          {actorLabel ? (
+            <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:w-auto">
+              <span className="max-w-full min-w-0 truncate rounded-full bg-base-200 px-3 py-1 text-xs font-medium" aria-label="Signed-in username">
+                {actorLabel}
+              </span>
+              {onSignOut ? (
+                <Button variant="ghost" size="sm" onClick={() => void onSignOut()}>
+                  Sign out
+                </Button>
+              ) : null}
+            </div>
+          ) : (
+            <span className="hidden rounded-full bg-base-200 px-3 py-1 text-xs font-medium sm:inline-flex">
+              Local preview
+            </span>
+          )}
         </div>
       </header>
 

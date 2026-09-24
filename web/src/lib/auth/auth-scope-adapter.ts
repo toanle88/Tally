@@ -10,13 +10,27 @@ export interface AccountingScopeFixture {
 
 export type AuthScopeResolution =
   | {
+      status: 'loading'
+    }
+  | {
       status: 'authenticated'
       actorLabel: string
       availableScopes: readonly AccountingScopeFixture[]
       initialScopeId: string | null
+      sessionClass?: 'general' | 'privileged'
+      expiresAt?: Date
+      warningAt?: Date
     }
   | {
       status: 'unauthenticated'
+      reason: string
+    }
+  | {
+      status: 'expired'
+      reason: string
+    }
+  | {
+      status: 'step-up-required'
       reason: string
     }
 

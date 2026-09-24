@@ -19,6 +19,7 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 };
 
 export const omdMaintainLegalEntities = <ThrowOnError extends boolean = false>(options: Options<OmdMaintainLegalEntitiesData, ThrowOnError>): RequestResult<OmdMaintainLegalEntitiesResponses, OmdMaintainLegalEntitiesErrors, ThrowOnError> => (options.client ?? client).put<OmdMaintainLegalEntitiesResponses, OmdMaintainLegalEntitiesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/master-data/configuration/maintain-legal-entities',
     ...options,
     headers: {
@@ -28,6 +29,7 @@ export const omdMaintainLegalEntities = <ThrowOnError extends boolean = false>(o
 });
 
 export const omdMaintainParties = <ThrowOnError extends boolean = false>(options: Options<OmdMaintainPartiesData, ThrowOnError>): RequestResult<OmdMaintainPartiesResponses, OmdMaintainPartiesErrors, ThrowOnError> => (options.client ?? client).put<OmdMaintainPartiesResponses, OmdMaintainPartiesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/master-data/configuration/maintain-parties',
     ...options,
     headers: {
@@ -37,6 +39,7 @@ export const omdMaintainParties = <ThrowOnError extends boolean = false>(options
 });
 
 export const omdMaintainCustomerProfiles = <ThrowOnError extends boolean = false>(options: Options<OmdMaintainCustomerProfilesData, ThrowOnError>): RequestResult<OmdMaintainCustomerProfilesResponses, OmdMaintainCustomerProfilesErrors, ThrowOnError> => (options.client ?? client).put<OmdMaintainCustomerProfilesResponses, OmdMaintainCustomerProfilesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/master-data/configuration/maintain-customer-profiles',
     ...options,
     headers: {
@@ -46,6 +49,7 @@ export const omdMaintainCustomerProfiles = <ThrowOnError extends boolean = false
 });
 
 export const omdMaintainVendorProfiles = <ThrowOnError extends boolean = false>(options: Options<OmdMaintainVendorProfilesData, ThrowOnError>): RequestResult<OmdMaintainVendorProfilesResponses, OmdMaintainVendorProfilesErrors, ThrowOnError> => (options.client ?? client).put<OmdMaintainVendorProfilesResponses, OmdMaintainVendorProfilesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/master-data/configuration/maintain-vendor-profiles',
     ...options,
     headers: {
@@ -55,6 +59,7 @@ export const omdMaintainVendorProfiles = <ThrowOnError extends boolean = false>(
 });
 
 export const omdMaintainFiscalCalendars = <ThrowOnError extends boolean = false>(options: Options<OmdMaintainFiscalCalendarsData, ThrowOnError>): RequestResult<OmdMaintainFiscalCalendarsResponses, OmdMaintainFiscalCalendarsErrors, ThrowOnError> => (options.client ?? client).put<OmdMaintainFiscalCalendarsResponses, OmdMaintainFiscalCalendarsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/master-data/configuration/maintain-fiscal-calendars',
     ...options,
     headers: {
@@ -64,6 +69,7 @@ export const omdMaintainFiscalCalendars = <ThrowOnError extends boolean = false>
 });
 
 export const omdPublishApprovedMasterDataChanges = <ThrowOnError extends boolean = false>(options: Options<OmdPublishApprovedMasterDataChangesData, ThrowOnError>): RequestResult<OmdPublishApprovedMasterDataChangesResponses, OmdPublishApprovedMasterDataChangesErrors, ThrowOnError> => (options.client ?? client).post<OmdPublishApprovedMasterDataChangesResponses, OmdPublishApprovedMasterDataChangesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/master-data/actions/publish-approved-master-data-changes',
     ...options,
     headers: {
@@ -73,6 +79,7 @@ export const omdPublishApprovedMasterDataChanges = <ThrowOnError extends boolean
 });
 
 export const glSubmitPostingRequest = <ThrowOnError extends boolean = false>(options: Options<GlSubmitPostingRequestData, ThrowOnError>): RequestResult<GlSubmitPostingRequestResponses, GlSubmitPostingRequestErrors, ThrowOnError> => (options.client ?? client).post<GlSubmitPostingRequestResponses, GlSubmitPostingRequestErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/actions/submit-posting-request',
     ...options,
     headers: {
@@ -82,6 +89,7 @@ export const glSubmitPostingRequest = <ThrowOnError extends boolean = false>(opt
 });
 
 export const glApplyJournalApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<GlApplyJournalApprovalDecisionData, ThrowOnError>): RequestResult<GlApplyJournalApprovalDecisionResponses, GlApplyJournalApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<GlApplyJournalApprovalDecisionResponses, GlApplyJournalApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/actions/apply-journal-approval-decision',
     ...options,
     headers: {
@@ -91,6 +99,7 @@ export const glApplyJournalApprovalDecision = <ThrowOnError extends boolean = fa
 });
 
 export const glReverseJournalEntry = <ThrowOnError extends boolean = false>(options: Options<GlReverseJournalEntryData, ThrowOnError>): RequestResult<GlReverseJournalEntryResponses, GlReverseJournalEntryErrors, ThrowOnError> => (options.client ?? client).post<GlReverseJournalEntryResponses, GlReverseJournalEntryErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/actions/reverse-journal-entry',
     ...options,
     headers: {
@@ -100,6 +109,7 @@ export const glReverseJournalEntry = <ThrowOnError extends boolean = false>(opti
 });
 
 export const glEnterSoftCloseGate = <ThrowOnError extends boolean = false>(options: Options<GlEnterSoftCloseGateData, ThrowOnError>): RequestResult<GlEnterSoftCloseGateResponses, GlEnterSoftCloseGateErrors, ThrowOnError> => (options.client ?? client).post<GlEnterSoftCloseGateResponses, GlEnterSoftCloseGateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/actions/enter-soft-close-gate',
     ...options,
     headers: {
@@ -109,6 +119,7 @@ export const glEnterSoftCloseGate = <ThrowOnError extends boolean = false>(optio
 });
 
 export const glExitSoftCloseGate = <ThrowOnError extends boolean = false>(options: Options<GlExitSoftCloseGateData, ThrowOnError>): RequestResult<GlExitSoftCloseGateResponses, GlExitSoftCloseGateErrors, ThrowOnError> => (options.client ?? client).post<GlExitSoftCloseGateResponses, GlExitSoftCloseGateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/actions/exit-soft-close-gate',
     ...options,
     headers: {
@@ -118,6 +129,7 @@ export const glExitSoftCloseGate = <ThrowOnError extends boolean = false>(option
 });
 
 export const glAcquirePostingBarrier = <ThrowOnError extends boolean = false>(options: Options<GlAcquirePostingBarrierData, ThrowOnError>): RequestResult<GlAcquirePostingBarrierResponses, GlAcquirePostingBarrierErrors, ThrowOnError> => (options.client ?? client).post<GlAcquirePostingBarrierResponses, GlAcquirePostingBarrierErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/actions/acquire-posting-barrier',
     ...options,
     headers: {
@@ -127,6 +139,7 @@ export const glAcquirePostingBarrier = <ThrowOnError extends boolean = false>(op
 });
 
 export const glReleasePostingBarrier = <ThrowOnError extends boolean = false>(options: Options<GlReleasePostingBarrierData, ThrowOnError>): RequestResult<GlReleasePostingBarrierResponses, GlReleasePostingBarrierErrors, ThrowOnError> => (options.client ?? client).post<GlReleasePostingBarrierResponses, GlReleasePostingBarrierErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/actions/release-posting-barrier',
     ...options,
     headers: {
@@ -136,6 +149,7 @@ export const glReleasePostingBarrier = <ThrowOnError extends boolean = false>(op
 });
 
 export const glFinalizePostingGate = <ThrowOnError extends boolean = false>(options: Options<GlFinalizePostingGateData, ThrowOnError>): RequestResult<GlFinalizePostingGateResponses, GlFinalizePostingGateErrors, ThrowOnError> => (options.client ?? client).post<GlFinalizePostingGateResponses, GlFinalizePostingGateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/actions/finalize-posting-gate',
     ...options,
     headers: {
@@ -145,6 +159,7 @@ export const glFinalizePostingGate = <ThrowOnError extends boolean = false>(opti
 });
 
 export const glOpenScopedReopenGate = <ThrowOnError extends boolean = false>(options: Options<GlOpenScopedReopenGateData, ThrowOnError>): RequestResult<GlOpenScopedReopenGateResponses, GlOpenScopedReopenGateErrors, ThrowOnError> => (options.client ?? client).post<GlOpenScopedReopenGateResponses, GlOpenScopedReopenGateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/actions/open-scoped-reopen-gate',
     ...options,
     headers: {
@@ -154,6 +169,7 @@ export const glOpenScopedReopenGate = <ThrowOnError extends boolean = false>(opt
 });
 
 export const glCloseScopedReopenGate = <ThrowOnError extends boolean = false>(options: Options<GlCloseScopedReopenGateData, ThrowOnError>): RequestResult<GlCloseScopedReopenGateResponses, GlCloseScopedReopenGateErrors, ThrowOnError> => (options.client ?? client).post<GlCloseScopedReopenGateResponses, GlCloseScopedReopenGateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/actions/close-scoped-reopen-gate',
     ...options,
     headers: {
@@ -163,6 +179,7 @@ export const glCloseScopedReopenGate = <ThrowOnError extends boolean = false>(op
 });
 
 export const glOpenOperationalReopenGate = <ThrowOnError extends boolean = false>(options: Options<GlOpenOperationalReopenGateData, ThrowOnError>): RequestResult<GlOpenOperationalReopenGateResponses, GlOpenOperationalReopenGateErrors, ThrowOnError> => (options.client ?? client).post<GlOpenOperationalReopenGateResponses, GlOpenOperationalReopenGateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/actions/open-operational-reopen-gate',
     ...options,
     headers: {
@@ -172,6 +189,7 @@ export const glOpenOperationalReopenGate = <ThrowOnError extends boolean = false
 });
 
 export const glCloseOperationalReopenGate = <ThrowOnError extends boolean = false>(options: Options<GlCloseOperationalReopenGateData, ThrowOnError>): RequestResult<GlCloseOperationalReopenGateResponses, GlCloseOperationalReopenGateErrors, ThrowOnError> => (options.client ?? client).post<GlCloseOperationalReopenGateResponses, GlCloseOperationalReopenGateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/actions/close-operational-reopen-gate',
     ...options,
     headers: {
@@ -181,6 +199,7 @@ export const glCloseOperationalReopenGate = <ThrowOnError extends boolean = fals
 });
 
 export const glBeginRecloseGate = <ThrowOnError extends boolean = false>(options: Options<GlBeginRecloseGateData, ThrowOnError>): RequestResult<GlBeginRecloseGateResponses, GlBeginRecloseGateErrors, ThrowOnError> => (options.client ?? client).post<GlBeginRecloseGateResponses, GlBeginRecloseGateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/actions/begin-reclose-gate',
     ...options,
     headers: {
@@ -189,9 +208,14 @@ export const glBeginRecloseGate = <ThrowOnError extends boolean = false>(options
     }
 });
 
-export const glGetPostingGateStatus = <ThrowOnError extends boolean = false>(options: Options<GlGetPostingGateStatusData, ThrowOnError>): RequestResult<GlGetPostingGateStatusResponses, GlGetPostingGateStatusErrors, ThrowOnError> => (options.client ?? client).get<GlGetPostingGateStatusResponses, GlGetPostingGateStatusErrors, ThrowOnError>({ url: '/general-ledger/reference/get-posting-gate-status', ...options });
+export const glGetPostingGateStatus = <ThrowOnError extends boolean = false>(options: Options<GlGetPostingGateStatusData, ThrowOnError>): RequestResult<GlGetPostingGateStatusResponses, GlGetPostingGateStatusErrors, ThrowOnError> => (options.client ?? client).get<GlGetPostingGateStatusResponses, GlGetPostingGateStatusErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/general-ledger/reference/get-posting-gate-status',
+    ...options
+});
 
 export const glMaintainLedgers = <ThrowOnError extends boolean = false>(options: Options<GlMaintainLedgersData, ThrowOnError>): RequestResult<GlMaintainLedgersResponses, GlMaintainLedgersErrors, ThrowOnError> => (options.client ?? client).put<GlMaintainLedgersResponses, GlMaintainLedgersErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/configuration/maintain-ledgers',
     ...options,
     headers: {
@@ -201,6 +225,7 @@ export const glMaintainLedgers = <ThrowOnError extends boolean = false>(options:
 });
 
 export const glMaintainAccountingBooks = <ThrowOnError extends boolean = false>(options: Options<GlMaintainAccountingBooksData, ThrowOnError>): RequestResult<GlMaintainAccountingBooksResponses, GlMaintainAccountingBooksErrors, ThrowOnError> => (options.client ?? client).put<GlMaintainAccountingBooksResponses, GlMaintainAccountingBooksErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/configuration/maintain-accounting-books',
     ...options,
     headers: {
@@ -210,6 +235,7 @@ export const glMaintainAccountingBooks = <ThrowOnError extends boolean = false>(
 });
 
 export const glMaintainChartsOfAccounts = <ThrowOnError extends boolean = false>(options: Options<GlMaintainChartsOfAccountsData, ThrowOnError>): RequestResult<GlMaintainChartsOfAccountsResponses, GlMaintainChartsOfAccountsErrors, ThrowOnError> => (options.client ?? client).put<GlMaintainChartsOfAccountsResponses, GlMaintainChartsOfAccountsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/configuration/maintain-charts-of-accounts',
     ...options,
     headers: {
@@ -219,6 +245,7 @@ export const glMaintainChartsOfAccounts = <ThrowOnError extends boolean = false>
 });
 
 export const glMaintainAccountsAndReportingMappings = <ThrowOnError extends boolean = false>(options: Options<GlMaintainAccountsAndReportingMappingsData, ThrowOnError>): RequestResult<GlMaintainAccountsAndReportingMappingsResponses, GlMaintainAccountsAndReportingMappingsErrors, ThrowOnError> => (options.client ?? client).put<GlMaintainAccountsAndReportingMappingsResponses, GlMaintainAccountsAndReportingMappingsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/configuration/maintain-accounts-and-reporting-mappings',
     ...options,
     headers: {
@@ -228,6 +255,7 @@ export const glMaintainAccountsAndReportingMappings = <ThrowOnError extends bool
 });
 
 export const apRegisterVendorInvoice = <ThrowOnError extends boolean = false>(options: Options<ApRegisterVendorInvoiceData, ThrowOnError>): RequestResult<ApRegisterVendorInvoiceResponses, ApRegisterVendorInvoiceErrors, ThrowOnError> => (options.client ?? client).post<ApRegisterVendorInvoiceResponses, ApRegisterVendorInvoiceErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-payable/actions/register-vendor-invoice',
     ...options,
     headers: {
@@ -237,6 +265,7 @@ export const apRegisterVendorInvoice = <ThrowOnError extends boolean = false>(op
 });
 
 export const apApplyAssetClearingClassification = <ThrowOnError extends boolean = false>(options: Options<ApApplyAssetClearingClassificationData, ThrowOnError>): RequestResult<ApApplyAssetClearingClassificationResponses, ApApplyAssetClearingClassificationErrors, ThrowOnError> => (options.client ?? client).post<ApApplyAssetClearingClassificationResponses, ApApplyAssetClearingClassificationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-payable/actions/apply-asset-clearing-classification',
     ...options,
     headers: {
@@ -246,6 +275,7 @@ export const apApplyAssetClearingClassification = <ThrowOnError extends boolean 
 });
 
 export const apApplyIncomingSettlement = <ThrowOnError extends boolean = false>(options: Options<ApApplyIncomingSettlementData, ThrowOnError>): RequestResult<ApApplyIncomingSettlementResponses, ApApplyIncomingSettlementErrors, ThrowOnError> => (options.client ?? client).post<ApApplyIncomingSettlementResponses, ApApplyIncomingSettlementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-payable/actions/apply-incoming-settlement',
     ...options,
     headers: {
@@ -255,6 +285,7 @@ export const apApplyIncomingSettlement = <ThrowOnError extends boolean = false>(
 });
 
 export const apReverseIncomingSettlementApplication = <ThrowOnError extends boolean = false>(options: Options<ApReverseIncomingSettlementApplicationData, ThrowOnError>): RequestResult<ApReverseIncomingSettlementApplicationResponses, ApReverseIncomingSettlementApplicationErrors, ThrowOnError> => (options.client ?? client).post<ApReverseIncomingSettlementApplicationResponses, ApReverseIncomingSettlementApplicationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-payable/actions/reverse-incoming-settlement-application',
     ...options,
     headers: {
@@ -264,6 +295,7 @@ export const apReverseIncomingSettlementApplication = <ThrowOnError extends bool
 });
 
 export const apApplyPaymentReturn = <ThrowOnError extends boolean = false>(options: Options<ApApplyPaymentReturnData, ThrowOnError>): RequestResult<ApApplyPaymentReturnResponses, ApApplyPaymentReturnErrors, ThrowOnError> => (options.client ?? client).post<ApApplyPaymentReturnResponses, ApApplyPaymentReturnErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-payable/actions/apply-payment-return',
     ...options,
     headers: {
@@ -273,6 +305,7 @@ export const apApplyPaymentReturn = <ThrowOnError extends boolean = false>(optio
 });
 
 export const apApplyVendorInvoiceApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<ApApplyVendorInvoiceApprovalDecisionData, ThrowOnError>): RequestResult<ApApplyVendorInvoiceApprovalDecisionResponses, ApApplyVendorInvoiceApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<ApApplyVendorInvoiceApprovalDecisionResponses, ApApplyVendorInvoiceApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-payable/actions/apply-vendor-invoice-approval-decision',
     ...options,
     headers: {
@@ -282,6 +315,7 @@ export const apApplyVendorInvoiceApprovalDecision = <ThrowOnError extends boolea
 });
 
 export const apRequestPayment = <ThrowOnError extends boolean = false>(options: Options<ApRequestPaymentData, ThrowOnError>): RequestResult<ApRequestPaymentResponses, ApRequestPaymentErrors, ThrowOnError> => (options.client ?? client).post<ApRequestPaymentResponses, ApRequestPaymentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-payable/actions/request-payment',
     ...options,
     headers: {
@@ -291,6 +325,7 @@ export const apRequestPayment = <ThrowOnError extends boolean = false>(options: 
 });
 
 export const apValidateVendorInvoice = <ThrowOnError extends boolean = false>(options: Options<ApValidateVendorInvoiceData, ThrowOnError>): RequestResult<ApValidateVendorInvoiceResponses, ApValidateVendorInvoiceErrors, ThrowOnError> => (options.client ?? client).post<ApValidateVendorInvoiceResponses, ApValidateVendorInvoiceErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-payable/actions/validate-vendor-invoice',
     ...options,
     headers: {
@@ -300,6 +335,7 @@ export const apValidateVendorInvoice = <ThrowOnError extends boolean = false>(op
 });
 
 export const apDisputeVendorInvoice = <ThrowOnError extends boolean = false>(options: Options<ApDisputeVendorInvoiceData, ThrowOnError>): RequestResult<ApDisputeVendorInvoiceResponses, ApDisputeVendorInvoiceErrors, ThrowOnError> => (options.client ?? client).post<ApDisputeVendorInvoiceResponses, ApDisputeVendorInvoiceErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-payable/actions/dispute-vendor-invoice',
     ...options,
     headers: {
@@ -309,6 +345,7 @@ export const apDisputeVendorInvoice = <ThrowOnError extends boolean = false>(opt
 });
 
 export const apVoidVendorInvoice = <ThrowOnError extends boolean = false>(options: Options<ApVoidVendorInvoiceData, ThrowOnError>): RequestResult<ApVoidVendorInvoiceResponses, ApVoidVendorInvoiceErrors, ThrowOnError> => (options.client ?? client).post<ApVoidVendorInvoiceResponses, ApVoidVendorInvoiceErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-payable/actions/void-vendor-invoice',
     ...options,
     headers: {
@@ -318,6 +355,7 @@ export const apVoidVendorInvoice = <ThrowOnError extends boolean = false>(option
 });
 
 export const arIssueCustomerInvoice = <ThrowOnError extends boolean = false>(options: Options<ArIssueCustomerInvoiceData, ThrowOnError>): RequestResult<ArIssueCustomerInvoiceResponses, ArIssueCustomerInvoiceErrors, ThrowOnError> => (options.client ?? client).post<ArIssueCustomerInvoiceResponses, ArIssueCustomerInvoiceErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/issue-customer-invoice',
     ...options,
     headers: {
@@ -327,6 +365,7 @@ export const arIssueCustomerInvoice = <ThrowOnError extends boolean = false>(opt
 });
 
 export const arRecordReceipt = <ThrowOnError extends boolean = false>(options: Options<ArRecordReceiptData, ThrowOnError>): RequestResult<ArRecordReceiptResponses, ArRecordReceiptErrors, ThrowOnError> => (options.client ?? client).post<ArRecordReceiptResponses, ArRecordReceiptErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/record-receipt',
     ...options,
     headers: {
@@ -336,6 +375,7 @@ export const arRecordReceipt = <ThrowOnError extends boolean = false>(options: O
 });
 
 export const arApplyReceipt = <ThrowOnError extends boolean = false>(options: Options<ArApplyReceiptData, ThrowOnError>): RequestResult<ArApplyReceiptResponses, ArApplyReceiptErrors, ThrowOnError> => (options.client ?? client).post<ArApplyReceiptResponses, ArApplyReceiptErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/apply-receipt',
     ...options,
     headers: {
@@ -345,6 +385,7 @@ export const arApplyReceipt = <ThrowOnError extends boolean = false>(options: Op
 });
 
 export const arUnapplyReceipt = <ThrowOnError extends boolean = false>(options: Options<ArUnapplyReceiptData, ThrowOnError>): RequestResult<ArUnapplyReceiptResponses, ArUnapplyReceiptErrors, ThrowOnError> => (options.client ?? client).post<ArUnapplyReceiptResponses, ArUnapplyReceiptErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/unapply-receipt',
     ...options,
     headers: {
@@ -354,6 +395,7 @@ export const arUnapplyReceipt = <ThrowOnError extends boolean = false>(options: 
 });
 
 export const arRollbackUnpostedApplicationBatch = <ThrowOnError extends boolean = false>(options: Options<ArRollbackUnpostedApplicationBatchData, ThrowOnError>): RequestResult<ArRollbackUnpostedApplicationBatchResponses, ArRollbackUnpostedApplicationBatchErrors, ThrowOnError> => (options.client ?? client).post<ArRollbackUnpostedApplicationBatchResponses, ArRollbackUnpostedApplicationBatchErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/rollback-unposted-application-batch',
     ...options,
     headers: {
@@ -363,6 +405,7 @@ export const arRollbackUnpostedApplicationBatch = <ThrowOnError extends boolean 
 });
 
 export const arIssueCreditNote = <ThrowOnError extends boolean = false>(options: Options<ArIssueCreditNoteData, ThrowOnError>): RequestResult<ArIssueCreditNoteResponses, ArIssueCreditNoteErrors, ThrowOnError> => (options.client ?? client).post<ArIssueCreditNoteResponses, ArIssueCreditNoteErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/issue-credit-note',
     ...options,
     headers: {
@@ -372,6 +415,7 @@ export const arIssueCreditNote = <ThrowOnError extends boolean = false>(options:
 });
 
 export const arCreateCustomerRefundRequest = <ThrowOnError extends boolean = false>(options: Options<ArCreateCustomerRefundRequestData, ThrowOnError>): RequestResult<ArCreateCustomerRefundRequestResponses, ArCreateCustomerRefundRequestErrors, ThrowOnError> => (options.client ?? client).post<ArCreateCustomerRefundRequestResponses, ArCreateCustomerRefundRequestErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/create-customer-refund-request',
     ...options,
     headers: {
@@ -381,6 +425,7 @@ export const arCreateCustomerRefundRequest = <ThrowOnError extends boolean = fal
 });
 
 export const arCancelCustomerRefundRequest = <ThrowOnError extends boolean = false>(options: Options<ArCancelCustomerRefundRequestData, ThrowOnError>): RequestResult<ArCancelCustomerRefundRequestResponses, ArCancelCustomerRefundRequestErrors, ThrowOnError> => (options.client ?? client).post<ArCancelCustomerRefundRequestResponses, ArCancelCustomerRefundRequestErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/cancel-customer-refund-request',
     ...options,
     headers: {
@@ -390,6 +435,7 @@ export const arCancelCustomerRefundRequest = <ThrowOnError extends boolean = fal
 });
 
 export const arApplyCustomerRefundApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<ArApplyCustomerRefundApprovalDecisionData, ThrowOnError>): RequestResult<ArApplyCustomerRefundApprovalDecisionResponses, ArApplyCustomerRefundApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<ArApplyCustomerRefundApprovalDecisionResponses, ArApplyCustomerRefundApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/apply-customer-refund-approval-decision',
     ...options,
     headers: {
@@ -399,6 +445,7 @@ export const arApplyCustomerRefundApprovalDecision = <ThrowOnError extends boole
 });
 
 export const arRequestCustomerRefundPayment = <ThrowOnError extends boolean = false>(options: Options<ArRequestCustomerRefundPaymentData, ThrowOnError>): RequestResult<ArRequestCustomerRefundPaymentResponses, ArRequestCustomerRefundPaymentErrors, ThrowOnError> => (options.client ?? client).post<ArRequestCustomerRefundPaymentResponses, ArRequestCustomerRefundPaymentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/request-customer-refund-payment',
     ...options,
     headers: {
@@ -408,6 +455,7 @@ export const arRequestCustomerRefundPayment = <ThrowOnError extends boolean = fa
 });
 
 export const arCancelCustomerRefundPayment = <ThrowOnError extends boolean = false>(options: Options<ArCancelCustomerRefundPaymentData, ThrowOnError>): RequestResult<ArCancelCustomerRefundPaymentResponses, ArCancelCustomerRefundPaymentErrors, ThrowOnError> => (options.client ?? client).post<ArCancelCustomerRefundPaymentResponses, ArCancelCustomerRefundPaymentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/cancel-customer-refund-payment',
     ...options,
     headers: {
@@ -417,6 +465,7 @@ export const arCancelCustomerRefundPayment = <ThrowOnError extends boolean = fal
 });
 
 export const arApplyCustomerRefundPaymentResult = <ThrowOnError extends boolean = false>(options: Options<ArApplyCustomerRefundPaymentResultData, ThrowOnError>): RequestResult<ArApplyCustomerRefundPaymentResultResponses, ArApplyCustomerRefundPaymentResultErrors, ThrowOnError> => (options.client ?? client).post<ArApplyCustomerRefundPaymentResultResponses, ArApplyCustomerRefundPaymentResultErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/apply-customer-refund-payment-result',
     ...options,
     headers: {
@@ -426,6 +475,7 @@ export const arApplyCustomerRefundPaymentResult = <ThrowOnError extends boolean 
 });
 
 export const arApplyPaymentReturn = <ThrowOnError extends boolean = false>(options: Options<ArApplyPaymentReturnData, ThrowOnError>): RequestResult<ArApplyPaymentReturnResponses, ArApplyPaymentReturnErrors, ThrowOnError> => (options.client ?? client).post<ArApplyPaymentReturnResponses, ArApplyPaymentReturnErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/apply-payment-return',
     ...options,
     headers: {
@@ -435,6 +485,7 @@ export const arApplyPaymentReturn = <ThrowOnError extends boolean = false>(optio
 });
 
 export const arResolveCustomerOverpayments = <ThrowOnError extends boolean = false>(options: Options<ArResolveCustomerOverpaymentsData, ThrowOnError>): RequestResult<ArResolveCustomerOverpaymentsResponses, ArResolveCustomerOverpaymentsErrors, ThrowOnError> => (options.client ?? client).post<ArResolveCustomerOverpaymentsResponses, ArResolveCustomerOverpaymentsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/resolve-customer-overpayments',
     ...options,
     headers: {
@@ -444,6 +495,7 @@ export const arResolveCustomerOverpayments = <ThrowOnError extends boolean = fal
 });
 
 export const arRecordCustomerChargebacks = <ThrowOnError extends boolean = false>(options: Options<ArRecordCustomerChargebacksData, ThrowOnError>): RequestResult<ArRecordCustomerChargebacksResponses, ArRecordCustomerChargebacksErrors, ThrowOnError> => (options.client ?? client).post<ArRecordCustomerChargebacksResponses, ArRecordCustomerChargebacksErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/record-customer-chargebacks',
     ...options,
     headers: {
@@ -453,6 +505,7 @@ export const arRecordCustomerChargebacks = <ThrowOnError extends boolean = false
 });
 
 export const arRecordReceivableWriteOffs = <ThrowOnError extends boolean = false>(options: Options<ArRecordReceivableWriteOffsData, ThrowOnError>): RequestResult<ArRecordReceivableWriteOffsResponses, ArRecordReceivableWriteOffsErrors, ThrowOnError> => (options.client ?? client).post<ArRecordReceivableWriteOffsResponses, ArRecordReceivableWriteOffsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/accounts-receivable/actions/record-receivable-write-offs',
     ...options,
     headers: {
@@ -462,6 +515,7 @@ export const arRecordReceivableWriteOffs = <ThrowOnError extends boolean = false
 });
 
 export const payrCalculatePayrollRun = <ThrowOnError extends boolean = false>(options: Options<PayrCalculatePayrollRunData, ThrowOnError>): RequestResult<PayrCalculatePayrollRunResponses, PayrCalculatePayrollRunErrors, ThrowOnError> => (options.client ?? client).post<PayrCalculatePayrollRunResponses, PayrCalculatePayrollRunErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payroll/actions/calculate-payroll-run',
     ...options,
     headers: {
@@ -471,6 +525,7 @@ export const payrCalculatePayrollRun = <ThrowOnError extends boolean = false>(op
 });
 
 export const payrApplyPayrollRunApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<PayrApplyPayrollRunApprovalDecisionData, ThrowOnError>): RequestResult<PayrApplyPayrollRunApprovalDecisionResponses, PayrApplyPayrollRunApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<PayrApplyPayrollRunApprovalDecisionResponses, PayrApplyPayrollRunApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payroll/actions/apply-payroll-run-approval-decision',
     ...options,
     headers: {
@@ -480,6 +535,7 @@ export const payrApplyPayrollRunApprovalDecision = <ThrowOnError extends boolean
 });
 
 export const payrPostPayrollRun = <ThrowOnError extends boolean = false>(options: Options<PayrPostPayrollRunData, ThrowOnError>): RequestResult<PayrPostPayrollRunResponses, PayrPostPayrollRunErrors, ThrowOnError> => (options.client ?? client).post<PayrPostPayrollRunResponses, PayrPostPayrollRunErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payroll/actions/post-payroll-run',
     ...options,
     headers: {
@@ -489,6 +545,7 @@ export const payrPostPayrollRun = <ThrowOnError extends boolean = false>(options
 });
 
 export const payrCreatePayrollCorrection = <ThrowOnError extends boolean = false>(options: Options<PayrCreatePayrollCorrectionData, ThrowOnError>): RequestResult<PayrCreatePayrollCorrectionResponses, PayrCreatePayrollCorrectionErrors, ThrowOnError> => (options.client ?? client).post<PayrCreatePayrollCorrectionResponses, PayrCreatePayrollCorrectionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payroll/actions/create-payroll-correction',
     ...options,
     headers: {
@@ -498,6 +555,7 @@ export const payrCreatePayrollCorrection = <ThrowOnError extends boolean = false
 });
 
 export const payrApplyPaymentReturn = <ThrowOnError extends boolean = false>(options: Options<PayrApplyPaymentReturnData, ThrowOnError>): RequestResult<PayrApplyPaymentReturnResponses, PayrApplyPaymentReturnErrors, ThrowOnError> => (options.client ?? client).post<PayrApplyPaymentReturnResponses, PayrApplyPaymentReturnErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payroll/actions/apply-payment-return',
     ...options,
     headers: {
@@ -507,6 +565,7 @@ export const payrApplyPaymentReturn = <ThrowOnError extends boolean = false>(opt
 });
 
 export const payrMaintainEmployeePayrollProfiles = <ThrowOnError extends boolean = false>(options: Options<PayrMaintainEmployeePayrollProfilesData, ThrowOnError>): RequestResult<PayrMaintainEmployeePayrollProfilesResponses, PayrMaintainEmployeePayrollProfilesErrors, ThrowOnError> => (options.client ?? client).put<PayrMaintainEmployeePayrollProfilesResponses, PayrMaintainEmployeePayrollProfilesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payroll/configuration/maintain-employee-payroll-profiles',
     ...options,
     headers: {
@@ -516,6 +575,7 @@ export const payrMaintainEmployeePayrollProfiles = <ThrowOnError extends boolean
 });
 
 export const payrMaintainPayrollTaxFilingRecords = <ThrowOnError extends boolean = false>(options: Options<PayrMaintainPayrollTaxFilingRecordsData, ThrowOnError>): RequestResult<PayrMaintainPayrollTaxFilingRecordsResponses, PayrMaintainPayrollTaxFilingRecordsErrors, ThrowOnError> => (options.client ?? client).put<PayrMaintainPayrollTaxFilingRecordsResponses, PayrMaintainPayrollTaxFilingRecordsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payroll/configuration/maintain-payroll-tax-filing-records',
     ...options,
     headers: {
@@ -525,6 +585,7 @@ export const payrMaintainPayrollTaxFilingRecords = <ThrowOnError extends boolean
 });
 
 export const invConfigureInvoiceTemplates = <ThrowOnError extends boolean = false>(options: Options<InvConfigureInvoiceTemplatesData, ThrowOnError>): RequestResult<InvConfigureInvoiceTemplatesResponses, InvConfigureInvoiceTemplatesErrors, ThrowOnError> => (options.client ?? client).put<InvConfigureInvoiceTemplatesResponses, InvConfigureInvoiceTemplatesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/invoicing/configuration/configure-invoice-templates',
     ...options,
     headers: {
@@ -534,6 +595,7 @@ export const invConfigureInvoiceTemplates = <ThrowOnError extends boolean = fals
 });
 
 export const invConfigureBillingSchedules = <ThrowOnError extends boolean = false>(options: Options<InvConfigureBillingSchedulesData, ThrowOnError>): RequestResult<InvConfigureBillingSchedulesResponses, InvConfigureBillingSchedulesErrors, ThrowOnError> => (options.client ?? client).put<InvConfigureBillingSchedulesResponses, InvConfigureBillingSchedulesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/invoicing/configuration/configure-billing-schedules',
     ...options,
     headers: {
@@ -543,6 +605,7 @@ export const invConfigureBillingSchedules = <ThrowOnError extends boolean = fals
 });
 
 export const invGenerateInvoices = <ThrowOnError extends boolean = false>(options: Options<InvGenerateInvoicesData, ThrowOnError>): RequestResult<InvGenerateInvoicesResponses, InvGenerateInvoicesErrors, ThrowOnError> => (options.client ?? client).post<InvGenerateInvoicesResponses, InvGenerateInvoicesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/invoicing/actions/generate-invoices',
     ...options,
     headers: {
@@ -552,6 +615,7 @@ export const invGenerateInvoices = <ThrowOnError extends boolean = false>(option
 });
 
 export const invFinalizeGeneratedInvoices = <ThrowOnError extends boolean = false>(options: Options<InvFinalizeGeneratedInvoicesData, ThrowOnError>): RequestResult<InvFinalizeGeneratedInvoicesResponses, InvFinalizeGeneratedInvoicesErrors, ThrowOnError> => (options.client ?? client).post<InvFinalizeGeneratedInvoicesResponses, InvFinalizeGeneratedInvoicesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/invoicing/actions/finalize-generated-invoices',
     ...options,
     headers: {
@@ -561,6 +625,7 @@ export const invFinalizeGeneratedInvoices = <ThrowOnError extends boolean = fals
 });
 
 export const invRecalculateUnfinalizedInvoices = <ThrowOnError extends boolean = false>(options: Options<InvRecalculateUnfinalizedInvoicesData, ThrowOnError>): RequestResult<InvRecalculateUnfinalizedInvoicesResponses, InvRecalculateUnfinalizedInvoicesErrors, ThrowOnError> => (options.client ?? client).post<InvRecalculateUnfinalizedInvoicesResponses, InvRecalculateUnfinalizedInvoicesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/invoicing/actions/recalculate-unfinalized-invoices',
     ...options,
     headers: {
@@ -570,6 +635,7 @@ export const invRecalculateUnfinalizedInvoices = <ThrowOnError extends boolean =
 });
 
 export const invCancelUnfinalizedInvoices = <ThrowOnError extends boolean = false>(options: Options<InvCancelUnfinalizedInvoicesData, ThrowOnError>): RequestResult<InvCancelUnfinalizedInvoicesResponses, InvCancelUnfinalizedInvoicesErrors, ThrowOnError> => (options.client ?? client).post<InvCancelUnfinalizedInvoicesResponses, InvCancelUnfinalizedInvoicesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/invoicing/actions/cancel-unfinalized-invoices',
     ...options,
     headers: {
@@ -579,6 +645,7 @@ export const invCancelUnfinalizedInvoices = <ThrowOnError extends boolean = fals
 });
 
 export const pcmPreparePaymentBatch = <ThrowOnError extends boolean = false>(options: Options<PcmPreparePaymentBatchData, ThrowOnError>): RequestResult<PcmPreparePaymentBatchResponses, PcmPreparePaymentBatchErrors, ThrowOnError> => (options.client ?? client).post<PcmPreparePaymentBatchResponses, PcmPreparePaymentBatchErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/prepare-payment-batch',
     ...options,
     headers: {
@@ -588,6 +655,7 @@ export const pcmPreparePaymentBatch = <ThrowOnError extends boolean = false>(opt
 });
 
 export const pcmApplyPaymentBatchApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<PcmApplyPaymentBatchApprovalDecisionData, ThrowOnError>): RequestResult<PcmApplyPaymentBatchApprovalDecisionResponses, PcmApplyPaymentBatchApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<PcmApplyPaymentBatchApprovalDecisionResponses, PcmApplyPaymentBatchApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/apply-payment-batch-approval-decision',
     ...options,
     headers: {
@@ -597,6 +665,7 @@ export const pcmApplyPaymentBatchApprovalDecision = <ThrowOnError extends boolea
 });
 
 export const pcmCancelPaymentBatch = <ThrowOnError extends boolean = false>(options: Options<PcmCancelPaymentBatchData, ThrowOnError>): RequestResult<PcmCancelPaymentBatchResponses, PcmCancelPaymentBatchErrors, ThrowOnError> => (options.client ?? client).post<PcmCancelPaymentBatchResponses, PcmCancelPaymentBatchErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/cancel-payment-batch',
     ...options,
     headers: {
@@ -606,6 +675,7 @@ export const pcmCancelPaymentBatch = <ThrowOnError extends boolean = false>(opti
 });
 
 export const pcmRegisterExpectedIncomingSettlement = <ThrowOnError extends boolean = false>(options: Options<PcmRegisterExpectedIncomingSettlementData, ThrowOnError>): RequestResult<PcmRegisterExpectedIncomingSettlementResponses, PcmRegisterExpectedIncomingSettlementErrors, ThrowOnError> => (options.client ?? client).post<PcmRegisterExpectedIncomingSettlementResponses, PcmRegisterExpectedIncomingSettlementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/register-expected-incoming-settlement',
     ...options,
     headers: {
@@ -615,6 +685,7 @@ export const pcmRegisterExpectedIncomingSettlement = <ThrowOnError extends boole
 });
 
 export const pcmResolveExpectedIncomingSettlementException = <ThrowOnError extends boolean = false>(options: Options<PcmResolveExpectedIncomingSettlementExceptionData, ThrowOnError>): RequestResult<PcmResolveExpectedIncomingSettlementExceptionResponses, PcmResolveExpectedIncomingSettlementExceptionErrors, ThrowOnError> => (options.client ?? client).post<PcmResolveExpectedIncomingSettlementExceptionResponses, PcmResolveExpectedIncomingSettlementExceptionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/resolve-expected-incoming-settlement-exception',
     ...options,
     headers: {
@@ -624,6 +695,7 @@ export const pcmResolveExpectedIncomingSettlementException = <ThrowOnError exten
 });
 
 export const pcmCancelExpectedIncomingSettlement = <ThrowOnError extends boolean = false>(options: Options<PcmCancelExpectedIncomingSettlementData, ThrowOnError>): RequestResult<PcmCancelExpectedIncomingSettlementResponses, PcmCancelExpectedIncomingSettlementErrors, ThrowOnError> => (options.client ?? client).post<PcmCancelExpectedIncomingSettlementResponses, PcmCancelExpectedIncomingSettlementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/cancel-expected-incoming-settlement',
     ...options,
     headers: {
@@ -633,6 +705,7 @@ export const pcmCancelExpectedIncomingSettlement = <ThrowOnError extends boolean
 });
 
 export const pcmCloseExpectedIncomingSettlement = <ThrowOnError extends boolean = false>(options: Options<PcmCloseExpectedIncomingSettlementData, ThrowOnError>): RequestResult<PcmCloseExpectedIncomingSettlementResponses, PcmCloseExpectedIncomingSettlementErrors, ThrowOnError> => (options.client ?? client).post<PcmCloseExpectedIncomingSettlementResponses, PcmCloseExpectedIncomingSettlementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/close-expected-incoming-settlement',
     ...options,
     headers: {
@@ -642,6 +715,7 @@ export const pcmCloseExpectedIncomingSettlement = <ThrowOnError extends boolean 
 });
 
 export const pcmCreatePaymentInstructionFromObligation = <ThrowOnError extends boolean = false>(options: Options<PcmCreatePaymentInstructionFromObligationData, ThrowOnError>): RequestResult<PcmCreatePaymentInstructionFromObligationResponses, PcmCreatePaymentInstructionFromObligationErrors, ThrowOnError> => (options.client ?? client).post<PcmCreatePaymentInstructionFromObligationResponses, PcmCreatePaymentInstructionFromObligationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/create-payment-instruction-from-obligation',
     ...options,
     headers: {
@@ -651,6 +725,7 @@ export const pcmCreatePaymentInstructionFromObligation = <ThrowOnError extends b
 });
 
 export const pcmSubmitPaymentInstruction = <ThrowOnError extends boolean = false>(options: Options<PcmSubmitPaymentInstructionData, ThrowOnError>): RequestResult<PcmSubmitPaymentInstructionResponses, PcmSubmitPaymentInstructionErrors, ThrowOnError> => (options.client ?? client).post<PcmSubmitPaymentInstructionResponses, PcmSubmitPaymentInstructionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/submit-payment-instruction',
     ...options,
     headers: {
@@ -660,6 +735,7 @@ export const pcmSubmitPaymentInstruction = <ThrowOnError extends boolean = false
 });
 
 export const pcmRetryPaymentInstruction = <ThrowOnError extends boolean = false>(options: Options<PcmRetryPaymentInstructionData, ThrowOnError>): RequestResult<PcmRetryPaymentInstructionResponses, PcmRetryPaymentInstructionErrors, ThrowOnError> => (options.client ?? client).post<PcmRetryPaymentInstructionResponses, PcmRetryPaymentInstructionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/retry-payment-instruction',
     ...options,
     headers: {
@@ -669,6 +745,7 @@ export const pcmRetryPaymentInstruction = <ThrowOnError extends boolean = false>
 });
 
 export const pcmCancelPaymentInstruction = <ThrowOnError extends boolean = false>(options: Options<PcmCancelPaymentInstructionData, ThrowOnError>): RequestResult<PcmCancelPaymentInstructionResponses, PcmCancelPaymentInstructionErrors, ThrowOnError> => (options.client ?? client).post<PcmCancelPaymentInstructionResponses, PcmCancelPaymentInstructionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/cancel-payment-instruction',
     ...options,
     headers: {
@@ -678,6 +755,7 @@ export const pcmCancelPaymentInstruction = <ThrowOnError extends boolean = false
 });
 
 export const pcmApplyPaymentInstructionExceptionDecision = <ThrowOnError extends boolean = false>(options: Options<PcmApplyPaymentInstructionExceptionDecisionData, ThrowOnError>): RequestResult<PcmApplyPaymentInstructionExceptionDecisionResponses, PcmApplyPaymentInstructionExceptionDecisionErrors, ThrowOnError> => (options.client ?? client).post<PcmApplyPaymentInstructionExceptionDecisionResponses, PcmApplyPaymentInstructionExceptionDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/apply-payment-instruction-exception-decision',
     ...options,
     headers: {
@@ -687,6 +765,7 @@ export const pcmApplyPaymentInstructionExceptionDecision = <ThrowOnError extends
 });
 
 export const pcmRecordPaymentReturn = <ThrowOnError extends boolean = false>(options: Options<PcmRecordPaymentReturnData, ThrowOnError>): RequestResult<PcmRecordPaymentReturnResponses, PcmRecordPaymentReturnErrors, ThrowOnError> => (options.client ?? client).post<PcmRecordPaymentReturnResponses, PcmRecordPaymentReturnErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/record-payment-return',
     ...options,
     headers: {
@@ -696,6 +775,7 @@ export const pcmRecordPaymentReturn = <ThrowOnError extends boolean = false>(opt
 });
 
 export const pcmCancelUnpostedPaymentReturn = <ThrowOnError extends boolean = false>(options: Options<PcmCancelUnpostedPaymentReturnData, ThrowOnError>): RequestResult<PcmCancelUnpostedPaymentReturnResponses, PcmCancelUnpostedPaymentReturnErrors, ThrowOnError> => (options.client ?? client).post<PcmCancelUnpostedPaymentReturnResponses, PcmCancelUnpostedPaymentReturnErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/cancel-unposted-payment-return',
     ...options,
     headers: {
@@ -705,6 +785,7 @@ export const pcmCancelUnpostedPaymentReturn = <ThrowOnError extends boolean = fa
 });
 
 export const pcmAcknowledgePaymentReturn = <ThrowOnError extends boolean = false>(options: Options<PcmAcknowledgePaymentReturnData, ThrowOnError>): RequestResult<PcmAcknowledgePaymentReturnResponses, PcmAcknowledgePaymentReturnErrors, ThrowOnError> => (options.client ?? client).post<PcmAcknowledgePaymentReturnResponses, PcmAcknowledgePaymentReturnErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/acknowledge-payment-return',
     ...options,
     headers: {
@@ -714,6 +795,7 @@ export const pcmAcknowledgePaymentReturn = <ThrowOnError extends boolean = false
 });
 
 export const pcmResolvePaymentReturnException = <ThrowOnError extends boolean = false>(options: Options<PcmResolvePaymentReturnExceptionData, ThrowOnError>): RequestResult<PcmResolvePaymentReturnExceptionResponses, PcmResolvePaymentReturnExceptionErrors, ThrowOnError> => (options.client ?? client).post<PcmResolvePaymentReturnExceptionResponses, PcmResolvePaymentReturnExceptionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/resolve-payment-return-exception',
     ...options,
     headers: {
@@ -723,6 +805,7 @@ export const pcmResolvePaymentReturnException = <ThrowOnError extends boolean = 
 });
 
 export const pcmRecordUnallocatedIncomingSettlement = <ThrowOnError extends boolean = false>(options: Options<PcmRecordUnallocatedIncomingSettlementData, ThrowOnError>): RequestResult<PcmRecordUnallocatedIncomingSettlementResponses, PcmRecordUnallocatedIncomingSettlementErrors, ThrowOnError> => (options.client ?? client).post<PcmRecordUnallocatedIncomingSettlementResponses, PcmRecordUnallocatedIncomingSettlementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/record-unallocated-incoming-settlement',
     ...options,
     headers: {
@@ -732,6 +815,7 @@ export const pcmRecordUnallocatedIncomingSettlement = <ThrowOnError extends bool
 });
 
 export const pcmResolveUnallocatedIncomingSettlement = <ThrowOnError extends boolean = false>(options: Options<PcmResolveUnallocatedIncomingSettlementData, ThrowOnError>): RequestResult<PcmResolveUnallocatedIncomingSettlementResponses, PcmResolveUnallocatedIncomingSettlementErrors, ThrowOnError> => (options.client ?? client).post<PcmResolveUnallocatedIncomingSettlementResponses, PcmResolveUnallocatedIncomingSettlementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/resolve-unallocated-incoming-settlement',
     ...options,
     headers: {
@@ -741,6 +825,7 @@ export const pcmResolveUnallocatedIncomingSettlement = <ThrowOnError extends boo
 });
 
 export const pcmRecordIncomingSettlement = <ThrowOnError extends boolean = false>(options: Options<PcmRecordIncomingSettlementData, ThrowOnError>): RequestResult<PcmRecordIncomingSettlementResponses, PcmRecordIncomingSettlementErrors, ThrowOnError> => (options.client ?? client).post<PcmRecordIncomingSettlementResponses, PcmRecordIncomingSettlementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/record-incoming-settlement',
     ...options,
     headers: {
@@ -750,6 +835,7 @@ export const pcmRecordIncomingSettlement = <ThrowOnError extends boolean = false
 });
 
 export const pcmResolveSettlementReceiptValidationException = <ThrowOnError extends boolean = false>(options: Options<PcmResolveSettlementReceiptValidationExceptionData, ThrowOnError>): RequestResult<PcmResolveSettlementReceiptValidationExceptionResponses, PcmResolveSettlementReceiptValidationExceptionErrors, ThrowOnError> => (options.client ?? client).post<PcmResolveSettlementReceiptValidationExceptionResponses, PcmResolveSettlementReceiptValidationExceptionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/resolve-settlement-receipt-validation-exception',
     ...options,
     headers: {
@@ -759,6 +845,7 @@ export const pcmResolveSettlementReceiptValidationException = <ThrowOnError exte
 });
 
 export const pcmResolveIncomingSettlementOwnerException = <ThrowOnError extends boolean = false>(options: Options<PcmResolveIncomingSettlementOwnerExceptionData, ThrowOnError>): RequestResult<PcmResolveIncomingSettlementOwnerExceptionResponses, PcmResolveIncomingSettlementOwnerExceptionErrors, ThrowOnError> => (options.client ?? client).post<PcmResolveIncomingSettlementOwnerExceptionResponses, PcmResolveIncomingSettlementOwnerExceptionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/resolve-incoming-settlement-owner-exception',
     ...options,
     headers: {
@@ -768,6 +855,7 @@ export const pcmResolveIncomingSettlementOwnerException = <ThrowOnError extends 
 });
 
 export const pcmCancelUnpostedSettlementReceipt = <ThrowOnError extends boolean = false>(options: Options<PcmCancelUnpostedSettlementReceiptData, ThrowOnError>): RequestResult<PcmCancelUnpostedSettlementReceiptResponses, PcmCancelUnpostedSettlementReceiptErrors, ThrowOnError> => (options.client ?? client).post<PcmCancelUnpostedSettlementReceiptResponses, PcmCancelUnpostedSettlementReceiptErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/cancel-unposted-settlement-receipt',
     ...options,
     headers: {
@@ -777,6 +865,7 @@ export const pcmCancelUnpostedSettlementReceipt = <ThrowOnError extends boolean 
 });
 
 export const pcmAcknowledgeIncomingSettlement = <ThrowOnError extends boolean = false>(options: Options<PcmAcknowledgeIncomingSettlementData, ThrowOnError>): RequestResult<PcmAcknowledgeIncomingSettlementResponses, PcmAcknowledgeIncomingSettlementErrors, ThrowOnError> => (options.client ?? client).post<PcmAcknowledgeIncomingSettlementResponses, PcmAcknowledgeIncomingSettlementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/acknowledge-incoming-settlement',
     ...options,
     headers: {
@@ -786,6 +875,7 @@ export const pcmAcknowledgeIncomingSettlement = <ThrowOnError extends boolean = 
 });
 
 export const pcmReverseIncomingSettlement = <ThrowOnError extends boolean = false>(options: Options<PcmReverseIncomingSettlementData, ThrowOnError>): RequestResult<PcmReverseIncomingSettlementResponses, PcmReverseIncomingSettlementErrors, ThrowOnError> => (options.client ?? client).post<PcmReverseIncomingSettlementResponses, PcmReverseIncomingSettlementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/actions/reverse-incoming-settlement',
     ...options,
     headers: {
@@ -795,6 +885,7 @@ export const pcmReverseIncomingSettlement = <ThrowOnError extends boolean = fals
 });
 
 export const pcmMaintainBankAccounts = <ThrowOnError extends boolean = false>(options: Options<PcmMaintainBankAccountsData, ThrowOnError>): RequestResult<PcmMaintainBankAccountsResponses, PcmMaintainBankAccountsErrors, ThrowOnError> => (options.client ?? client).put<PcmMaintainBankAccountsResponses, PcmMaintainBankAccountsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/payments/configuration/maintain-bank-accounts',
     ...options,
     headers: {
@@ -804,6 +895,7 @@ export const pcmMaintainBankAccounts = <ThrowOnError extends boolean = false>(op
 });
 
 export const rptRunConsolidation = <ThrowOnError extends boolean = false>(options: Options<RptRunConsolidationData, ThrowOnError>): RequestResult<RptRunConsolidationResponses, RptRunConsolidationErrors, ThrowOnError> => (options.client ?? client).post<RptRunConsolidationResponses, RptRunConsolidationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/reporting/actions/run-consolidation',
     ...options,
     headers: {
@@ -813,6 +905,7 @@ export const rptRunConsolidation = <ThrowOnError extends boolean = false>(option
 });
 
 export const rptApplyTranslationResult = <ThrowOnError extends boolean = false>(options: Options<RptApplyTranslationResultData, ThrowOnError>): RequestResult<RptApplyTranslationResultResponses, RptApplyTranslationResultErrors, ThrowOnError> => (options.client ?? client).post<RptApplyTranslationResultResponses, RptApplyTranslationResultErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/reporting/actions/apply-translation-result',
     ...options,
     headers: {
@@ -822,6 +915,7 @@ export const rptApplyTranslationResult = <ThrowOnError extends boolean = false>(
 });
 
 export const rptApplyConsolidationApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<RptApplyConsolidationApprovalDecisionData, ThrowOnError>): RequestResult<RptApplyConsolidationApprovalDecisionResponses, RptApplyConsolidationApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<RptApplyConsolidationApprovalDecisionResponses, RptApplyConsolidationApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/reporting/actions/apply-consolidation-approval-decision',
     ...options,
     headers: {
@@ -831,6 +925,7 @@ export const rptApplyConsolidationApprovalDecision = <ThrowOnError extends boole
 });
 
 export const rptPublishConsolidatedStatement = <ThrowOnError extends boolean = false>(options: Options<RptPublishConsolidatedStatementData, ThrowOnError>): RequestResult<RptPublishConsolidatedStatementResponses, RptPublishConsolidatedStatementErrors, ThrowOnError> => (options.client ?? client).post<RptPublishConsolidatedStatementResponses, RptPublishConsolidatedStatementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/reporting/actions/publish-consolidated-statement',
     ...options,
     headers: {
@@ -840,6 +935,7 @@ export const rptPublishConsolidatedStatement = <ThrowOnError extends boolean = f
 });
 
 export const rptMaintainReportDefinitions = <ThrowOnError extends boolean = false>(options: Options<RptMaintainReportDefinitionsData, ThrowOnError>): RequestResult<RptMaintainReportDefinitionsResponses, RptMaintainReportDefinitionsErrors, ThrowOnError> => (options.client ?? client).put<RptMaintainReportDefinitionsResponses, RptMaintainReportDefinitionsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/reporting/configuration/maintain-report-definitions',
     ...options,
     headers: {
@@ -849,6 +945,7 @@ export const rptMaintainReportDefinitions = <ThrowOnError extends boolean = fals
 });
 
 export const rptGenerateAndPublishLedgerFinancialStatements = <ThrowOnError extends boolean = false>(options: Options<RptGenerateAndPublishLedgerFinancialStatementsData, ThrowOnError>): RequestResult<RptGenerateAndPublishLedgerFinancialStatementsResponses, RptGenerateAndPublishLedgerFinancialStatementsErrors, ThrowOnError> => (options.client ?? client).post<RptGenerateAndPublishLedgerFinancialStatementsResponses, RptGenerateAndPublishLedgerFinancialStatementsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/reporting/actions/generate-and-publish-ledger-financial-statements',
     ...options,
     headers: {
@@ -858,6 +955,7 @@ export const rptGenerateAndPublishLedgerFinancialStatements = <ThrowOnError exte
 });
 
 export const icStartSettlement = <ThrowOnError extends boolean = false>(options: Options<IcStartSettlementData, ThrowOnError>): RequestResult<IcStartSettlementResponses, IcStartSettlementErrors, ThrowOnError> => (options.client ?? client).post<IcStartSettlementResponses, IcStartSettlementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/intercompany/actions/start-settlement',
     ...options,
     headers: {
@@ -867,6 +965,7 @@ export const icStartSettlement = <ThrowOnError extends boolean = false>(options:
 });
 
 export const icMatchIntercompanyItems = <ThrowOnError extends boolean = false>(options: Options<IcMatchIntercompanyItemsData, ThrowOnError>): RequestResult<IcMatchIntercompanyItemsResponses, IcMatchIntercompanyItemsErrors, ThrowOnError> => (options.client ?? client).post<IcMatchIntercompanyItemsResponses, IcMatchIntercompanyItemsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/intercompany/actions/match-intercompany-items',
     ...options,
     headers: {
@@ -876,6 +975,7 @@ export const icMatchIntercompanyItems = <ThrowOnError extends boolean = false>(o
 });
 
 export const icApplyResidualApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<IcApplyResidualApprovalDecisionData, ThrowOnError>): RequestResult<IcApplyResidualApprovalDecisionResponses, IcApplyResidualApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<IcApplyResidualApprovalDecisionResponses, IcApplyResidualApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/intercompany/actions/apply-residual-approval-decision',
     ...options,
     headers: {
@@ -885,6 +985,7 @@ export const icApplyResidualApprovalDecision = <ThrowOnError extends boolean = f
 });
 
 export const icCreateSettlementInstructions = <ThrowOnError extends boolean = false>(options: Options<IcCreateSettlementInstructionsData, ThrowOnError>): RequestResult<IcCreateSettlementInstructionsResponses, IcCreateSettlementInstructionsErrors, ThrowOnError> => (options.client ?? client).post<IcCreateSettlementInstructionsResponses, IcCreateSettlementInstructionsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/intercompany/actions/create-settlement-instructions',
     ...options,
     headers: {
@@ -894,6 +995,7 @@ export const icCreateSettlementInstructions = <ThrowOnError extends boolean = fa
 });
 
 export const icCompleteSettlementRun = <ThrowOnError extends boolean = false>(options: Options<IcCompleteSettlementRunData, ThrowOnError>): RequestResult<IcCompleteSettlementRunResponses, IcCompleteSettlementRunErrors, ThrowOnError> => (options.client ?? client).post<IcCompleteSettlementRunResponses, IcCompleteSettlementRunErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/intercompany/actions/complete-settlement-run',
     ...options,
     headers: {
@@ -903,6 +1005,7 @@ export const icCompleteSettlementRun = <ThrowOnError extends boolean = false>(op
 });
 
 export const icApplyIncomingSettlement = <ThrowOnError extends boolean = false>(options: Options<IcApplyIncomingSettlementData, ThrowOnError>): RequestResult<IcApplyIncomingSettlementResponses, IcApplyIncomingSettlementErrors, ThrowOnError> => (options.client ?? client).post<IcApplyIncomingSettlementResponses, IcApplyIncomingSettlementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/intercompany/actions/apply-incoming-settlement',
     ...options,
     headers: {
@@ -912,6 +1015,7 @@ export const icApplyIncomingSettlement = <ThrowOnError extends boolean = false>(
 });
 
 export const icReverseIncomingSettlementApplication = <ThrowOnError extends boolean = false>(options: Options<IcReverseIncomingSettlementApplicationData, ThrowOnError>): RequestResult<IcReverseIncomingSettlementApplicationResponses, IcReverseIncomingSettlementApplicationErrors, ThrowOnError> => (options.client ?? client).post<IcReverseIncomingSettlementApplicationResponses, IcReverseIncomingSettlementApplicationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/intercompany/actions/reverse-incoming-settlement-application',
     ...options,
     headers: {
@@ -921,6 +1025,7 @@ export const icReverseIncomingSettlementApplication = <ThrowOnError extends bool
 });
 
 export const icApplyPaymentReturn = <ThrowOnError extends boolean = false>(options: Options<IcApplyPaymentReturnData, ThrowOnError>): RequestResult<IcApplyPaymentReturnResponses, IcApplyPaymentReturnErrors, ThrowOnError> => (options.client ?? client).post<IcApplyPaymentReturnResponses, IcApplyPaymentReturnErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/intercompany/actions/apply-payment-return',
     ...options,
     headers: {
@@ -930,6 +1035,7 @@ export const icApplyPaymentReturn = <ThrowOnError extends boolean = false>(optio
 });
 
 export const icRunElimination = <ThrowOnError extends boolean = false>(options: Options<IcRunEliminationData, ThrowOnError>): RequestResult<IcRunEliminationResponses, IcRunEliminationErrors, ThrowOnError> => (options.client ?? client).post<IcRunEliminationResponses, IcRunEliminationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/intercompany/actions/run-elimination',
     ...options,
     headers: {
@@ -939,6 +1045,7 @@ export const icRunElimination = <ThrowOnError extends boolean = false>(options: 
 });
 
 export const icMaintainIntercompanyAgreements = <ThrowOnError extends boolean = false>(options: Options<IcMaintainIntercompanyAgreementsData, ThrowOnError>): RequestResult<IcMaintainIntercompanyAgreementsResponses, IcMaintainIntercompanyAgreementsErrors, ThrowOnError> => (options.client ?? client).put<IcMaintainIntercompanyAgreementsResponses, IcMaintainIntercompanyAgreementsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/intercompany/configuration/maintain-intercompany-agreements',
     ...options,
     headers: {
@@ -948,6 +1055,7 @@ export const icMaintainIntercompanyAgreements = <ThrowOnError extends boolean = 
 });
 
 export const icRecordIntercompanyTransactions = <ThrowOnError extends boolean = false>(options: Options<IcRecordIntercompanyTransactionsData, ThrowOnError>): RequestResult<IcRecordIntercompanyTransactionsResponses, IcRecordIntercompanyTransactionsErrors, ThrowOnError> => (options.client ?? client).post<IcRecordIntercompanyTransactionsResponses, IcRecordIntercompanyTransactionsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/intercompany/actions/record-intercompany-transactions',
     ...options,
     headers: {
@@ -957,6 +1065,7 @@ export const icRecordIntercompanyTransactions = <ThrowOnError extends boolean = 
 });
 
 export const revAssessContract = <ThrowOnError extends boolean = false>(options: Options<RevAssessContractData, ThrowOnError>): RequestResult<RevAssessContractResponses, RevAssessContractErrors, ThrowOnError> => (options.client ?? client).post<RevAssessContractResponses, RevAssessContractErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/revenue-recognition/actions/assess-contract',
     ...options,
     headers: {
@@ -966,6 +1075,7 @@ export const revAssessContract = <ThrowOnError extends boolean = false>(options:
 });
 
 export const revApplyRevenueScheduleApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<RevApplyRevenueScheduleApprovalDecisionData, ThrowOnError>): RequestResult<RevApplyRevenueScheduleApprovalDecisionResponses, RevApplyRevenueScheduleApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<RevApplyRevenueScheduleApprovalDecisionResponses, RevApplyRevenueScheduleApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/revenue-recognition/actions/apply-revenue-schedule-approval-decision',
     ...options,
     headers: {
@@ -975,6 +1085,7 @@ export const revApplyRevenueScheduleApprovalDecision = <ThrowOnError extends boo
 });
 
 export const revPublishRevenueAccountingProfile = <ThrowOnError extends boolean = false>(options: Options<RevPublishRevenueAccountingProfileData, ThrowOnError>): RequestResult<RevPublishRevenueAccountingProfileResponses, RevPublishRevenueAccountingProfileErrors, ThrowOnError> => (options.client ?? client).post<RevPublishRevenueAccountingProfileResponses, RevPublishRevenueAccountingProfileErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/revenue-recognition/actions/publish-revenue-accounting-profile',
     ...options,
     headers: {
@@ -984,6 +1095,7 @@ export const revPublishRevenueAccountingProfile = <ThrowOnError extends boolean 
 });
 
 export const revModifyContract = <ThrowOnError extends boolean = false>(options: Options<RevModifyContractData, ThrowOnError>): RequestResult<RevModifyContractResponses, RevModifyContractErrors, ThrowOnError> => (options.client ?? client).post<RevModifyContractResponses, RevModifyContractErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/revenue-recognition/actions/modify-contract',
     ...options,
     headers: {
@@ -993,6 +1105,7 @@ export const revModifyContract = <ThrowOnError extends boolean = false>(options:
 });
 
 export const revApplyContractModificationApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<RevApplyContractModificationApprovalDecisionData, ThrowOnError>): RequestResult<RevApplyContractModificationApprovalDecisionResponses, RevApplyContractModificationApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<RevApplyContractModificationApprovalDecisionResponses, RevApplyContractModificationApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/revenue-recognition/actions/apply-contract-modification-approval-decision',
     ...options,
     headers: {
@@ -1002,6 +1115,7 @@ export const revApplyContractModificationApprovalDecision = <ThrowOnError extend
 });
 
 export const revRunRecognition = <ThrowOnError extends boolean = false>(options: Options<RevRunRecognitionData, ThrowOnError>): RequestResult<RevRunRecognitionResponses, RevRunRecognitionErrors, ThrowOnError> => (options.client ?? client).post<RevRunRecognitionResponses, RevRunRecognitionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/revenue-recognition/actions/run-recognition',
     ...options,
     headers: {
@@ -1011,6 +1125,7 @@ export const revRunRecognition = <ThrowOnError extends boolean = false>(options:
 });
 
 export const faCapitalizeAsset = <ThrowOnError extends boolean = false>(options: Options<FaCapitalizeAssetData, ThrowOnError>): RequestResult<FaCapitalizeAssetResponses, FaCapitalizeAssetErrors, ThrowOnError> => (options.client ?? client).post<FaCapitalizeAssetResponses, FaCapitalizeAssetErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/capitalize-asset',
     ...options,
     headers: {
@@ -1020,6 +1135,7 @@ export const faCapitalizeAsset = <ThrowOnError extends boolean = false>(options:
 });
 
 export const faCreateAssetAcquisitionClearing = <ThrowOnError extends boolean = false>(options: Options<FaCreateAssetAcquisitionClearingData, ThrowOnError>): RequestResult<FaCreateAssetAcquisitionClearingResponses, FaCreateAssetAcquisitionClearingErrors, ThrowOnError> => (options.client ?? client).post<FaCreateAssetAcquisitionClearingResponses, FaCreateAssetAcquisitionClearingErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/create-asset-acquisition-clearing',
     ...options,
     headers: {
@@ -1029,6 +1145,7 @@ export const faCreateAssetAcquisitionClearing = <ThrowOnError extends boolean = 
 });
 
 export const faRunDepreciation = <ThrowOnError extends boolean = false>(options: Options<FaRunDepreciationData, ThrowOnError>): RequestResult<FaRunDepreciationResponses, FaRunDepreciationErrors, ThrowOnError> => (options.client ?? client).post<FaRunDepreciationResponses, FaRunDepreciationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/run-depreciation',
     ...options,
     headers: {
@@ -1038,6 +1155,7 @@ export const faRunDepreciation = <ThrowOnError extends boolean = false>(options:
 });
 
 export const faApplyImpairmentApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<FaApplyImpairmentApprovalDecisionData, ThrowOnError>): RequestResult<FaApplyImpairmentApprovalDecisionResponses, FaApplyImpairmentApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<FaApplyImpairmentApprovalDecisionResponses, FaApplyImpairmentApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/apply-impairment-approval-decision',
     ...options,
     headers: {
@@ -1047,6 +1165,7 @@ export const faApplyImpairmentApprovalDecision = <ThrowOnError extends boolean =
 });
 
 export const faDisposeAsset = <ThrowOnError extends boolean = false>(options: Options<FaDisposeAssetData, ThrowOnError>): RequestResult<FaDisposeAssetResponses, FaDisposeAssetErrors, ThrowOnError> => (options.client ?? client).post<FaDisposeAssetResponses, FaDisposeAssetErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/dispose-asset',
     ...options,
     headers: {
@@ -1056,6 +1175,7 @@ export const faDisposeAsset = <ThrowOnError extends boolean = false>(options: Op
 });
 
 export const faApplyAssetDisposalApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<FaApplyAssetDisposalApprovalDecisionData, ThrowOnError>): RequestResult<FaApplyAssetDisposalApprovalDecisionResponses, FaApplyAssetDisposalApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<FaApplyAssetDisposalApprovalDecisionResponses, FaApplyAssetDisposalApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/apply-asset-disposal-approval-decision',
     ...options,
     headers: {
@@ -1065,6 +1185,7 @@ export const faApplyAssetDisposalApprovalDecision = <ThrowOnError extends boolea
 });
 
 export const faCancelUnpostedAssetDisposal = <ThrowOnError extends boolean = false>(options: Options<FaCancelUnpostedAssetDisposalData, ThrowOnError>): RequestResult<FaCancelUnpostedAssetDisposalResponses, FaCancelUnpostedAssetDisposalErrors, ThrowOnError> => (options.client ?? client).post<FaCancelUnpostedAssetDisposalResponses, FaCancelUnpostedAssetDisposalErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/cancel-unposted-asset-disposal',
     ...options,
     headers: {
@@ -1074,6 +1195,7 @@ export const faCancelUnpostedAssetDisposal = <ThrowOnError extends boolean = fal
 });
 
 export const faCompensateFailedDisposalPosting = <ThrowOnError extends boolean = false>(options: Options<FaCompensateFailedDisposalPostingData, ThrowOnError>): RequestResult<FaCompensateFailedDisposalPostingResponses, FaCompensateFailedDisposalPostingErrors, ThrowOnError> => (options.client ?? client).post<FaCompensateFailedDisposalPostingResponses, FaCompensateFailedDisposalPostingErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/compensate-failed-disposal-posting',
     ...options,
     headers: {
@@ -1083,6 +1205,7 @@ export const faCompensateFailedDisposalPosting = <ThrowOnError extends boolean =
 });
 
 export const faCreateDisposalSettlementClearing = <ThrowOnError extends boolean = false>(options: Options<FaCreateDisposalSettlementClearingData, ThrowOnError>): RequestResult<FaCreateDisposalSettlementClearingResponses, FaCreateDisposalSettlementClearingErrors, ThrowOnError> => (options.client ?? client).post<FaCreateDisposalSettlementClearingResponses, FaCreateDisposalSettlementClearingErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/create-disposal-settlement-clearing',
     ...options,
     headers: {
@@ -1092,6 +1215,7 @@ export const faCreateDisposalSettlementClearing = <ThrowOnError extends boolean 
 });
 
 export const faApplyAssetSupplierLiabilityResult = <ThrowOnError extends boolean = false>(options: Options<FaApplyAssetSupplierLiabilityResultData, ThrowOnError>): RequestResult<FaApplyAssetSupplierLiabilityResultResponses, FaApplyAssetSupplierLiabilityResultErrors, ThrowOnError> => (options.client ?? client).post<FaApplyAssetSupplierLiabilityResultResponses, FaApplyAssetSupplierLiabilityResultErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/apply-asset-supplier-liability-result',
     ...options,
     headers: {
@@ -1101,6 +1225,7 @@ export const faApplyAssetSupplierLiabilityResult = <ThrowOnError extends boolean
 });
 
 export const faApplyIncomingSettlement = <ThrowOnError extends boolean = false>(options: Options<FaApplyIncomingSettlementData, ThrowOnError>): RequestResult<FaApplyIncomingSettlementResponses, FaApplyIncomingSettlementErrors, ThrowOnError> => (options.client ?? client).post<FaApplyIncomingSettlementResponses, FaApplyIncomingSettlementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/apply-incoming-settlement',
     ...options,
     headers: {
@@ -1110,6 +1235,7 @@ export const faApplyIncomingSettlement = <ThrowOnError extends boolean = false>(
 });
 
 export const faReverseIncomingSettlementApplication = <ThrowOnError extends boolean = false>(options: Options<FaReverseIncomingSettlementApplicationData, ThrowOnError>): RequestResult<FaReverseIncomingSettlementApplicationResponses, FaReverseIncomingSettlementApplicationErrors, ThrowOnError> => (options.client ?? client).post<FaReverseIncomingSettlementApplicationResponses, FaReverseIncomingSettlementApplicationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/reverse-incoming-settlement-application',
     ...options,
     headers: {
@@ -1119,6 +1245,7 @@ export const faReverseIncomingSettlementApplication = <ThrowOnError extends bool
 });
 
 export const faApplyPaymentReturn = <ThrowOnError extends boolean = false>(options: Options<FaApplyPaymentReturnData, ThrowOnError>): RequestResult<FaApplyPaymentReturnResponses, FaApplyPaymentReturnErrors, ThrowOnError> => (options.client ?? client).post<FaApplyPaymentReturnResponses, FaApplyPaymentReturnErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/apply-payment-return',
     ...options,
     headers: {
@@ -1128,6 +1255,7 @@ export const faApplyPaymentReturn = <ThrowOnError extends boolean = false>(optio
 });
 
 export const faApplyAssetSettlementResult = <ThrowOnError extends boolean = false>(options: Options<FaApplyAssetSettlementResultData, ThrowOnError>): RequestResult<FaApplyAssetSettlementResultResponses, FaApplyAssetSettlementResultErrors, ThrowOnError> => (options.client ?? client).post<FaApplyAssetSettlementResultResponses, FaApplyAssetSettlementResultErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/apply-asset-settlement-result',
     ...options,
     headers: {
@@ -1137,6 +1265,7 @@ export const faApplyAssetSettlementResult = <ThrowOnError extends boolean = fals
 });
 
 export const faReclassifyDisposalCostForPayment = <ThrowOnError extends boolean = false>(options: Options<FaReclassifyDisposalCostForPaymentData, ThrowOnError>): RequestResult<FaReclassifyDisposalCostForPaymentResponses, FaReclassifyDisposalCostForPaymentErrors, ThrowOnError> => (options.client ?? client).post<FaReclassifyDisposalCostForPaymentResponses, FaReclassifyDisposalCostForPaymentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/reclassify-disposal-cost-for-payment',
     ...options,
     headers: {
@@ -1146,6 +1275,7 @@ export const faReclassifyDisposalCostForPayment = <ThrowOnError extends boolean 
 });
 
 export const faRequestDisposalCostPayment = <ThrowOnError extends boolean = false>(options: Options<FaRequestDisposalCostPaymentData, ThrowOnError>): RequestResult<FaRequestDisposalCostPaymentResponses, FaRequestDisposalCostPaymentErrors, ThrowOnError> => (options.client ?? client).post<FaRequestDisposalCostPaymentResponses, FaRequestDisposalCostPaymentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/request-disposal-cost-payment',
     ...options,
     headers: {
@@ -1155,6 +1285,7 @@ export const faRequestDisposalCostPayment = <ThrowOnError extends boolean = fals
 });
 
 export const faRequestDisposalCostPaymentReplacement = <ThrowOnError extends boolean = false>(options: Options<FaRequestDisposalCostPaymentReplacementData, ThrowOnError>): RequestResult<FaRequestDisposalCostPaymentReplacementResponses, FaRequestDisposalCostPaymentReplacementErrors, ThrowOnError> => (options.client ?? client).post<FaRequestDisposalCostPaymentReplacementResponses, FaRequestDisposalCostPaymentReplacementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/request-disposal-cost-payment-replacement',
     ...options,
     headers: {
@@ -1164,6 +1295,7 @@ export const faRequestDisposalCostPaymentReplacement = <ThrowOnError extends boo
 });
 
 export const faRecordImpairmentAssessments = <ThrowOnError extends boolean = false>(options: Options<FaRecordImpairmentAssessmentsData, ThrowOnError>): RequestResult<FaRecordImpairmentAssessmentsResponses, FaRecordImpairmentAssessmentsErrors, ThrowOnError> => (options.client ?? client).post<FaRecordImpairmentAssessmentsResponses, FaRecordImpairmentAssessmentsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/record-impairment-assessments',
     ...options,
     headers: {
@@ -1173,6 +1305,7 @@ export const faRecordImpairmentAssessments = <ThrowOnError extends boolean = fal
 });
 
 export const faTransferAssetsOrComponents = <ThrowOnError extends boolean = false>(options: Options<FaTransferAssetsOrComponentsData, ThrowOnError>): RequestResult<FaTransferAssetsOrComponentsResponses, FaTransferAssetsOrComponentsErrors, ThrowOnError> => (options.client ?? client).post<FaTransferAssetsOrComponentsResponses, FaTransferAssetsOrComponentsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/transfer-assets-or-components',
     ...options,
     headers: {
@@ -1182,6 +1315,7 @@ export const faTransferAssetsOrComponents = <ThrowOnError extends boolean = fals
 });
 
 export const faSplitAssetsOrComponents = <ThrowOnError extends boolean = false>(options: Options<FaSplitAssetsOrComponentsData, ThrowOnError>): RequestResult<FaSplitAssetsOrComponentsResponses, FaSplitAssetsOrComponentsErrors, ThrowOnError> => (options.client ?? client).post<FaSplitAssetsOrComponentsResponses, FaSplitAssetsOrComponentsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/split-assets-or-components',
     ...options,
     headers: {
@@ -1191,6 +1325,7 @@ export const faSplitAssetsOrComponents = <ThrowOnError extends boolean = false>(
 });
 
 export const faCorrectPostedAssetDisposals = <ThrowOnError extends boolean = false>(options: Options<FaCorrectPostedAssetDisposalsData, ThrowOnError>): RequestResult<FaCorrectPostedAssetDisposalsResponses, FaCorrectPostedAssetDisposalsErrors, ThrowOnError> => (options.client ?? client).post<FaCorrectPostedAssetDisposalsResponses, FaCorrectPostedAssetDisposalsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fixed-assets/actions/correct-posted-asset-disposals',
     ...options,
     headers: {
@@ -1200,6 +1335,7 @@ export const faCorrectPostedAssetDisposals = <ThrowOnError extends boolean = fal
 });
 
 export const fxPublishRateSet = <ThrowOnError extends boolean = false>(options: Options<FxPublishRateSetData, ThrowOnError>): RequestResult<FxPublishRateSetResponses, FxPublishRateSetErrors, ThrowOnError> => (options.client ?? client).post<FxPublishRateSetResponses, FxPublishRateSetErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/multi-currency/actions/publish-rate-set',
     ...options,
     headers: {
@@ -1209,6 +1345,7 @@ export const fxPublishRateSet = <ThrowOnError extends boolean = false>(options: 
 });
 
 export const fxRunRevaluation = <ThrowOnError extends boolean = false>(options: Options<FxRunRevaluationData, ThrowOnError>): RequestResult<FxRunRevaluationResponses, FxRunRevaluationErrors, ThrowOnError> => (options.client ?? client).post<FxRunRevaluationResponses, FxRunRevaluationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/multi-currency/actions/run-revaluation',
     ...options,
     headers: {
@@ -1218,6 +1355,7 @@ export const fxRunRevaluation = <ThrowOnError extends boolean = false>(options: 
 });
 
 export const fxApplyRevaluationApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<FxApplyRevaluationApprovalDecisionData, ThrowOnError>): RequestResult<FxApplyRevaluationApprovalDecisionResponses, FxApplyRevaluationApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<FxApplyRevaluationApprovalDecisionResponses, FxApplyRevaluationApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/multi-currency/actions/apply-revaluation-approval-decision',
     ...options,
     headers: {
@@ -1227,6 +1365,7 @@ export const fxApplyRevaluationApprovalDecision = <ThrowOnError extends boolean 
 });
 
 export const fxPostRevaluationRun = <ThrowOnError extends boolean = false>(options: Options<FxPostRevaluationRunData, ThrowOnError>): RequestResult<FxPostRevaluationRunResponses, FxPostRevaluationRunErrors, ThrowOnError> => (options.client ?? client).post<FxPostRevaluationRunResponses, FxPostRevaluationRunErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/multi-currency/actions/post-revaluation-run',
     ...options,
     headers: {
@@ -1236,6 +1375,7 @@ export const fxPostRevaluationRun = <ThrowOnError extends boolean = false>(optio
 });
 
 export const fxRunTranslation = <ThrowOnError extends boolean = false>(options: Options<FxRunTranslationData, ThrowOnError>): RequestResult<FxRunTranslationResponses, FxRunTranslationErrors, ThrowOnError> => (options.client ?? client).post<FxRunTranslationResponses, FxRunTranslationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/multi-currency/actions/run-translation',
     ...options,
     headers: {
@@ -1245,6 +1385,7 @@ export const fxRunTranslation = <ThrowOnError extends boolean = false>(options: 
 });
 
 export const fpmStartSoftClose = <ThrowOnError extends boolean = false>(options: Options<FpmStartSoftCloseData, ThrowOnError>): RequestResult<FpmStartSoftCloseResponses, FpmStartSoftCloseErrors, ThrowOnError> => (options.client ?? client).post<FpmStartSoftCloseResponses, FpmStartSoftCloseErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fiscal-periods/actions/start-soft-close',
     ...options,
     headers: {
@@ -1254,6 +1395,7 @@ export const fpmStartSoftClose = <ThrowOnError extends boolean = false>(options:
 });
 
 export const fpmEndSoftClose = <ThrowOnError extends boolean = false>(options: Options<FpmEndSoftCloseData, ThrowOnError>): RequestResult<FpmEndSoftCloseResponses, FpmEndSoftCloseErrors, ThrowOnError> => (options.client ?? client).post<FpmEndSoftCloseResponses, FpmEndSoftCloseErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fiscal-periods/actions/end-soft-close',
     ...options,
     headers: {
@@ -1263,6 +1405,7 @@ export const fpmEndSoftClose = <ThrowOnError extends boolean = false>(options: O
 });
 
 export const fpmStartHardClose = <ThrowOnError extends boolean = false>(options: Options<FpmStartHardCloseData, ThrowOnError>): RequestResult<FpmStartHardCloseResponses, FpmStartHardCloseErrors, ThrowOnError> => (options.client ?? client).post<FpmStartHardCloseResponses, FpmStartHardCloseErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fiscal-periods/actions/start-hard-close',
     ...options,
     headers: {
@@ -1272,6 +1415,7 @@ export const fpmStartHardClose = <ThrowOnError extends boolean = false>(options:
 });
 
 export const fpmResumeCloseRun = <ThrowOnError extends boolean = false>(options: Options<FpmResumeCloseRunData, ThrowOnError>): RequestResult<FpmResumeCloseRunResponses, FpmResumeCloseRunErrors, ThrowOnError> => (options.client ?? client).post<FpmResumeCloseRunResponses, FpmResumeCloseRunErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fiscal-periods/actions/resume-close-run',
     ...options,
     headers: {
@@ -1281,6 +1425,7 @@ export const fpmResumeCloseRun = <ThrowOnError extends boolean = false>(options:
 });
 
 export const fpmAbortCloseRun = <ThrowOnError extends boolean = false>(options: Options<FpmAbortCloseRunData, ThrowOnError>): RequestResult<FpmAbortCloseRunResponses, FpmAbortCloseRunErrors, ThrowOnError> => (options.client ?? client).post<FpmAbortCloseRunResponses, FpmAbortCloseRunErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fiscal-periods/actions/abort-close-run',
     ...options,
     headers: {
@@ -1290,6 +1435,7 @@ export const fpmAbortCloseRun = <ThrowOnError extends boolean = false>(options: 
 });
 
 export const fpmApplyPostingGateResult = <ThrowOnError extends boolean = false>(options: Options<FpmApplyPostingGateResultData, ThrowOnError>): RequestResult<FpmApplyPostingGateResultResponses, FpmApplyPostingGateResultErrors, ThrowOnError> => (options.client ?? client).post<FpmApplyPostingGateResultResponses, FpmApplyPostingGateResultErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fiscal-periods/actions/apply-posting-gate-result',
     ...options,
     headers: {
@@ -1299,6 +1445,7 @@ export const fpmApplyPostingGateResult = <ThrowOnError extends boolean = false>(
 });
 
 export const fpmApplyCloseExceptionApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<FpmApplyCloseExceptionApprovalDecisionData, ThrowOnError>): RequestResult<FpmApplyCloseExceptionApprovalDecisionResponses, FpmApplyCloseExceptionApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<FpmApplyCloseExceptionApprovalDecisionResponses, FpmApplyCloseExceptionApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fiscal-periods/actions/apply-close-exception-approval-decision',
     ...options,
     headers: {
@@ -1308,6 +1455,7 @@ export const fpmApplyCloseExceptionApprovalDecision = <ThrowOnError extends bool
 });
 
 export const fpmApplyCloseApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<FpmApplyCloseApprovalDecisionData, ThrowOnError>): RequestResult<FpmApplyCloseApprovalDecisionResponses, FpmApplyCloseApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<FpmApplyCloseApprovalDecisionResponses, FpmApplyCloseApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fiscal-periods/actions/apply-close-approval-decision',
     ...options,
     headers: {
@@ -1317,6 +1465,7 @@ export const fpmApplyCloseApprovalDecision = <ThrowOnError extends boolean = fal
 });
 
 export const fpmRequestReopen = <ThrowOnError extends boolean = false>(options: Options<FpmRequestReopenData, ThrowOnError>): RequestResult<FpmRequestReopenResponses, FpmRequestReopenErrors, ThrowOnError> => (options.client ?? client).post<FpmRequestReopenResponses, FpmRequestReopenErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fiscal-periods/actions/request-reopen',
     ...options,
     headers: {
@@ -1326,6 +1475,7 @@ export const fpmRequestReopen = <ThrowOnError extends boolean = false>(options: 
 });
 
 export const fpmApplyReopenApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<FpmApplyReopenApprovalDecisionData, ThrowOnError>): RequestResult<FpmApplyReopenApprovalDecisionResponses, FpmApplyReopenApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<FpmApplyReopenApprovalDecisionResponses, FpmApplyReopenApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fiscal-periods/actions/apply-reopen-approval-decision',
     ...options,
     headers: {
@@ -1335,6 +1485,7 @@ export const fpmApplyReopenApprovalDecision = <ThrowOnError extends boolean = fa
 });
 
 export const fpmStartReclose = <ThrowOnError extends boolean = false>(options: Options<FpmStartRecloseData, ThrowOnError>): RequestResult<FpmStartRecloseResponses, FpmStartRecloseErrors, ThrowOnError> => (options.client ?? client).post<FpmStartRecloseResponses, FpmStartRecloseErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fiscal-periods/actions/start-reclose',
     ...options,
     headers: {
@@ -1344,6 +1495,7 @@ export const fpmStartReclose = <ThrowOnError extends boolean = false>(options: O
 });
 
 export const fpmTakeOverPeriodControl = <ThrowOnError extends boolean = false>(options: Options<FpmTakeOverPeriodControlData, ThrowOnError>): RequestResult<FpmTakeOverPeriodControlResponses, FpmTakeOverPeriodControlErrors, ThrowOnError> => (options.client ?? client).post<FpmTakeOverPeriodControlResponses, FpmTakeOverPeriodControlErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fiscal-periods/actions/take-over-period-control',
     ...options,
     headers: {
@@ -1353,6 +1505,7 @@ export const fpmTakeOverPeriodControl = <ThrowOnError extends boolean = false>(o
 });
 
 export const fpmExtendCloseException = <ThrowOnError extends boolean = false>(options: Options<FpmExtendCloseExceptionData, ThrowOnError>): RequestResult<FpmExtendCloseExceptionResponses, FpmExtendCloseExceptionErrors, ThrowOnError> => (options.client ?? client).post<FpmExtendCloseExceptionResponses, FpmExtendCloseExceptionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/fiscal-periods/actions/extend-close-exception',
     ...options,
     headers: {
@@ -1362,6 +1515,7 @@ export const fpmExtendCloseException = <ThrowOnError extends boolean = false>(op
 });
 
 export const coaMaintainSegmentDefinitions = <ThrowOnError extends boolean = false>(options: Options<CoaMaintainSegmentDefinitionsData, ThrowOnError>): RequestResult<CoaMaintainSegmentDefinitionsResponses, CoaMaintainSegmentDefinitionsErrors, ThrowOnError> => (options.client ?? client).put<CoaMaintainSegmentDefinitionsResponses, CoaMaintainSegmentDefinitionsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/coa-segments/configuration/maintain-segment-definitions',
     ...options,
     headers: {
@@ -1371,6 +1525,7 @@ export const coaMaintainSegmentDefinitions = <ThrowOnError extends boolean = fal
 });
 
 export const coaMaintainSegmentValues = <ThrowOnError extends boolean = false>(options: Options<CoaMaintainSegmentValuesData, ThrowOnError>): RequestResult<CoaMaintainSegmentValuesResponses, CoaMaintainSegmentValuesErrors, ThrowOnError> => (options.client ?? client).put<CoaMaintainSegmentValuesResponses, CoaMaintainSegmentValuesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/coa-segments/configuration/maintain-segment-values',
     ...options,
     headers: {
@@ -1380,6 +1535,7 @@ export const coaMaintainSegmentValues = <ThrowOnError extends boolean = false>(o
 });
 
 export const coaValidateSegmentCombinations = <ThrowOnError extends boolean = false>(options: Options<CoaValidateSegmentCombinationsData, ThrowOnError>): RequestResult<CoaValidateSegmentCombinationsResponses, CoaValidateSegmentCombinationsErrors, ThrowOnError> => (options.client ?? client).post<CoaValidateSegmentCombinationsResponses, CoaValidateSegmentCombinationsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/coa-segments/actions/validate-segment-combinations',
     ...options,
     headers: {
@@ -1389,6 +1545,7 @@ export const coaValidateSegmentCombinations = <ThrowOnError extends boolean = fa
 });
 
 export const coaRequestSegmentChanges = <ThrowOnError extends boolean = false>(options: Options<CoaRequestSegmentChangesData, ThrowOnError>): RequestResult<CoaRequestSegmentChangesResponses, CoaRequestSegmentChangesErrors, ThrowOnError> => (options.client ?? client).post<CoaRequestSegmentChangesResponses, CoaRequestSegmentChangesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/coa-segments/actions/request-segment-changes',
     ...options,
     headers: {
@@ -1398,6 +1555,7 @@ export const coaRequestSegmentChanges = <ThrowOnError extends boolean = false>(o
 });
 
 export const coaApplySegmentChangeApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<CoaApplySegmentChangeApprovalDecisionData, ThrowOnError>): RequestResult<CoaApplySegmentChangeApprovalDecisionResponses, CoaApplySegmentChangeApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<CoaApplySegmentChangeApprovalDecisionResponses, CoaApplySegmentChangeApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/coa-segments/actions/apply-segment-change-approval-decision',
     ...options,
     headers: {
@@ -1407,6 +1565,7 @@ export const coaApplySegmentChangeApprovalDecision = <ThrowOnError extends boole
 });
 
 export const bfrImportStatement = <ThrowOnError extends boolean = false>(options: Options<BfrImportStatementData, ThrowOnError>): RequestResult<BfrImportStatementResponses, BfrImportStatementErrors, ThrowOnError> => (options.client ?? client).post<BfrImportStatementResponses, BfrImportStatementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/bank-reconciliation/actions/import-statement',
     ...options,
     headers: {
@@ -1416,6 +1575,7 @@ export const bfrImportStatement = <ThrowOnError extends boolean = false>(options
 });
 
 export const bfrProposeMatch = <ThrowOnError extends boolean = false>(options: Options<BfrProposeMatchData, ThrowOnError>): RequestResult<BfrProposeMatchResponses, BfrProposeMatchErrors, ThrowOnError> => (options.client ?? client).post<BfrProposeMatchResponses, BfrProposeMatchErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/bank-reconciliation/actions/propose-match',
     ...options,
     headers: {
@@ -1425,6 +1585,7 @@ export const bfrProposeMatch = <ThrowOnError extends boolean = false>(options: O
 });
 
 export const bfrConfirmMatch = <ThrowOnError extends boolean = false>(options: Options<BfrConfirmMatchData, ThrowOnError>): RequestResult<BfrConfirmMatchResponses, BfrConfirmMatchErrors, ThrowOnError> => (options.client ?? client).post<BfrConfirmMatchResponses, BfrConfirmMatchErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/bank-reconciliation/actions/confirm-match',
     ...options,
     headers: {
@@ -1434,6 +1595,7 @@ export const bfrConfirmMatch = <ThrowOnError extends boolean = false>(options: O
 });
 
 export const bfrUnmatch = <ThrowOnError extends boolean = false>(options: Options<BfrUnmatchData, ThrowOnError>): RequestResult<BfrUnmatchResponses, BfrUnmatchErrors, ThrowOnError> => (options.client ?? client).post<BfrUnmatchResponses, BfrUnmatchErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/bank-reconciliation/actions/unmatch',
     ...options,
     headers: {
@@ -1443,6 +1605,7 @@ export const bfrUnmatch = <ThrowOnError extends boolean = false>(options: Option
 });
 
 export const bfrCompleteReconciliation = <ThrowOnError extends boolean = false>(options: Options<BfrCompleteReconciliationData, ThrowOnError>): RequestResult<BfrCompleteReconciliationResponses, BfrCompleteReconciliationErrors, ThrowOnError> => (options.client ?? client).post<BfrCompleteReconciliationResponses, BfrCompleteReconciliationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/bank-reconciliation/actions/complete-reconciliation',
     ...options,
     headers: {
@@ -1452,6 +1615,7 @@ export const bfrCompleteReconciliation = <ThrowOnError extends boolean = false>(
 });
 
 export const bfrMaintainBankFeedConnections = <ThrowOnError extends boolean = false>(options: Options<BfrMaintainBankFeedConnectionsData, ThrowOnError>): RequestResult<BfrMaintainBankFeedConnectionsResponses, BfrMaintainBankFeedConnectionsErrors, ThrowOnError> => (options.client ?? client).put<BfrMaintainBankFeedConnectionsResponses, BfrMaintainBankFeedConnectionsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/bank-reconciliation/configuration/maintain-bank-feed-connections',
     ...options,
     headers: {
@@ -1461,6 +1625,7 @@ export const bfrMaintainBankFeedConnections = <ThrowOnError extends boolean = fa
 });
 
 export const taxDetermineTax = <ThrowOnError extends boolean = false>(options: Options<TaxDetermineTaxData, ThrowOnError>): RequestResult<TaxDetermineTaxResponses, TaxDetermineTaxErrors, ThrowOnError> => (options.client ?? client).post<TaxDetermineTaxResponses, TaxDetermineTaxErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/actions/determine-tax',
     ...options,
     headers: {
@@ -1470,6 +1635,7 @@ export const taxDetermineTax = <ThrowOnError extends boolean = false>(options: O
 });
 
 export const taxPrepareTaxReturn = <ThrowOnError extends boolean = false>(options: Options<TaxPrepareTaxReturnData, ThrowOnError>): RequestResult<TaxPrepareTaxReturnResponses, TaxPrepareTaxReturnErrors, ThrowOnError> => (options.client ?? client).post<TaxPrepareTaxReturnResponses, TaxPrepareTaxReturnErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/actions/prepare-tax-return',
     ...options,
     headers: {
@@ -1479,6 +1645,7 @@ export const taxPrepareTaxReturn = <ThrowOnError extends boolean = false>(option
 });
 
 export const taxApplyTaxReturnApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<TaxApplyTaxReturnApprovalDecisionData, ThrowOnError>): RequestResult<TaxApplyTaxReturnApprovalDecisionResponses, TaxApplyTaxReturnApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<TaxApplyTaxReturnApprovalDecisionResponses, TaxApplyTaxReturnApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/actions/apply-tax-return-approval-decision',
     ...options,
     headers: {
@@ -1488,6 +1655,7 @@ export const taxApplyTaxReturnApprovalDecision = <ThrowOnError extends boolean =
 });
 
 export const taxSubmitTaxReturn = <ThrowOnError extends boolean = false>(options: Options<TaxSubmitTaxReturnData, ThrowOnError>): RequestResult<TaxSubmitTaxReturnResponses, TaxSubmitTaxReturnErrors, ThrowOnError> => (options.client ?? client).post<TaxSubmitTaxReturnResponses, TaxSubmitTaxReturnErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/actions/submit-tax-return',
     ...options,
     headers: {
@@ -1497,6 +1665,7 @@ export const taxSubmitTaxReturn = <ThrowOnError extends boolean = false>(options
 });
 
 export const taxCreateTaxAmendment = <ThrowOnError extends boolean = false>(options: Options<TaxCreateTaxAmendmentData, ThrowOnError>): RequestResult<TaxCreateTaxAmendmentResponses, TaxCreateTaxAmendmentErrors, ThrowOnError> => (options.client ?? client).post<TaxCreateTaxAmendmentResponses, TaxCreateTaxAmendmentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/actions/create-tax-amendment',
     ...options,
     headers: {
@@ -1506,6 +1675,7 @@ export const taxCreateTaxAmendment = <ThrowOnError extends boolean = false>(opti
 });
 
 export const taxApplyTaxAmendmentApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<TaxApplyTaxAmendmentApprovalDecisionData, ThrowOnError>): RequestResult<TaxApplyTaxAmendmentApprovalDecisionResponses, TaxApplyTaxAmendmentApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<TaxApplyTaxAmendmentApprovalDecisionResponses, TaxApplyTaxAmendmentApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/actions/apply-tax-amendment-approval-decision',
     ...options,
     headers: {
@@ -1515,6 +1685,7 @@ export const taxApplyTaxAmendmentApprovalDecision = <ThrowOnError extends boolea
 });
 
 export const taxSubmitTaxAmendment = <ThrowOnError extends boolean = false>(options: Options<TaxSubmitTaxAmendmentData, ThrowOnError>): RequestResult<TaxSubmitTaxAmendmentResponses, TaxSubmitTaxAmendmentErrors, ThrowOnError> => (options.client ?? client).post<TaxSubmitTaxAmendmentResponses, TaxSubmitTaxAmendmentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/actions/submit-tax-amendment',
     ...options,
     headers: {
@@ -1524,6 +1695,7 @@ export const taxSubmitTaxAmendment = <ThrowOnError extends boolean = false>(opti
 });
 
 export const taxCreateReturnLevelTaxAdjustment = <ThrowOnError extends boolean = false>(options: Options<TaxCreateReturnLevelTaxAdjustmentData, ThrowOnError>): RequestResult<TaxCreateReturnLevelTaxAdjustmentResponses, TaxCreateReturnLevelTaxAdjustmentErrors, ThrowOnError> => (options.client ?? client).post<TaxCreateReturnLevelTaxAdjustmentResponses, TaxCreateReturnLevelTaxAdjustmentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/actions/create-return-level-tax-adjustment',
     ...options,
     headers: {
@@ -1533,6 +1705,7 @@ export const taxCreateReturnLevelTaxAdjustment = <ThrowOnError extends boolean =
 });
 
 export const taxApplyReturnLevelTaxAdjustmentApprovalDecision = <ThrowOnError extends boolean = false>(options: Options<TaxApplyReturnLevelTaxAdjustmentApprovalDecisionData, ThrowOnError>): RequestResult<TaxApplyReturnLevelTaxAdjustmentApprovalDecisionResponses, TaxApplyReturnLevelTaxAdjustmentApprovalDecisionErrors, ThrowOnError> => (options.client ?? client).post<TaxApplyReturnLevelTaxAdjustmentApprovalDecisionResponses, TaxApplyReturnLevelTaxAdjustmentApprovalDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/actions/apply-return-level-tax-adjustment-approval-decision',
     ...options,
     headers: {
@@ -1542,6 +1715,7 @@ export const taxApplyReturnLevelTaxAdjustmentApprovalDecision = <ThrowOnError ex
 });
 
 export const taxPostReturnLevelTaxAdjustment = <ThrowOnError extends boolean = false>(options: Options<TaxPostReturnLevelTaxAdjustmentData, ThrowOnError>): RequestResult<TaxPostReturnLevelTaxAdjustmentResponses, TaxPostReturnLevelTaxAdjustmentErrors, ThrowOnError> => (options.client ?? client).post<TaxPostReturnLevelTaxAdjustmentResponses, TaxPostReturnLevelTaxAdjustmentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/actions/post-return-level-tax-adjustment',
     ...options,
     headers: {
@@ -1551,6 +1725,7 @@ export const taxPostReturnLevelTaxAdjustment = <ThrowOnError extends boolean = f
 });
 
 export const taxRequestTaxPayment = <ThrowOnError extends boolean = false>(options: Options<TaxRequestTaxPaymentData, ThrowOnError>): RequestResult<TaxRequestTaxPaymentResponses, TaxRequestTaxPaymentErrors, ThrowOnError> => (options.client ?? client).post<TaxRequestTaxPaymentResponses, TaxRequestTaxPaymentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/actions/request-tax-payment',
     ...options,
     headers: {
@@ -1560,6 +1735,7 @@ export const taxRequestTaxPayment = <ThrowOnError extends boolean = false>(optio
 });
 
 export const taxRecordTaxPaymentSettlement = <ThrowOnError extends boolean = false>(options: Options<TaxRecordTaxPaymentSettlementData, ThrowOnError>): RequestResult<TaxRecordTaxPaymentSettlementResponses, TaxRecordTaxPaymentSettlementErrors, ThrowOnError> => (options.client ?? client).post<TaxRecordTaxPaymentSettlementResponses, TaxRecordTaxPaymentSettlementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/actions/record-tax-payment-settlement',
     ...options,
     headers: {
@@ -1569,6 +1745,7 @@ export const taxRecordTaxPaymentSettlement = <ThrowOnError extends boolean = fal
 });
 
 export const taxApplyIncomingSettlement = <ThrowOnError extends boolean = false>(options: Options<TaxApplyIncomingSettlementData, ThrowOnError>): RequestResult<TaxApplyIncomingSettlementResponses, TaxApplyIncomingSettlementErrors, ThrowOnError> => (options.client ?? client).post<TaxApplyIncomingSettlementResponses, TaxApplyIncomingSettlementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/actions/apply-incoming-settlement',
     ...options,
     headers: {
@@ -1578,6 +1755,7 @@ export const taxApplyIncomingSettlement = <ThrowOnError extends boolean = false>
 });
 
 export const taxReverseIncomingSettlementApplication = <ThrowOnError extends boolean = false>(options: Options<TaxReverseIncomingSettlementApplicationData, ThrowOnError>): RequestResult<TaxReverseIncomingSettlementApplicationResponses, TaxReverseIncomingSettlementApplicationErrors, ThrowOnError> => (options.client ?? client).post<TaxReverseIncomingSettlementApplicationResponses, TaxReverseIncomingSettlementApplicationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/actions/reverse-incoming-settlement-application',
     ...options,
     headers: {
@@ -1587,6 +1765,7 @@ export const taxReverseIncomingSettlementApplication = <ThrowOnError extends boo
 });
 
 export const taxApplyPaymentReturn = <ThrowOnError extends boolean = false>(options: Options<TaxApplyPaymentReturnData, ThrowOnError>): RequestResult<TaxApplyPaymentReturnResponses, TaxApplyPaymentReturnErrors, ThrowOnError> => (options.client ?? client).post<TaxApplyPaymentReturnResponses, TaxApplyPaymentReturnErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/actions/apply-payment-return',
     ...options,
     headers: {
@@ -1596,6 +1775,7 @@ export const taxApplyPaymentReturn = <ThrowOnError extends boolean = false>(opti
 });
 
 export const taxMaintainTaxConfigurations = <ThrowOnError extends boolean = false>(options: Options<TaxMaintainTaxConfigurationsData, ThrowOnError>): RequestResult<TaxMaintainTaxConfigurationsResponses, TaxMaintainTaxConfigurationsErrors, ThrowOnError> => (options.client ?? client).put<TaxMaintainTaxConfigurationsResponses, TaxMaintainTaxConfigurationsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/tax/configuration/maintain-tax-configurations',
     ...options,
     headers: {
@@ -1605,6 +1785,7 @@ export const taxMaintainTaxConfigurations = <ThrowOnError extends boolean = fals
 });
 
 export const wfaCreateApprovalRequest = <ThrowOnError extends boolean = false>(options: Options<WfaCreateApprovalRequestData, ThrowOnError>): RequestResult<WfaCreateApprovalRequestResponses, WfaCreateApprovalRequestErrors, ThrowOnError> => (options.client ?? client).post<WfaCreateApprovalRequestResponses, WfaCreateApprovalRequestErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/approvals/actions/create-approval-request',
     ...options,
     headers: {
@@ -1614,6 +1795,7 @@ export const wfaCreateApprovalRequest = <ThrowOnError extends boolean = false>(o
 });
 
 export const wfaDecideApprovalRequest = <ThrowOnError extends boolean = false>(options: Options<WfaDecideApprovalRequestData, ThrowOnError>): RequestResult<WfaDecideApprovalRequestResponses, WfaDecideApprovalRequestErrors, ThrowOnError> => (options.client ?? client).post<WfaDecideApprovalRequestResponses, WfaDecideApprovalRequestErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/approvals/actions/decide-approval-request',
     ...options,
     headers: {
@@ -1623,6 +1805,7 @@ export const wfaDecideApprovalRequest = <ThrowOnError extends boolean = false>(o
 });
 
 export const wfaDelegateApproval = <ThrowOnError extends boolean = false>(options: Options<WfaDelegateApprovalData, ThrowOnError>): RequestResult<WfaDelegateApprovalResponses, WfaDelegateApprovalErrors, ThrowOnError> => (options.client ?? client).post<WfaDelegateApprovalResponses, WfaDelegateApprovalErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/approvals/actions/delegate-approval',
     ...options,
     headers: {
@@ -1632,6 +1815,7 @@ export const wfaDelegateApproval = <ThrowOnError extends boolean = false>(option
 });
 
 export const wfaEscalateApproval = <ThrowOnError extends boolean = false>(options: Options<WfaEscalateApprovalData, ThrowOnError>): RequestResult<WfaEscalateApprovalResponses, WfaEscalateApprovalErrors, ThrowOnError> => (options.client ?? client).post<WfaEscalateApprovalResponses, WfaEscalateApprovalErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/approvals/actions/escalate-approval',
     ...options,
     headers: {
@@ -1641,6 +1825,7 @@ export const wfaEscalateApproval = <ThrowOnError extends boolean = false>(option
 });
 
 export const wfaMaintainApprovalPolicies = <ThrowOnError extends boolean = false>(options: Options<WfaMaintainApprovalPoliciesData, ThrowOnError>): RequestResult<WfaMaintainApprovalPoliciesResponses, WfaMaintainApprovalPoliciesErrors, ThrowOnError> => (options.client ?? client).put<WfaMaintainApprovalPoliciesResponses, WfaMaintainApprovalPoliciesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/approvals/configuration/maintain-approval-policies',
     ...options,
     headers: {
@@ -1650,6 +1835,7 @@ export const wfaMaintainApprovalPolicies = <ThrowOnError extends boolean = false
 });
 
 export const iamManageUsers = <ThrowOnError extends boolean = false>(options: Options<IamManageUsersData, ThrowOnError>): RequestResult<IamManageUsersResponses, IamManageUsersErrors, ThrowOnError> => (options.client ?? client).post<IamManageUsersResponses, IamManageUsersErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/identity-access/actions/manage-users',
     ...options,
     headers: {
@@ -1659,6 +1845,7 @@ export const iamManageUsers = <ThrowOnError extends boolean = false>(options: Op
 });
 
 export const iamManageRoles = <ThrowOnError extends boolean = false>(options: Options<IamManageRolesData, ThrowOnError>): RequestResult<IamManageRolesResponses, IamManageRolesErrors, ThrowOnError> => (options.client ?? client).post<IamManageRolesResponses, IamManageRolesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/identity-access/actions/manage-roles',
     ...options,
     headers: {
@@ -1668,6 +1855,7 @@ export const iamManageRoles = <ThrowOnError extends boolean = false>(options: Op
 });
 
 export const iamManageAccessPolicies = <ThrowOnError extends boolean = false>(options: Options<IamManageAccessPoliciesData, ThrowOnError>): RequestResult<IamManageAccessPoliciesResponses, IamManageAccessPoliciesErrors, ThrowOnError> => (options.client ?? client).post<IamManageAccessPoliciesResponses, IamManageAccessPoliciesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/identity-access/actions/manage-access-policies',
     ...options,
     headers: {
@@ -1677,6 +1865,7 @@ export const iamManageAccessPolicies = <ThrowOnError extends boolean = false>(op
 });
 
 export const iamManageSegregationRules = <ThrowOnError extends boolean = false>(options: Options<IamManageSegregationRulesData, ThrowOnError>): RequestResult<IamManageSegregationRulesResponses, IamManageSegregationRulesErrors, ThrowOnError> => (options.client ?? client).post<IamManageSegregationRulesResponses, IamManageSegregationRulesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/identity-access/actions/manage-segregation-rules',
     ...options,
     headers: {
@@ -1686,6 +1875,7 @@ export const iamManageSegregationRules = <ThrowOnError extends boolean = false>(
 });
 
 export const iamGrantEmergencyAccess = <ThrowOnError extends boolean = false>(options: Options<IamGrantEmergencyAccessData, ThrowOnError>): RequestResult<IamGrantEmergencyAccessResponses, IamGrantEmergencyAccessErrors, ThrowOnError> => (options.client ?? client).post<IamGrantEmergencyAccessResponses, IamGrantEmergencyAccessErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/identity-access/actions/grant-emergency-access',
     ...options,
     headers: {
@@ -1695,6 +1885,7 @@ export const iamGrantEmergencyAccess = <ThrowOnError extends boolean = false>(op
 });
 
 export const iamRevokeEmergencyAccess = <ThrowOnError extends boolean = false>(options: Options<IamRevokeEmergencyAccessData, ThrowOnError>): RequestResult<IamRevokeEmergencyAccessResponses, IamRevokeEmergencyAccessErrors, ThrowOnError> => (options.client ?? client).post<IamRevokeEmergencyAccessResponses, IamRevokeEmergencyAccessErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/identity-access/actions/revoke-emergency-access',
     ...options,
     headers: {
@@ -1704,6 +1895,7 @@ export const iamRevokeEmergencyAccess = <ThrowOnError extends boolean = false>(o
 });
 
 export const audAppendAuditableEvent = <ThrowOnError extends boolean = false>(options: Options<AudAppendAuditableEventData, ThrowOnError>): RequestResult<AudAppendAuditableEventResponses, AudAppendAuditableEventErrors, ThrowOnError> => (options.client ?? client).post<AudAppendAuditableEventResponses, AudAppendAuditableEventErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/audit-integrity/actions/append-auditable-event',
     ...options,
     headers: {
@@ -1713,6 +1905,7 @@ export const audAppendAuditableEvent = <ThrowOnError extends boolean = false>(op
 });
 
 export const audCreateAuditSeal = <ThrowOnError extends boolean = false>(options: Options<AudCreateAuditSealData, ThrowOnError>): RequestResult<AudCreateAuditSealResponses, AudCreateAuditSealErrors, ThrowOnError> => (options.client ?? client).post<AudCreateAuditSealResponses, AudCreateAuditSealErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/audit-integrity/actions/create-audit-seal',
     ...options,
     headers: {
@@ -1722,6 +1915,7 @@ export const audCreateAuditSeal = <ThrowOnError extends boolean = false>(options
 });
 
 export const audRotateVerificationCredential = <ThrowOnError extends boolean = false>(options: Options<AudRotateVerificationCredentialData, ThrowOnError>): RequestResult<AudRotateVerificationCredentialResponses, AudRotateVerificationCredentialErrors, ThrowOnError> => (options.client ?? client).post<AudRotateVerificationCredentialResponses, AudRotateVerificationCredentialErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/audit-integrity/actions/rotate-verification-credential',
     ...options,
     headers: {
@@ -1731,6 +1925,7 @@ export const audRotateVerificationCredential = <ThrowOnError extends boolean = f
 });
 
 export const audEscalateIntegrityIncident = <ThrowOnError extends boolean = false>(options: Options<AudEscalateIntegrityIncidentData, ThrowOnError>): RequestResult<AudEscalateIntegrityIncidentResponses, AudEscalateIntegrityIncidentErrors, ThrowOnError> => (options.client ?? client).post<AudEscalateIntegrityIncidentResponses, AudEscalateIntegrityIncidentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/audit-integrity/actions/escalate-integrity-incident',
     ...options,
     headers: {
@@ -1739,4 +1934,8 @@ export const audEscalateIntegrityIncident = <ThrowOnError extends boolean = fals
     }
 });
 
-export const audVerifyProof = <ThrowOnError extends boolean = false>(options: Options<AudVerifyProofData, ThrowOnError>): RequestResult<AudVerifyProofResponses, AudVerifyProofErrors, ThrowOnError> => (options.client ?? client).get<AudVerifyProofResponses, AudVerifyProofErrors, ThrowOnError>({ url: '/audit-integrity/reference/verify-proof', ...options });
+export const audVerifyProof = <ThrowOnError extends boolean = false>(options: Options<AudVerifyProofData, ThrowOnError>): RequestResult<AudVerifyProofResponses, AudVerifyProofErrors, ThrowOnError> => (options.client ?? client).get<AudVerifyProofResponses, AudVerifyProofErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/audit-integrity/reference/verify-proof',
+    ...options
+});

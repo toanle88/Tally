@@ -642,6 +642,251 @@ type AudVerifyProofUnprocessableEntity ProblemDetails
 
 func (*AudVerifyProofUnprocessableEntity) audVerifyProofRes() {}
 
+// AuthenticationRequiredHeaders wraps ProblemDetails with response headers.
+type AuthenticationRequiredHeaders struct {
+	WWWAuthenticate OptString
+	Response        ProblemDetails
+}
+
+// GetWWWAuthenticate returns the value of WWWAuthenticate.
+func (s *AuthenticationRequiredHeaders) GetWWWAuthenticate() OptString {
+	return s.WWWAuthenticate
+}
+
+// GetResponse returns the value of Response.
+func (s *AuthenticationRequiredHeaders) GetResponse() ProblemDetails {
+	return s.Response
+}
+
+// SetWWWAuthenticate sets the value of WWWAuthenticate.
+func (s *AuthenticationRequiredHeaders) SetWWWAuthenticate(val OptString) {
+	s.WWWAuthenticate = val
+}
+
+// SetResponse sets the value of Response.
+func (s *AuthenticationRequiredHeaders) SetResponse(val ProblemDetails) {
+	s.Response = val
+}
+
+func (*AuthenticationRequiredHeaders) apApplyAssetClearingClassificationRes()               {}
+func (*AuthenticationRequiredHeaders) apApplyIncomingSettlementRes()                        {}
+func (*AuthenticationRequiredHeaders) apApplyPaymentReturnRes()                             {}
+func (*AuthenticationRequiredHeaders) apApplyVendorInvoiceApprovalDecisionRes()             {}
+func (*AuthenticationRequiredHeaders) apDisputeVendorInvoiceRes()                           {}
+func (*AuthenticationRequiredHeaders) apRegisterVendorInvoiceRes()                          {}
+func (*AuthenticationRequiredHeaders) apRequestPaymentRes()                                 {}
+func (*AuthenticationRequiredHeaders) apReverseIncomingSettlementApplicationRes()           {}
+func (*AuthenticationRequiredHeaders) apValidateVendorInvoiceRes()                          {}
+func (*AuthenticationRequiredHeaders) apVoidVendorInvoiceRes()                              {}
+func (*AuthenticationRequiredHeaders) arApplyCustomerRefundApprovalDecisionRes()            {}
+func (*AuthenticationRequiredHeaders) arApplyCustomerRefundPaymentResultRes()               {}
+func (*AuthenticationRequiredHeaders) arApplyPaymentReturnRes()                             {}
+func (*AuthenticationRequiredHeaders) arApplyReceiptRes()                                   {}
+func (*AuthenticationRequiredHeaders) arCancelCustomerRefundPaymentRes()                    {}
+func (*AuthenticationRequiredHeaders) arCancelCustomerRefundRequestRes()                    {}
+func (*AuthenticationRequiredHeaders) arCreateCustomerRefundRequestRes()                    {}
+func (*AuthenticationRequiredHeaders) arIssueCreditNoteRes()                                {}
+func (*AuthenticationRequiredHeaders) arIssueCustomerInvoiceRes()                           {}
+func (*AuthenticationRequiredHeaders) arRecordCustomerChargebacksRes()                      {}
+func (*AuthenticationRequiredHeaders) arRecordReceiptRes()                                  {}
+func (*AuthenticationRequiredHeaders) arRecordReceivableWriteOffsRes()                      {}
+func (*AuthenticationRequiredHeaders) arRequestCustomerRefundPaymentRes()                   {}
+func (*AuthenticationRequiredHeaders) arResolveCustomerOverpaymentsRes()                    {}
+func (*AuthenticationRequiredHeaders) arRollbackUnpostedApplicationBatchRes()               {}
+func (*AuthenticationRequiredHeaders) arUnapplyReceiptRes()                                 {}
+func (*AuthenticationRequiredHeaders) audAppendAuditableEventRes()                          {}
+func (*AuthenticationRequiredHeaders) audCreateAuditSealRes()                               {}
+func (*AuthenticationRequiredHeaders) audEscalateIntegrityIncidentRes()                     {}
+func (*AuthenticationRequiredHeaders) audRotateVerificationCredentialRes()                  {}
+func (*AuthenticationRequiredHeaders) audVerifyProofRes()                                   {}
+func (*AuthenticationRequiredHeaders) bfrCompleteReconciliationRes()                        {}
+func (*AuthenticationRequiredHeaders) bfrConfirmMatchRes()                                  {}
+func (*AuthenticationRequiredHeaders) bfrImportStatementRes()                               {}
+func (*AuthenticationRequiredHeaders) bfrMaintainBankFeedConnectionsRes()                   {}
+func (*AuthenticationRequiredHeaders) bfrProposeMatchRes()                                  {}
+func (*AuthenticationRequiredHeaders) bfrUnmatchRes()                                       {}
+func (*AuthenticationRequiredHeaders) coaApplySegmentChangeApprovalDecisionRes()            {}
+func (*AuthenticationRequiredHeaders) coaMaintainSegmentDefinitionsRes()                    {}
+func (*AuthenticationRequiredHeaders) coaMaintainSegmentValuesRes()                         {}
+func (*AuthenticationRequiredHeaders) coaRequestSegmentChangesRes()                         {}
+func (*AuthenticationRequiredHeaders) coaValidateSegmentCombinationsRes()                   {}
+func (*AuthenticationRequiredHeaders) faApplyAssetDisposalApprovalDecisionRes()             {}
+func (*AuthenticationRequiredHeaders) faApplyAssetSettlementResultRes()                     {}
+func (*AuthenticationRequiredHeaders) faApplyAssetSupplierLiabilityResultRes()              {}
+func (*AuthenticationRequiredHeaders) faApplyImpairmentApprovalDecisionRes()                {}
+func (*AuthenticationRequiredHeaders) faApplyIncomingSettlementRes()                        {}
+func (*AuthenticationRequiredHeaders) faApplyPaymentReturnRes()                             {}
+func (*AuthenticationRequiredHeaders) faCancelUnpostedAssetDisposalRes()                    {}
+func (*AuthenticationRequiredHeaders) faCapitalizeAssetRes()                                {}
+func (*AuthenticationRequiredHeaders) faCompensateFailedDisposalPostingRes()                {}
+func (*AuthenticationRequiredHeaders) faCorrectPostedAssetDisposalsRes()                    {}
+func (*AuthenticationRequiredHeaders) faCreateAssetAcquisitionClearingRes()                 {}
+func (*AuthenticationRequiredHeaders) faCreateDisposalSettlementClearingRes()               {}
+func (*AuthenticationRequiredHeaders) faDisposeAssetRes()                                   {}
+func (*AuthenticationRequiredHeaders) faReclassifyDisposalCostForPaymentRes()               {}
+func (*AuthenticationRequiredHeaders) faRecordImpairmentAssessmentsRes()                    {}
+func (*AuthenticationRequiredHeaders) faRequestDisposalCostPaymentReplacementRes()          {}
+func (*AuthenticationRequiredHeaders) faRequestDisposalCostPaymentRes()                     {}
+func (*AuthenticationRequiredHeaders) faReverseIncomingSettlementApplicationRes()           {}
+func (*AuthenticationRequiredHeaders) faRunDepreciationRes()                                {}
+func (*AuthenticationRequiredHeaders) faSplitAssetsOrComponentsRes()                        {}
+func (*AuthenticationRequiredHeaders) faTransferAssetsOrComponentsRes()                     {}
+func (*AuthenticationRequiredHeaders) fpmAbortCloseRunRes()                                 {}
+func (*AuthenticationRequiredHeaders) fpmApplyCloseApprovalDecisionRes()                    {}
+func (*AuthenticationRequiredHeaders) fpmApplyCloseExceptionApprovalDecisionRes()           {}
+func (*AuthenticationRequiredHeaders) fpmApplyPostingGateResultRes()                        {}
+func (*AuthenticationRequiredHeaders) fpmApplyReopenApprovalDecisionRes()                   {}
+func (*AuthenticationRequiredHeaders) fpmEndSoftCloseRes()                                  {}
+func (*AuthenticationRequiredHeaders) fpmExtendCloseExceptionRes()                          {}
+func (*AuthenticationRequiredHeaders) fpmRequestReopenRes()                                 {}
+func (*AuthenticationRequiredHeaders) fpmResumeCloseRunRes()                                {}
+func (*AuthenticationRequiredHeaders) fpmStartHardCloseRes()                                {}
+func (*AuthenticationRequiredHeaders) fpmStartRecloseRes()                                  {}
+func (*AuthenticationRequiredHeaders) fpmStartSoftCloseRes()                                {}
+func (*AuthenticationRequiredHeaders) fpmTakeOverPeriodControlRes()                         {}
+func (*AuthenticationRequiredHeaders) fxApplyRevaluationApprovalDecisionRes()               {}
+func (*AuthenticationRequiredHeaders) fxPostRevaluationRunRes()                             {}
+func (*AuthenticationRequiredHeaders) fxPublishRateSetRes()                                 {}
+func (*AuthenticationRequiredHeaders) fxRunRevaluationRes()                                 {}
+func (*AuthenticationRequiredHeaders) fxRunTranslationRes()                                 {}
+func (*AuthenticationRequiredHeaders) glAcquirePostingBarrierRes()                          {}
+func (*AuthenticationRequiredHeaders) glApplyJournalApprovalDecisionRes()                   {}
+func (*AuthenticationRequiredHeaders) glBeginRecloseGateRes()                               {}
+func (*AuthenticationRequiredHeaders) glCloseOperationalReopenGateRes()                     {}
+func (*AuthenticationRequiredHeaders) glCloseScopedReopenGateRes()                          {}
+func (*AuthenticationRequiredHeaders) glEnterSoftCloseGateRes()                             {}
+func (*AuthenticationRequiredHeaders) glExitSoftCloseGateRes()                              {}
+func (*AuthenticationRequiredHeaders) glFinalizePostingGateRes()                            {}
+func (*AuthenticationRequiredHeaders) glGetPostingGateStatusRes()                           {}
+func (*AuthenticationRequiredHeaders) glMaintainAccountingBooksRes()                        {}
+func (*AuthenticationRequiredHeaders) glMaintainAccountsAndReportingMappingsRes()           {}
+func (*AuthenticationRequiredHeaders) glMaintainChartsOfAccountsRes()                       {}
+func (*AuthenticationRequiredHeaders) glMaintainLedgersRes()                                {}
+func (*AuthenticationRequiredHeaders) glOpenOperationalReopenGateRes()                      {}
+func (*AuthenticationRequiredHeaders) glOpenScopedReopenGateRes()                           {}
+func (*AuthenticationRequiredHeaders) glReleasePostingBarrierRes()                          {}
+func (*AuthenticationRequiredHeaders) glReverseJournalEntryRes()                            {}
+func (*AuthenticationRequiredHeaders) glSubmitPostingRequestRes()                           {}
+func (*AuthenticationRequiredHeaders) iamGrantEmergencyAccessRes()                          {}
+func (*AuthenticationRequiredHeaders) iamManageAccessPoliciesRes()                          {}
+func (*AuthenticationRequiredHeaders) iamManageRolesRes()                                   {}
+func (*AuthenticationRequiredHeaders) iamManageSegregationRulesRes()                        {}
+func (*AuthenticationRequiredHeaders) iamManageUsersRes()                                   {}
+func (*AuthenticationRequiredHeaders) iamRevokeEmergencyAccessRes()                         {}
+func (*AuthenticationRequiredHeaders) icApplyIncomingSettlementRes()                        {}
+func (*AuthenticationRequiredHeaders) icApplyPaymentReturnRes()                             {}
+func (*AuthenticationRequiredHeaders) icApplyResidualApprovalDecisionRes()                  {}
+func (*AuthenticationRequiredHeaders) icCompleteSettlementRunRes()                          {}
+func (*AuthenticationRequiredHeaders) icCreateSettlementInstructionsRes()                   {}
+func (*AuthenticationRequiredHeaders) icMaintainIntercompanyAgreementsRes()                 {}
+func (*AuthenticationRequiredHeaders) icMatchIntercompanyItemsRes()                         {}
+func (*AuthenticationRequiredHeaders) icRecordIntercompanyTransactionsRes()                 {}
+func (*AuthenticationRequiredHeaders) icReverseIncomingSettlementApplicationRes()           {}
+func (*AuthenticationRequiredHeaders) icRunEliminationRes()                                 {}
+func (*AuthenticationRequiredHeaders) icStartSettlementRes()                                {}
+func (*AuthenticationRequiredHeaders) invCancelUnfinalizedInvoicesRes()                     {}
+func (*AuthenticationRequiredHeaders) invConfigureBillingSchedulesRes()                     {}
+func (*AuthenticationRequiredHeaders) invConfigureInvoiceTemplatesRes()                     {}
+func (*AuthenticationRequiredHeaders) invFinalizeGeneratedInvoicesRes()                     {}
+func (*AuthenticationRequiredHeaders) invGenerateInvoicesRes()                              {}
+func (*AuthenticationRequiredHeaders) invRecalculateUnfinalizedInvoicesRes()                {}
+func (*AuthenticationRequiredHeaders) omdMaintainCustomerProfilesRes()                      {}
+func (*AuthenticationRequiredHeaders) omdMaintainFiscalCalendarsRes()                       {}
+func (*AuthenticationRequiredHeaders) omdMaintainLegalEntitiesRes()                         {}
+func (*AuthenticationRequiredHeaders) omdMaintainPartiesRes()                               {}
+func (*AuthenticationRequiredHeaders) omdMaintainVendorProfilesRes()                        {}
+func (*AuthenticationRequiredHeaders) omdPublishApprovedMasterDataChangesRes()              {}
+func (*AuthenticationRequiredHeaders) payrApplyPaymentReturnRes()                           {}
+func (*AuthenticationRequiredHeaders) payrApplyPayrollRunApprovalDecisionRes()              {}
+func (*AuthenticationRequiredHeaders) payrCalculatePayrollRunRes()                          {}
+func (*AuthenticationRequiredHeaders) payrCreatePayrollCorrectionRes()                      {}
+func (*AuthenticationRequiredHeaders) payrMaintainEmployeePayrollProfilesRes()              {}
+func (*AuthenticationRequiredHeaders) payrMaintainPayrollTaxFilingRecordsRes()              {}
+func (*AuthenticationRequiredHeaders) payrPostPayrollRunRes()                               {}
+func (*AuthenticationRequiredHeaders) pcmAcknowledgeIncomingSettlementRes()                 {}
+func (*AuthenticationRequiredHeaders) pcmAcknowledgePaymentReturnRes()                      {}
+func (*AuthenticationRequiredHeaders) pcmApplyPaymentBatchApprovalDecisionRes()             {}
+func (*AuthenticationRequiredHeaders) pcmApplyPaymentInstructionExceptionDecisionRes()      {}
+func (*AuthenticationRequiredHeaders) pcmCancelExpectedIncomingSettlementRes()              {}
+func (*AuthenticationRequiredHeaders) pcmCancelPaymentBatchRes()                            {}
+func (*AuthenticationRequiredHeaders) pcmCancelPaymentInstructionRes()                      {}
+func (*AuthenticationRequiredHeaders) pcmCancelUnpostedPaymentReturnRes()                   {}
+func (*AuthenticationRequiredHeaders) pcmCancelUnpostedSettlementReceiptRes()               {}
+func (*AuthenticationRequiredHeaders) pcmCloseExpectedIncomingSettlementRes()               {}
+func (*AuthenticationRequiredHeaders) pcmCreatePaymentInstructionFromObligationRes()        {}
+func (*AuthenticationRequiredHeaders) pcmMaintainBankAccountsRes()                          {}
+func (*AuthenticationRequiredHeaders) pcmPreparePaymentBatchRes()                           {}
+func (*AuthenticationRequiredHeaders) pcmRecordIncomingSettlementRes()                      {}
+func (*AuthenticationRequiredHeaders) pcmRecordPaymentReturnRes()                           {}
+func (*AuthenticationRequiredHeaders) pcmRecordUnallocatedIncomingSettlementRes()           {}
+func (*AuthenticationRequiredHeaders) pcmRegisterExpectedIncomingSettlementRes()            {}
+func (*AuthenticationRequiredHeaders) pcmResolveExpectedIncomingSettlementExceptionRes()    {}
+func (*AuthenticationRequiredHeaders) pcmResolveIncomingSettlementOwnerExceptionRes()       {}
+func (*AuthenticationRequiredHeaders) pcmResolvePaymentReturnExceptionRes()                 {}
+func (*AuthenticationRequiredHeaders) pcmResolveSettlementReceiptValidationExceptionRes()   {}
+func (*AuthenticationRequiredHeaders) pcmResolveUnallocatedIncomingSettlementRes()          {}
+func (*AuthenticationRequiredHeaders) pcmRetryPaymentInstructionRes()                       {}
+func (*AuthenticationRequiredHeaders) pcmReverseIncomingSettlementRes()                     {}
+func (*AuthenticationRequiredHeaders) pcmSubmitPaymentInstructionRes()                      {}
+func (*AuthenticationRequiredHeaders) revApplyContractModificationApprovalDecisionRes()     {}
+func (*AuthenticationRequiredHeaders) revApplyRevenueScheduleApprovalDecisionRes()          {}
+func (*AuthenticationRequiredHeaders) revAssessContractRes()                                {}
+func (*AuthenticationRequiredHeaders) revModifyContractRes()                                {}
+func (*AuthenticationRequiredHeaders) revPublishRevenueAccountingProfileRes()               {}
+func (*AuthenticationRequiredHeaders) revRunRecognitionRes()                                {}
+func (*AuthenticationRequiredHeaders) rptApplyConsolidationApprovalDecisionRes()            {}
+func (*AuthenticationRequiredHeaders) rptApplyTranslationResultRes()                        {}
+func (*AuthenticationRequiredHeaders) rptGenerateAndPublishLedgerFinancialStatementsRes()   {}
+func (*AuthenticationRequiredHeaders) rptMaintainReportDefinitionsRes()                     {}
+func (*AuthenticationRequiredHeaders) rptPublishConsolidatedStatementRes()                  {}
+func (*AuthenticationRequiredHeaders) rptRunConsolidationRes()                              {}
+func (*AuthenticationRequiredHeaders) taxApplyIncomingSettlementRes()                       {}
+func (*AuthenticationRequiredHeaders) taxApplyPaymentReturnRes()                            {}
+func (*AuthenticationRequiredHeaders) taxApplyReturnLevelTaxAdjustmentApprovalDecisionRes() {}
+func (*AuthenticationRequiredHeaders) taxApplyTaxAmendmentApprovalDecisionRes()             {}
+func (*AuthenticationRequiredHeaders) taxApplyTaxReturnApprovalDecisionRes()                {}
+func (*AuthenticationRequiredHeaders) taxCreateReturnLevelTaxAdjustmentRes()                {}
+func (*AuthenticationRequiredHeaders) taxCreateTaxAmendmentRes()                            {}
+func (*AuthenticationRequiredHeaders) taxDetermineTaxRes()                                  {}
+func (*AuthenticationRequiredHeaders) taxMaintainTaxConfigurationsRes()                     {}
+func (*AuthenticationRequiredHeaders) taxPostReturnLevelTaxAdjustmentRes()                  {}
+func (*AuthenticationRequiredHeaders) taxPrepareTaxReturnRes()                              {}
+func (*AuthenticationRequiredHeaders) taxRecordTaxPaymentSettlementRes()                    {}
+func (*AuthenticationRequiredHeaders) taxRequestTaxPaymentRes()                             {}
+func (*AuthenticationRequiredHeaders) taxReverseIncomingSettlementApplicationRes()          {}
+func (*AuthenticationRequiredHeaders) taxSubmitTaxAmendmentRes()                            {}
+func (*AuthenticationRequiredHeaders) taxSubmitTaxReturnRes()                               {}
+func (*AuthenticationRequiredHeaders) wfaCreateApprovalRequestRes()                         {}
+func (*AuthenticationRequiredHeaders) wfaDecideApprovalRequestRes()                         {}
+func (*AuthenticationRequiredHeaders) wfaDelegateApprovalRes()                              {}
+func (*AuthenticationRequiredHeaders) wfaEscalateApprovalRes()                              {}
+func (*AuthenticationRequiredHeaders) wfaMaintainApprovalPoliciesRes()                      {}
+
+type BearerAuth struct {
+	Token string
+	Roles []string
+}
+
+// GetToken returns the value of Token.
+func (s *BearerAuth) GetToken() string {
+	return s.Token
+}
+
+// GetRoles returns the value of Roles.
+func (s *BearerAuth) GetRoles() []string {
+	return s.Roles
+}
+
+// SetToken sets the value of Token.
+func (s *BearerAuth) SetToken(val string) {
+	s.Token = val
+}
+
+// SetRoles sets the value of Roles.
+func (s *BearerAuth) SetRoles(val []string) {
+	s.Roles = val
+}
+
 type BfrCompleteReconciliationBadRequest ProblemDetails
 
 func (*BfrCompleteReconciliationBadRequest) bfrCompleteReconciliationRes() {}

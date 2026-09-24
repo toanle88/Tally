@@ -103,7 +103,7 @@ cat > "${work_dir}/tsconfig.json" <<EOF
     "verbatimModuleSyntax": true,
     "strict": true
   },
-  "include": ["${first}", "${fixture_dir}"]
+  "include": ["first", "fixture"]
 }
 EOF
 

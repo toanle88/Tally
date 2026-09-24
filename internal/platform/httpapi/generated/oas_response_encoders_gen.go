@@ -7,6 +7,8 @@ import (
 
 	"github.com/go-faster/errors"
 	"github.com/go-faster/jx"
+	"github.com/ogen-go/ogen/conv"
+	"github.com/ogen-go/ogen/uri"
 )
 
 func encodeApApplyAssetClearingClassificationResponse(response ApApplyAssetClearingClassificationRes, w http.ResponseWriter) error {
@@ -29,6 +31,38 @@ func encodeApApplyAssetClearingClassificationResponse(response ApApplyAssetClear
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -114,6 +148,38 @@ func encodeApApplyIncomingSettlementResponse(response ApApplyIncomingSettlementR
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *ApApplyIncomingSettlementForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -187,6 +253,38 @@ func encodeApApplyPaymentReturnResponse(response ApApplyPaymentReturnRes, w http
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -272,6 +370,38 @@ func encodeApApplyVendorInvoiceApprovalDecisionResponse(response ApApplyVendorIn
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *ApApplyVendorInvoiceApprovalDecisionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -345,6 +475,38 @@ func encodeApDisputeVendorInvoiceResponse(response ApDisputeVendorInvoiceRes, w 
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -430,6 +592,38 @@ func encodeApRegisterVendorInvoiceResponse(response ApRegisterVendorInvoiceRes, 
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *ApRegisterVendorInvoiceForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -503,6 +697,38 @@ func encodeApRequestPaymentResponse(response ApRequestPaymentRes, w http.Respons
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -588,6 +814,38 @@ func encodeApReverseIncomingSettlementApplicationResponse(response ApReverseInco
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *ApReverseIncomingSettlementApplicationForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -661,6 +919,38 @@ func encodeApValidateVendorInvoiceResponse(response ApValidateVendorInvoiceRes, 
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -746,6 +1036,38 @@ func encodeApVoidVendorInvoiceResponse(response ApVoidVendorInvoiceRes, w http.R
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *ApVoidVendorInvoiceForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -819,6 +1141,38 @@ func encodeArApplyCustomerRefundApprovalDecisionResponse(response ArApplyCustome
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -904,6 +1258,38 @@ func encodeArApplyCustomerRefundPaymentResultResponse(response ArApplyCustomerRe
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *ArApplyCustomerRefundPaymentResultForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -977,6 +1363,38 @@ func encodeArApplyPaymentReturnResponse(response ArApplyPaymentReturnRes, w http
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -1062,6 +1480,38 @@ func encodeArApplyReceiptResponse(response ArApplyReceiptRes, w http.ResponseWri
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *ArApplyReceiptForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -1135,6 +1585,38 @@ func encodeArCancelCustomerRefundPaymentResponse(response ArCancelCustomerRefund
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -1220,6 +1702,38 @@ func encodeArCancelCustomerRefundRequestResponse(response ArCancelCustomerRefund
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *ArCancelCustomerRefundRequestForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -1293,6 +1807,38 @@ func encodeArCreateCustomerRefundRequestResponse(response ArCreateCustomerRefund
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -1378,6 +1924,38 @@ func encodeArIssueCreditNoteResponse(response ArIssueCreditNoteRes, w http.Respo
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *ArIssueCreditNoteForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -1451,6 +2029,38 @@ func encodeArIssueCustomerInvoiceResponse(response ArIssueCustomerInvoiceRes, w 
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -1536,6 +2146,38 @@ func encodeArRecordCustomerChargebacksResponse(response ArRecordCustomerChargeba
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *ArRecordCustomerChargebacksForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -1609,6 +2251,38 @@ func encodeArRecordReceiptResponse(response ArRecordReceiptRes, w http.ResponseW
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -1694,6 +2368,38 @@ func encodeArRecordReceivableWriteOffsResponse(response ArRecordReceivableWriteO
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *ArRecordReceivableWriteOffsForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -1767,6 +2473,38 @@ func encodeArRequestCustomerRefundPaymentResponse(response ArRequestCustomerRefu
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -1852,6 +2590,38 @@ func encodeArResolveCustomerOverpaymentsResponse(response ArResolveCustomerOverp
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *ArResolveCustomerOverpaymentsForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -1925,6 +2695,38 @@ func encodeArRollbackUnpostedApplicationBatchResponse(response ArRollbackUnposte
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -2010,6 +2812,38 @@ func encodeArUnapplyReceiptResponse(response ArUnapplyReceiptRes, w http.Respons
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *ArUnapplyReceiptForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -2083,6 +2917,38 @@ func encodeAudAppendAuditableEventResponse(response AudAppendAuditableEventRes, 
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -2168,6 +3034,38 @@ func encodeAudCreateAuditSealResponse(response AudCreateAuditSealRes, w http.Res
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *AudCreateAuditSealForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -2241,6 +3139,38 @@ func encodeAudEscalateIntegrityIncidentResponse(response AudEscalateIntegrityInc
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -2326,6 +3256,38 @@ func encodeAudRotateVerificationCredentialResponse(response AudRotateVerificatio
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *AudRotateVerificationCredentialForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -2399,6 +3361,38 @@ func encodeAudVerifyProofResponse(response AudVerifyProofRes, w http.ResponseWri
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -2484,6 +3478,38 @@ func encodeBfrCompleteReconciliationResponse(response BfrCompleteReconciliationR
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *BfrCompleteReconciliationForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -2557,6 +3583,38 @@ func encodeBfrConfirmMatchResponse(response BfrConfirmMatchRes, w http.ResponseW
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -2642,6 +3700,38 @@ func encodeBfrImportStatementResponse(response BfrImportStatementRes, w http.Res
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *BfrImportStatementForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -2715,6 +3805,38 @@ func encodeBfrMaintainBankFeedConnectionsResponse(response BfrMaintainBankFeedCo
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -2800,6 +3922,38 @@ func encodeBfrProposeMatchResponse(response BfrProposeMatchRes, w http.ResponseW
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *BfrProposeMatchForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -2873,6 +4027,38 @@ func encodeBfrUnmatchResponse(response BfrUnmatchRes, w http.ResponseWriter) err
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -2958,6 +4144,38 @@ func encodeCoaApplySegmentChangeApprovalDecisionResponse(response CoaApplySegmen
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *CoaApplySegmentChangeApprovalDecisionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -3031,6 +4249,38 @@ func encodeCoaMaintainSegmentDefinitionsResponse(response CoaMaintainSegmentDefi
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -3116,6 +4366,38 @@ func encodeCoaMaintainSegmentValuesResponse(response CoaMaintainSegmentValuesRes
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *CoaMaintainSegmentValuesForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -3189,6 +4471,38 @@ func encodeCoaRequestSegmentChangesResponse(response CoaRequestSegmentChangesRes
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -3274,6 +4588,38 @@ func encodeCoaValidateSegmentCombinationsResponse(response CoaValidateSegmentCom
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *CoaValidateSegmentCombinationsForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -3347,6 +4693,38 @@ func encodeFaApplyAssetDisposalApprovalDecisionResponse(response FaApplyAssetDis
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -3432,6 +4810,38 @@ func encodeFaApplyAssetSettlementResultResponse(response FaApplyAssetSettlementR
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FaApplyAssetSettlementResultForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -3505,6 +4915,38 @@ func encodeFaApplyAssetSupplierLiabilityResultResponse(response FaApplyAssetSupp
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -3590,6 +5032,38 @@ func encodeFaApplyImpairmentApprovalDecisionResponse(response FaApplyImpairmentA
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FaApplyImpairmentApprovalDecisionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -3663,6 +5137,38 @@ func encodeFaApplyIncomingSettlementResponse(response FaApplyIncomingSettlementR
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -3748,6 +5254,38 @@ func encodeFaApplyPaymentReturnResponse(response FaApplyPaymentReturnRes, w http
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FaApplyPaymentReturnForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -3821,6 +5359,38 @@ func encodeFaCancelUnpostedAssetDisposalResponse(response FaCancelUnpostedAssetD
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -3906,6 +5476,38 @@ func encodeFaCapitalizeAssetResponse(response FaCapitalizeAssetRes, w http.Respo
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FaCapitalizeAssetForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -3979,6 +5581,38 @@ func encodeFaCompensateFailedDisposalPostingResponse(response FaCompensateFailed
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -4064,6 +5698,38 @@ func encodeFaCorrectPostedAssetDisposalsResponse(response FaCorrectPostedAssetDi
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FaCorrectPostedAssetDisposalsForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -4137,6 +5803,38 @@ func encodeFaCreateAssetAcquisitionClearingResponse(response FaCreateAssetAcquis
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -4222,6 +5920,38 @@ func encodeFaCreateDisposalSettlementClearingResponse(response FaCreateDisposalS
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FaCreateDisposalSettlementClearingForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -4295,6 +6025,38 @@ func encodeFaDisposeAssetResponse(response FaDisposeAssetRes, w http.ResponseWri
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -4380,6 +6142,38 @@ func encodeFaReclassifyDisposalCostForPaymentResponse(response FaReclassifyDispo
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FaReclassifyDisposalCostForPaymentForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -4453,6 +6247,38 @@ func encodeFaRecordImpairmentAssessmentsResponse(response FaRecordImpairmentAsse
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -4538,6 +6364,38 @@ func encodeFaRequestDisposalCostPaymentResponse(response FaRequestDisposalCostPa
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FaRequestDisposalCostPaymentForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -4611,6 +6469,38 @@ func encodeFaRequestDisposalCostPaymentReplacementResponse(response FaRequestDis
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -4696,6 +6586,38 @@ func encodeFaReverseIncomingSettlementApplicationResponse(response FaReverseInco
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FaReverseIncomingSettlementApplicationForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -4769,6 +6691,38 @@ func encodeFaRunDepreciationResponse(response FaRunDepreciationRes, w http.Respo
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -4854,6 +6808,38 @@ func encodeFaSplitAssetsOrComponentsResponse(response FaSplitAssetsOrComponentsR
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FaSplitAssetsOrComponentsForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -4927,6 +6913,38 @@ func encodeFaTransferAssetsOrComponentsResponse(response FaTransferAssetsOrCompo
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -5012,6 +7030,38 @@ func encodeFpmAbortCloseRunResponse(response FpmAbortCloseRunRes, w http.Respons
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FpmAbortCloseRunForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -5085,6 +7135,38 @@ func encodeFpmApplyCloseApprovalDecisionResponse(response FpmApplyCloseApprovalD
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -5170,6 +7252,38 @@ func encodeFpmApplyCloseExceptionApprovalDecisionResponse(response FpmApplyClose
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FpmApplyCloseExceptionApprovalDecisionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -5243,6 +7357,38 @@ func encodeFpmApplyPostingGateResultResponse(response FpmApplyPostingGateResultR
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -5328,6 +7474,38 @@ func encodeFpmApplyReopenApprovalDecisionResponse(response FpmApplyReopenApprova
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FpmApplyReopenApprovalDecisionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -5401,6 +7579,38 @@ func encodeFpmEndSoftCloseResponse(response FpmEndSoftCloseRes, w http.ResponseW
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -5486,6 +7696,38 @@ func encodeFpmExtendCloseExceptionResponse(response FpmExtendCloseExceptionRes, 
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FpmExtendCloseExceptionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -5559,6 +7801,38 @@ func encodeFpmRequestReopenResponse(response FpmRequestReopenRes, w http.Respons
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -5644,6 +7918,38 @@ func encodeFpmResumeCloseRunResponse(response FpmResumeCloseRunRes, w http.Respo
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FpmResumeCloseRunForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -5717,6 +8023,38 @@ func encodeFpmStartHardCloseResponse(response FpmStartHardCloseRes, w http.Respo
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -5802,6 +8140,38 @@ func encodeFpmStartRecloseResponse(response FpmStartRecloseRes, w http.ResponseW
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FpmStartRecloseForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -5875,6 +8245,38 @@ func encodeFpmStartSoftCloseResponse(response FpmStartSoftCloseRes, w http.Respo
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -5960,6 +8362,38 @@ func encodeFpmTakeOverPeriodControlResponse(response FpmTakeOverPeriodControlRes
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FpmTakeOverPeriodControlForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -6033,6 +8467,38 @@ func encodeFxApplyRevaluationApprovalDecisionResponse(response FxApplyRevaluatio
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -6118,6 +8584,38 @@ func encodeFxPostRevaluationRunResponse(response FxPostRevaluationRunRes, w http
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FxPostRevaluationRunForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -6191,6 +8689,38 @@ func encodeFxPublishRateSetResponse(response FxPublishRateSetRes, w http.Respons
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -6276,6 +8806,38 @@ func encodeFxRunRevaluationResponse(response FxRunRevaluationRes, w http.Respons
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *FxRunRevaluationForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -6349,6 +8911,38 @@ func encodeFxRunTranslationResponse(response FxRunTranslationRes, w http.Respons
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -6434,6 +9028,38 @@ func encodeGlAcquirePostingBarrierResponse(response GlAcquirePostingBarrierRes, 
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *GlAcquirePostingBarrierForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -6507,6 +9133,38 @@ func encodeGlApplyJournalApprovalDecisionResponse(response GlApplyJournalApprova
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -6592,6 +9250,38 @@ func encodeGlBeginRecloseGateResponse(response GlBeginRecloseGateRes, w http.Res
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *GlBeginRecloseGateForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -6665,6 +9355,38 @@ func encodeGlCloseOperationalReopenGateResponse(response GlCloseOperationalReope
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -6750,6 +9472,38 @@ func encodeGlCloseScopedReopenGateResponse(response GlCloseScopedReopenGateRes, 
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *GlCloseScopedReopenGateForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -6823,6 +9577,38 @@ func encodeGlEnterSoftCloseGateResponse(response GlEnterSoftCloseGateRes, w http
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -6908,6 +9694,38 @@ func encodeGlExitSoftCloseGateResponse(response GlExitSoftCloseGateRes, w http.R
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *GlExitSoftCloseGateForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -6981,6 +9799,38 @@ func encodeGlFinalizePostingGateResponse(response GlFinalizePostingGateRes, w ht
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -7066,6 +9916,38 @@ func encodeGlGetPostingGateStatusResponse(response GlGetPostingGateStatusRes, w 
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *GlGetPostingGateStatusForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -7139,6 +10021,38 @@ func encodeGlMaintainAccountingBooksResponse(response GlMaintainAccountingBooksR
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -7224,6 +10138,38 @@ func encodeGlMaintainAccountsAndReportingMappingsResponse(response GlMaintainAcc
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *GlMaintainAccountsAndReportingMappingsForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -7297,6 +10243,38 @@ func encodeGlMaintainChartsOfAccountsResponse(response GlMaintainChartsOfAccount
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -7382,6 +10360,38 @@ func encodeGlMaintainLedgersResponse(response GlMaintainLedgersRes, w http.Respo
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *GlMaintainLedgersForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -7455,6 +10465,38 @@ func encodeGlOpenOperationalReopenGateResponse(response GlOpenOperationalReopenG
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -7540,6 +10582,38 @@ func encodeGlOpenScopedReopenGateResponse(response GlOpenScopedReopenGateRes, w 
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *GlOpenScopedReopenGateForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -7613,6 +10687,38 @@ func encodeGlReleasePostingBarrierResponse(response GlReleasePostingBarrierRes, 
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -7698,6 +10804,38 @@ func encodeGlReverseJournalEntryResponse(response GlReverseJournalEntryRes, w ht
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *GlReverseJournalEntryForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -7771,6 +10909,38 @@ func encodeGlSubmitPostingRequestResponse(response GlSubmitPostingRequestRes, w 
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -7856,6 +11026,38 @@ func encodeIamGrantEmergencyAccessResponse(response IamGrantEmergencyAccessRes, 
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *IamGrantEmergencyAccessForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -7929,6 +11131,38 @@ func encodeIamManageAccessPoliciesResponse(response IamManageAccessPoliciesRes, 
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -8014,6 +11248,38 @@ func encodeIamManageRolesResponse(response IamManageRolesRes, w http.ResponseWri
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *IamManageRolesForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -8087,6 +11353,38 @@ func encodeIamManageSegregationRulesResponse(response IamManageSegregationRulesR
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -8172,6 +11470,38 @@ func encodeIamManageUsersResponse(response IamManageUsersRes, w http.ResponseWri
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *IamManageUsersForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -8245,6 +11575,38 @@ func encodeIamRevokeEmergencyAccessResponse(response IamRevokeEmergencyAccessRes
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -8330,6 +11692,38 @@ func encodeIcApplyIncomingSettlementResponse(response IcApplyIncomingSettlementR
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *IcApplyIncomingSettlementForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -8403,6 +11797,38 @@ func encodeIcApplyPaymentReturnResponse(response IcApplyPaymentReturnRes, w http
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -8488,6 +11914,38 @@ func encodeIcApplyResidualApprovalDecisionResponse(response IcApplyResidualAppro
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *IcApplyResidualApprovalDecisionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -8561,6 +12019,38 @@ func encodeIcCompleteSettlementRunResponse(response IcCompleteSettlementRunRes, 
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -8646,6 +12136,38 @@ func encodeIcCreateSettlementInstructionsResponse(response IcCreateSettlementIns
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *IcCreateSettlementInstructionsForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -8719,6 +12241,38 @@ func encodeIcMaintainIntercompanyAgreementsResponse(response IcMaintainIntercomp
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -8804,6 +12358,38 @@ func encodeIcMatchIntercompanyItemsResponse(response IcMatchIntercompanyItemsRes
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *IcMatchIntercompanyItemsForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -8877,6 +12463,38 @@ func encodeIcRecordIntercompanyTransactionsResponse(response IcRecordIntercompan
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -8962,6 +12580,38 @@ func encodeIcReverseIncomingSettlementApplicationResponse(response IcReverseInco
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *IcReverseIncomingSettlementApplicationForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -9035,6 +12685,38 @@ func encodeIcRunEliminationResponse(response IcRunEliminationRes, w http.Respons
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -9120,6 +12802,38 @@ func encodeIcStartSettlementResponse(response IcStartSettlementRes, w http.Respo
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *IcStartSettlementForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -9193,6 +12907,38 @@ func encodeInvCancelUnfinalizedInvoicesResponse(response InvCancelUnfinalizedInv
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -9278,6 +13024,38 @@ func encodeInvConfigureBillingSchedulesResponse(response InvConfigureBillingSche
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *InvConfigureBillingSchedulesForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -9351,6 +13129,38 @@ func encodeInvConfigureInvoiceTemplatesResponse(response InvConfigureInvoiceTemp
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -9436,6 +13246,38 @@ func encodeInvFinalizeGeneratedInvoicesResponse(response InvFinalizeGeneratedInv
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *InvFinalizeGeneratedInvoicesForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -9509,6 +13351,38 @@ func encodeInvGenerateInvoicesResponse(response InvGenerateInvoicesRes, w http.R
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -9594,6 +13468,38 @@ func encodeInvRecalculateUnfinalizedInvoicesResponse(response InvRecalculateUnfi
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *InvRecalculateUnfinalizedInvoicesForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -9667,6 +13573,38 @@ func encodeOmdMaintainCustomerProfilesResponse(response OmdMaintainCustomerProfi
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -9752,6 +13690,38 @@ func encodeOmdMaintainFiscalCalendarsResponse(response OmdMaintainFiscalCalendar
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *OmdMaintainFiscalCalendarsForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -9825,6 +13795,38 @@ func encodeOmdMaintainLegalEntitiesResponse(response OmdMaintainLegalEntitiesRes
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -9910,6 +13912,38 @@ func encodeOmdMaintainPartiesResponse(response OmdMaintainPartiesRes, w http.Res
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *OmdMaintainPartiesForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -9983,6 +14017,38 @@ func encodeOmdMaintainVendorProfilesResponse(response OmdMaintainVendorProfilesR
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -10068,6 +14134,38 @@ func encodeOmdPublishApprovedMasterDataChangesResponse(response OmdPublishApprov
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *OmdPublishApprovedMasterDataChangesForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -10141,6 +14239,38 @@ func encodePayrApplyPaymentReturnResponse(response PayrApplyPaymentReturnRes, w 
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -10226,6 +14356,38 @@ func encodePayrApplyPayrollRunApprovalDecisionResponse(response PayrApplyPayroll
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PayrApplyPayrollRunApprovalDecisionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -10299,6 +14461,38 @@ func encodePayrCalculatePayrollRunResponse(response PayrCalculatePayrollRunRes, 
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -10384,6 +14578,38 @@ func encodePayrCreatePayrollCorrectionResponse(response PayrCreatePayrollCorrect
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PayrCreatePayrollCorrectionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -10457,6 +14683,38 @@ func encodePayrMaintainEmployeePayrollProfilesResponse(response PayrMaintainEmpl
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -10542,6 +14800,38 @@ func encodePayrMaintainPayrollTaxFilingRecordsResponse(response PayrMaintainPayr
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PayrMaintainPayrollTaxFilingRecordsForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -10615,6 +14905,38 @@ func encodePayrPostPayrollRunResponse(response PayrPostPayrollRunRes, w http.Res
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -10700,6 +15022,38 @@ func encodePcmAcknowledgeIncomingSettlementResponse(response PcmAcknowledgeIncom
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PcmAcknowledgeIncomingSettlementForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -10773,6 +15127,38 @@ func encodePcmAcknowledgePaymentReturnResponse(response PcmAcknowledgePaymentRet
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -10858,6 +15244,38 @@ func encodePcmApplyPaymentBatchApprovalDecisionResponse(response PcmApplyPayment
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PcmApplyPaymentBatchApprovalDecisionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -10931,6 +15349,38 @@ func encodePcmApplyPaymentInstructionExceptionDecisionResponse(response PcmApply
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -11016,6 +15466,38 @@ func encodePcmCancelExpectedIncomingSettlementResponse(response PcmCancelExpecte
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PcmCancelExpectedIncomingSettlementForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -11089,6 +15571,38 @@ func encodePcmCancelPaymentBatchResponse(response PcmCancelPaymentBatchRes, w ht
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -11174,6 +15688,38 @@ func encodePcmCancelPaymentInstructionResponse(response PcmCancelPaymentInstruct
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PcmCancelPaymentInstructionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -11247,6 +15793,38 @@ func encodePcmCancelUnpostedPaymentReturnResponse(response PcmCancelUnpostedPaym
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -11332,6 +15910,38 @@ func encodePcmCancelUnpostedSettlementReceiptResponse(response PcmCancelUnposted
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PcmCancelUnpostedSettlementReceiptForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -11405,6 +16015,38 @@ func encodePcmCloseExpectedIncomingSettlementResponse(response PcmCloseExpectedI
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -11490,6 +16132,38 @@ func encodePcmCreatePaymentInstructionFromObligationResponse(response PcmCreateP
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PcmCreatePaymentInstructionFromObligationForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -11563,6 +16237,38 @@ func encodePcmMaintainBankAccountsResponse(response PcmMaintainBankAccountsRes, 
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -11648,6 +16354,38 @@ func encodePcmPreparePaymentBatchResponse(response PcmPreparePaymentBatchRes, w 
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PcmPreparePaymentBatchForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -11721,6 +16459,38 @@ func encodePcmRecordIncomingSettlementResponse(response PcmRecordIncomingSettlem
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -11806,6 +16576,38 @@ func encodePcmRecordPaymentReturnResponse(response PcmRecordPaymentReturnRes, w 
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PcmRecordPaymentReturnForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -11879,6 +16681,38 @@ func encodePcmRecordUnallocatedIncomingSettlementResponse(response PcmRecordUnal
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -11964,6 +16798,38 @@ func encodePcmRegisterExpectedIncomingSettlementResponse(response PcmRegisterExp
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PcmRegisterExpectedIncomingSettlementForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -12037,6 +16903,38 @@ func encodePcmResolveExpectedIncomingSettlementExceptionResponse(response PcmRes
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -12122,6 +17020,38 @@ func encodePcmResolveIncomingSettlementOwnerExceptionResponse(response PcmResolv
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PcmResolveIncomingSettlementOwnerExceptionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -12195,6 +17125,38 @@ func encodePcmResolvePaymentReturnExceptionResponse(response PcmResolvePaymentRe
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -12280,6 +17242,38 @@ func encodePcmResolveSettlementReceiptValidationExceptionResponse(response PcmRe
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PcmResolveSettlementReceiptValidationExceptionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -12353,6 +17347,38 @@ func encodePcmResolveUnallocatedIncomingSettlementResponse(response PcmResolveUn
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -12438,6 +17464,38 @@ func encodePcmRetryPaymentInstructionResponse(response PcmRetryPaymentInstructio
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PcmRetryPaymentInstructionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -12511,6 +17569,38 @@ func encodePcmReverseIncomingSettlementResponse(response PcmReverseIncomingSettl
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -12596,6 +17686,38 @@ func encodePcmSubmitPaymentInstructionResponse(response PcmSubmitPaymentInstruct
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PcmSubmitPaymentInstructionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -12669,6 +17791,38 @@ func encodeRevApplyContractModificationApprovalDecisionResponse(response RevAppl
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -12754,6 +17908,38 @@ func encodeRevApplyRevenueScheduleApprovalDecisionResponse(response RevApplyReve
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *RevApplyRevenueScheduleApprovalDecisionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -12827,6 +18013,38 @@ func encodeRevAssessContractResponse(response RevAssessContractRes, w http.Respo
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -12912,6 +18130,38 @@ func encodeRevModifyContractResponse(response RevModifyContractRes, w http.Respo
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *RevModifyContractForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -12985,6 +18235,38 @@ func encodeRevPublishRevenueAccountingProfileResponse(response RevPublishRevenue
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -13070,6 +18352,38 @@ func encodeRevRunRecognitionResponse(response RevRunRecognitionRes, w http.Respo
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *RevRunRecognitionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -13143,6 +18457,38 @@ func encodeRptApplyConsolidationApprovalDecisionResponse(response RptApplyConsol
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -13228,6 +18574,38 @@ func encodeRptApplyTranslationResultResponse(response RptApplyTranslationResultR
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *RptApplyTranslationResultForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -13301,6 +18679,38 @@ func encodeRptGenerateAndPublishLedgerFinancialStatementsResponse(response RptGe
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -13386,6 +18796,38 @@ func encodeRptMaintainReportDefinitionsResponse(response RptMaintainReportDefini
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *RptMaintainReportDefinitionsForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -13459,6 +18901,38 @@ func encodeRptPublishConsolidatedStatementResponse(response RptPublishConsolidat
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -13544,6 +19018,38 @@ func encodeRptRunConsolidationResponse(response RptRunConsolidationRes, w http.R
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *RptRunConsolidationForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -13617,6 +19123,38 @@ func encodeTaxApplyIncomingSettlementResponse(response TaxApplyIncomingSettlemen
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -13702,6 +19240,38 @@ func encodeTaxApplyPaymentReturnResponse(response TaxApplyPaymentReturnRes, w ht
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *TaxApplyPaymentReturnForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -13775,6 +19345,38 @@ func encodeTaxApplyReturnLevelTaxAdjustmentApprovalDecisionResponse(response Tax
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -13860,6 +19462,38 @@ func encodeTaxApplyTaxAmendmentApprovalDecisionResponse(response TaxApplyTaxAmen
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *TaxApplyTaxAmendmentApprovalDecisionForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -13933,6 +19567,38 @@ func encodeTaxApplyTaxReturnApprovalDecisionResponse(response TaxApplyTaxReturnA
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -14018,6 +19684,38 @@ func encodeTaxCreateReturnLevelTaxAdjustmentResponse(response TaxCreateReturnLev
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *TaxCreateReturnLevelTaxAdjustmentForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -14091,6 +19789,38 @@ func encodeTaxCreateTaxAmendmentResponse(response TaxCreateTaxAmendmentRes, w ht
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -14176,6 +19906,38 @@ func encodeTaxDetermineTaxResponse(response TaxDetermineTaxRes, w http.ResponseW
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *TaxDetermineTaxForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -14249,6 +20011,38 @@ func encodeTaxMaintainTaxConfigurationsResponse(response TaxMaintainTaxConfigura
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -14334,6 +20128,38 @@ func encodeTaxPostReturnLevelTaxAdjustmentResponse(response TaxPostReturnLevelTa
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *TaxPostReturnLevelTaxAdjustmentForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -14407,6 +20233,38 @@ func encodeTaxPrepareTaxReturnResponse(response TaxPrepareTaxReturnRes, w http.R
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -14492,6 +20350,38 @@ func encodeTaxRecordTaxPaymentSettlementResponse(response TaxRecordTaxPaymentSet
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *TaxRecordTaxPaymentSettlementForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -14565,6 +20455,38 @@ func encodeTaxRequestTaxPaymentResponse(response TaxRequestTaxPaymentRes, w http
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -14650,6 +20572,38 @@ func encodeTaxReverseIncomingSettlementApplicationResponse(response TaxReverseIn
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *TaxReverseIncomingSettlementApplicationForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -14723,6 +20677,38 @@ func encodeTaxSubmitTaxAmendmentResponse(response TaxSubmitTaxAmendmentRes, w ht
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -14808,6 +20794,38 @@ func encodeTaxSubmitTaxReturnResponse(response TaxSubmitTaxReturnRes, w http.Res
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *TaxSubmitTaxReturnForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -14881,6 +20899,38 @@ func encodeWfaCreateApprovalRequestResponse(response WfaCreateApprovalRequestRes
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -14966,6 +21016,38 @@ func encodeWfaDecideApprovalRequestResponse(response WfaDecideApprovalRequestRes
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *WfaDecideApprovalRequestForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -15039,6 +21121,38 @@ func encodeWfaDelegateApprovalResponse(response WfaDelegateApprovalRes, w http.R
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
@@ -15124,6 +21238,38 @@ func encodeWfaEscalateApprovalResponse(response WfaEscalateApprovalRes, w http.R
 
 		return nil
 
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *WfaEscalateApprovalForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
@@ -15197,6 +21343,38 @@ func encodeWfaMaintainApprovalPoliciesResponse(response WfaMaintainApprovalPolic
 
 		e := new(jx.Encoder)
 		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *AuthenticationRequiredHeaders:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.Header().Set("Access-Control-Expose-Headers", "Www-Authenticate")
+		// Encoding response headers.
+		{
+			h := uri.NewHeaderEncoder(w.Header())
+			// Encode "WWW-Authenticate" header.
+			{
+				cfg := uri.HeaderParameterEncodingConfig{
+					Name:    "WWW-Authenticate",
+					Explode: false,
+				}
+				if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+					if val, ok := response.WWWAuthenticate.Get(); ok {
+						return e.EncodeValue(conv.StringToString(val))
+					}
+					return nil
+				}); err != nil {
+					return errors.Wrap(err, "encode WWW-Authenticate header")
+				}
+			}
+		}
+		w.WriteHeader(401)
+
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}

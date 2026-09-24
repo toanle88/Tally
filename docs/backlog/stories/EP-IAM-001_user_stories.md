@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Epic | `EP-IAM-001` — Identity and access |
-| Status | Planned — no IAM implementation is claimed by this document |
+| Status | User Story 1 locally implemented and verified; User Stories 2–7 remain planned |
 | Milestone | `M1` — Capability foundation |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Delivery items | `DLV-GFR-002`, `DLV-GFR-003`, `DLV-GFR-015`, `DLV-FR-IAM-001`–`DLV-FR-IAM-006` |
@@ -142,20 +142,35 @@ actor without storing a password in TALLY.**
 
 Acceptance criteria:
 
-- [ ] The SPA uses authorization-code flow with PKCE, and the API validates
+- [x] The SPA uses authorization-code flow with PKCE, and the API validates
   issuer, tenant, audience, signature, algorithm, expiry, and not-before with
   the approved clock-skew rule.
-- [ ] The validated actor includes the Entra `oid`, `tid`, and `sub` values as
+- [x] The validated actor includes the Entra `oid`, `tid`, and `sub` values as
   appropriate, plus the application user identity used for finance and audit
   decisions.
-- [ ] Invalid, expired, wrong-tenant, wrong-audience, malformed, or otherwise
+- [x] Invalid, expired, wrong-tenant, wrong-audience, malformed, or otherwise
   unverifiable tokens fail closed without revealing token or policy details.
-- [ ] Local tests use a clearly marked signed fixture issuer or fixture
+- [x] Local tests use a clearly marked signed fixture issuer or fixture
   identities that cannot be enabled in shared Azure environments; no real
   tenant credentials are required.
-- [ ] General and privileged session-expiry behavior, warning behavior, and
+- [x] General and privileged session-expiry behavior, warning behavior, and
   high-risk step-up requirements are represented at the approved API/UX
   boundaries.
+
+#### User Story 1 implementation evidence
+
+- [x] Go authentication validation, JWKS/discovery boundary, actor port, local
+  fixture resolver, fail-closed middleware, anonymous health route, and safe
+  diagnostics are implemented and covered by focused tests.
+- [x] The OpenAPI contract declares bearer security and explicit
+  `AUTHENTICATION_REQUIRED` 401 responses; committed Go/TypeScript artifacts
+  were regenerated from the contract.
+- [x] The React boundary uses MSAL authorization-code PKCE when explicitly
+  configured, session-scoped browser caching, expiry/step-up states, the
+  accessible two-minute warning, and one automatic 401 refresh/retry.
+- [x] Evidence record: `docs/verification/DLV-IAM-001-us1-authenticated-application-identity.md`.
+- [ ] Live Entra tenant behavior, production security controls, penetration
+  testing, and production qualification remain unverified and are not claimed.
 
 ### 7.2 User Story 2 — Manage users and access assignments
 
@@ -474,7 +489,9 @@ Acceptance criteria:
 
 ## 15. Planning status
 
-This is a planning artifact. No IAM branch is created, no IAM implementation is
-claimed, and no roadmap item is marked complete by adding this document.
+User Story 1 is implemented on the delivery branch and its local evidence is
+recorded separately. This document does not mark the broader IAM epic, the
+identity schema, user lifecycle, roles, policies, segregation rules, emergency
+access, or any finance authorization behavior complete.
 
-Suggested implementation branch: `codex/ep-iam-001-identity-access`
+Implementation branch: `codex/iam-us1-authenticated-application-identity`

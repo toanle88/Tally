@@ -21,6 +21,10 @@ pnpm test:a11y:negative
 pnpm test:a11y:qualification -- --target keyboard
 ```
 
+Copy `web/.env.example` to `web/.env.local` and set the `VITE_*` values before
+using MSAL sign-in. The local signed-fixture mode is selected explicitly with
+`VITE_AUTH_MODE=fixture`.
+
 The accessibility harness uses Playwright Test with `@axe-core/playwright`.
 It scans the routed application shell and synthetic integrated examples for
 semantic regions, names, statuses, tables, validation associations, dialogs,
@@ -42,6 +46,8 @@ the result template and defect decisions are recorded in
 
 The frontend lockfile is maintained at `web/pnpm-lock.yaml`. pnpm is the only
 supported frontend package manager.
+
+React state and lifecycle rules, including the no-`useEffect` standard, are defined in the [frontend/UI technical specification](../docs/specs/technical_specifications/05_frontend_ui_technical_specifications_v1.0.md#21-react-state-and-lifecycle-standard).
 
 ## Current foundation
 

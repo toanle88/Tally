@@ -20,6 +20,7 @@
     responses:
       '200': { $ref: ../components/common.yaml#/responses/Established }
       '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
       '403': { $ref: ../components/common.yaml#/responses/Problem }
       '409': { $ref: ../components/common.yaml#/responses/Problem }
       '422': { $ref: ../components/common.yaml#/responses/Problem }
@@ -46,6 +47,7 @@
     responses:
       '200': { $ref: ../components/common.yaml#/responses/Established }
       '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
       '403': { $ref: ../components/common.yaml#/responses/Problem }
       '409': { $ref: ../components/common.yaml#/responses/Problem }
       '422': { $ref: ../components/common.yaml#/responses/Problem }
@@ -72,6 +74,7 @@
     responses:
       '200': { $ref: ../components/common.yaml#/responses/Established }
       '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
       '403': { $ref: ../components/common.yaml#/responses/Problem }
       '409': { $ref: ../components/common.yaml#/responses/Problem }
       '422': { $ref: ../components/common.yaml#/responses/Problem }
@@ -98,6 +101,7 @@
     responses:
       '200': { $ref: ../components/common.yaml#/responses/Established }
       '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
       '403': { $ref: ../components/common.yaml#/responses/Problem }
       '409': { $ref: ../components/common.yaml#/responses/Problem }
       '422': { $ref: ../components/common.yaml#/responses/Problem }
@@ -124,6 +128,7 @@
     responses:
       '200': { $ref: ../components/common.yaml#/responses/Established }
       '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
       '403': { $ref: ../components/common.yaml#/responses/Problem }
       '409': { $ref: ../components/common.yaml#/responses/Problem }
       '422': { $ref: ../components/common.yaml#/responses/Problem }
@@ -150,6 +155,7 @@
     responses:
       '200': { $ref: ../components/common.yaml#/responses/Established }
       '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
       '403': { $ref: ../components/common.yaml#/responses/Problem }
       '409': { $ref: ../components/common.yaml#/responses/Problem }
       '422': { $ref: ../components/common.yaml#/responses/Problem }
@@ -176,6 +182,7 @@
     responses:
       '200': { $ref: ../components/common.yaml#/responses/Established }
       '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
       '403': { $ref: ../components/common.yaml#/responses/Problem }
       '409': { $ref: ../components/common.yaml#/responses/Problem }
       '422': { $ref: ../components/common.yaml#/responses/Problem }
@@ -202,6 +209,7 @@
     responses:
       '200': { $ref: ../components/common.yaml#/responses/Established }
       '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
       '403': { $ref: ../components/common.yaml#/responses/Problem }
       '409': { $ref: ../components/common.yaml#/responses/Problem }
       '422': { $ref: ../components/common.yaml#/responses/Problem }
@@ -228,6 +236,7 @@
     responses:
       '200': { $ref: ../components/common.yaml#/responses/Established }
       '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
       '403': { $ref: ../components/common.yaml#/responses/Problem }
       '409': { $ref: ../components/common.yaml#/responses/Problem }
       '422': { $ref: ../components/common.yaml#/responses/Problem }
@@ -254,6 +263,7 @@
     responses:
       '200': { $ref: ../components/common.yaml#/responses/Established }
       '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
       '403': { $ref: ../components/common.yaml#/responses/Problem }
       '409': { $ref: ../components/common.yaml#/responses/Problem }
       '422': { $ref: ../components/common.yaml#/responses/Problem }

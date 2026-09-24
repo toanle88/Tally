@@ -6,15 +6,21 @@ import { DevelopmentExamples } from '@/app/development-examples'
 import { WorkflowExample } from '@/app/workflow-example'
 import { AccountingScopeSelector } from '@/components/accounting-scope-selector'
 import { StatusBadge } from '@/components/ui'
+import type { AuthClient } from '@/lib/auth/auth-client'
 import type { AuthScopeResolution } from '@/lib/auth/auth-scope-adapter'
 import { useScopeContext } from '@/lib/scope/scope-context'
 
 import { navigationItems, routeRegistry, type NavigationArea, type RouteDefinition } from './route-registry'
 
 const AuthScopeContext = createContext<AuthScopeResolution | null>(null)
+const AuthClientContext = createContext<AuthClient | null>(null)
 
-export function AuthScopeProvider({ resolution, children }: { resolution: AuthScopeResolution; children: ReactNode }) {
-  return <AuthScopeContext.Provider value={resolution}>{children}</AuthScopeContext.Provider>
+export function AuthScopeProvider({ resolution, authClient, children }: { resolution: AuthScopeResolution; authClient?: AuthClient; children: ReactNode }) {
+  return (
+    <AuthScopeContext.Provider value={resolution}>
+      <AuthClientContext.Provider value={authClient ?? null}>{children}</AuthClientContext.Provider>
+    </AuthScopeContext.Provider>
+  )
 }
 
 function useAuthScope() {
@@ -23,14 +29,21 @@ function useAuthScope() {
   return context
 }
 
+function useAuthClient() {
+  return useContext(AuthClientContext)
+}
+
 function ShellLayout() {
   const { statusMessage } = useScopeContext()
-  return <AppShell navigation={<GlobalNavigation />} scopeContext={<AccountingScopeSelector />} statusFeedback={<StatusBadge state="info" label={statusMessage} announce />}><Outlet /></AppShell>
+  const resolution = useAuthScope()
+  const authClient = useAuthClient()
+  const isAuthenticated = resolution.status === 'authenticated'
+  return <AppShell actorLabel={isAuthenticated ? resolution.actorLabel : undefined} onSignOut={isAuthenticated && authClient ? () => authClient.logout() : undefined} navigation={<GlobalNavigation />} scopeContext={<AccountingScopeSelector />} statusFeedback={<StatusBadge state="info" label={statusMessage} announce />}><Outlet /></AppShell>
 }
 
 function GlobalNavigation() {
   return navigationItems.map((item) => (
-    <NavLink key={item.id} to={item.path} end={item.path === '/'} className={({ isActive }) => `block rounded-btn px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive ? 'bg-primary text-primary-content' : 'hover:bg-base-200'}`}>
+    <NavLink key={item.id} to={item.path} end={item.path === '/'} className={({ isActive }: { isActive: boolean }) => `block rounded-btn px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive ? 'bg-primary text-primary-content' : 'hover:bg-base-200'}`}>
       {item.title}
     </NavLink>
   ))
@@ -39,7 +52,10 @@ function GlobalNavigation() {
 function ProtectedRoute({ route, children }: { route: RouteDefinition; children: ReactNode }) {
   const resolution = useAuthScope()
   const { currentScope } = useScopeContext()
+  if (resolution.status === 'loading') return <AccessState title="Checking authentication" detail="TALLY is establishing the application identity boundary." />
   if (resolution.status === 'unauthenticated') return <AccessState title="Authentication required" detail={resolution.reason} />
+  if (resolution.status === 'expired') return <AccessState title="Session expired" detail={resolution.reason} />
+  if (resolution.status === 'step-up-required') return <AccessState title="Additional verification required" detail={resolution.reason} />
   if (route.requiresScope && !currentScope) return <AccessState title="Accounting scope required" detail="Select an available accounting scope before reviewing or initiating work." />
   return <>{children}</>
 }

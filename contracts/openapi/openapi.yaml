@@ -30,7 +30,14 @@ tags:
   - { name: audit-integrity, description: Audit evidence and integrity verification. }
 paths:
   $ref: ./paths/catalog.yaml
+security:
+  - BearerAuth: []
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   headers:
     Authorization: { $ref: ./components/common.yaml#/headers/Authorization }
     X-Correlation-Id: { $ref: ./components/common.yaml#/headers/X-Correlation-Id }
@@ -57,4 +64,5 @@ components:
     ProblemDetails: { $ref: ./components/common.yaml#/schemas/ProblemDetails }
   responses:
     Established: { $ref: ./components/common.yaml#/responses/Established }
+    AuthenticationRequired: { $ref: ./components/common.yaml#/responses/AuthenticationRequired }
     Problem: { $ref: ./components/common.yaml#/responses/Problem }

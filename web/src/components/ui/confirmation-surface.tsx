@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { useCallback, useId, type ReactNode } from 'react'
 
 import { Button } from './button'
 import type { ConfirmationDetail } from './types'
@@ -31,19 +31,15 @@ export function ConfirmationSurface({
   const surfaceId = useId()
   const titleId = `${surfaceId}-confirmation-title`
   const descriptionId = `${surfaceId}-confirmation-description`
-  const surfaceRef = useRef<HTMLElement>(null)
-  const previousFocusRef = useRef<HTMLElement | null>(null)
+  const surfaceRef = useCallback((surface: HTMLElement | null) => {
+    if (!surface || !autoFocus) return
 
-  useEffect(() => {
-    if (!autoFocus) return
-
-    previousFocusRef.current = document.activeElement instanceof HTMLElement
+    const previousFocus = document.activeElement instanceof HTMLElement
       ? document.activeElement
       : null
-    surfaceRef.current?.querySelector<HTMLButtonElement>('button:not([disabled])')?.focus()
-
+    surface.querySelector<HTMLButtonElement>('button:not([disabled])')?.focus()
     return () => {
-      if (previousFocusRef.current?.isConnected) previousFocusRef.current.focus()
+      if (previousFocus?.isConnected) previousFocus.focus()
     }
   }, [autoFocus])
 

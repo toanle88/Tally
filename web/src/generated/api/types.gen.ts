@@ -76,7 +76,7 @@ export type BusinessIdentity = string;
 export type EvidenceId = Uuid;
 
 /**
- * Bearer access token; enforced outside the contract-only story.
+ * Bearer access token validated at the API authentication boundary.
  */
 export type Authorization = string;
 
@@ -94,7 +94,7 @@ export type OmdMaintainLegalEntitiesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -112,6 +112,10 @@ export type OmdMaintainLegalEntitiesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -145,7 +149,7 @@ export type OmdMaintainPartiesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -163,6 +167,10 @@ export type OmdMaintainPartiesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -196,7 +204,7 @@ export type OmdMaintainCustomerProfilesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -214,6 +222,10 @@ export type OmdMaintainCustomerProfilesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -247,7 +259,7 @@ export type OmdMaintainVendorProfilesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -265,6 +277,10 @@ export type OmdMaintainVendorProfilesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -298,7 +314,7 @@ export type OmdMaintainFiscalCalendarsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -316,6 +332,10 @@ export type OmdMaintainFiscalCalendarsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -349,7 +369,7 @@ export type OmdPublishApprovedMasterDataChangesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -366,6 +386,10 @@ export type OmdPublishApprovedMasterDataChangesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -399,7 +423,7 @@ export type GlSubmitPostingRequestData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -417,6 +441,10 @@ export type GlSubmitPostingRequestErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -450,7 +478,7 @@ export type GlApplyJournalApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -468,6 +496,10 @@ export type GlApplyJournalApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -501,7 +533,7 @@ export type GlReverseJournalEntryData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -519,6 +551,10 @@ export type GlReverseJournalEntryErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -552,7 +588,7 @@ export type GlEnterSoftCloseGateData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -570,6 +606,10 @@ export type GlEnterSoftCloseGateErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -603,7 +643,7 @@ export type GlExitSoftCloseGateData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -621,6 +661,10 @@ export type GlExitSoftCloseGateErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -654,7 +698,7 @@ export type GlAcquirePostingBarrierData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -672,6 +716,10 @@ export type GlAcquirePostingBarrierErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -705,7 +753,7 @@ export type GlReleasePostingBarrierData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -723,6 +771,10 @@ export type GlReleasePostingBarrierErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -756,7 +808,7 @@ export type GlFinalizePostingGateData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -774,6 +826,10 @@ export type GlFinalizePostingGateErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -807,7 +863,7 @@ export type GlOpenScopedReopenGateData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -825,6 +881,10 @@ export type GlOpenScopedReopenGateErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -858,7 +918,7 @@ export type GlCloseScopedReopenGateData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -876,6 +936,10 @@ export type GlCloseScopedReopenGateErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -909,7 +973,7 @@ export type GlOpenOperationalReopenGateData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -927,6 +991,10 @@ export type GlOpenOperationalReopenGateErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -960,7 +1028,7 @@ export type GlCloseOperationalReopenGateData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -978,6 +1046,10 @@ export type GlCloseOperationalReopenGateErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1011,7 +1083,7 @@ export type GlBeginRecloseGateData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1029,6 +1101,10 @@ export type GlBeginRecloseGateErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1062,7 +1138,7 @@ export type GlGetPostingGateStatusData = {
     body?: never;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1079,6 +1155,10 @@ export type GlGetPostingGateStatusErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1112,7 +1192,7 @@ export type GlMaintainLedgersData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1131,6 +1211,10 @@ export type GlMaintainLedgersErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1164,7 +1248,7 @@ export type GlMaintainAccountingBooksData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1183,6 +1267,10 @@ export type GlMaintainAccountingBooksErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1216,7 +1304,7 @@ export type GlMaintainChartsOfAccountsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1235,6 +1323,10 @@ export type GlMaintainChartsOfAccountsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1268,7 +1360,7 @@ export type GlMaintainAccountsAndReportingMappingsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1287,6 +1379,10 @@ export type GlMaintainAccountsAndReportingMappingsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1320,7 +1416,7 @@ export type ApRegisterVendorInvoiceData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1337,6 +1433,10 @@ export type ApRegisterVendorInvoiceErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1370,7 +1470,7 @@ export type ApApplyAssetClearingClassificationData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1387,6 +1487,10 @@ export type ApApplyAssetClearingClassificationErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1420,7 +1524,7 @@ export type ApApplyIncomingSettlementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1437,6 +1541,10 @@ export type ApApplyIncomingSettlementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1470,7 +1578,7 @@ export type ApReverseIncomingSettlementApplicationData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1487,6 +1595,10 @@ export type ApReverseIncomingSettlementApplicationErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1520,7 +1632,7 @@ export type ApApplyPaymentReturnData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1537,6 +1649,10 @@ export type ApApplyPaymentReturnErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1570,7 +1686,7 @@ export type ApApplyVendorInvoiceApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1587,6 +1703,10 @@ export type ApApplyVendorInvoiceApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1620,7 +1740,7 @@ export type ApRequestPaymentData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1637,6 +1757,10 @@ export type ApRequestPaymentErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1670,7 +1794,7 @@ export type ApValidateVendorInvoiceData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1687,6 +1811,10 @@ export type ApValidateVendorInvoiceErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1720,7 +1848,7 @@ export type ApDisputeVendorInvoiceData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1737,6 +1865,10 @@ export type ApDisputeVendorInvoiceErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1770,7 +1902,7 @@ export type ApVoidVendorInvoiceData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1787,6 +1919,10 @@ export type ApVoidVendorInvoiceErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1820,7 +1956,7 @@ export type ArIssueCustomerInvoiceData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1837,6 +1973,10 @@ export type ArIssueCustomerInvoiceErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1870,7 +2010,7 @@ export type ArRecordReceiptData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1887,6 +2027,10 @@ export type ArRecordReceiptErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1920,7 +2064,7 @@ export type ArApplyReceiptData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1937,6 +2081,10 @@ export type ArApplyReceiptErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -1970,7 +2118,7 @@ export type ArUnapplyReceiptData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -1987,6 +2135,10 @@ export type ArUnapplyReceiptErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2020,7 +2172,7 @@ export type ArRollbackUnpostedApplicationBatchData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2037,6 +2189,10 @@ export type ArRollbackUnpostedApplicationBatchErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2070,7 +2226,7 @@ export type ArIssueCreditNoteData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2087,6 +2243,10 @@ export type ArIssueCreditNoteErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2120,7 +2280,7 @@ export type ArCreateCustomerRefundRequestData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2137,6 +2297,10 @@ export type ArCreateCustomerRefundRequestErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2170,7 +2334,7 @@ export type ArCancelCustomerRefundRequestData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2187,6 +2351,10 @@ export type ArCancelCustomerRefundRequestErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2220,7 +2388,7 @@ export type ArApplyCustomerRefundApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2237,6 +2405,10 @@ export type ArApplyCustomerRefundApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2270,7 +2442,7 @@ export type ArRequestCustomerRefundPaymentData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2287,6 +2459,10 @@ export type ArRequestCustomerRefundPaymentErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2320,7 +2496,7 @@ export type ArCancelCustomerRefundPaymentData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2337,6 +2513,10 @@ export type ArCancelCustomerRefundPaymentErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2370,7 +2550,7 @@ export type ArApplyCustomerRefundPaymentResultData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2387,6 +2567,10 @@ export type ArApplyCustomerRefundPaymentResultErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2420,7 +2604,7 @@ export type ArApplyPaymentReturnData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2437,6 +2621,10 @@ export type ArApplyPaymentReturnErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2470,7 +2658,7 @@ export type ArResolveCustomerOverpaymentsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2487,6 +2675,10 @@ export type ArResolveCustomerOverpaymentsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2520,7 +2712,7 @@ export type ArRecordCustomerChargebacksData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2537,6 +2729,10 @@ export type ArRecordCustomerChargebacksErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2570,7 +2766,7 @@ export type ArRecordReceivableWriteOffsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2587,6 +2783,10 @@ export type ArRecordReceivableWriteOffsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2620,7 +2820,7 @@ export type PayrCalculatePayrollRunData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2637,6 +2837,10 @@ export type PayrCalculatePayrollRunErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2670,7 +2874,7 @@ export type PayrApplyPayrollRunApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2687,6 +2891,10 @@ export type PayrApplyPayrollRunApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2720,7 +2928,7 @@ export type PayrPostPayrollRunData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2737,6 +2945,10 @@ export type PayrPostPayrollRunErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2770,7 +2982,7 @@ export type PayrCreatePayrollCorrectionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2787,6 +2999,10 @@ export type PayrCreatePayrollCorrectionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2820,7 +3036,7 @@ export type PayrApplyPaymentReturnData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2837,6 +3053,10 @@ export type PayrApplyPaymentReturnErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2870,7 +3090,7 @@ export type PayrMaintainEmployeePayrollProfilesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2888,6 +3108,10 @@ export type PayrMaintainEmployeePayrollProfilesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2921,7 +3145,7 @@ export type PayrMaintainPayrollTaxFilingRecordsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2939,6 +3163,10 @@ export type PayrMaintainPayrollTaxFilingRecordsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -2972,7 +3200,7 @@ export type InvConfigureInvoiceTemplatesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -2990,6 +3218,10 @@ export type InvConfigureInvoiceTemplatesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3023,7 +3255,7 @@ export type InvConfigureBillingSchedulesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3041,6 +3273,10 @@ export type InvConfigureBillingSchedulesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3074,7 +3310,7 @@ export type InvGenerateInvoicesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3091,6 +3327,10 @@ export type InvGenerateInvoicesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3124,7 +3364,7 @@ export type InvFinalizeGeneratedInvoicesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3141,6 +3381,10 @@ export type InvFinalizeGeneratedInvoicesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3174,7 +3418,7 @@ export type InvRecalculateUnfinalizedInvoicesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3191,6 +3435,10 @@ export type InvRecalculateUnfinalizedInvoicesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3224,7 +3472,7 @@ export type InvCancelUnfinalizedInvoicesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3241,6 +3489,10 @@ export type InvCancelUnfinalizedInvoicesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3274,7 +3526,7 @@ export type PcmPreparePaymentBatchData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3291,6 +3543,10 @@ export type PcmPreparePaymentBatchErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3324,7 +3580,7 @@ export type PcmApplyPaymentBatchApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3341,6 +3597,10 @@ export type PcmApplyPaymentBatchApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3374,7 +3634,7 @@ export type PcmCancelPaymentBatchData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3391,6 +3651,10 @@ export type PcmCancelPaymentBatchErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3424,7 +3688,7 @@ export type PcmRegisterExpectedIncomingSettlementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3441,6 +3705,10 @@ export type PcmRegisterExpectedIncomingSettlementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3474,7 +3742,7 @@ export type PcmResolveExpectedIncomingSettlementExceptionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3491,6 +3759,10 @@ export type PcmResolveExpectedIncomingSettlementExceptionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3524,7 +3796,7 @@ export type PcmCancelExpectedIncomingSettlementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3541,6 +3813,10 @@ export type PcmCancelExpectedIncomingSettlementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3574,7 +3850,7 @@ export type PcmCloseExpectedIncomingSettlementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3591,6 +3867,10 @@ export type PcmCloseExpectedIncomingSettlementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3624,7 +3904,7 @@ export type PcmCreatePaymentInstructionFromObligationData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3641,6 +3921,10 @@ export type PcmCreatePaymentInstructionFromObligationErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3674,7 +3958,7 @@ export type PcmSubmitPaymentInstructionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3691,6 +3975,10 @@ export type PcmSubmitPaymentInstructionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3724,7 +4012,7 @@ export type PcmRetryPaymentInstructionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3741,6 +4029,10 @@ export type PcmRetryPaymentInstructionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3774,7 +4066,7 @@ export type PcmCancelPaymentInstructionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3791,6 +4083,10 @@ export type PcmCancelPaymentInstructionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3824,7 +4120,7 @@ export type PcmApplyPaymentInstructionExceptionDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3841,6 +4137,10 @@ export type PcmApplyPaymentInstructionExceptionDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3874,7 +4174,7 @@ export type PcmRecordPaymentReturnData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3891,6 +4191,10 @@ export type PcmRecordPaymentReturnErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3924,7 +4228,7 @@ export type PcmCancelUnpostedPaymentReturnData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3941,6 +4245,10 @@ export type PcmCancelUnpostedPaymentReturnErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -3974,7 +4282,7 @@ export type PcmAcknowledgePaymentReturnData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -3991,6 +4299,10 @@ export type PcmAcknowledgePaymentReturnErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4024,7 +4336,7 @@ export type PcmResolvePaymentReturnExceptionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4041,6 +4353,10 @@ export type PcmResolvePaymentReturnExceptionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4074,7 +4390,7 @@ export type PcmRecordUnallocatedIncomingSettlementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4091,6 +4407,10 @@ export type PcmRecordUnallocatedIncomingSettlementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4124,7 +4444,7 @@ export type PcmResolveUnallocatedIncomingSettlementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4141,6 +4461,10 @@ export type PcmResolveUnallocatedIncomingSettlementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4174,7 +4498,7 @@ export type PcmRecordIncomingSettlementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4191,6 +4515,10 @@ export type PcmRecordIncomingSettlementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4224,7 +4552,7 @@ export type PcmResolveSettlementReceiptValidationExceptionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4241,6 +4569,10 @@ export type PcmResolveSettlementReceiptValidationExceptionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4274,7 +4606,7 @@ export type PcmResolveIncomingSettlementOwnerExceptionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4291,6 +4623,10 @@ export type PcmResolveIncomingSettlementOwnerExceptionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4324,7 +4660,7 @@ export type PcmCancelUnpostedSettlementReceiptData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4341,6 +4677,10 @@ export type PcmCancelUnpostedSettlementReceiptErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4374,7 +4714,7 @@ export type PcmAcknowledgeIncomingSettlementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4391,6 +4731,10 @@ export type PcmAcknowledgeIncomingSettlementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4424,7 +4768,7 @@ export type PcmReverseIncomingSettlementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4441,6 +4785,10 @@ export type PcmReverseIncomingSettlementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4474,7 +4822,7 @@ export type PcmMaintainBankAccountsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4492,6 +4840,10 @@ export type PcmMaintainBankAccountsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4525,7 +4877,7 @@ export type RptRunConsolidationData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4542,6 +4894,10 @@ export type RptRunConsolidationErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4575,7 +4931,7 @@ export type RptApplyTranslationResultData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4592,6 +4948,10 @@ export type RptApplyTranslationResultErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4625,7 +4985,7 @@ export type RptApplyConsolidationApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4642,6 +5002,10 @@ export type RptApplyConsolidationApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4675,7 +5039,7 @@ export type RptPublishConsolidatedStatementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4692,6 +5056,10 @@ export type RptPublishConsolidatedStatementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4725,7 +5093,7 @@ export type RptMaintainReportDefinitionsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4743,6 +5111,10 @@ export type RptMaintainReportDefinitionsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4776,7 +5148,7 @@ export type RptGenerateAndPublishLedgerFinancialStatementsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4793,6 +5165,10 @@ export type RptGenerateAndPublishLedgerFinancialStatementsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4826,7 +5202,7 @@ export type IcStartSettlementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4843,6 +5219,10 @@ export type IcStartSettlementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4876,7 +5256,7 @@ export type IcMatchIntercompanyItemsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4893,6 +5273,10 @@ export type IcMatchIntercompanyItemsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4926,7 +5310,7 @@ export type IcApplyResidualApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4943,6 +5327,10 @@ export type IcApplyResidualApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -4976,7 +5364,7 @@ export type IcCreateSettlementInstructionsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -4993,6 +5381,10 @@ export type IcCreateSettlementInstructionsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5026,7 +5418,7 @@ export type IcCompleteSettlementRunData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5043,6 +5435,10 @@ export type IcCompleteSettlementRunErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5076,7 +5472,7 @@ export type IcApplyIncomingSettlementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5093,6 +5489,10 @@ export type IcApplyIncomingSettlementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5126,7 +5526,7 @@ export type IcReverseIncomingSettlementApplicationData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5143,6 +5543,10 @@ export type IcReverseIncomingSettlementApplicationErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5176,7 +5580,7 @@ export type IcApplyPaymentReturnData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5193,6 +5597,10 @@ export type IcApplyPaymentReturnErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5226,7 +5634,7 @@ export type IcRunEliminationData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5243,6 +5651,10 @@ export type IcRunEliminationErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5276,7 +5688,7 @@ export type IcMaintainIntercompanyAgreementsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5294,6 +5706,10 @@ export type IcMaintainIntercompanyAgreementsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5327,7 +5743,7 @@ export type IcRecordIntercompanyTransactionsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5344,6 +5760,10 @@ export type IcRecordIntercompanyTransactionsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5377,7 +5797,7 @@ export type RevAssessContractData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5394,6 +5814,10 @@ export type RevAssessContractErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5427,7 +5851,7 @@ export type RevApplyRevenueScheduleApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5444,6 +5868,10 @@ export type RevApplyRevenueScheduleApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5477,7 +5905,7 @@ export type RevPublishRevenueAccountingProfileData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5494,6 +5922,10 @@ export type RevPublishRevenueAccountingProfileErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5527,7 +5959,7 @@ export type RevModifyContractData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5544,6 +5976,10 @@ export type RevModifyContractErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5577,7 +6013,7 @@ export type RevApplyContractModificationApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5594,6 +6030,10 @@ export type RevApplyContractModificationApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5627,7 +6067,7 @@ export type RevRunRecognitionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5644,6 +6084,10 @@ export type RevRunRecognitionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5677,7 +6121,7 @@ export type FaCapitalizeAssetData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5694,6 +6138,10 @@ export type FaCapitalizeAssetErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5727,7 +6175,7 @@ export type FaCreateAssetAcquisitionClearingData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5744,6 +6192,10 @@ export type FaCreateAssetAcquisitionClearingErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5777,7 +6229,7 @@ export type FaRunDepreciationData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5794,6 +6246,10 @@ export type FaRunDepreciationErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5827,7 +6283,7 @@ export type FaApplyImpairmentApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5844,6 +6300,10 @@ export type FaApplyImpairmentApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5877,7 +6337,7 @@ export type FaDisposeAssetData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5894,6 +6354,10 @@ export type FaDisposeAssetErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5927,7 +6391,7 @@ export type FaApplyAssetDisposalApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5944,6 +6408,10 @@ export type FaApplyAssetDisposalApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -5977,7 +6445,7 @@ export type FaCancelUnpostedAssetDisposalData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -5994,6 +6462,10 @@ export type FaCancelUnpostedAssetDisposalErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6027,7 +6499,7 @@ export type FaCompensateFailedDisposalPostingData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6044,6 +6516,10 @@ export type FaCompensateFailedDisposalPostingErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6077,7 +6553,7 @@ export type FaCreateDisposalSettlementClearingData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6094,6 +6570,10 @@ export type FaCreateDisposalSettlementClearingErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6127,7 +6607,7 @@ export type FaApplyAssetSupplierLiabilityResultData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6144,6 +6624,10 @@ export type FaApplyAssetSupplierLiabilityResultErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6177,7 +6661,7 @@ export type FaApplyIncomingSettlementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6194,6 +6678,10 @@ export type FaApplyIncomingSettlementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6227,7 +6715,7 @@ export type FaReverseIncomingSettlementApplicationData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6244,6 +6732,10 @@ export type FaReverseIncomingSettlementApplicationErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6277,7 +6769,7 @@ export type FaApplyPaymentReturnData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6294,6 +6786,10 @@ export type FaApplyPaymentReturnErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6327,7 +6823,7 @@ export type FaApplyAssetSettlementResultData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6344,6 +6840,10 @@ export type FaApplyAssetSettlementResultErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6377,7 +6877,7 @@ export type FaReclassifyDisposalCostForPaymentData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6394,6 +6894,10 @@ export type FaReclassifyDisposalCostForPaymentErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6427,7 +6931,7 @@ export type FaRequestDisposalCostPaymentData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6444,6 +6948,10 @@ export type FaRequestDisposalCostPaymentErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6477,7 +6985,7 @@ export type FaRequestDisposalCostPaymentReplacementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6494,6 +7002,10 @@ export type FaRequestDisposalCostPaymentReplacementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6527,7 +7039,7 @@ export type FaRecordImpairmentAssessmentsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6544,6 +7056,10 @@ export type FaRecordImpairmentAssessmentsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6577,7 +7093,7 @@ export type FaTransferAssetsOrComponentsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6594,6 +7110,10 @@ export type FaTransferAssetsOrComponentsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6627,7 +7147,7 @@ export type FaSplitAssetsOrComponentsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6644,6 +7164,10 @@ export type FaSplitAssetsOrComponentsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6677,7 +7201,7 @@ export type FaCorrectPostedAssetDisposalsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6694,6 +7218,10 @@ export type FaCorrectPostedAssetDisposalsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6727,7 +7255,7 @@ export type FxPublishRateSetData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6744,6 +7272,10 @@ export type FxPublishRateSetErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6777,7 +7309,7 @@ export type FxRunRevaluationData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6794,6 +7326,10 @@ export type FxRunRevaluationErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6827,7 +7363,7 @@ export type FxApplyRevaluationApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6844,6 +7380,10 @@ export type FxApplyRevaluationApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6877,7 +7417,7 @@ export type FxPostRevaluationRunData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6894,6 +7434,10 @@ export type FxPostRevaluationRunErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6927,7 +7471,7 @@ export type FxRunTranslationData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6944,6 +7488,10 @@ export type FxRunTranslationErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -6977,7 +7525,7 @@ export type FpmStartSoftCloseData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -6994,6 +7542,10 @@ export type FpmStartSoftCloseErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7027,7 +7579,7 @@ export type FpmEndSoftCloseData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7044,6 +7596,10 @@ export type FpmEndSoftCloseErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7077,7 +7633,7 @@ export type FpmStartHardCloseData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7094,6 +7650,10 @@ export type FpmStartHardCloseErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7127,7 +7687,7 @@ export type FpmResumeCloseRunData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7144,6 +7704,10 @@ export type FpmResumeCloseRunErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7177,7 +7741,7 @@ export type FpmAbortCloseRunData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7194,6 +7758,10 @@ export type FpmAbortCloseRunErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7227,7 +7795,7 @@ export type FpmApplyPostingGateResultData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7244,6 +7812,10 @@ export type FpmApplyPostingGateResultErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7277,7 +7849,7 @@ export type FpmApplyCloseExceptionApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7294,6 +7866,10 @@ export type FpmApplyCloseExceptionApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7327,7 +7903,7 @@ export type FpmApplyCloseApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7344,6 +7920,10 @@ export type FpmApplyCloseApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7377,7 +7957,7 @@ export type FpmRequestReopenData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7394,6 +7974,10 @@ export type FpmRequestReopenErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7427,7 +8011,7 @@ export type FpmApplyReopenApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7444,6 +8028,10 @@ export type FpmApplyReopenApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7477,7 +8065,7 @@ export type FpmStartRecloseData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7494,6 +8082,10 @@ export type FpmStartRecloseErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7527,7 +8119,7 @@ export type FpmTakeOverPeriodControlData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7544,6 +8136,10 @@ export type FpmTakeOverPeriodControlErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7577,7 +8173,7 @@ export type FpmExtendCloseExceptionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7594,6 +8190,10 @@ export type FpmExtendCloseExceptionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7627,7 +8227,7 @@ export type CoaMaintainSegmentDefinitionsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7645,6 +8245,10 @@ export type CoaMaintainSegmentDefinitionsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7678,7 +8282,7 @@ export type CoaMaintainSegmentValuesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7696,6 +8300,10 @@ export type CoaMaintainSegmentValuesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7729,7 +8337,7 @@ export type CoaValidateSegmentCombinationsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7746,6 +8354,10 @@ export type CoaValidateSegmentCombinationsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7779,7 +8391,7 @@ export type CoaRequestSegmentChangesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7796,6 +8408,10 @@ export type CoaRequestSegmentChangesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7829,7 +8445,7 @@ export type CoaApplySegmentChangeApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7846,6 +8462,10 @@ export type CoaApplySegmentChangeApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7879,7 +8499,7 @@ export type BfrImportStatementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7896,6 +8516,10 @@ export type BfrImportStatementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7929,7 +8553,7 @@ export type BfrProposeMatchData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7946,6 +8570,10 @@ export type BfrProposeMatchErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -7979,7 +8607,7 @@ export type BfrConfirmMatchData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -7996,6 +8624,10 @@ export type BfrConfirmMatchErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8029,7 +8661,7 @@ export type BfrUnmatchData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8046,6 +8678,10 @@ export type BfrUnmatchErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8079,7 +8715,7 @@ export type BfrCompleteReconciliationData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8096,6 +8732,10 @@ export type BfrCompleteReconciliationErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8129,7 +8769,7 @@ export type BfrMaintainBankFeedConnectionsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8147,6 +8787,10 @@ export type BfrMaintainBankFeedConnectionsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8180,7 +8824,7 @@ export type TaxDetermineTaxData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8197,6 +8841,10 @@ export type TaxDetermineTaxErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8230,7 +8878,7 @@ export type TaxPrepareTaxReturnData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8247,6 +8895,10 @@ export type TaxPrepareTaxReturnErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8280,7 +8932,7 @@ export type TaxApplyTaxReturnApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8297,6 +8949,10 @@ export type TaxApplyTaxReturnApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8330,7 +8986,7 @@ export type TaxSubmitTaxReturnData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8347,6 +9003,10 @@ export type TaxSubmitTaxReturnErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8380,7 +9040,7 @@ export type TaxCreateTaxAmendmentData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8397,6 +9057,10 @@ export type TaxCreateTaxAmendmentErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8430,7 +9094,7 @@ export type TaxApplyTaxAmendmentApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8447,6 +9111,10 @@ export type TaxApplyTaxAmendmentApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8480,7 +9148,7 @@ export type TaxSubmitTaxAmendmentData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8497,6 +9165,10 @@ export type TaxSubmitTaxAmendmentErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8530,7 +9202,7 @@ export type TaxCreateReturnLevelTaxAdjustmentData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8547,6 +9219,10 @@ export type TaxCreateReturnLevelTaxAdjustmentErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8580,7 +9256,7 @@ export type TaxApplyReturnLevelTaxAdjustmentApprovalDecisionData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8597,6 +9273,10 @@ export type TaxApplyReturnLevelTaxAdjustmentApprovalDecisionErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8630,7 +9310,7 @@ export type TaxPostReturnLevelTaxAdjustmentData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8647,6 +9327,10 @@ export type TaxPostReturnLevelTaxAdjustmentErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8680,7 +9364,7 @@ export type TaxRequestTaxPaymentData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8697,6 +9381,10 @@ export type TaxRequestTaxPaymentErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8730,7 +9418,7 @@ export type TaxRecordTaxPaymentSettlementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8747,6 +9435,10 @@ export type TaxRecordTaxPaymentSettlementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8780,7 +9472,7 @@ export type TaxApplyIncomingSettlementData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8797,6 +9489,10 @@ export type TaxApplyIncomingSettlementErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8830,7 +9526,7 @@ export type TaxReverseIncomingSettlementApplicationData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8847,6 +9543,10 @@ export type TaxReverseIncomingSettlementApplicationErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8880,7 +9580,7 @@ export type TaxApplyPaymentReturnData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8897,6 +9597,10 @@ export type TaxApplyPaymentReturnErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8930,7 +9634,7 @@ export type TaxMaintainTaxConfigurationsData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8948,6 +9652,10 @@ export type TaxMaintainTaxConfigurationsErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -8981,7 +9689,7 @@ export type WfaCreateApprovalRequestData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -8998,6 +9706,10 @@ export type WfaCreateApprovalRequestErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -9031,7 +9743,7 @@ export type WfaDecideApprovalRequestData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -9048,6 +9760,10 @@ export type WfaDecideApprovalRequestErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -9081,7 +9797,7 @@ export type WfaDelegateApprovalData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -9098,6 +9814,10 @@ export type WfaDelegateApprovalErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -9131,7 +9851,7 @@ export type WfaEscalateApprovalData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -9148,6 +9868,10 @@ export type WfaEscalateApprovalErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -9181,7 +9905,7 @@ export type WfaMaintainApprovalPoliciesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -9199,6 +9923,10 @@ export type WfaMaintainApprovalPoliciesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -9232,7 +9960,7 @@ export type IamManageUsersData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -9249,6 +9977,10 @@ export type IamManageUsersErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -9282,7 +10014,7 @@ export type IamManageRolesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -9299,6 +10031,10 @@ export type IamManageRolesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -9332,7 +10068,7 @@ export type IamManageAccessPoliciesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -9349,6 +10085,10 @@ export type IamManageAccessPoliciesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -9382,7 +10122,7 @@ export type IamManageSegregationRulesData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -9399,6 +10139,10 @@ export type IamManageSegregationRulesErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -9432,7 +10176,7 @@ export type IamGrantEmergencyAccessData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -9449,6 +10193,10 @@ export type IamGrantEmergencyAccessErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -9482,7 +10230,7 @@ export type IamRevokeEmergencyAccessData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -9499,6 +10247,10 @@ export type IamRevokeEmergencyAccessErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -9532,7 +10284,7 @@ export type AudAppendAuditableEventData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -9549,6 +10301,10 @@ export type AudAppendAuditableEventErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -9582,7 +10338,7 @@ export type AudCreateAuditSealData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -9599,6 +10355,10 @@ export type AudCreateAuditSealErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -9632,7 +10392,7 @@ export type AudRotateVerificationCredentialData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -9649,6 +10409,10 @@ export type AudRotateVerificationCredentialErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -9682,7 +10446,7 @@ export type AudEscalateIntegrityIncidentData = {
     body: CommandRequest;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -9699,6 +10463,10 @@ export type AudEscalateIntegrityIncidentErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
@@ -9732,7 +10500,7 @@ export type AudVerifyProofData = {
     body?: never;
     headers: {
         /**
-         * Bearer access token; enforced outside the contract-only story.
+         * Bearer access token validated at the API authentication boundary.
          */
         Authorization: string;
         'X-Correlation-Id'?: Uuid;
@@ -9748,6 +10516,10 @@ export type AudVerifyProofErrors = {
      * RFC 9457-style problem details
      */
     400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
     /**
      * RFC 9457-style problem details
      */
