@@ -39,6 +39,9 @@ Local PostgreSQL configuration is managed through `.env`:
 cp .env.example .env
 ```
 
+Browser authentication configuration is separate: copy `web/.env.example` to
+`web/.env.local` and set the `VITE_*` values for an interactive Entra run.
+
 For a new local environment:
 ```bash
 make verify-database-clean

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/toanle88/Tally/internal/platform/authentication"
 	"github.com/toanle88/Tally/internal/platform/httpx"
 	"github.com/toanle88/Tally/internal/platform/telemetry"
 )
@@ -71,10 +72,7 @@ func run(logger *telemetry.Logger) error {
 		address = defaultHTTPAddress
 	}
 
-	router := chi.NewRouter()
-	router.Use(telemetry.RequestTracingMiddleware(instrumentation))
-	router.Use(telemetry.RequestLoggingMiddleware(logger))
-	router.Get("/health/live", httpx.Liveness)
+	router := newRouter(instrumentation, logger, os.Getenv)
 
 	server := &http.Server{
 		Addr:              address,
@@ -132,4 +130,19 @@ func run(logger *telemetry.Logger) error {
 		Result:    "success",
 	})
 	return nil
+}
+
+func newRouter(instrumentation *telemetry.Instrumentation, logger *telemetry.Logger, getenv func(string) string) http.Handler {
+	router := chi.NewRouter()
+	router.Use(telemetry.RequestTracingMiddleware(instrumentation))
+	router.Use(telemetry.RequestLoggingMiddleware(logger))
+	// Liveness is intentionally anonymous so orchestration can distinguish a
+	// running process from an authentication-provider outage.
+	router.Get("/health/live", httpx.Liveness)
+
+	// The generated finance API is mounted under this boundary as operations
+	// arrive. There is no login or /me endpoint in this story.
+	protectedAPI := authentication.NewMiddlewareFromEnvironment(getenv, logger)
+	router.Mount("/api/v1", protectedAPI(http.NotFoundHandler()))
+	return router
 }

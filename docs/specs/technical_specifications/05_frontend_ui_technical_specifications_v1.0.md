@@ -32,6 +32,13 @@ Capability code cannot import another capability's private components or API lay
 - No global client store duplicates authoritative financial records.
 - Mutations invalidate exact affected keys and then use the server-established result.
 
+## 2.1 React state and lifecycle standard
+
+- React `useEffect` is not used for new code or migrations.
+- Prefer derived render values, event handlers, callback refs, `useSyncExternalStore`, or a focused custom hook with an explicit subscription boundary.
+- Use an effect only when no alternative solution exists; document the reason beside the exception and add focused coverage for its lifecycle and cleanup behavior.
+- Replacements must preserve accessibility focus, cleanup, cancellation, retry, and timer semantics.
+
 ## 3. Shared component implementation catalog
 
 | ID | Component | Required behavior | Implementation path |
@@ -263,6 +270,6 @@ Semantic tokens define `success`, `warning`, `error`, `info`, `pending`, `reconc
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `18bb5e611fb5498f60994a4fd68ac3fdcc80058175deda5f8722e3a68d4fc726` |
+| Verified body SHA-256 | `4e71b822cd952e0cc2ee3fd4e6c33ae5ffe81cb660978fd75755737ea09ff068` |
 | Review status | Passed |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; run the full suite for API, database, event, security, deployment, recovery, or technology-baseline changes. |

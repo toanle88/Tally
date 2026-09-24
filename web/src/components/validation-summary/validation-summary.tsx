@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from 'react'
+import { useCallback, useId } from 'react'
 
 import { Link, Panel } from '@/components/ui'
 import type { ValidationIssue } from '@/components/workflow-context'
@@ -10,8 +10,9 @@ export interface ValidationSummaryProps {
 
 export function ValidationSummary({ issues, onFocusTarget }: ValidationSummaryProps) {
   const titleId = `${useId()}-validation-title`
-  const summaryRef = useRef<HTMLDivElement>(null)
-  useEffect(() => { if (issues.length > 0) summaryRef.current?.focus() }, [issues.length])
+  const summaryRef = useCallback((element: HTMLDivElement | null) => {
+    if (element) element.focus()
+  }, [issues.length])
   if (issues.length === 0) return null
   return (
     <Panel title="Review the highlighted issues" description="Submission was not sent. Resolve each issue, then try again." className="border-error/50" state="error">

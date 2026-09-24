@@ -4,7 +4,7 @@ headers:
     in: header
     required: true
     schema: { type: string }
-    description: Bearer access token; enforced outside the contract-only story.
+    description: Bearer access token validated at the API authentication boundary.
   X-Correlation-Id:
     name: X-Correlation-Id
     in: header
@@ -135,4 +135,11 @@ schemas:
         items: { $ref: '#/schemas/ProblemFieldError' }
 responses:
   Established: { description: Established result, content: { application/json: { schema: { $ref: '#/schemas/EstablishedResult' } } } }
+  AuthenticationRequired:
+    description: Authentication is required or the supplied bearer token is invalid.
+    headers:
+      WWW-Authenticate:
+        schema: { type: string }
+        example: Bearer
+    content: { application/problem+json: { schema: { $ref: '#/schemas/ProblemDetails' } } }
   Problem: { description: RFC 9457-style problem details, content: { application/problem+json: { schema: { $ref: '#/schemas/ProblemDetails' } } } }

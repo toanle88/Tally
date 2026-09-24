@@ -12,583 +12,583 @@ import (
 
 var (
 	rn1AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn3AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn4AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn5AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn7AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn8AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn10AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn11AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn12AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn14AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn16AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn18AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn20AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn21AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn23AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn25AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn27AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn28AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn30AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn31AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn33AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn35AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn37AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn38AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn40AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn41AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn295AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn297AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn299AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn300AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn302AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn43AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn45AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn46AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn47AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn49AllowedHeaders = map[string]string{
-		"GET": "Accept-Language,X-Correlation-Id",
+		"GET": "Accept-Language,Authorization,X-Correlation-Id",
 	}
 	rn51AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn53AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn55AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn58AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn59AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn57AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn60AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn66AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn67AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn62AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn64AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn102AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn104AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn106AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn108AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn109AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn111AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn113AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn114AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn116AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn117AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn119AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn120AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn121AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn68AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn70AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn72AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn74AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn76AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn77AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn79AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn81AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn83AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn85AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn86AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn88AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn89AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn90AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn92AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn94AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn95AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn96AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn98AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn99AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn100AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn130AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn132AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn134AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn135AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn137AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn138AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn140AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn141AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn150AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn152AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn153AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn155AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn156AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn144AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Accounting-Scope-Id,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn146AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Accounting-Scope-Id,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn148AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Accounting-Scope-Id,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn149AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Accounting-Scope-Id,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn143AllowedHeaders = map[string]string{
-		"GET": "Accept-Language,X-Accounting-Scope-Id,X-Correlation-Id",
+		"GET": "Accept-Language,Authorization,X-Accounting-Scope-Id,X-Correlation-Id",
 	}
 	rn157AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn159AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn161AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn162AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn163AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn164AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn166AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn168AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn169AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn171AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn173AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn176AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn177AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn179AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn181AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn182AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn175AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn184AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn190AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn191AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn192AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn186AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn188AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn201AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn194AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn196AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn197AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn198AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn199AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn122AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn124AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn126AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn127AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn129AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn215AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn217AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn219AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn221AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn223AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn225AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn227AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn228AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn230AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn232AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn233AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn236AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn237AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn239AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn240AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn242AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn243AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn245AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn246AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn247AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn248AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn249AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn250AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn251AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn235AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn202AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn204AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn206AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn208AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn213AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn210AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn212AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn262AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn264AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn266AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn269AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn270AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn268AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn252AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn254AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn256AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn258AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn259AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn260AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn271AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn273AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn274AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn275AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn277AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn279AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn281AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn282AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn285AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn287AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn288AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn290AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn291AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn292AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn294AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn284AllowedHeaders = map[string]string{
-		"PUT": "Accept-Language,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
+		"PUT": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 )
 

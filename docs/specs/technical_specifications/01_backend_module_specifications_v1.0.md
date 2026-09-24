@@ -563,6 +563,7 @@ Configuration is loaded once at startup from environment variables and secret re
 | `OUTBOX_POLL_INTERVAL` | duration | `1s` | No | 100ms–60s |
 | `ENTRA_TENANT_ID` | UUID/string | none | No | required outside local |
 | `ENTRA_API_AUDIENCE` | string | none | No | required outside local |
+| `ENTRA_METADATA_URL` | URI | none | No | required outside local; HTTPS OIDC discovery document |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | URI | empty | No | valid URI when set |
 
 ## 11. Architecture tests
@@ -577,6 +578,6 @@ Configuration is loaded once at startup from environment variables and secret re
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `6f2359dfc4ded8f1e78b39e01292f4a4628d36d43423ce52dac88cdf6ba280c7` |
+| Verified body SHA-256 | `92d1557813743fec47bc34178c900fec0fcca000451fdfc6b2aac0c5f0ea0b79` |
 | Review status | Passed |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; run the full suite for API, database, event, security, deployment, recovery, or technology-baseline changes. |

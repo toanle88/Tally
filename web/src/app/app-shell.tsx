@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react'
 
-import { Heading } from '@/components/ui'
+import { Button, Heading } from '@/components/ui'
 
 export interface AppShellProps {
   navigation: ReactNode
   scopeContext: ReactNode
   statusFeedback: ReactNode
+  actorLabel?: string
+  onSignOut?: () => void | Promise<void>
   children: ReactNode
 }
 
@@ -13,6 +15,8 @@ export function AppShell({
   navigation,
   scopeContext,
   statusFeedback,
+  actorLabel,
+  onSignOut,
   children,
 }: AppShellProps) {
   return (
@@ -29,9 +33,22 @@ export function AppShell({
               Shared finance interface foundation
             </p>
           </div>
-          <span className="hidden rounded-full bg-base-200 px-3 py-1 text-xs font-medium sm:inline-flex">
-            Local preview
-          </span>
+          {actorLabel ? (
+            <div className="flex items-center gap-2">
+              <span className="max-w-56 truncate rounded-full bg-base-200 px-3 py-1 text-xs font-medium" aria-label="Signed-in username">
+                {actorLabel}
+              </span>
+              {onSignOut ? (
+                <Button variant="ghost" size="sm" onClick={() => void onSignOut()}>
+                  Sign out
+                </Button>
+              ) : null}
+            </div>
+          ) : (
+            <span className="hidden rounded-full bg-base-200 px-3 py-1 text-xs font-medium sm:inline-flex">
+              Local preview
+            </span>
+          )}
         </div>
       </header>
 
