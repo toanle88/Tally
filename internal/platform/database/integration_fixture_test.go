@@ -79,6 +79,12 @@ func startIntegrationFixture(
 				historySchema: "platform",
 				historyTable:  "goose_db_version",
 			},
+			{
+				name:          "identity",
+				directory:     filepath.Join(root, "db", "migrations", "identity"),
+				historySchema: "identity",
+				historyTable:  "goose_db_version",
+			},
 		},
 	}
 

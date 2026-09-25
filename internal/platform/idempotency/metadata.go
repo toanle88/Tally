@@ -15,6 +15,7 @@ import (
 var (
 	ErrInvalidIdempotencyKey = errors.New("invalid idempotency key")
 	ErrInvalidOperationID    = errors.New("invalid operation ID")
+	ErrInvalidScopeKey       = errors.New("invalid idempotency scope key")
 	ErrInvalidState          = errors.New("invalid idempotency state")
 	ErrInvalidResultBody     = errors.New("invalid result body")
 	ErrInvalidResultMetadata = errors.New("invalid result metadata")
@@ -25,8 +26,9 @@ const maxIdentityTextBytes = 255
 // IdempotencyIdentity identifies one business command within an accounting scope.
 // Operation identity, aggregate versions, and event/correlation identities are separate.
 type IdempotencyIdentity struct {
-	scope accountingscope.AccountingScope
-	key   string
+	scope    accountingscope.AccountingScope
+	scopeKey string
+	key      string
 }
 
 func NewIdentity(scope accountingscope.AccountingScope, key string) (IdempotencyIdentity, error) {
@@ -36,23 +38,51 @@ func NewIdentity(scope accountingscope.AccountingScope, key string) (Idempotency
 	if err := validateIdentityText(key); err != nil {
 		return IdempotencyIdentity{}, err
 	}
-	return IdempotencyIdentity{scope: scope, key: key}, nil
+	scopeKey, err := scope.MarshalJSON()
+	if err != nil {
+		return IdempotencyIdentity{}, err
+	}
+	return IdempotencyIdentity{scope: scope, scopeKey: string(scopeKey), key: key}, nil
+}
+
+// NewOpaqueIdentity creates an idempotency identity for a bounded context
+// whose commands are not scoped by an accounting scope. The scope key remains
+// platform-owned JSON so all bounded contexts use the same durable table and
+// reservation/finalization protocol.
+func NewOpaqueIdentity(scopeKey, key string) (IdempotencyIdentity, error) {
+	if err := validateScopeKey(scopeKey); err != nil {
+		return IdempotencyIdentity{}, err
+	}
+	if err := validateIdentityText(key); err != nil {
+		return IdempotencyIdentity{}, err
+	}
+	return IdempotencyIdentity{scopeKey: scopeKey, key: key}, nil
 }
 
 func (i IdempotencyIdentity) Scope() accountingscope.AccountingScope { return i.scope }
 func (i IdempotencyIdentity) Key() string                            { return i.key }
 
 func (i IdempotencyIdentity) Equal(other IdempotencyIdentity) bool {
-	return i.scope.Equal(other.scope) && i.key == other.key
+	return i.scopeKey == other.scopeKey && i.key == other.key
 }
 
 // ScopeKey is the compact, validated JSON representation used by persistence adapters.
 func (i IdempotencyIdentity) ScopeKey() (string, error) {
-	data, err := i.scope.MarshalJSON()
-	if err != nil {
+	if err := validateScopeKey(i.scopeKey); err != nil {
 		return "", err
 	}
-	return string(data), nil
+	return i.scopeKey, nil
+}
+
+func validateScopeKey(value string) error {
+	if value == "" || strings.TrimSpace(value) != value || !json.Valid([]byte(value)) {
+		return ErrInvalidScopeKey
+	}
+	var object map[string]json.RawMessage
+	if err := json.Unmarshal([]byte(value), &object); err != nil || object == nil {
+		return ErrInvalidScopeKey
+	}
+	return nil
 }
 
 type ResultState string

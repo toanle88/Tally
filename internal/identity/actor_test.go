@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/toanle88/Tally/internal/platform/aggregateversion"
 )
 
 func TestFixtureResolverMapsValidatedSubjectToApplicationActor(t *testing.T) {
@@ -58,5 +60,93 @@ func TestActorContextRejectsInvalidActor(t *testing.T) {
 func TestAuthenticationSubjectRequiresAllStableClaims(t *testing.T) {
 	if _, err := NewAuthenticationSubject("oid", "", "sub"); !errors.Is(err, ErrInvalidAuthenticationSubject) {
 		t.Fatalf("error = %v, want ErrInvalidAuthenticationSubject", err)
+	}
+}
+
+type staticUserResolver struct {
+	actor ApplicationActor
+}
+
+func (resolver staticUserResolver) ResolveApplicationActor(context.Context, AuthenticationSubject) (ApplicationActor, error) {
+	return resolver.actor, nil
+}
+
+func TestRevalidatingResolverRejectsUnknownProductionUser(t *testing.T) {
+	subject := AuthenticationSubject{OID: "oid", TID: "tenant", Sub: "subject"}
+	resolver, err := NewRevalidatingUserResolver(staticUserResolver{
+		actor: ApplicationActor{UserID: uuid.New(), Subject: subject},
+	}, NewMemoryUserRepository())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.ResolveApplicationActor(context.Background(), subject); !errors.Is(err, ErrApplicationActorUnavailable) {
+		t.Fatalf("unknown production user error = %v, want ErrApplicationActorUnavailable", err)
+	}
+}
+
+func TestRevalidatingResolverRechecksLifecycleStatus(t *testing.T) {
+	subject := AuthenticationSubject{OID: "oid", TID: "tenant", Sub: "subject"}
+	userID := uuid.New()
+	fallback, err := NewFixtureResolver([]FixtureIdentity{{Subject: subject, UserID: userID}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	repository := NewMemoryUserRepository()
+	now := time.Date(2026, 9, 25, 8, 0, 0, 0, time.UTC)
+	user, err := NewUser(userID, subject, nil, now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repository.Create(context.Background(), user); err != nil {
+		t.Fatal(err)
+	}
+	resolver, err := NewRevalidatingUserResolver(fallback, repository)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.ResolveApplicationActor(context.Background(), subject); !errors.Is(err, ErrApplicationActorUnavailable) {
+		t.Fatalf("inactive resolution error = %v, want ErrApplicationActorUnavailable", err)
+	}
+	if err := user.Activate(now.Add(time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	nextVersion, err := user.Version.Advance()
+	if err != nil {
+		t.Fatal(err)
+	}
+	user.Version = nextVersion
+	if err := repository.Replace(context.Background(), user, aggregateversion.Initial()); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.ResolveApplicationActor(context.Background(), subject); err != nil {
+		t.Fatal(err)
+	}
+	if err := user.Suspend(now.Add(2 * time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	nextVersion, err = user.Version.Advance()
+	if err != nil {
+		t.Fatal(err)
+	}
+	user.Version = nextVersion
+	if err := repository.Replace(context.Background(), user, aggregateversion.AggregateVersion(2)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.ResolveApplicationActor(context.Background(), subject); !errors.Is(err, ErrApplicationActorUnavailable) {
+		t.Fatalf("suspended resolution error = %v, want ErrApplicationActorUnavailable", err)
+	}
+	if err := user.Terminate(now.Add(3 * time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	nextVersion, err = user.Version.Advance()
+	if err != nil {
+		t.Fatal(err)
+	}
+	user.Version = nextVersion
+	if err := repository.Replace(context.Background(), user, aggregateversion.AggregateVersion(3)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.ResolveApplicationActor(context.Background(), subject); !errors.Is(err, ErrApplicationActorUnavailable) {
+		t.Fatalf("terminated resolution error = %v, want ErrApplicationActorUnavailable", err)
 	}
 }

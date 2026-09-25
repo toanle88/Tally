@@ -9956,8 +9956,32 @@ export type WfaMaintainApprovalPoliciesResponses = {
 
 export type WfaMaintainApprovalPoliciesResponse = WfaMaintainApprovalPoliciesResponses[keyof WfaMaintainApprovalPoliciesResponses];
 
+export type IamAuthenticationSubject = {
+    oid: string;
+    tid: string;
+    sub: string;
+};
+
+export type IamRoleAssignment = {
+    roleId: Uuid;
+    scopeIds: string[];
+};
+
+export type IamManageUsersCommandData = {
+    action: 'create' | 'update' | 'activate' | 'suspend' | 'terminate';
+    userId?: Uuid;
+    authenticationSubject?: IamAuthenticationSubject;
+    assignments?: IamRoleAssignment[];
+};
+
+export type IamManageUsersCommandRequest = {
+    commandId: Uuid;
+    expectedVersion?: number;
+    data: IamManageUsersCommandData;
+};
+
 export type IamManageUsersData = {
-    body: CommandRequest;
+    body: IamManageUsersCommandRequest;
     headers: {
         /**
          * Bearer access token validated at the API authentication boundary.
@@ -9966,6 +9990,7 @@ export type IamManageUsersData = {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
+        'If-Match'?: string;
     };
     path?: never;
     query?: never;

@@ -9,14 +9,15 @@
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+      - $ref: ../components/common.yaml#/headers/If-Match
     requestBody:
       required: true
       content:
         application/json:
-          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          schema: { $ref: ../components/common.yaml#/schemas/IamManageUsersCommandRequest }
           examples:
             deterministic:
-              $ref: ../examples/command-request.yaml
+              $ref: ../examples/manage-users-command.yaml
     responses:
       '200': { $ref: ../components/common.yaml#/responses/Established }
       '400': { $ref: ../components/common.yaml#/responses/Problem }

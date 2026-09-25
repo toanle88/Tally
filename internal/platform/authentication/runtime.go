@@ -11,11 +11,19 @@ import (
 	"github.com/toanle88/Tally/internal/platform/telemetry"
 )
 
-// NewMiddlewareFromEnvironment composes the authentication boundary without
-// making provider configuration part of domain code. Missing configuration is
-// deliberately a request-time dependency failure so anonymous health checks
-// remain available while protected API routes fail closed.
+// NewMiddlewareFromEnvironment composes the configured authentication boundary. Missing
+// provider configuration is deliberately a request-time dependency failure so
+// anonymous health checks remain available while protected API routes fail closed.
 func NewMiddlewareFromEnvironment(getenv func(string) string, logger *telemetry.Logger) func(http.Handler) http.Handler {
+	return newMiddlewareFromEnvironment(getenv, logger, nil)
+}
+
+// NewMiddlewareFromEnvironmentWithUserRepository adds authoritative application-user revalidation.
+func NewMiddlewareFromEnvironmentWithUserRepository(getenv func(string) string, logger *telemetry.Logger, repository identity.UserRepository) func(http.Handler) http.Handler {
+	return newMiddlewareFromEnvironment(getenv, logger, repository)
+}
+
+func newMiddlewareFromEnvironment(getenv func(string) string, logger *telemetry.Logger, repository identity.UserRepository) func(http.Handler) http.Handler {
 	if getenv == nil {
 		getenv = os.Getenv
 	}
@@ -57,6 +65,13 @@ func NewMiddlewareFromEnvironment(getenv func(string) string, logger *telemetry.
 			return UnavailableMiddleware(logger)
 		}
 		resolver = fixtureResolver
+	}
+	if repository != nil {
+		validatedResolver, err := identity.NewRevalidatingUserResolver(resolver, repository)
+		if err != nil {
+			return UnavailableMiddleware(logger)
+		}
+		resolver = validatedResolver
 	}
 	return NewMiddleware(MiddlewareConfig{Validator: validator, Resolver: resolver, Logger: logger})
 }

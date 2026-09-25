@@ -49,6 +49,28 @@ func TestIdentityEqualityIncludesScopeAndKey(t *testing.T) {
 	}
 }
 
+func TestOpaqueIdentityUsesValidatedModuleScope(t *testing.T) {
+	identity, err := NewOpaqueIdentity(`{"module":"identity","actorId":"actor-1"}`, "manage-users-1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, err := identity.ScopeKey(); err != nil || got != `{"module":"identity","actorId":"actor-1"}` {
+		t.Fatalf("scope key = %q, error = %v", got, err)
+	}
+	otherScope, err := NewOpaqueIdentity(`{"module":"identity","actorId":"actor-2"}`, "manage-users-1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if identity.Equal(otherScope) {
+		t.Fatal("opaque identity equality ignored module scope")
+	}
+	for _, scope := range []string{"", " identity", `[]`, `{"module":`} {
+		if _, err := NewOpaqueIdentity(scope, "manage-users-1"); !errors.Is(err, ErrInvalidScopeKey) {
+			t.Fatalf("scope %q error = %v, want ErrInvalidScopeKey", scope, err)
+		}
+	}
+}
+
 func TestIdentityValidation(t *testing.T) {
 	cases := []string{"", "   ", " payment", "payment ", "payment\x00", string([]byte{0xff}), string(make([]byte, maxIdentityTextBytes+1))}
 	for _, key := range cases {

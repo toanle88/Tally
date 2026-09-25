@@ -15546,12 +15546,16 @@ func (s *Server) handleIamManageUsersRequest(args [0]string, argsEscaped bool, w
 					Name: "Idempotency-Key",
 					In:   "header",
 				}: params.IdempotencyKey,
+				{
+					Name: "If-Match",
+					In:   "header",
+				}: params.IfMatch,
 			},
 			Raw: r,
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *IamManageUsersCommandRequest
 			Params   = IamManageUsersParams
 			Response = IamManageUsersRes
 		)

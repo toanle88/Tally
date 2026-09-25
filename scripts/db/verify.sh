@@ -109,6 +109,11 @@ verify_migration_set \
 	"db/migrations/platform" \
 	"platform.goose_db_version"
 
+verify_migration_set \
+	"identity" \
+	"db/migrations/identity" \
+	"identity.goose_db_version"
+
 verify_seed_manifest
 
 echo "Database migration and seed verification passed."

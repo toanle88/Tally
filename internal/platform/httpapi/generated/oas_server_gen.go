@@ -423,7 +423,7 @@ type Handler interface {
 	// IamManageUsers implements iamManageUsers operation.
 	//
 	// POST /identity-access/actions/manage-users
-	IamManageUsers(ctx context.Context, req *CommandRequest, params IamManageUsersParams) (IamManageUsersRes, error)
+	IamManageUsers(ctx context.Context, req *IamManageUsersCommandRequest, params IamManageUsersParams) (IamManageUsersRes, error)
 	// IamRevokeEmergencyAccess implements iamRevokeEmergencyAccess operation.
 	//
 	// POST /identity-access/actions/revoke-emergency-access

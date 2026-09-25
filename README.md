@@ -20,8 +20,14 @@ A modern double-entry accounting application — currently in early engineering 
 # Install frontend dependencies
 pnpm --dir web --ignore-workspace install --frozen-lockfile
 
+# Configure local PostgreSQL before starting Compose
+cp .env.example .env
+
 # Start PostgreSQL (background, waits for health check)
 make db-up
+
+# Apply migrations, synthetic seed data, and verification
+make db-prepare
 
 # Start the API server (listens on :8080 or $HTTP_ADDR)
 pnpm dev-api
@@ -31,12 +37,6 @@ pnpm dev-web
 
 # Run all checks (tests + build)
 pnpm check
-```
-
-Local PostgreSQL configuration is managed through `.env`:
-
-```bash
-cp .env.example .env
 ```
 
 Browser authentication configuration is separate: copy `web/.env.example` to
@@ -74,7 +74,7 @@ All commands must be run from the repository root.
 ### Makefile targets — PostgreSQL lifecycle
 
 | Target | Description |
-|---|---|---|
+|---|---|
 | `make db-config` | Validate Docker Compose configuration |
 | `make db-up` | Start PostgreSQL and wait for healthy status |
 | `make db-wait` | Poll Docker health check up to 50 attempts, 1 s interval |
@@ -83,14 +83,14 @@ All commands must be run from the repository root.
 | `make db-shell` | Open `psql` against the configured local database |
 | `make db-version` | Query `SHOW server_version` inside the container |
 | `make db-down` | Stop the PostgreSQL container (preserves data volume) |
-| `make db-migrate` | Apply Goose migrations (bootstrap schema, platform tables) |
+| `make db-migrate` | Apply all pending Goose migrations (bootstrap, platform, and identity schemas) |
 | `make db-seed` | Apply the committed synthetic seed data |
 | `make db-verify` | Verify migration status and seed checksum |
 | `make db-prepare` | Run db-migrate → db-seed → db-verify in order, stop on failure |
 | `make db-reset` | Destroy and recreate the PostgreSQL volume from scratch |
 | `make db-migrate-status` | Show applied and pending Goose migrations per schema |
 | `make db-migrate-validate` | Validate migration ordering and Goose syntax without connecting |
-| `make db-migrate-create` | Create a migration skeleton: `make db-migrate-create SCHEMA=platform NAME=desc` |
+| `make db-migrate-create` | Create a migration skeleton for `bootstrap`, `platform`, or `identity`: `make db-migrate-create SCHEMA=identity NAME=desc` |
 | `make db-migrate-check` | Verify migration checksum inventory matches committed migrations |
 | `make db-migrate-inventory` | Regenerate `db/migrations/checksums.sha256` |
 | `make db-sqlc-version` | Show the pinned sqlc version |

@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Epic | `EP-IAM-001` — Identity and access |
-| Status | User Story 1 locally implemented and verified; User Stories 2–7 remain planned |
+| Status | User Story 1 locally implemented and verified; User Story 2 implementation added with verification pending; User Stories 3–7 remain planned |
 | Milestone | `M1` — Capability foundation |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Delivery items | `DLV-GFR-002`, `DLV-GFR-003`, `DLV-GFR-015`, `DLV-FR-IAM-001`–`DLV-FR-IAM-006` |
@@ -183,17 +183,28 @@ Traceability: `DLV-FR-IAM-001`, `DLV-GFR-015`, `NFR-SEC-006`,
 
 Acceptance criteria:
 
-- [ ] Authorized administrators can create, update, activate, suspend, and
+- [x] Authorized administrators can create, update, activate, suspend, and
   terminate users while preserving the authentication-subject reference and
   explicit `UserStatus`.
-- [ ] User access records show roles, scopes, status, review evidence, and
+- [x] User access records show roles, scopes, status, review evidence, and
   validation conflicts without exposing restricted personal or security data.
 - [ ] Suspension, termination, role removal, and access-policy changes become
   effective for interactive and noninteractive access within 15 minutes.
-- [ ] State-changing user operations enforce authorization, idempotency,
+- [x] State-changing user operations enforce authorization, idempotency,
   expected-version/concurrency behavior, and audit evidence.
-- [ ] A user cannot grant or retain access outside the approved scope of the
+- [x] A user cannot grant or retain access outside the approved scope of the
   administering actor, and denied changes return a typed safe reason.
+
+#### User Story 2 implementation evidence
+
+- [x] The identity domain and application service implement explicit lifecycle transitions, immutable authentication subjects, atomic complete-set assignment replacement, idempotency fingerprints, expected-version checks, authorization containment, and audit-record ports.
+- [x] The identity-owned migration and SQL query sources define user state and unique assignment joins; generated SQLC output and a transaction-scoped PostgreSQL repository adapter are included, and PostgreSQL integration fixtures include the identity migration set.
+- [x] The manage-users OpenAPI source defines a typed action envelope and If-Match header; checked-in TypeScript types reflect the new request model.
+- [x] IAM-WS-01 and IAM-SCR-01 render masked identity data, status, roles, scopes, review evidence, validation conflicts, safe duplicate/denial results, and version-conflict recovery.
+- [x] PostgreSQL integration covers clean migration, identity-schema ownership, uniqueness, atomic assignment replacement, concurrent optimistic locking, transactional audit references, and durable idempotency replay.
+- [x] API tests cover typed action decoding, required idempotency headers, masked identity data, authorization denial, lifecycle activation, and version conflicts.
+- [ ] pnpm wrapper execution, TypeScript artifact regeneration, and the full API-check wrapper remain pending; direct frontend and Playwright checks passed and are recorded in the evidence document.
+- Evidence record: docs/verification/DLV-IAM-001-us2-user-access-assignments.md.
 
 ### 7.3 User Story 3 — Manage roles and permission grants
 
@@ -494,4 +505,4 @@ recorded separately. This document does not mark the broader IAM epic, the
 identity schema, user lifecycle, roles, policies, segregation rules, emergency
 access, or any finance authorization behavior complete.
 
-Implementation branch: `codex/iam-us1-authenticated-application-identity`
+Implementation branch: `codex/iam-us2-user-access-assignments`

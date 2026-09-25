@@ -34,3 +34,25 @@ func TestNewRouterKeepsHealthAnonymousAndProtectsAPI(t *testing.T) {
 		t.Fatalf("protected status = %d, want 503", protected.Code)
 	}
 }
+
+func TestRuntimeRouterFailsClosedWithoutAuditIntegrationWhenDatabaseConfigured(t *testing.T) {
+	logger, err := telemetry.NewLogger(telemetry.LoggerConfig{Service: "tally-api", Writer: &bytes.Buffer{}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	instrumentation, err := telemetry.NewInstrumentation(telemetry.InstrumentationConfig{Service: "tally-api"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer instrumentation.Shutdown(t.Context())
+
+	_, _, err = newRuntimeRouter(t.Context(), instrumentation, logger, func(key string) string {
+		if key == "DATABASE_URL" {
+			return "postgres://configured"
+		}
+		return ""
+	}, apiRuntimeDependencies{})
+	if err == nil {
+		t.Fatal("configured database without audit integration did not fail closed")
+	}
+}

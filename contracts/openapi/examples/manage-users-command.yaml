@@ -1,0 +1,11 @@
+commandId: 0195a91b-20ab-7c15-8aa8-4e111a8bd618
+data:
+  action: create
+  authenticationSubject:
+    oid: masked-fixture-oid
+    tid: masked-fixture-tenant
+    sub: masked-fixture-subject
+  assignments:
+    - roleId: 0195a91b-20ab-7c15-8aa8-4e111a8bd620
+      scopeIds:
+        - entity-vietnam

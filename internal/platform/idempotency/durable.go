@@ -100,7 +100,8 @@ func (c *PostgresCoordinator) Acquire(
 	if err := policy.validate(); err != nil {
 		return DurableAcquisition{}, err
 	}
-	if _, err := NewCommandResultMetadata(identity, fingerprint, operationID, StateInProgress, nil, nil, nil, nil); err != nil {
+	inProgressResult, err := NewCommandResultMetadata(identity, fingerprint, operationID, StateInProgress, nil, nil, nil, nil)
+	if err != nil {
 		return DurableAcquisition{}, err
 	}
 	scopeKey, err := identity.ScopeKey()
@@ -133,6 +134,7 @@ func (c *PostgresCoordinator) Acquire(
 		}
 		return DurableAcquisition{
 			decision: DecisionExecute, ownerToken: insertedToken,
+			result:   inProgressResult,
 			identity: identity, fingerprint: fingerprint, operationID: operationID,
 		}, nil
 	}
@@ -198,6 +200,7 @@ func (c *PostgresCoordinator) Acquire(
 		}
 		return DurableAcquisition{
 			decision: DecisionExecute, ownerToken: ownerToken,
+			result:   result,
 			identity: identity, fingerprint: fingerprint, operationID: operationID,
 		}, nil
 	}

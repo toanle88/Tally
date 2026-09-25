@@ -68,6 +68,47 @@ type UserResolver interface {
 	ResolveApplicationActor(context.Context, AuthenticationSubject) (ApplicationActor, error)
 }
 
+// RevalidatingUserResolver combines external subject resolution with the current
+// application-owned user state. A non-active user cannot obtain an application actor.
+type RevalidatingUserResolver struct {
+	fallback   UserResolver
+	repository UserRepository
+}
+
+func NewRevalidatingUserResolver(fallback UserResolver, repository UserRepository) (*RevalidatingUserResolver, error) {
+	if fallback == nil || repository == nil {
+		return nil, ErrActorResolverUnavailable
+	}
+	return &RevalidatingUserResolver{fallback: fallback, repository: repository}, nil
+}
+
+func (resolver *RevalidatingUserResolver) ResolveApplicationActor(ctx context.Context, subject AuthenticationSubject) (ApplicationActor, error) {
+	if resolver == nil {
+		return ApplicationActor{}, ErrActorResolverUnavailable
+	}
+	actor, err := resolver.fallback.ResolveApplicationActor(ctx, subject)
+	if err != nil {
+		return ApplicationActor{}, err
+	}
+	user, err := resolver.repository.FindByAuthenticationSubject(ctx, subject)
+	if errors.Is(err, ErrUserNotFound) {
+		// Only the explicit local fixture resolver may stand in for a not-yet-
+		// provisioned user. Production authentication must have an active
+		// application-owned user record before it can produce an actor.
+		if _, fixture := resolver.fallback.(*FixtureResolver); fixture {
+			return actor, nil
+		}
+		return ApplicationActor{}, ErrApplicationActorUnavailable
+	}
+	if err != nil {
+		return ApplicationActor{}, err
+	}
+	if user.ID != actor.UserID || user.Status != UserStatusActive {
+		return ApplicationActor{}, ErrApplicationActorUnavailable
+	}
+	return ApplicationActor{UserID: user.ID, Subject: user.AuthenticationSubject}, nil
+}
+
 // FixtureIdentity describes a clearly marked local-only identity mapping.
 type FixtureIdentity struct {
 	Subject AuthenticationSubject
