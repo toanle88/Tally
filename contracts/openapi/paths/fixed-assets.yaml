@@ -5,7 +5,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.capitalize.asset
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -32,7 +31,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.create.asset.acquisition.clearing
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -59,7 +57,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.run.depreciation
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -86,7 +83,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.apply.impairment.approval.decision
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -113,7 +109,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.dispose.asset
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -140,7 +135,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.apply.asset.disposal.approval.decision
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -167,7 +161,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.cancel.unposted.asset.disposal
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -194,7 +187,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.compensate.failed.disposal.posting
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -221,7 +213,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.create.disposal.settlement.clearing
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -248,7 +239,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.apply.asset.supplier.liability.result
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -275,7 +265,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.apply.incoming.settlement
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -302,7 +291,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.reverse.incoming.settlement.application
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -329,7 +317,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.apply.payment.return
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -356,7 +343,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.apply.asset.settlement.result
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -383,7 +369,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.reclassify.disposal.cost.for.payment
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -410,7 +395,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.request.disposal.cost.payment
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -437,7 +421,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.request.disposal.cost.payment.replacement
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -464,7 +447,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.record.impairment.assessments
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -491,7 +473,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.transfer.assets.or.components
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -518,7 +499,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.split.assets.or.components
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -545,7 +525,6 @@
     x-owner-capability: fixed-assets
     x-permission: finance.fa.correct.posted.asset.disposals
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required

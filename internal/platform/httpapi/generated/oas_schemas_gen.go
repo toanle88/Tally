@@ -2756,7 +2756,8 @@ type IamManageUsersCommandData struct {
 	Action                IamManageUsersCommandDataAction `json:"action"`
 	UserId                OptUUID                         `json:"userId"`
 	AuthenticationSubject OptIamAuthenticationSubject     `json:"authenticationSubject"`
-	Assignments           []IamRoleAssignment             `json:"assignments"`
+	// Required for update and interpreted as the complete replacement set; omit for lifecycle actions.
+	Assignments []IamRoleAssignment `json:"assignments"`
 }
 
 // GetAction returns the value of Action.

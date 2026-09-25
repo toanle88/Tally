@@ -5,7 +5,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.issue.customer.invoice
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -32,7 +31,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.record.receipt
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -59,7 +57,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.apply.receipt
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -86,7 +83,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.unapply.receipt
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -113,7 +109,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.rollback.unposted.application.batch
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -140,7 +135,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.issue.credit.note
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -167,7 +161,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.create.customer.refund.request
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -194,7 +187,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.cancel.customer.refund.request
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -221,7 +213,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.apply.customer.refund.approval.decision
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -248,7 +239,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.request.customer.refund.payment
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -275,7 +265,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.cancel.customer.refund.payment
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -302,7 +291,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.apply.customer.refund.payment.result
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -329,7 +317,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.apply.payment.return
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -356,7 +343,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.resolve.customer.overpayments
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -383,7 +369,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.record.customer.chargebacks
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -410,7 +395,6 @@
     x-owner-capability: accounts-receivable
     x-permission: finance.ar.record.receivable.write.offs
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
