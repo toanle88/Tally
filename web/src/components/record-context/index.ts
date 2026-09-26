@@ -14,6 +14,8 @@ export type {
   RecordSensitivity,
   ScopeReference,
   SensitiveAccess,
+  SensitiveAccessAuditEvent,
+  SensitiveAccessOutcome,
   SensitiveAction,
   SignedGainLoss,
 } from './types'

@@ -8,12 +8,17 @@ import { MoneyAndCurrencyPanel } from '@/components/money-and-currency-panel'
 import { RecordIdentityHeader } from '@/components/record-identity-header'
 import { SensitiveDataGuard } from '@/components/sensitive-data-guard'
 import { Heading, Panel } from '@/components/ui'
+import type { SensitiveAccessAuditEvent } from '@/components/record-context'
 
 import { evidenceFixture, lifecycleFixture, lineageReferences, moneyFixture, recordIdentityFixture } from './record-detail-fixtures'
 
 export function RecordDetailExample() {
   const [evidenceOpen, setEvidenceOpen] = useState(false)
   const [privacyMessage, setPrivacyMessage] = useState('No restricted-data action has been attempted.')
+  const recordSensitiveAccess = (event: SensitiveAccessAuditEvent) => {
+    setPrivacyMessage(`${event.outcome === 'allowed' ? 'Allowed' : 'Denied'} ${event.action} evidence recorded for decision ${event.decisionReference}.`)
+    return true
+  }
 
   return (
     <section id="record-detail-context-example" aria-label="Record detail context example" className="space-y-6">
@@ -29,8 +34,8 @@ export function RecordDetailExample() {
       <Panel title="Evidence access" description="The drawer contains only fixture-supplied references and access decisions."><EvidenceDrawer open={evidenceOpen} evidence={evidenceFixture} onOpenChange={setEvidenceOpen} /></Panel>
       <Panel title="Sensitive data examples" description="Restricted values remain masked; authorized reveal and export require explicit fixture permission.">
         <div className="mt-4 grid min-w-0 gap-4 xl:grid-cols-2">
-          <SensitiveDataGuard label="Restricted provider reference" classification="Bank-sensitive" value="SYNTHETIC-RESTRICTED-REF" access="restricted" canReveal={true} canExport={true} onAccessDenied={(action) => setPrivacyMessage(`Denied ${action} access to the restricted fixture value.`)} />
-          <SensitiveDataGuard label="Authorized detail reference" classification="Synthetic personal reference" value="SYNTHETIC-AUTHORIZED-REF" access="authorized" canReveal={true} canExport={true} onExport={() => setPrivacyMessage('Fixture export permitted; no data was downloaded.')} onAccessDenied={(action) => setPrivacyMessage(`Denied ${action} access to the authorized fixture value.`)} />
+          <SensitiveDataGuard label="Restricted provider reference" classification="Bank-sensitive" value="SYNTHETIC-RESTRICTED-REF" access="restricted" canReveal={true} canExport={true} actorReference="actor-fixture" targetReference="record-fixture-42" scopeReference="scope-vietnam-statutory" purpose="review-evidence" decisionReference="decision-sensitive-001" policyVersion="iam-ui-fixture-v7" onAccess={recordSensitiveAccess} onAccessDenied={(action) => setPrivacyMessage(`Denied ${action} access to the restricted fixture value.`)} />
+          <SensitiveDataGuard label="Authorized detail reference" classification="Synthetic personal reference" value="SYNTHETIC-AUTHORIZED-REF" access="authorized" canReveal={true} canExport={true} actorReference="actor-fixture" targetReference="record-fixture-42" scopeReference="scope-vietnam-statutory" purpose="review-evidence" decisionReference="decision-sensitive-002" policyVersion="iam-ui-fixture-v7" onAccess={recordSensitiveAccess} onExport={() => setPrivacyMessage('Fixture export permitted; no data was downloaded.')} onAccessDenied={(action) => setPrivacyMessage(`Denied ${action} access to the authorized fixture value.`)} />
         </div>
         <p role="status" aria-live="polite" className="mt-4 text-sm text-base-content/75">{privacyMessage}</p>
       </Panel>

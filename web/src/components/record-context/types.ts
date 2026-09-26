@@ -98,4 +98,18 @@ export interface EvidenceLink {
 
 export type SensitiveAction = 'reveal' | 'export'
 export type SensitiveAccess = 'authorized' | 'restricted'
+export type SensitiveAccessOutcome = 'allowed' | 'denied'
+
+export interface SensitiveAccessAuditEvent {
+  action: SensitiveAction
+  outcome: SensitiveAccessOutcome
+  actorReference: string
+  targetReference: string
+  scopeReference: string
+  purpose: string
+  classification: string
+  decisionReference: string
+  policyVersion: string
+}
+
 export type LegalHoldStatus = 'active' | 'released' | 'none'

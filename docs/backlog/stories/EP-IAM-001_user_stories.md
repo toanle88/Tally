@@ -416,6 +416,15 @@ Acceptance criteria:
 - [ ] Automated negative tests prove synthetic sensitive values and credential
   markers cannot appear in diagnostics or evidence output.
 
+Implementation status: IAM-owned implementation added on
+`codex/iam-us7-sensitive-access-evidence`. The current working tree includes
+the metadata-only access-observation port, safe decision projections,
+fail-closed sensitive-data callbacks, and permission-filtered export context.
+Focused Go IAM/HTTP/telemetry tests, race checks, vet, and `git diff --check`
+passed. Frontend Vitest, TypeScript, and Playwright verification is pending on
+the current host because its `pnpm` wrapper cannot find a runnable Linux Node
+runtime. Evidence record: `docs/verification/DLV-IAM-006-us7-sensitive-access-evidence.md`.
+
 ## 8. Cross-cutting behavior
 
 ### Application/API

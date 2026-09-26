@@ -100,11 +100,21 @@ export interface WorklistExportContext {
   filters: WorklistFilters
   scopeId: string
   visibleColumns: readonly WorklistColumnId[]
+  actorReference: string
+  purpose: string
+  sensitivityClassification: string
+  sourceVersion: string
 }
 
 export interface WorklistExportState {
   permitted: boolean
   blockedReason?: string
+  actorReference?: string
+  purpose?: string
+  sensitivityClassification?: string
+  sourceVersion?: string
+  exportableRows?: readonly WorklistItem[]
+  exportableColumns?: readonly WorklistColumnId[]
 }
 
 export interface SettlementAmount {

@@ -30,6 +30,10 @@ test.describe('semantic and screen-reader review proxy coverage', () => {
     }
     await expect(page.getByRole('cell', { name: 'Approval pending' })).toBeVisible()
     await expect(page.getByRole('cell', { name: 'Approved' }).first()).toBeVisible()
+    const exportButton = page.getByRole('button', { name: 'Export filtered worklist' })
+    await expect(exportButton).toBeEnabled()
+    await exportButton.click()
+    await expect(page.getByText(/Fixture export prepared for 2 filtered row/)).toBeVisible()
     await expect(page.getByText('Reconciliation exception', { exact: true }).last()).toBeVisible()
     await expect(page.getByText('Negative means loss; positive means gain.')).toBeVisible()
     await expect(page.getByRole('rowheader', { name: 'Debit' })).toBeVisible()

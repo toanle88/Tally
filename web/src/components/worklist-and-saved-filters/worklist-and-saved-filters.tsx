@@ -64,16 +64,7 @@ export function WorklistAndSavedFilters({
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize })
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
-  const filteredItems = useMemo(() => items.filter((item) => (
-    (!filters.scopeId || item.scope.id === filters.scopeId)
-    && (!filters.state || item.state.value === filters.state)
-    && (!filters.ownerId || item.owner.id === filters.ownerId)
-    && (!filters.date || item.date === filters.date)
-    && (!filters.amount || item.amount?.amount === filters.amount)
-    && (!filters.currency || item.amount?.currency === filters.currency)
-    && (!filters.exception || item.exception?.value === filters.exception)
-    && (!filters.approval || item.approval?.value === filters.approval)
-  )), [filters, items])
+  const filteredItems = useMemo(() => filterWorklistItems(items, filters), [filters, items])
 
   const columns = useMemo<ColumnDef<WorklistItem, string>[]>(() => [
     columnHelper.accessor((item) => item.record.label, { id: 'record', header: 'Record', cell: ({ row }) => <Link href={row.original.record.href}>{row.original.record.label}</Link> }),
@@ -111,6 +102,8 @@ export function WorklistAndSavedFilters({
   const selectedItems = table.getSelectedRowModel().rows.map((row) => row.original)
   const bulkPermitted = Boolean(bulkAction?.permitted && selectedItems.length > 0 && selectedItems.every((item) => item.bulkEligible))
   const activeVisibleColumns = columnIds.filter((id) => visibleColumns[id] !== false)
+  const exportableRows = useMemo(() => exportState.exportableRows ? filterWorklistItems(exportState.exportableRows, filters) : [], [exportState.exportableRows, filters])
+  const exportableColumns = activeVisibleColumns.filter((id) => exportState.exportableColumns?.includes(id))
 
   const updateFilter = (key: keyof WorklistFilters, value: string) => {
     setFilters((current) => ({ ...current, [key]: value }))
@@ -129,7 +122,16 @@ export function WorklistAndSavedFilters({
     setPagination((current) => ({ ...current, pageIndex: 0 }))
   }
 
-  const exportContext: WorklistExportContext = { rows: filteredItems, filters, scopeId: filters.scopeId, visibleColumns: activeVisibleColumns }
+  const exportContext = exportState.permitted
+    && onExport
+    && exportState.actorReference
+    && exportState.purpose
+    && exportState.sensitivityClassification
+    && exportState.sourceVersion
+    && exportState.exportableRows
+    && exportState.exportableColumns
+    ? { rows: exportableRows, filters, scopeId: filters.scopeId, visibleColumns: exportableColumns, actorReference: exportState.actorReference, purpose: exportState.purpose, sensitivityClassification: exportState.sensitivityClassification, sourceVersion: exportState.sourceVersion } satisfies WorklistExportContext
+    : undefined
 
   return (
     <Panel title="Worklist and saved filters" description="Fixture-backed worklist behavior with explicit scope, ownership, state, and eligibility context.">
@@ -147,8 +149,8 @@ export function WorklistAndSavedFilters({
         <div className="flex flex-wrap items-end gap-3">
           <FilterSelect label="Saved view" value={selectedViewId} options={savedViews.map((view) => ({ value: view.id, label: view.label }))} onChange={applySavedView} />
           <Button variant="ghost" onClick={() => { setFilters(allFilters); setSelectedViewId(''); setRowSelection({}); setPagination((current) => ({ ...current, pageIndex: 0 })) }}>Clear filters</Button>
-          <Button variant="secondary" disabled={!exportState.permitted || !onExport} onClick={() => exportState.permitted && onExport ? onExport(exportContext) : undefined}>Export filtered worklist</Button>
-          {!exportState.permitted ? <span className="max-w-sm text-sm text-base-content/70">{exportState.blockedReason ?? 'Export is unavailable.'}</span> : null}
+          <Button variant="secondary" disabled={!exportContext} onClick={() => exportContext && onExport ? onExport(exportContext) : undefined}>Export filtered worklist</Button>
+          {!exportContext ? <span className="max-w-sm text-sm text-base-content/70">{exportState.blockedReason ?? (exportState.permitted ? 'Export requires an audited, permission-filtered projection.' : 'Export is unavailable.')}</span> : null}
         </div>
         <div className="flex flex-wrap gap-3" aria-label="Column visibility">
           {columnIds.map((id) => <label key={id} className="label cursor-pointer gap-2 py-1"><input className="checkbox checkbox-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="checkbox" checked={visibleColumns[id] !== false} onChange={(event) => table.getColumn(id)?.toggleVisibility(event.target.checked)} /><span className="capitalize text-base-content">{id === 'nextAction' ? 'Next action' : id}</span></label>)}
@@ -175,4 +177,17 @@ function FilterSelect({ label, value, options, onChange }: { label: string; valu
 
 function uniqueOptions(options: readonly { value: string; label: string }[]) {
   return [...new Map(options.map((option) => [option.value, option])).values()]
+}
+
+function filterWorklistItems(items: readonly WorklistItem[], filters: WorklistFilters) {
+  return items.filter((item) => (
+    (!filters.scopeId || item.scope.id === filters.scopeId)
+    && (!filters.state || item.state.value === filters.state)
+    && (!filters.ownerId || item.owner.id === filters.ownerId)
+    && (!filters.date || item.date === filters.date)
+    && (!filters.amount || item.amount?.amount === filters.amount)
+    && (!filters.currency || item.amount?.currency === filters.currency)
+    && (!filters.exception || item.exception?.value === filters.exception)
+    && (!filters.approval || item.approval?.value === filters.approval)
+  ))
 }
