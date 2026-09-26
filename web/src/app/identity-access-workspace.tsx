@@ -26,6 +26,32 @@ type ManagedRole = {
   grants: Array<{ permission: string; scopes: string[]; effectiveFrom: string; effectiveTo?: string }>
 }
 
+type AccessDecisionOutcome = 'allowed' | 'denied' | 'expired' | 'unavailable' | 'stale'
+type AccessDecisionExplanation = {
+  outcome: AccessDecisionOutcome
+  policyVersion: string
+  decisionReference: string
+  matchedDimension: string
+  nextAction: string
+  recordAccess: boolean
+}
+
+const accessDecisionFixtures: Record<AccessDecisionOutcome, AccessDecisionExplanation> = {
+  allowed: { outcome: 'allowed', policyVersion: 'policy-2026.09-v4', decisionReference: 'decision-allowed-001', matchedDimension: 'Legal entity + segment + action', nextAction: 'Continue with the requested record action.', recordAccess: true },
+  denied: { outcome: 'denied', policyVersion: 'policy-2026.09-v4', decisionReference: 'decision-denied-002', matchedDimension: 'Requested scope', nextAction: 'Choose a scope included in the current policy decision.', recordAccess: false },
+  expired: { outcome: 'expired', policyVersion: 'policy-2026.08-v3', decisionReference: 'decision-expired-003', matchedDimension: 'Effective date', nextAction: 'Request a current policy revision before retrying.', recordAccess: false },
+  unavailable: { outcome: 'unavailable', policyVersion: 'policy-2026.09-v4', decisionReference: 'decision-unavailable-004', matchedDimension: 'Policy dependency', nextAction: 'Retry after the identity policy dependency is available.', recordAccess: false },
+  stale: { outcome: 'stale', policyVersion: 'policy-2026.09-v5', decisionReference: 'decision-stale-005', matchedDimension: 'Expected policy version', nextAction: 'Refresh policy state and retry with the current version.', recordAccess: false },
+}
+
+const accessDecisionState: Record<AccessDecisionOutcome, SemanticState> = {
+  allowed: 'success',
+  denied: 'error',
+  expired: 'disabled',
+  unavailable: 'warning',
+  stale: 'pending',
+}
+
 const initialUsers: ManagedUser[] = [
   { id: 'user-001', label: 'Finance operator 01', subjectReference: 'subject-ref-01', status: 'active', roles: ['finance.viewer', 'close.reviewer'], scopes: ['entity-vietnam', 'entity-singapore'], version: 8, reviewEvidence: 'Policy review 2026-09-20' },
   { id: 'user-002', label: 'AP operator 02', subjectReference: 'subject-ref-02', status: 'suspended', roles: ['payables.operator'], scopes: ['entity-vietnam'], version: 5, reviewEvidence: 'Suspended by access review' },
@@ -81,6 +107,7 @@ export function IdentityAccessWorkspace() {
   const [roleIssues, setRoleIssues] = useState<ValidationIssue[]>([])
   const [roleNotice, setRoleNotice] = useState('Approval, segregation, scope containment, and version checks run before a role revision becomes active.')
   const [roleConflictOpen, setRoleConflictOpen] = useState(false)
+  const [decisionOutcome, setDecisionOutcome] = useState<AccessDecisionOutcome>('allowed')
 
   const selected = users.find((user) => user.id === selectedId) ?? users[0]
   const selectedRole = roles.find((role) => role.id === selectedRoleId) ?? roles[0]
@@ -160,6 +187,28 @@ export function IdentityAccessWorkspace() {
 
       <Panel title="Role and permission worklist" description="IAM-SCR-02 - Versioned grant revisions, opaque scopes, effective dates, and approval state.">
         <DataTable caption="Application roles" columns={roleColumns} rows={roles} getRowKey={(role) => role.id} emptyMessage="No roles match the current review." />
+      </Panel>
+
+      <Panel title="IAM-SCR-05 · Access decision explanation" description="Synthetic policy evaluation evidence. This explanation never exposes policy rules, token claims, or sensitive values.">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Synthetic authorization outcomes">
+          {(Object.keys(accessDecisionFixtures) as AccessDecisionOutcome[]).map((outcome) => <Button key={outcome} size="sm" variant={decisionOutcome === outcome ? 'primary' : 'ghost'} aria-pressed={decisionOutcome === outcome} onClick={() => setDecisionOutcome(outcome)}>{outcome}</Button>)}
+        </div>
+        {(() => {
+          const explanation = accessDecisionFixtures[decisionOutcome]
+          return <>
+            <div className="mt-4 flex flex-wrap items-center gap-3"><StatusBadge state={accessDecisionState[explanation.outcome]} label={explanation.outcome} announce /><span className="text-sm text-base-content/75">Record access: {explanation.recordAccess ? 'permitted' : 'not permitted'}</span></div>
+            <dl className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div><dt className="text-sm text-base-content/70">Policy version</dt><dd className="mt-1 font-mono">{explanation.policyVersion}</dd></div>
+              <div><dt className="text-sm text-base-content/70">Decision reference</dt><dd className="mt-1 font-mono">{explanation.decisionReference}</dd></div>
+              <div><dt className="text-sm text-base-content/70">Matched dimension category</dt><dd className="mt-1">{explanation.matchedDimension}</dd></div>
+              <div><dt className="text-sm text-base-content/70">Next action</dt><dd className="mt-1">{explanation.nextAction}</dd></div>
+            </dl>
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              <div className="rounded-box border border-base-300 p-4"><h3 className="font-semibold">Record decision</h3><p className="mt-2 text-sm">The record decision and each field decision are evaluated independently.</p><p className="mt-3 text-sm">Policy outcome: {explanation.outcome}</p></div>
+              <SensitiveDataGuard label="Restricted account detail" classification="Financial-sensitive" value="account-detail-fixture" access={explanation.recordAccess ? 'authorized' : 'restricted'} canReveal={false} canExport={false} onAccessDenied={() => setNotice('Field reveal and export remain unavailable; record access does not grant field access.')} />
+            </div>
+          </>
+        })()}
       </Panel>
 
       {selectedRole ? <Panel title="IAM-SCR-02 - Role detail" description="A role revision is a complete grant-set replacement. Retirement is non-destructive and preserves evidence.">

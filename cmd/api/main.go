@@ -174,7 +174,7 @@ func newRuntimeRouter(ctx context.Context, instrumentation *telemetry.Instrument
 		closeRuntime()
 		return nil, func() {}, fmt.Errorf("construct identity role repository: %w", err)
 	}
-	identityServer := newIdentityAPIServerWithPostgresRepository(getenv, pool, repository, roleRepository)
+	identityServer := newIdentityAPIServerWithPostgresRepository(getenv, pool, repository, roleRepository, instrumentation)
 	return newRouterWithIdentityServer(instrumentation, logger, getenv, repository, identityServer), closeRuntime, nil
 }
 
@@ -182,7 +182,7 @@ func newRouter(instrumentation *telemetry.Instrumentation, logger *telemetry.Log
 	identityRepository := identity.NewMemoryUserRepository()
 	return newRouterWithIdentityServer(
 		instrumentation, logger, getenv, identityRepository,
-		newIdentityAPIServerWithRepository(getenv, identityRepository),
+		newIdentityAPIServerWithRepository(getenv, identityRepository, instrumentation),
 	)
 }
 

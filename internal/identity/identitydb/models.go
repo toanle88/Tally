@@ -8,6 +8,27 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type IdentityAccessPolicy struct {
+	ID             pgtype.UUID
+	CurrentVersion string
+	Status         string
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+}
+
+type IdentityAccessPolicyRevision struct {
+	PolicyID        pgtype.UUID
+	PolicyVersion   string
+	Status          string
+	EffectiveFrom   pgtype.Timestamptz
+	EffectiveTo     pgtype.Timestamptz
+	SubjectActorIds []pgtype.UUID
+	SubjectRoleIds  []pgtype.UUID
+	Permissions     []string
+	Rules           []byte
+	CreatedAt       pgtype.Timestamptz
+}
+
 type IdentityRole struct {
 	ID                 pgtype.UUID
 	Name               string

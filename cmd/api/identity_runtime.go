@@ -14,6 +14,7 @@ import (
 	"github.com/toanle88/Tally/internal/platform/httpapi"
 	"github.com/toanle88/Tally/internal/platform/httpapi/generated"
 	platformidempotency "github.com/toanle88/Tally/internal/platform/idempotency"
+	"github.com/toanle88/Tally/internal/platform/telemetry"
 )
 
 const (
@@ -21,7 +22,7 @@ const (
 	roleOperationID     = "identity.manage-roles.v1"
 )
 
-func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter) http.Handler {
+func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) http.Handler {
 	if getenv == nil {
 		getenv = func(string) string { return "" }
 	}
@@ -36,19 +37,28 @@ func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.
 	if err != nil {
 		return identityUnavailableHandler("identity role persistence unavailable")
 	}
-	return newIdentityAPIServerWithPostgresRepository(getenv, pool, repository, roleRepository)
+	return newIdentityAPIServerWithPostgresRepository(getenv, pool, repository, roleRepository, instrumentation...)
 }
 
-func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool *pgxpool.Pool, repository *identity.PostgresUserRepository, roleRepository *identity.PostgresRoleRepository) http.Handler {
+func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool *pgxpool.Pool, repository *identity.PostgresUserRepository, roleRepository *identity.PostgresRoleRepository, instrumentation ...*telemetry.Instrumentation) http.Handler {
 	if getenv == nil {
 		getenv = func(string) string { return "" }
 	}
 	if pool == nil || repository == nil || roleRepository == nil {
 		return identityUnavailableHandler("identity persistence or role integration unavailable")
 	}
+	policyStore, err := identity.NewPostgresAccessPolicyStore(pool)
+	if err != nil {
+		return identityUnavailableHandler("identity policy persistence unavailable")
+	}
+	policyEvaluator, err := identity.NewPolicyEvaluator(policyStore, time.Now, authorizationDecisionObserver(instrumentation...))
+	if err != nil {
+		return identityUnavailableHandler("identity policy evaluator unavailable")
+	}
+	authorizer := evaluatorIdentityAuthorizer{evaluator: policyEvaluator}
 	userService, err := identity.NewUserServiceWithDurableIdempotency(
 		repository,
-		environmentUserAuthorizer{getenv: getenv},
+		authorizer,
 		&identity.MemoryAuditRecorder{},
 		time.Now,
 		identity.DurableUserServiceConfig{
@@ -67,7 +77,7 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	}
 	roleService, err := identity.NewRoleServiceWithDurableIdempotency(
 		roleRepository,
-		environmentRoleAuthorizer{getenv: getenv},
+		authorizer,
 		environmentRoleApproval{getenv: getenv},
 		environmentRoleSegregation{getenv: getenv},
 		&identity.MemoryRoleAuditRecorder{},
@@ -108,6 +118,7 @@ func postgresRoleAuditWriter(auditWriter identity.PostgresAuditWriter) identity.
 			ScopeIDs:                      append([]string(nil), record.ScopeIDs...),
 			Permission:                    record.Permission,
 			PolicyReference:               record.PolicyReference,
+			PolicyVersion:                 record.PolicyVersion,
 			DecisionReference:             record.DecisionReference,
 			ApprovalRequestID:             record.ApprovalRequestID,
 			ApprovalDecisionID:            record.ApprovalDecisionID,
@@ -131,14 +142,18 @@ func newIdentityAPIServer(getenv func(string) string) http.Handler {
 	return newIdentityAPIServerWithRepository(getenv, identity.NewMemoryUserRepository())
 }
 
-func newIdentityAPIServerWithRepository(getenv func(string) string, repository identity.UserRepository) http.Handler {
+func newIdentityAPIServerWithRepository(getenv func(string) string, repository identity.UserRepository, instrumentation ...*telemetry.Instrumentation) http.Handler {
 	if getenv == nil {
 		getenv = func(string) string { return "" }
 	}
 	roleRepository := identity.NewMemoryRoleRepository()
+	authorizer, err := newEnvironmentIdentityAuthorizer(getenv, instrumentation...)
+	if err != nil {
+		return identityUnavailableHandler("identity policy evaluator unavailable")
+	}
 	userService, err := identity.NewUserService(
 		repository,
-		environmentUserAuthorizer{getenv: getenv},
+		authorizer,
 		&identity.MemoryAuditRecorder{},
 		time.Now,
 		roleRepository,
@@ -148,7 +163,7 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	}
 	roleService, err := identity.NewRoleService(
 		roleRepository,
-		environmentRoleAuthorizer{getenv: getenv},
+		authorizer,
 		identity.AllowAllRoleApprovalPort{},
 		identity.AllowAllRoleSegregationPort{},
 		&identity.MemoryRoleAuditRecorder{},
@@ -176,50 +191,123 @@ func (apiBearerSecurityHandler) HandleBearerAuth(ctx context.Context, _ generate
 	return ctx, nil
 }
 
-type environmentUserAuthorizer struct {
-	getenv func(string) string
+type evaluatorIdentityAuthorizer struct {
+	evaluator identity.AuthorizationEvaluator
 }
 
-func (authorizer environmentUserAuthorizer) AuthorizeUserManagement(_ context.Context, _ identity.ApplicationActor, _ identity.UserCommand, _ *identity.User) (identity.AuthorizationDecision, error) {
-	allowed := strings.EqualFold(strings.TrimSpace(authorizer.getenv("TALLY_IAM_ALLOW_USER_MANAGEMENT")), "true")
-	if !allowed {
-		return identity.AuthorizationDecision{
-			Allowed:           false,
-			Permission:        identity.UserManagementPermission,
-			DecisionReference: uuid.New(),
-			Reason:            "user-management policy is not enabled",
-		}, nil
+func (authorizer evaluatorIdentityAuthorizer) AuthorizeUserManagement(ctx context.Context, actor identity.ApplicationActor, command identity.UserCommand, current *identity.User) (identity.AuthorizationDecision, error) {
+	assignments := command.Assignments
+	if assignments == nil && current != nil {
+		assignments = current.Assignments
 	}
-	return identity.AuthorizationDecision{
-		Allowed:           true,
-		Permission:        identity.UserManagementPermission,
-		ApprovedScopeIDs:  configuredScopes(authorizer.getenv),
-		PolicyReference:   "environment-configured-user-management-policy",
-		DecisionReference: uuid.New(),
-	}, nil
+	return authorizer.evaluate(ctx, actor, identity.UserManagementPermission, requestedScopesFromAssignments(assignments))
 }
 
-type environmentRoleAuthorizer struct {
-	getenv func(string) string
-}
-
-func (authorizer environmentRoleAuthorizer) AuthorizeRoleManagement(_ context.Context, _ identity.ApplicationActor, _ identity.RoleCommand, _ *identity.Role) (identity.AuthorizationDecision, error) {
-	allowed := strings.EqualFold(strings.TrimSpace(authorizer.getenv("TALLY_IAM_ALLOW_ROLE_MANAGEMENT")), "true")
-	if !allowed {
-		return identity.AuthorizationDecision{
-			Allowed:           false,
-			Permission:        identity.RoleManagementPermission,
-			DecisionReference: uuid.New(),
-			Reason:            "role-management policy is not enabled",
-		}, nil
+func (authorizer evaluatorIdentityAuthorizer) AuthorizeRoleManagement(ctx context.Context, actor identity.ApplicationActor, command identity.RoleCommand, current *identity.Role) (identity.AuthorizationDecision, error) {
+	grants := command.Grants
+	if command.Action == identity.RoleActionRetire && current != nil {
+		grants = current.Grants
 	}
-	return identity.AuthorizationDecision{
-		Allowed:           true,
-		Permission:        identity.RoleManagementPermission,
-		ApprovedScopeIDs:  configuredScopes(authorizer.getenv),
-		PolicyReference:   "environment-configured-role-management-policy",
-		DecisionReference: uuid.New(),
-	}, nil
+	return authorizer.evaluate(ctx, actor, identity.RoleManagementPermission, requestedScopesFromGrants(grants))
+}
+
+func (authorizer evaluatorIdentityAuthorizer) evaluate(ctx context.Context, actor identity.ApplicationActor, permission string, scopes []string) (identity.AuthorizationDecision, error) {
+	if authorizer.evaluator == nil {
+		return identity.AuthorizationDecision{Outcome: identity.AuthorizationUnavailable, Permission: permission, DecisionReference: uuid.New(), ReasonCode: identity.AuthorizationReasonPolicyUnavailable}, nil
+	}
+	return authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{
+		ActorID:           actor.UserID,
+		Permission:        permission,
+		RequestedScopeIDs: scopes,
+	})
+}
+
+func requestedScopesFromAssignments(assignments []identity.RoleAssignment) []string {
+	seen := make(map[string]struct{})
+	var scopes []string
+	for _, assignment := range assignments {
+		for _, scope := range assignment.Scopes {
+			value := strings.TrimSpace(scope.ScopeID)
+			if value == "" {
+				continue
+			}
+			if _, exists := seen[value]; exists {
+				continue
+			}
+			seen[value] = struct{}{}
+			scopes = append(scopes, value)
+		}
+	}
+	return scopes
+}
+
+func requestedScopesFromGrants(grants []identity.PermissionGrant) []string {
+	seen := make(map[string]struct{})
+	var scopes []string
+	for _, grant := range grants {
+		for _, scope := range grant.ScopeIDs {
+			value := strings.TrimSpace(scope)
+			if value == "" {
+				continue
+			}
+			if _, exists := seen[value]; exists {
+				continue
+			}
+			seen[value] = struct{}{}
+			scopes = append(scopes, value)
+		}
+	}
+	return scopes
+}
+
+func authorizationDecisionObserver(instrumentation ...*telemetry.Instrumentation) identity.AuthorizationDecisionObserver {
+	if len(instrumentation) == 0 || instrumentation[0] == nil {
+		return nil
+	}
+	return func(ctx context.Context, decision identity.AuthorizationDecision, err error) {
+		outcome := string(decision.Outcome)
+		if outcome == "" {
+			outcome = string(identity.AuthorizationDenied)
+		}
+		if err != nil {
+			outcome = "internal_failure"
+		}
+		instrumentation[0].RecordAuthorizationDecision(ctx, outcome)
+	}
+}
+
+func newEnvironmentIdentityAuthorizer(getenv func(string) string, instrumentation ...*telemetry.Instrumentation) (evaluatorIdentityAuthorizer, error) {
+	now := time.Now().UTC().Add(-time.Minute)
+	policies := make([]identity.AccessPolicy, 0, 2)
+	if strings.EqualFold(strings.TrimSpace(getenv("TALLY_IAM_ALLOW_USER_MANAGEMENT")), "true") {
+		policies = append(policies, identity.AccessPolicy{
+			ID:            uuid.New(),
+			Version:       "environment-user-management-v1",
+			Status:        identity.AccessPolicyStatusActive,
+			Permissions:   []string{identity.UserManagementPermission},
+			EffectiveFrom: now,
+			Rules:         []identity.AccessRule{{ScopeIDs: configuredScopes(getenv)}},
+		})
+	}
+	if strings.EqualFold(strings.TrimSpace(getenv("TALLY_IAM_ALLOW_ROLE_MANAGEMENT")), "true") {
+		policies = append(policies, identity.AccessPolicy{
+			ID:            uuid.New(),
+			Version:       "environment-role-management-v1",
+			Status:        identity.AccessPolicyStatusActive,
+			Permissions:   []string{identity.RoleManagementPermission},
+			EffectiveFrom: now,
+			Rules:         []identity.AccessRule{{ScopeIDs: configuredScopes(getenv)}},
+		})
+	}
+	store, err := identity.NewMemoryAccessPolicyStore(policies...)
+	if err != nil {
+		return evaluatorIdentityAuthorizer{}, err
+	}
+	evaluator, err := identity.NewPolicyEvaluator(store, time.Now, authorizationDecisionObserver(instrumentation...))
+	if err != nil {
+		return evaluatorIdentityAuthorizer{}, err
+	}
+	return evaluatorIdentityAuthorizer{evaluator: evaluator}, nil
 }
 
 type environmentRoleApproval struct {

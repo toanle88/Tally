@@ -243,6 +243,36 @@ func (i *Instrumentation) SetSpanAttributes(span trace.Span, fields SpanAttribut
 	span.SetAttributes(i.spanAttributes(fields)...)
 }
 
+// RecordAuthorizationDecision emits only the bounded outcome classification.
+// It intentionally accepts no policy, actor, scope, token, or field value.
+func (i *Instrumentation) RecordAuthorizationDecision(ctx context.Context, outcome string) {
+	result, failureClass := normalizeAuthorizationDecision(outcome)
+	_, span := i.StartSpan(ctx, "identity.authorization.evaluate", SpanAttributes{
+		Module:       "identity",
+		Operation:    "authorization_evaluate",
+		Result:       result,
+		FailureClass: failureClass,
+	})
+	span.End()
+}
+
+func normalizeAuthorizationDecision(outcome string) (string, string) {
+	switch outcome {
+	case "allowed":
+		return "allowed", ""
+	case "denied":
+		return "denied", "authorization_denied"
+	case "expired":
+		return "expired", "authorization_expired"
+	case "stale":
+		return "stale", "authorization_stale"
+	case "unavailable":
+		return "unavailable", "dependency_unavailable"
+	default:
+		return "internal_failure", "internal_failure"
+	}
+}
+
 func (i *Instrumentation) spanAttributes(fields SpanAttributes) []attribute.KeyValue {
 	if i == nil {
 		return nil
