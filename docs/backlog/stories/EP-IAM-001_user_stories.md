@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Epic | `EP-IAM-001` — Identity and access |
-| Status | User Story 1 locally implemented and verified; User Story 2 implementation added with verification pending; User Stories 3–7 remain planned |
+| Status | Locally complete and intentionally closed by owner decision on 2026-09-26; implementation and synthetic evidence are recorded for User Stories 1–7; production and capability qualification remain deferred |
 | Milestone | `M1` — Capability foundation |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Delivery items | `DLV-GFR-002`, `DLV-GFR-003`, `DLV-GFR-015`, `DLV-FR-IAM-001`–`DLV-FR-IAM-006` |
@@ -416,6 +416,15 @@ Acceptance criteria:
 - [ ] Automated negative tests prove synthetic sensitive values and credential
   markers cannot appear in diagnostics or evidence output.
 
+Implementation status: IAM-owned implementation added on
+`codex/iam-us7-sensitive-access-evidence`. The current working tree includes
+the metadata-only access-observation port, safe decision projections,
+fail-closed sensitive-data callbacks, and permission-filtered export context.
+Focused Go IAM/HTTP/telemetry tests, race checks, vet, and `git diff --check`
+passed. Frontend Vitest, TypeScript, and Playwright verification is pending on
+the current host because its `pnpm` wrapper cannot find a runnable Linux Node
+runtime. Evidence record: `docs/verification/DLV-IAM-006-us7-sensitive-access-evidence.md`.
+
 ## 8. Cross-cutting behavior
 
 ### Application/API
@@ -588,9 +597,11 @@ Acceptance criteria:
 
 ## 15. Planning status
 
-User Story 1 is implemented on the delivery branch and its local evidence is
-recorded separately. This document does not mark the broader IAM epic, the
-identity schema, user lifecycle, roles, policies, segregation rules, emergency
-access, or any finance authorization behavior complete.
+EP-IAM-001 is locally complete and intentionally closed by owner decision on
+2026-09-26. The seven user-story slices and their local synthetic evidence
+records are retained as the implementation boundary. This closure does not
+claim completion of live Entra qualification, production security or release
+qualification, the future audit-chain bounded context, finance-action
+enforcement, or any later finance-domain capability.
 
-Implementation branch: `codex/iam-us2-user-access-assignments`
+Implementation branch: `codex/iam-us7-sensitive-access-evidence`

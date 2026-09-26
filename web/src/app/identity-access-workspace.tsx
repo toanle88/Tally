@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import { SensitiveDataGuard } from '@/components/sensitive-data-guard'
+import type { SensitiveAccessAuditEvent } from '@/components/record-context'
 import { ValidationSummary } from '@/components/validation-summary'
 import { VersionConflictDialog } from '@/components/version-conflict-dialog'
 import type { VersionConflictSnapshot, ValidationIssue } from '@/components/workflow-context'
@@ -205,6 +206,10 @@ export function IdentityAccessWorkspace() {
   const selectedRole = roles.find((role) => role.id === selectedRoleId) ?? roles[0]
   const selectedEmergencyGrant = emergencyGrants.find((grant) => grant.id === selectedEmergencyGrantId) ?? emergencyGrants[0]
   const selectedSegregationRule = segregationRules.find((rule) => rule.id === selectedSegregationRuleId) ?? segregationRules[0]
+  const recordSensitiveAccess = (event: SensitiveAccessAuditEvent) => {
+    setNotice(`${event.outcome === 'allowed' ? 'Allowed' : 'Denied'} ${event.action} evidence recorded for decision ${event.decisionReference}.`)
+    return true
+  }
   const segregationColumns = useMemo(() => [
     { key: "rule", header: "Rule", rowHeader: true, render: (rule: ManagedSegregationRule) => <button type="button" className="link link-primary text-left font-semibold" onClick={() => setSelectedSegregationRuleId(rule.id)}>{rule.name}</button> },
     { key: "mode", header: "Mode", render: (rule: ManagedSegregationRule) => rule.mode },
@@ -439,7 +444,7 @@ export function IdentityAccessWorkspace() {
             </dl>
             <div className="mt-5 grid gap-4 lg:grid-cols-2">
               <div className="rounded-box border border-base-300 p-4"><h3 className="font-semibold">Record decision</h3><p className="mt-2 text-sm">The record decision and each field decision are evaluated independently.</p><p className="mt-3 text-sm">Policy outcome: {explanation.outcome}</p></div>
-              <SensitiveDataGuard label="Restricted account detail" classification="Financial-sensitive" value="account-detail-fixture" access={explanation.recordAccess ? 'authorized' : 'restricted'} canReveal={false} canExport={false} onAccessDenied={() => setNotice('Field reveal and export remain unavailable; record access does not grant field access.')} />
+              <SensitiveDataGuard label="Restricted account detail" classification="Financial-sensitive" value="account-detail-fixture" access={explanation.recordAccess ? 'authorized' : 'restricted'} canReveal={false} canExport={false} actorReference="actor-fixture" targetReference="record-fixture-42" scopeReference="entity-vietnam" purpose="review-field-access" decisionReference={explanation.decisionReference} policyVersion={explanation.policyVersion} onAccess={recordSensitiveAccess} onAccessDenied={() => setNotice('Field reveal and export remain unavailable; record access does not grant field access.')} />
             </div>
           </>
         })()}
@@ -492,7 +497,7 @@ export function IdentityAccessWorkspace() {
         </div>
 
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
-          <SensitiveDataGuard label="Authentication subject reference" classification="Identity-sensitive" value={selected.subjectReference} access="restricted" canReveal={false} canExport={false} onAccessDenied={() => setNotice('Authentication subject data remains masked for privacy.')} />
+          <SensitiveDataGuard label="Authentication subject reference" classification="Identity-sensitive" value={selected.subjectReference} access="restricted" canReveal={false} canExport={false} actorReference="actor-fixture" targetReference={selected.id} scopeReference="identity-administration" purpose="review-user-access" decisionReference="decision-user-access-001" policyVersion="iam-ui-fixture-v7" onAccess={recordSensitiveAccess} onAccessDenied={() => setNotice('Authentication subject data remains masked for privacy.')} />
           <div className="rounded-box border border-base-300 p-4">
             <h3 className="font-semibold">Current assignment set</h3>
             <p className="mt-2 text-sm">Roles: {selected.roles.length ? selected.roles.join(', ') : 'No assignments'}</p>

@@ -4,7 +4,7 @@
 > `[x]` means complete or intentionally closed; `[ ]` means open, planned, or awaiting qualification evidence.
 > Workflow and NFR delivery tables do not define an Epic column, so those items are grouped under their primary roadmap epic for navigation.
 
-**Last updated:** 2026-09-22
+**Last updated:** 2026-09-26
 
 ## [x] EP-PLAT-001 — Engineering foundation (M0)
 
@@ -61,9 +61,14 @@ retention, and future capability qualification remain deferred.
 - [x] `DLV-OPS-002` — Create baseline operational dashboard and runbook template. (local contracts and readiness evidence complete; external qualification remains deferred)
 - [ ] `DLV-GFR-012` — GFR-012 — EP-OPS-001 (capability-level requirement remains open; not closed by the operational foundation)
 
-## [ ] EP-IAM-001 — Identity and access (M1)
+## [x] EP-IAM-001 — Identity and access (M1)
 
 Entra authentication, application permissions, accounting-scope authorization, segregation-of-duties controls, and emergency access.
+
+Locally complete and intentionally closed by owner decision on 2026-09-26.
+Finance-action wiring, live Entra behavior, audit-chain ownership, production
+security, and release qualification remain deferred and are not claimed by
+this closure.
 
 User-story plan: [EP-IAM-001 user stories](docs/backlog/stories/EP-IAM-001_user_stories.md)
 

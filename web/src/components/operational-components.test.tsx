@@ -25,6 +25,28 @@ describe('operational components', () => {
     expect(onBulkAction).toHaveBeenCalledWith([operationalWorklistFixture[0]])
   })
 
+  it('exports only the permission-filtered projection with safe audit context', () => {
+    const onExport = vi.fn()
+    render(<WorklistAndSavedFilters items={operationalWorklistFixture} status="ready" savedViews={[]} initialFilters={{ scopeId: 'scope-vietnam-statutory' }} exportState={{ permitted: true, actorReference: 'actor-fixture', purpose: 'worklist-review', sensitivityClassification: 'confidential', sourceVersion: 'worklist-fixture-v7', exportableRows: [operationalWorklistFixture[0]], exportableColumns: ['record', 'state'] }} onExport={onExport} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Export filtered worklist' }))
+    expect(onExport).toHaveBeenCalledWith(expect.objectContaining({
+      rows: [operationalWorklistFixture[0]],
+      visibleColumns: ['record', 'state'],
+      actorReference: 'actor-fixture',
+      purpose: 'worklist-review',
+      sensitivityClassification: 'confidential',
+      sourceVersion: 'worklist-fixture-v7',
+    }))
+  })
+
+  it('blocks export when the permission-filtered projection or audit metadata is absent', () => {
+    render(<WorklistAndSavedFilters items={operationalWorklistFixture} status="ready" savedViews={[]} exportState={{ permitted: true }} onExport={vi.fn()} />)
+
+    expect(screen.getByRole('button', { name: 'Export filtered worklist' })).toBeDisabled()
+    expect(screen.getByText(/audited, permission-filtered projection/)).toBeInTheDocument()
+  })
+
   it('announces unavailable and rejected worklist states without presenting stale rows as ready', () => {
     for (const status of ['loading', 'unavailable', 'rejected'] as const) {
       const { unmount } = render(<WorklistAndSavedFilters items={operationalWorklistFixture} status={status} savedViews={[]} />)

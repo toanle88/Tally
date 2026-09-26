@@ -53,6 +53,7 @@
 	structured-logs-check \
 	traces-metrics-check \
 	telemetry-failure-sensitive-data-check \
+	iam-sensitive-evidence-check \
 	dashboard-contract-check \
 	alert-contract-check \
 	runbook-contract-check \
@@ -302,6 +303,9 @@ traces-metrics-check:
 
 telemetry-failure-sensitive-data-check:
 	@bash scripts/verify/telemetry-failure-sensitive-data.sh
+
+iam-sensitive-evidence-check:
+	@bash scripts/verify/iam-sensitive-evidence.sh
 
 dashboard-contract-check:
 	@bash scripts/verify/dashboard-contract.sh

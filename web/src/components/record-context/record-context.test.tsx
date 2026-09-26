@@ -9,7 +9,7 @@ import { LifecycleTimeline } from '@/components/lifecycle-timeline'
 import { MoneyAndCurrencyPanel } from '@/components/money-and-currency-panel'
 import { RecordIdentityHeader } from '@/components/record-identity-header'
 import { SensitiveDataGuard } from '@/components/sensitive-data-guard'
-import type { MoneyAmount } from '@/components/record-context'
+import type { MoneyAmount, SensitiveAccessAuditEvent } from '@/components/record-context'
 
 import { evidenceFixture, lifecycleFixture, lineageReferences, moneyFixture, recordIdentityFixture } from '@/app/record-detail-fixtures'
 
@@ -84,7 +84,8 @@ describe('record context components', () => {
   it('masks restricted values, records denied actions, and permits explicit authorized actions', () => {
     const onAccessDenied = vi.fn()
     const onExport = vi.fn()
-    render(<><SensitiveDataGuard label="Restricted value" classification="Bank-sensitive" value="SYNTHETIC-SECRET" access="restricted" canReveal={true} canExport={true} onAccessDenied={onAccessDenied} /><SensitiveDataGuard label="Authorized value" classification="Synthetic" value="SYNTHETIC-AUTHORIZED" access="authorized" canReveal={true} canExport={true} onExport={onExport} onAccessDenied={onAccessDenied} /></>)
+    const onAccess = vi.fn((_event: SensitiveAccessAuditEvent) => true)
+    render(<><SensitiveDataGuard label="Restricted value" classification="Bank-sensitive" value="SYNTHETIC-SECRET" access="restricted" canReveal={true} canExport={true} actorReference="actor-fixture" targetReference="record-fixture" scopeReference="scope-fixture" purpose="review-evidence" decisionReference="decision-fixture-1" policyVersion="policy-fixture-v1" onAccess={onAccess} onAccessDenied={onAccessDenied} /><SensitiveDataGuard label="Authorized value" classification="Synthetic" value="SYNTHETIC-AUTHORIZED" access="authorized" canReveal={true} canExport={true} actorReference="actor-fixture" targetReference="record-fixture" scopeReference="scope-fixture" purpose="review-evidence" decisionReference="decision-fixture-2" policyVersion="policy-fixture-v1" onAccess={onAccess} onExport={onExport} onAccessDenied={onAccessDenied} /></>)
 
     fireEvent.click(screen.getByRole('button', { name: 'Reveal unavailable' }))
     fireEvent.click(screen.getByRole('button', { name: 'Export unavailable' }))
@@ -96,6 +97,19 @@ describe('record context components', () => {
     expect(screen.getByText('SYNTHETIC-AUTHORIZED')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Export value' }))
     expect(onExport).toHaveBeenCalledOnce()
+    expect(onAccess).toHaveBeenNthCalledWith(1, expect.objectContaining({ action: 'reveal', outcome: 'denied' }))
+    expect(onAccess).toHaveBeenNthCalledWith(2, expect.objectContaining({ action: 'export', outcome: 'denied' }))
+    expect(onAccess).toHaveBeenNthCalledWith(3, expect.objectContaining({ action: 'reveal', outcome: 'allowed' }))
+    expect(onAccess).toHaveBeenNthCalledWith(4, expect.objectContaining({ action: 'export', outcome: 'allowed' }))
+    expect(onAccess.mock.calls[0][0]).not.toHaveProperty('value')
+  })
+
+  it('keeps the value masked when the access evidence recorder fails', () => {
+    render(<SensitiveDataGuard label="Unavailable evidence" classification="Synthetic" value="SYNTHETIC-AUTHORIZED" access="authorized" canReveal={true} canExport={false} actorReference="actor-fixture" targetReference="record-fixture" scopeReference="scope-fixture" purpose="review-evidence" decisionReference="decision-fixture-3" policyVersion="policy-fixture-v1" onAccess={() => false} onAccessDenied={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reveal value' }))
+    expect(screen.queryByText('SYNTHETIC-AUTHORIZED')).not.toBeInTheDocument()
+    expect(screen.getByText(/Access evidence unavailable/)).toBeInTheDocument()
   })
 
   it('blocks retention destruction under active legal hold independently of business lifecycle', () => {
