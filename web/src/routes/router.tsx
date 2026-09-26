@@ -3,6 +3,7 @@ import { createBrowserRouter, NavLink, Outlet, type RouteObject } from 'react-ro
 
 import { AppShell } from '@/app/app-shell'
 import { DevelopmentExamples } from '@/app/development-examples'
+import { IdentityAccessWorkspace } from '@/app/identity-access-workspace'
 import { WorkflowExample } from '@/app/workflow-example'
 import { AccountingScopeSelector } from '@/components/accounting-scope-selector'
 import { StatusBadge } from '@/components/ui'
@@ -65,7 +66,7 @@ function AccessState({ title, detail }: { title: string; detail: string }) {
 }
 
 function AreaPage({ route }: { route: RouteDefinition }) {
-  return <section><h2 className="text-2xl font-semibold">{route.title}</h2><p className="mt-2 max-w-3xl text-base-content/75">This shared route is ready for a later capability delivery. No finance capability or authoritative record is connected.</p>{route.id === 'exceptions' ? <div className="mt-5 space-y-2">{routeRegistry.filter((candidate) => candidate.kind === 'operational').map((candidate) => <p key={candidate.id}><NavLink className="link link-primary" to={candidate.path}>{candidate.screenId}: {candidate.title}</NavLink></p>)}</div> : null}</section>
+  return <section><h2 className="text-2xl font-semibold">{route.title}</h2><p className="mt-2 max-w-3xl text-base-content/75">This shared route is ready for a later capability delivery. No finance capability or authoritative record is connected.</p>{route.id === 'administration' ? <div className="mt-5"><NavLink className="link link-primary" to="/administration/identity-access">IAM-WS-01: Users and access assignments</NavLink></div> : null}{route.id === 'exceptions' ? <div className="mt-5 space-y-2">{routeRegistry.filter((candidate) => candidate.kind === 'operational').map((candidate) => <p key={candidate.id}><NavLink className="link link-primary" to={candidate.path}>{candidate.screenId}: {candidate.title}</NavLink></p>)}</div> : null}</section>
 }
 
 function OperationalPage({ route }: { route: RouteDefinition }) {
@@ -78,7 +79,7 @@ function NotFoundPage() {
 }
 
 function routeElement(route: RouteDefinition) {
-  const content = route.kind === 'operational' ? <OperationalPage route={route} /> : route.kind === 'development' ? <DevelopmentExamples /> : <AreaPage route={route} />
+  const content = route.id === 'iamWorklist' ? <IdentityAccessWorkspace /> : route.kind === 'operational' ? <OperationalPage route={route} /> : route.kind === 'development' ? <DevelopmentExamples /> : <AreaPage route={route} />
   return <ProtectedRoute route={route}>{content}</ProtectedRoute>
 }
 

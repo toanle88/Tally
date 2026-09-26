@@ -5,6 +5,7 @@ package generated
 import (
 	"time"
 
+	"github.com/go-faster/errors"
 	"github.com/go-faster/jx"
 	"github.com/google/uuid"
 )
@@ -2629,6 +2630,43 @@ type GlSubmitPostingRequestUnprocessableEntity ProblemDetails
 
 func (*GlSubmitPostingRequestUnprocessableEntity) glSubmitPostingRequestRes() {}
 
+// Ref: #/components/schemas/IamAuthenticationSubject
+type IamAuthenticationSubject struct {
+	Oid string `json:"oid"`
+	Tid string `json:"tid"`
+	Sub string `json:"sub"`
+}
+
+// GetOid returns the value of Oid.
+func (s *IamAuthenticationSubject) GetOid() string {
+	return s.Oid
+}
+
+// GetTid returns the value of Tid.
+func (s *IamAuthenticationSubject) GetTid() string {
+	return s.Tid
+}
+
+// GetSub returns the value of Sub.
+func (s *IamAuthenticationSubject) GetSub() string {
+	return s.Sub
+}
+
+// SetOid sets the value of Oid.
+func (s *IamAuthenticationSubject) SetOid(val string) {
+	s.Oid = val
+}
+
+// SetTid sets the value of Tid.
+func (s *IamAuthenticationSubject) SetTid(val string) {
+	s.Tid = val
+}
+
+// SetSub sets the value of Sub.
+func (s *IamAuthenticationSubject) SetSub(val string) {
+	s.Sub = val
+}
+
 type IamGrantEmergencyAccessBadRequest ProblemDetails
 
 func (*IamGrantEmergencyAccessBadRequest) iamGrantEmergencyAccessRes() {}
@@ -2713,6 +2751,154 @@ type IamManageUsersBadRequest ProblemDetails
 
 func (*IamManageUsersBadRequest) iamManageUsersRes() {}
 
+// Ref: #/components/schemas/IamManageUsersCommandData
+type IamManageUsersCommandData struct {
+	Action                IamManageUsersCommandDataAction `json:"action"`
+	UserId                OptUUID                         `json:"userId"`
+	AuthenticationSubject OptIamAuthenticationSubject     `json:"authenticationSubject"`
+	// Required for update and interpreted as the complete replacement set; omit for lifecycle actions.
+	Assignments []IamRoleAssignment `json:"assignments"`
+}
+
+// GetAction returns the value of Action.
+func (s *IamManageUsersCommandData) GetAction() IamManageUsersCommandDataAction {
+	return s.Action
+}
+
+// GetUserId returns the value of UserId.
+func (s *IamManageUsersCommandData) GetUserId() OptUUID {
+	return s.UserId
+}
+
+// GetAuthenticationSubject returns the value of AuthenticationSubject.
+func (s *IamManageUsersCommandData) GetAuthenticationSubject() OptIamAuthenticationSubject {
+	return s.AuthenticationSubject
+}
+
+// GetAssignments returns the value of Assignments.
+func (s *IamManageUsersCommandData) GetAssignments() []IamRoleAssignment {
+	return s.Assignments
+}
+
+// SetAction sets the value of Action.
+func (s *IamManageUsersCommandData) SetAction(val IamManageUsersCommandDataAction) {
+	s.Action = val
+}
+
+// SetUserId sets the value of UserId.
+func (s *IamManageUsersCommandData) SetUserId(val OptUUID) {
+	s.UserId = val
+}
+
+// SetAuthenticationSubject sets the value of AuthenticationSubject.
+func (s *IamManageUsersCommandData) SetAuthenticationSubject(val OptIamAuthenticationSubject) {
+	s.AuthenticationSubject = val
+}
+
+// SetAssignments sets the value of Assignments.
+func (s *IamManageUsersCommandData) SetAssignments(val []IamRoleAssignment) {
+	s.Assignments = val
+}
+
+type IamManageUsersCommandDataAction string
+
+const (
+	IamManageUsersCommandDataActionCreate    IamManageUsersCommandDataAction = "create"
+	IamManageUsersCommandDataActionUpdate    IamManageUsersCommandDataAction = "update"
+	IamManageUsersCommandDataActionActivate  IamManageUsersCommandDataAction = "activate"
+	IamManageUsersCommandDataActionSuspend   IamManageUsersCommandDataAction = "suspend"
+	IamManageUsersCommandDataActionTerminate IamManageUsersCommandDataAction = "terminate"
+)
+
+// AllValues returns all IamManageUsersCommandDataAction values.
+func (IamManageUsersCommandDataAction) AllValues() []IamManageUsersCommandDataAction {
+	return []IamManageUsersCommandDataAction{
+		IamManageUsersCommandDataActionCreate,
+		IamManageUsersCommandDataActionUpdate,
+		IamManageUsersCommandDataActionActivate,
+		IamManageUsersCommandDataActionSuspend,
+		IamManageUsersCommandDataActionTerminate,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s IamManageUsersCommandDataAction) MarshalText() ([]byte, error) {
+	switch s {
+	case IamManageUsersCommandDataActionCreate:
+		return []byte(s), nil
+	case IamManageUsersCommandDataActionUpdate:
+		return []byte(s), nil
+	case IamManageUsersCommandDataActionActivate:
+		return []byte(s), nil
+	case IamManageUsersCommandDataActionSuspend:
+		return []byte(s), nil
+	case IamManageUsersCommandDataActionTerminate:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *IamManageUsersCommandDataAction) UnmarshalText(data []byte) error {
+	switch IamManageUsersCommandDataAction(data) {
+	case IamManageUsersCommandDataActionCreate:
+		*s = IamManageUsersCommandDataActionCreate
+		return nil
+	case IamManageUsersCommandDataActionUpdate:
+		*s = IamManageUsersCommandDataActionUpdate
+		return nil
+	case IamManageUsersCommandDataActionActivate:
+		*s = IamManageUsersCommandDataActionActivate
+		return nil
+	case IamManageUsersCommandDataActionSuspend:
+		*s = IamManageUsersCommandDataActionSuspend
+		return nil
+	case IamManageUsersCommandDataActionTerminate:
+		*s = IamManageUsersCommandDataActionTerminate
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/IamManageUsersCommandRequest
+type IamManageUsersCommandRequest struct {
+	CommandId       UUID                      `json:"commandId"`
+	ExpectedVersion OptInt                    `json:"expectedVersion"`
+	Data            IamManageUsersCommandData `json:"data"`
+}
+
+// GetCommandId returns the value of CommandId.
+func (s *IamManageUsersCommandRequest) GetCommandId() UUID {
+	return s.CommandId
+}
+
+// GetExpectedVersion returns the value of ExpectedVersion.
+func (s *IamManageUsersCommandRequest) GetExpectedVersion() OptInt {
+	return s.ExpectedVersion
+}
+
+// GetData returns the value of Data.
+func (s *IamManageUsersCommandRequest) GetData() IamManageUsersCommandData {
+	return s.Data
+}
+
+// SetCommandId sets the value of CommandId.
+func (s *IamManageUsersCommandRequest) SetCommandId(val UUID) {
+	s.CommandId = val
+}
+
+// SetExpectedVersion sets the value of ExpectedVersion.
+func (s *IamManageUsersCommandRequest) SetExpectedVersion(val OptInt) {
+	s.ExpectedVersion = val
+}
+
+// SetData sets the value of Data.
+func (s *IamManageUsersCommandRequest) SetData(val IamManageUsersCommandData) {
+	s.Data = val
+}
+
 type IamManageUsersConflict ProblemDetails
 
 func (*IamManageUsersConflict) iamManageUsersRes() {}
@@ -2748,6 +2934,32 @@ func (*IamRevokeEmergencyAccessServiceUnavailable) iamRevokeEmergencyAccessRes()
 type IamRevokeEmergencyAccessUnprocessableEntity ProblemDetails
 
 func (*IamRevokeEmergencyAccessUnprocessableEntity) iamRevokeEmergencyAccessRes() {}
+
+// Ref: #/components/schemas/IamRoleAssignment
+type IamRoleAssignment struct {
+	RoleId   UUID     `json:"roleId"`
+	ScopeIds []string `json:"scopeIds"`
+}
+
+// GetRoleId returns the value of RoleId.
+func (s *IamRoleAssignment) GetRoleId() UUID {
+	return s.RoleId
+}
+
+// GetScopeIds returns the value of ScopeIds.
+func (s *IamRoleAssignment) GetScopeIds() []string {
+	return s.ScopeIds
+}
+
+// SetRoleId sets the value of RoleId.
+func (s *IamRoleAssignment) SetRoleId(val UUID) {
+	s.RoleId = val
+}
+
+// SetScopeIds sets the value of ScopeIds.
+func (s *IamRoleAssignment) SetScopeIds(val []string) {
+	s.ScopeIds = val
+}
 
 type IcApplyIncomingSettlementBadRequest ProblemDetails
 
@@ -3280,6 +3492,52 @@ func (o OptDate) Get() (v time.Time, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptDate) Or(d time.Time) time.Time {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptIamAuthenticationSubject returns new OptIamAuthenticationSubject with value set to v.
+func NewOptIamAuthenticationSubject(v IamAuthenticationSubject) OptIamAuthenticationSubject {
+	return OptIamAuthenticationSubject{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptIamAuthenticationSubject is optional IamAuthenticationSubject.
+type OptIamAuthenticationSubject struct {
+	Value IamAuthenticationSubject
+	Set   bool
+}
+
+// IsSet returns true if OptIamAuthenticationSubject was set.
+func (o OptIamAuthenticationSubject) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptIamAuthenticationSubject) Reset() {
+	var v IamAuthenticationSubject
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptIamAuthenticationSubject) SetTo(v IamAuthenticationSubject) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptIamAuthenticationSubject) Get() (v IamAuthenticationSubject, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptIamAuthenticationSubject) Or(d IamAuthenticationSubject) IamAuthenticationSubject {
 	if v, ok := o.Get(); ok {
 		return v
 	}

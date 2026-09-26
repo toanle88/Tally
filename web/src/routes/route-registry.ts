@@ -8,7 +8,7 @@ export type NavigationArea =
   | 'Administration'
   | 'Audit'
 
-export type ScreenId = 'XCT-WS-01' | 'XCT-SCR-01' | 'CON-SCR-01'
+export type ScreenId = 'XCT-WS-01' | 'XCT-SCR-01' | 'CON-SCR-01' | 'IAM-WS-01' | 'IAM-SCR-01'
 
 export type RouteId =
   | 'home'
@@ -18,6 +18,7 @@ export type RouteId =
   | 'exceptions'
   | 'reports'
   | 'administration'
+  | 'iamWorklist'
   | 'audit'
   | 'xctWorklist'
   | 'xctDetail'
@@ -42,6 +43,7 @@ export const routeRegistry = [
   { id: 'exceptions', path: '/exceptions', title: 'Exceptions', kind: 'area', navigationArea: 'Exceptions', requiresScope: true },
   { id: 'reports', path: '/reports', title: 'Reports', kind: 'area', navigationArea: 'Reports', requiresScope: true },
   { id: 'administration', path: '/administration', title: 'Administration', kind: 'area', navigationArea: 'Administration', requiresScope: true },
+  { id: 'iamWorklist', path: '/administration/identity-access', title: 'Users and access assignments', kind: 'operational', navigationArea: 'Administration', screenId: 'IAM-WS-01', requiresScope: true },
   { id: 'audit', path: '/audit', title: 'Audit', kind: 'area', navigationArea: 'Audit', requiresScope: true },
   { id: 'xctWorklist', path: '/operations/xct-ws-01', title: 'Cross-context event exception worklist', kind: 'operational', navigationArea: 'Exceptions', screenId: 'XCT-WS-01', requiresScope: true },
   { id: 'xctDetail', path: '/operations/xct-scr-01', title: 'Cross-context event outcome detail', kind: 'operational', navigationArea: 'Exceptions', screenId: 'XCT-SCR-01', requiresScope: true },

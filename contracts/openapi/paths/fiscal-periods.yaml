@@ -5,7 +5,6 @@
     x-owner-capability: fiscal-periods
     x-permission: finance.fpm.start.soft.close
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -32,7 +31,6 @@
     x-owner-capability: fiscal-periods
     x-permission: finance.fpm.end.soft.close
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -59,7 +57,6 @@
     x-owner-capability: fiscal-periods
     x-permission: finance.fpm.start.hard.close
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -86,7 +83,6 @@
     x-owner-capability: fiscal-periods
     x-permission: finance.fpm.resume.close.run
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -113,7 +109,6 @@
     x-owner-capability: fiscal-periods
     x-permission: finance.fpm.abort.close.run
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -140,7 +135,6 @@
     x-owner-capability: fiscal-periods
     x-permission: finance.fpm.apply.posting.gate.result
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -167,7 +161,6 @@
     x-owner-capability: fiscal-periods
     x-permission: finance.fpm.apply.close.exception.approval.decision
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -194,7 +187,6 @@
     x-owner-capability: fiscal-periods
     x-permission: finance.fpm.apply.close.approval.decision
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -221,7 +213,6 @@
     x-owner-capability: fiscal-periods
     x-permission: finance.fpm.request.reopen
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -248,7 +239,6 @@
     x-owner-capability: fiscal-periods
     x-permission: finance.fpm.apply.reopen.approval.decision
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -275,7 +265,6 @@
     x-owner-capability: fiscal-periods
     x-permission: finance.fpm.start.reclose
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -302,7 +291,6 @@
     x-owner-capability: fiscal-periods
     x-permission: finance.fpm.take.over.period.control
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -329,7 +317,6 @@
     x-owner-capability: fiscal-periods
     x-permission: finance.fpm.extend.close.exception
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required

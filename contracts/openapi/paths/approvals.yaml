@@ -5,7 +5,6 @@
     x-owner-capability: approvals
     x-permission: finance.wfa.create.approval.request
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -32,7 +31,6 @@
     x-owner-capability: approvals
     x-permission: finance.wfa.decide.approval.request
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -59,7 +57,6 @@
     x-owner-capability: approvals
     x-permission: finance.wfa.delegate.approval
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -86,7 +83,6 @@
     x-owner-capability: approvals
     x-permission: finance.wfa.escalate.approval
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -113,7 +109,6 @@
     x-owner-capability: approvals
     x-permission: finance.wfa.maintain.approval.policies
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required

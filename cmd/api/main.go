@@ -8,18 +8,23 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/toanle88/Tally/internal/identity"
 	"github.com/toanle88/Tally/internal/platform/authentication"
+	"github.com/toanle88/Tally/internal/platform/database"
 	"github.com/toanle88/Tally/internal/platform/httpx"
 	"github.com/toanle88/Tally/internal/platform/telemetry"
 )
 
 const (
-	defaultHTTPAddress = ":8080"
-	shutdownTimeout    = 10 * time.Second
+	defaultHTTPAddress            = ":8080"
+	shutdownTimeout               = 10 * time.Second
+	defaultDatabaseMaxConnections = int32(20)
+	databaseConnectTimeout        = 10 * time.Second
 )
 
 func main() {
@@ -72,7 +77,11 @@ func run(logger *telemetry.Logger) error {
 		address = defaultHTTPAddress
 	}
 
-	router := newRouter(instrumentation, logger, os.Getenv)
+	router, closeRuntime, err := newRuntimeRouter(context.Background(), instrumentation, logger, os.Getenv, apiRuntimeDependencies{})
+	if err != nil {
+		return err
+	}
+	defer closeRuntime()
 
 	server := &http.Server{
 		Addr:              address,
@@ -132,7 +141,48 @@ func run(logger *telemetry.Logger) error {
 	return nil
 }
 
+type apiRuntimeDependencies struct {
+	IdentityAuditWriter      identity.PostgresAuditWriter
+	IdentityRolePolicyLookup identity.RolePolicyLookup
+}
+
+func newRuntimeRouter(ctx context.Context, instrumentation *telemetry.Instrumentation, logger *telemetry.Logger, getenv func(string) string, dependencies apiRuntimeDependencies) (http.Handler, func(), error) {
+	if getenv == nil {
+		getenv = func(string) string { return "" }
+	}
+	if strings.TrimSpace(getenv("DATABASE_URL")) == "" {
+		return newRouter(instrumentation, logger, getenv), func() {}, nil
+	}
+	if dependencies.IdentityAuditWriter == nil || dependencies.IdentityRolePolicyLookup == nil {
+		return nil, func() {}, errors.New("identity audit and role-policy integrations are required when DATABASE_URL is configured")
+	}
+	pool, err := database.Open(ctx, database.Config{
+		DatabaseURL:    getenv("DATABASE_URL"),
+		MaxConnections: defaultDatabaseMaxConnections,
+		ConnectTimeout: databaseConnectTimeout,
+	})
+	if err != nil {
+		return nil, func() {}, fmt.Errorf("open API database: %w", err)
+	}
+	closeRuntime := pool.Close
+	repository, err := identity.NewPostgresUserRepositoryWithAudit(pool, dependencies.IdentityAuditWriter)
+	if err != nil {
+		closeRuntime()
+		return nil, func() {}, fmt.Errorf("construct identity repository: %w", err)
+	}
+	identityServer := newIdentityAPIServerWithPostgresRepository(getenv, pool, repository, dependencies.IdentityRolePolicyLookup)
+	return newRouterWithIdentityServer(instrumentation, logger, getenv, repository, identityServer), closeRuntime, nil
+}
+
 func newRouter(instrumentation *telemetry.Instrumentation, logger *telemetry.Logger, getenv func(string) string) http.Handler {
+	identityRepository := identity.NewMemoryUserRepository()
+	return newRouterWithIdentityServer(
+		instrumentation, logger, getenv, identityRepository,
+		newIdentityAPIServerWithRepository(getenv, identityRepository),
+	)
+}
+
+func newRouterWithIdentityServer(instrumentation *telemetry.Instrumentation, logger *telemetry.Logger, getenv func(string) string, identityRepository identity.UserRepository, identityServer http.Handler) http.Handler {
 	router := chi.NewRouter()
 	router.Use(telemetry.RequestTracingMiddleware(instrumentation))
 	router.Use(telemetry.RequestLoggingMiddleware(logger))
@@ -142,7 +192,7 @@ func newRouter(instrumentation *telemetry.Instrumentation, logger *telemetry.Log
 
 	// The generated finance API is mounted under this boundary as operations
 	// arrive. There is no login or /me endpoint in this story.
-	protectedAPI := authentication.NewMiddlewareFromEnvironment(getenv, logger)
-	router.Mount("/api/v1", protectedAPI(http.NotFoundHandler()))
+	protectedAPI := authentication.NewMiddlewareFromEnvironmentWithUserRepository(getenv, logger, identityRepository)
+	router.Mount("/api/v1", protectedAPI(identityServer))
 	return router
 }

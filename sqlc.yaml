@@ -13,3 +13,15 @@ sql:
         package: platformdb
         out: internal/platform/database/platformdb
         sql_package: pgx/v5
+  - name: identity
+    engine: postgresql
+    schema:
+      - db/migrations/bootstrap
+      - db/migrations/identity
+    queries:
+      - db/queries/identity
+    gen:
+      go:
+        package: identitydb
+        out: internal/identity/identitydb
+        sql_package: pgx/v5

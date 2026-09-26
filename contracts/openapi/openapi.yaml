@@ -57,6 +57,10 @@ components:
     Money: { $ref: ./components/common.yaml#/schemas/Money }
     CurrencyCode: { $ref: ./components/common.yaml#/schemas/CurrencyCode }
     CommandRequest: { $ref: ./components/common.yaml#/schemas/CommandRequest }
+    IamManageUsersCommandRequest: { $ref: ./components/common.yaml#/schemas/IamManageUsersCommandRequest }
+    IamManageUsersCommandData: { $ref: ./components/common.yaml#/schemas/IamManageUsersCommandData }
+    IamAuthenticationSubject: { $ref: ./components/common.yaml#/schemas/IamAuthenticationSubject }
+    IamRoleAssignment: { $ref: ./components/common.yaml#/schemas/IamRoleAssignment }
     EstablishedResult: { $ref: ./components/common.yaml#/schemas/EstablishedResult }
     Links: { $ref: ./components/common.yaml#/schemas/Links }
     Page: { $ref: ./components/common.yaml#/schemas/Page }

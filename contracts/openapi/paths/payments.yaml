@@ -5,7 +5,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.prepare.payment.batch
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -32,7 +31,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.apply.payment.batch.approval.decision
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -59,7 +57,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.cancel.payment.batch
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -86,7 +83,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.register.expected.incoming.settlement
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -113,7 +109,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.resolve.expected.incoming.settlement.exception
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -140,7 +135,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.cancel.expected.incoming.settlement
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -167,7 +161,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.close.expected.incoming.settlement
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -194,7 +187,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.create.payment.instruction.from.obligation
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -221,7 +213,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.submit.payment.instruction
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -248,7 +239,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.retry.payment.instruction
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -275,7 +265,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.cancel.payment.instruction
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -302,7 +291,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.apply.payment.instruction.exception.decision
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -329,7 +317,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.record.payment.return
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -356,7 +343,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.cancel.unposted.payment.return
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -383,7 +369,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.acknowledge.payment.return
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -410,7 +395,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.resolve.payment.return.exception
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -437,7 +421,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.record.unallocated.incoming.settlement
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -464,7 +447,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.resolve.unallocated.incoming.settlement
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -491,7 +473,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.record.incoming.settlement
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -518,7 +499,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.resolve.settlement.receipt.validation.exception
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -545,7 +525,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.resolve.incoming.settlement.owner.exception
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -572,7 +551,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.cancel.unposted.settlement.receipt
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -599,7 +577,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.acknowledge.incoming.settlement
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -626,7 +603,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.reverse.incoming.settlement
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
@@ -653,7 +629,6 @@
     x-owner-capability: payments
     x-permission: finance.pcm.maintain.bank.accounts
     parameters:
-      - $ref: ../components/common.yaml#/headers/Authorization
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
