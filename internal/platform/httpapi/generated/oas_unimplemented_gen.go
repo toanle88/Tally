@@ -709,7 +709,7 @@ func (UnimplementedHandler) GlSubmitPostingRequest(ctx context.Context, req *Com
 // IamGrantEmergencyAccess implements iamGrantEmergencyAccess operation.
 //
 // POST /identity-access/actions/grant-emergency-access
-func (UnimplementedHandler) IamGrantEmergencyAccess(ctx context.Context, req *CommandRequest, params IamGrantEmergencyAccessParams) (r IamGrantEmergencyAccessRes, _ error) {
+func (UnimplementedHandler) IamGrantEmergencyAccess(ctx context.Context, req *IamGrantEmergencyAccessCommandRequest, params IamGrantEmergencyAccessParams) (r IamGrantEmergencyAccessRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -744,7 +744,7 @@ func (UnimplementedHandler) IamManageUsers(ctx context.Context, req *IamManageUs
 // IamRevokeEmergencyAccess implements iamRevokeEmergencyAccess operation.
 //
 // POST /identity-access/actions/revoke-emergency-access
-func (UnimplementedHandler) IamRevokeEmergencyAccess(ctx context.Context, req *CommandRequest, params IamRevokeEmergencyAccessParams) (r IamRevokeEmergencyAccessRes, _ error) {
+func (UnimplementedHandler) IamRevokeEmergencyAccess(ctx context.Context, req *IamRevokeEmergencyAccessCommandRequest, params IamRevokeEmergencyAccessParams) (r IamRevokeEmergencyAccessRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

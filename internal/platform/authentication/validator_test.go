@@ -26,10 +26,13 @@ func TestValidatorAcceptsSignedFixtureAndReturnsStableSubject(t *testing.T) {
 	validator := newFixtureValidator(t, now, &privateKey.PublicKey)
 
 	raw := signedFixtureToken(t, privateKey, fixtureTokenOptions{
-		OID: "oid-123",
-		TID: fixtureTenant,
-		Sub: "subject-123",
-		Exp: now.Add(10 * time.Minute),
+		OID:      "oid-123",
+		TID:      fixtureTenant,
+		Sub:      "subject-123",
+		ACR:      "high",
+		AMR:      []string{"mfa", "otp"},
+		AuthTime: now.Add(-2 * time.Minute),
+		Exp:      now.Add(10 * time.Minute),
 	})
 	subject, err := validator.ValidateAccessToken(context.Background(), raw)
 	if err != nil {
@@ -37,6 +40,9 @@ func TestValidatorAcceptsSignedFixtureAndReturnsStableSubject(t *testing.T) {
 	}
 	if subject.OID != "oid-123" || subject.TID != fixtureTenant || subject.Sub != "subject-123" {
 		t.Fatalf("subject = %#v", subject)
+	}
+	if subject.Assurance.AssuranceLevel != "high" || subject.Assurance.Methods != "mfa,otp" || !subject.Assurance.AuthenticatedAt.Equal(now.Add(-2*time.Minute)) {
+		t.Fatalf("assurance = %#v", subject.Assurance)
 	}
 }
 
@@ -217,6 +223,9 @@ type fixtureTokenOptions struct {
 	TID      string
 	Sub      string
 	KID      string
+	ACR      string
+	AMR      []string
+	AuthTime time.Time
 	Exp      time.Time
 	NBF      time.Time
 }
@@ -243,8 +252,11 @@ func fixtureClaims(options fixtureTokenOptions) accessTokenClaims {
 		sub = "subject-fixture"
 	}
 	return accessTokenClaims{
-		OID: oid,
-		TID: tid,
+		OID:      oid,
+		TID:      tid,
+		ACR:      options.ACR,
+		AMR:      options.AMR,
+		AuthTime: numericDate(options.AuthTime),
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    issuer,
 			Audience:  jwt.ClaimStrings{audience},

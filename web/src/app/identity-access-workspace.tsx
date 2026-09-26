@@ -40,6 +40,25 @@ type ManagedSegregationRule = {
   approvalStatus: "approved" | "pending" | "rejected"
 }
 
+type EmergencyAccessGrant = {
+  id: string
+  targetActor: string
+  status: 'active' | 'revoked' | 'expired'
+  permissions: string[]
+  scopes: string[]
+  reasonCode: string
+  approver: string
+  startsAt: string
+  expiresAt: string
+  policyVersion: string
+  reviewStatus: 'pending' | 'completed' | 'overdue'
+  reviewOutcome?: string
+  reviewDueAt: string
+  version: number
+}
+
+type EmergencyAccessOutcome = 'ready' | 'denied' | 'duplicate' | 'conflict' | 'step-up-required'
+
 type SegregationDecisionOutcome = "allowed" | "conflict" | "exception-required" | "stale" | "unavailable"
 type SegregationDecisionExplanation = {
   outcome: SegregationDecisionOutcome
@@ -108,9 +127,23 @@ const initialRoles: ManagedRole[] = [
   { id: 'role-003', name: 'Retired legacy role', status: 'retired', version: 7, approvalStatus: 'approved', grants: [] },
 ]
 
+const initialEmergencyAccessGrants: EmergencyAccessGrant[] = [
+  { id: 'grant-001', targetActor: 'Finance operator 01', status: 'active', permissions: ['finance.gl.submit.posting.request'], scopes: ['entity-vietnam'], reasonCode: 'break-fix', approver: 'Access approver 02', startsAt: '2026-09-27T08:00:00Z', expiresAt: '2026-09-27T10:00:00Z', policyVersion: 'emergency-policy-v1', reviewStatus: 'pending', reviewDueAt: '2026-09-28T08:00:00Z', version: 1 },
+  { id: 'grant-002', targetActor: 'AP operator 02', status: 'revoked', permissions: ['finance.pcm.submit.payment.instruction'], scopes: ['entity-vietnam'], reasonCode: 'supplier-payment-recovery', approver: 'Access approver 02', startsAt: '2026-09-24T09:00:00Z', expiresAt: '2026-09-24T11:00:00Z', policyVersion: 'emergency-policy-v1', reviewStatus: 'completed', reviewOutcome: 'review-code-001', reviewDueAt: '2026-09-25T09:00:00Z', version: 3 },
+  { id: 'grant-003', targetActor: 'Close reviewer', status: 'expired', permissions: ['finance.gl.apply.journal.approval.decision'], scopes: ['entity-singapore'], reasonCode: 'close-window-support', approver: 'Access approver 03', startsAt: '2026-09-20T06:00:00Z', expiresAt: '2026-09-20T10:00:00Z', policyVersion: 'emergency-policy-v1', reviewStatus: 'overdue', reviewDueAt: '2026-09-21T06:00:00Z', version: 1 },
+]
+
 const roleStatusState: Record<ManagedRole['status'], SemanticState> = {
   active: 'success',
   retired: 'disabled',
+}
+
+const emergencyStatusState: Record<EmergencyAccessGrant['status'], SemanticState> = {
+  active: 'success', revoked: 'disabled', expired: 'error',
+}
+
+const emergencyReviewState: Record<EmergencyAccessGrant['reviewStatus'], SemanticState> = {
+  pending: 'pending', completed: 'success', overdue: 'warning',
 }
 
 const statusState: Record<ManagedUser['status'], SemanticState> = {
@@ -151,6 +184,17 @@ export function IdentityAccessWorkspace() {
   const [roleIssues, setRoleIssues] = useState<ValidationIssue[]>([])
   const [roleNotice, setRoleNotice] = useState('Approval, segregation, scope containment, and version checks run before a role revision becomes active.')
   const [roleConflictOpen, setRoleConflictOpen] = useState(false)
+  const [emergencyGrants, setEmergencyGrants] = useState(initialEmergencyAccessGrants)
+  const [selectedEmergencyGrantId, setSelectedEmergencyGrantId] = useState(initialEmergencyAccessGrants[0].id)
+  const [emergencyTarget, setEmergencyTarget] = useState('Finance operator 01')
+  const [emergencyPermission, setEmergencyPermission] = useState('finance.gl.submit.posting.request')
+  const [emergencyScope, setEmergencyScope] = useState('entity-vietnam')
+  const [emergencyReason, setEmergencyReason] = useState('break-fix')
+  const [emergencyReviewOutcome, setEmergencyReviewOutcome] = useState('review-code-001')
+  const [emergencyIssues, setEmergencyIssues] = useState<ValidationIssue[]>([])
+  const [emergencyNotice, setEmergencyNotice] = useState('Emergency grants are time-bound, independently approved, and reviewed after use.')
+  const [emergencyOutcome, setEmergencyOutcome] = useState<EmergencyAccessOutcome>('ready')
+  const [emergencyConflictOpen, setEmergencyConflictOpen] = useState(false)
   const [decisionOutcome, setDecisionOutcome] = useState<AccessDecisionOutcome>('allowed')
   const [segregationRules, setSegregationRules] = useState(initialSegregationRules)
   const [selectedSegregationRuleId, setSelectedSegregationRuleId] = useState(initialSegregationRules[0].id)
@@ -159,6 +203,7 @@ export function IdentityAccessWorkspace() {
 
   const selected = users.find((user) => user.id === selectedId) ?? users[0]
   const selectedRole = roles.find((role) => role.id === selectedRoleId) ?? roles[0]
+  const selectedEmergencyGrant = emergencyGrants.find((grant) => grant.id === selectedEmergencyGrantId) ?? emergencyGrants[0]
   const selectedSegregationRule = segregationRules.find((rule) => rule.id === selectedSegregationRuleId) ?? segregationRules[0]
   const segregationColumns = useMemo(() => [
     { key: "rule", header: "Rule", rowHeader: true, render: (rule: ManagedSegregationRule) => <button type="button" className="link link-primary text-left font-semibold" onClick={() => setSelectedSegregationRuleId(rule.id)}>{rule.name}</button> },
@@ -186,6 +231,15 @@ export function IdentityAccessWorkspace() {
     { key: 'version', header: 'Version', render: (user: ManagedUser) => <>v{user.version}</> },
     { key: 'review', header: 'Review evidence', render: (user: ManagedUser) => user.reviewEvidence },
     { key: 'action', header: 'Action', render: (user: ManagedUser) => <Button size="sm" variant="secondary" onClick={() => setSelectedId(user.id)}>Review</Button> },
+  ] as const, [])
+
+  const emergencyColumns = useMemo(() => [
+    { key: 'grant', header: 'Grant reference', rowHeader: true, render: (grant: EmergencyAccessGrant) => <button type="button" className="link link-primary text-left font-semibold" onClick={() => setSelectedEmergencyGrantId(grant.id)}>{grant.id}</button> },
+    { key: 'target', header: 'Target actor', render: (grant: EmergencyAccessGrant) => grant.targetActor },
+    { key: 'status', header: 'Access state', render: (grant: EmergencyAccessGrant) => <StatusBadge state={emergencyStatusState[grant.status]} label={grant.status} /> },
+    { key: 'expiry', header: 'Expiry', render: (grant: EmergencyAccessGrant) => <time dateTime={grant.expiresAt}>{grant.expiresAt}</time> },
+    { key: 'review', header: 'Post-use review', render: (grant: EmergencyAccessGrant) => <StatusBadge state={emergencyReviewState[grant.reviewStatus]} label={grant.reviewStatus} /> },
+    { key: 'action', header: 'Action', render: (grant: EmergencyAccessGrant) => <Button size="sm" variant="secondary" onClick={() => setSelectedEmergencyGrantId(grant.id)}>Review</Button> },
   ] as const, [])
 
   const retireSegregationRule = () => {
@@ -237,6 +291,45 @@ export function IdentityAccessWorkspace() {
     setRoleNotice(selectedRole.name + ' was retired non-destructively; historical revisions remain available for evidence.')
   }
 
+  const grantEmergencyAccess = () => {
+    const nextIssues: ValidationIssue[] = []
+    if (!emergencyTarget.trim()) nextIssues.push({ id: 'emergency-target', category: 'field', code: 'required', message: 'Choose the application actor receiving emergency access.', targetId: 'emergency-target', targetLabel: 'Target actor' })
+    if (!emergencyPermission.trim()) nextIssues.push({ id: 'emergency-permission', category: 'field', code: 'required', message: 'Enter a permission from the approved catalogue.', targetId: 'emergency-permission', targetLabel: 'Permission' })
+    if (!emergencyScope.trim()) nextIssues.push({ id: 'emergency-scope', category: 'field', code: 'required', message: 'Enter an approved scope reference.', targetId: 'emergency-scope', targetLabel: 'Scope' })
+    if (!emergencyReason.trim()) nextIssues.push({ id: 'emergency-reason', category: 'field', code: 'required', message: 'Enter a reason code for the emergency grant.', targetId: 'emergency-reason', targetLabel: 'Reason code' })
+    if (emergencyOutcome === 'step-up-required') nextIssues.push({ id: 'emergency-step-up', category: 'authorization', code: 'step-up-required', message: 'Recent authentication assurance or an explicit step-up challenge is required.', targetId: 'emergency-reason', targetLabel: 'Authentication assurance', nextAction: 'Complete step-up and retry with the same reviewed request.' })
+    if (emergencyOutcome === 'denied') nextIssues.push({ id: 'emergency-denied', category: 'authorization', code: 'authorization-denied', message: 'The requested permission or scope is outside the current policy decision.', targetId: 'emergency-scope', targetLabel: 'Approved scope', nextAction: 'Choose a permitted scope or request a new approved decision.' })
+    if (emergencyOutcome === 'duplicate') nextIssues.push({ id: 'emergency-duplicate', category: 'business-rule', code: 'duplicate-submission', message: 'This command is a safe duplicate; no second grant was created.', targetId: 'emergency-reason', targetLabel: 'Command identity', nextAction: 'Reuse the established grant reference or submit an intentional new command identity.' })
+    setEmergencyIssues(nextIssues)
+    if (nextIssues.length) {
+      setEmergencyNotice('The emergency grant was not established and no privileged access side effect was applied.')
+      return
+    }
+    const nextVersion = emergencyGrants.length + 1
+    const id = 'grant-' + String(nextVersion).padStart(3, '0')
+    const start = '2026-09-27T08:00:00Z'
+    const expiry = '2026-09-27T10:00:00Z'
+    setEmergencyGrants((current) => [...current, { id, targetActor: emergencyTarget.trim(), status: 'active', permissions: [emergencyPermission.trim()], scopes: [emergencyScope.trim()], reasonCode: emergencyReason.trim(), approver: 'Independent approver fixture', startsAt: start, expiresAt: expiry, policyVersion: 'emergency-policy-v1', reviewStatus: 'pending', reviewDueAt: '2026-09-28T08:00:00Z', version: 1 }])
+    setSelectedEmergencyGrantId(id)
+    setEmergencyOutcome('ready')
+    setEmergencyNotice(id + ' was established with a four-hour maximum window and pending post-use review.')
+  }
+
+  const revokeEmergencyAccess = () => {
+    if (!selectedEmergencyGrant || selectedEmergencyGrant.status !== 'active') {
+      setEmergencyNotice('Only active emergency grants can be revoked; expired and revoked grants remain historical evidence.')
+      return
+    }
+    setEmergencyGrants((current) => current.map((grant) => grant.id === selectedEmergencyGrant.id ? { ...grant, status: 'revoked', version: grant.version + 1, reviewStatus: 'pending' } : grant))
+    setEmergencyNotice(selectedEmergencyGrant.id + ' was revoked. All uses must now be denied and the post-use review remains pending.')
+  }
+
+  const completeEmergencyReview = () => {
+    if (!selectedEmergencyGrant || selectedEmergencyGrant.status !== 'revoked' || (selectedEmergencyGrant.reviewStatus !== 'pending' && selectedEmergencyGrant.reviewStatus !== 'overdue')) return
+    setEmergencyGrants((current) => current.map((grant) => grant.id === selectedEmergencyGrant.id ? { ...grant, reviewStatus: 'completed', reviewOutcome: emergencyReviewOutcome, version: grant.version + 1 } : grant))
+    setEmergencyNotice(selectedEmergencyGrant.id + ' review was completed with outcome ' + emergencyReviewOutcome + '.')
+  }
+
   return (
     <section className="space-y-6" aria-labelledby="iam-worklist-title">
       <div>
@@ -251,6 +344,56 @@ export function IdentityAccessWorkspace() {
 
       <Panel title="Role and permission worklist" description="IAM-SCR-02 - Versioned grant revisions, opaque scopes, effective dates, and approval state.">
         <DataTable caption="Application roles" columns={roleColumns} rows={roles} getRowKey={(role) => role.id} emptyMessage="No roles match the current review." />
+      </Panel>
+
+      <Panel title="IAM-SCR-04 · Emergency access" description="Grant, revoke, expiry, authorization use, and post-use review. Sensitive actor values remain masked in this synthetic workflow.">
+        <DataTable caption="Emergency access grants" columns={emergencyColumns} rows={emergencyGrants} getRowKey={(grant) => grant.id} emptyMessage="No emergency access grants are available." />
+        {selectedEmergencyGrant ? <div className="mt-5 rounded-box border border-base-300 p-4">
+          <div className="grid gap-4 lg:grid-cols-4">
+            <div><p className="text-sm text-base-content/70">Grant reference</p><p className="mt-1 font-mono font-semibold">{selectedEmergencyGrant.id}</p><p className="mt-1 text-sm text-base-content/70">Aggregate version {selectedEmergencyGrant.version}</p></div>
+            <div><p className="text-sm text-base-content/70">Access state</p><div className="mt-2"><StatusBadge state={emergencyStatusState[selectedEmergencyGrant.status]} label={selectedEmergencyGrant.status} announce /></div><p className="mt-2 text-sm text-base-content/70">Expiry remains deny-by-default after cleanup delay.</p></div>
+            <div><p className="text-sm text-base-content/70">Independent approval</p><p className="mt-1">{selectedEmergencyGrant.approver}</p><p className="mt-1 font-mono text-sm text-base-content/70">{selectedEmergencyGrant.policyVersion}</p></div>
+            <div><p className="text-sm text-base-content/70">Post-use review</p><div className="mt-2"><StatusBadge state={emergencyReviewState[selectedEmergencyGrant.reviewStatus]} label={selectedEmergencyGrant.reviewStatus} announce /></div><p className="mt-1 text-sm text-base-content/70">Due {selectedEmergencyGrant.reviewDueAt}</p></div>
+          </div>
+          <dl className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div><dt className="text-sm text-base-content/70">Target actor</dt><dd className="mt-1">{selectedEmergencyGrant.targetActor}</dd></div>
+            <div><dt className="text-sm text-base-content/70">Permissions</dt><dd className="mt-1 text-sm">{selectedEmergencyGrant.permissions.join(', ')}</dd></div>
+            <div><dt className="text-sm text-base-content/70">Opaque scopes</dt><dd className="mt-1 text-sm">{selectedEmergencyGrant.scopes.join(', ')}</dd></div>
+            <div><dt className="text-sm text-base-content/70">Reason code</dt><dd className="mt-1 font-mono">{selectedEmergencyGrant.reasonCode}</dd></div>
+            <div><dt className="text-sm text-base-content/70">Starts at</dt><dd className="mt-1"><time dateTime={selectedEmergencyGrant.startsAt}>{selectedEmergencyGrant.startsAt}</time></dd></div>
+            <div><dt className="text-sm text-base-content/70">Expires at</dt><dd className="mt-1"><time dateTime={selectedEmergencyGrant.expiresAt}>{selectedEmergencyGrant.expiresAt}</time></dd></div>
+            <div><dt className="text-sm text-base-content/70">Review outcome</dt><dd className="mt-1">{selectedEmergencyGrant.reviewOutcome ?? 'Pending'}</dd></div>
+            <div><dt className="text-sm text-base-content/70">Grant reference propagation</dt><dd className="mt-1 text-sm">{selectedEmergencyGrant.id} is carried into authorization and audit context.</dd></div>
+          </dl>
+        </div> : null}
+        <div className="mt-5 rounded-box border border-base-300 p-4">
+          <h3 className="font-semibold">Grant emergency access</h3>
+          <p className="mt-1 text-sm text-base-content/70">The fixture enforces an independent approver, recent high-risk assurance or explicit step-up, and a maximum four-hour window.</p>
+          <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Field id="emergency-target" label="Target actor" value={emergencyTarget} onChange={(event) => setEmergencyTarget(event.target.value)} />
+            <Field id="emergency-permission" label="Permission" value={emergencyPermission} onChange={(event) => setEmergencyPermission(event.target.value)} />
+            <Field id="emergency-scope" label="Opaque scope reference" value={emergencyScope} onChange={(event) => setEmergencyScope(event.target.value)} />
+            <Field id="emergency-reason" label="Reason code" value={emergencyReason} onChange={(event) => setEmergencyReason(event.target.value)} />
+          </div>
+          {emergencyIssues.length ? <div className="mt-4"><ValidationSummary issues={emergencyIssues} /></div> : null}
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button onClick={grantEmergencyAccess}>Grant emergency access</Button>
+            <Button variant="danger" onClick={revokeEmergencyAccess} disabled={!selectedEmergencyGrant || selectedEmergencyGrant.status !== 'active'}>Revoke selected grant</Button>
+            <Button variant="secondary" onClick={completeEmergencyReview} disabled={!selectedEmergencyGrant || selectedEmergencyGrant.status !== 'revoked' || (selectedEmergencyGrant.reviewStatus !== 'pending' && selectedEmergencyGrant.reviewStatus !== 'overdue')}>Complete review</Button>
+            <Button variant="ghost" onClick={() => setEmergencyConflictOpen(true)}>Simulate emergency version conflict</Button>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Emergency access outcome fixtures">
+            <Button size="sm" variant={emergencyOutcome === 'denied' ? 'primary' : 'ghost'} aria-pressed={emergencyOutcome === 'denied'} onClick={() => { setEmergencyOutcome('denied'); setEmergencyIssues([]) }}>Simulate denial</Button>
+            <Button size="sm" variant={emergencyOutcome === 'duplicate' ? 'primary' : 'ghost'} aria-pressed={emergencyOutcome === 'duplicate'} onClick={() => { setEmergencyOutcome('duplicate'); setEmergencyIssues([]) }}>Simulate duplicate</Button>
+            <Button size="sm" variant={emergencyOutcome === 'step-up-required' ? 'primary' : 'ghost'} aria-pressed={emergencyOutcome === 'step-up-required'} onClick={() => { setEmergencyOutcome('step-up-required'); setEmergencyIssues([]) }}>Require step-up</Button>
+            <Button size="sm" variant="ghost" onClick={() => { setEmergencyOutcome('ready'); setEmergencyIssues([]); setEmergencyNotice('Emergency grant command fixtures reset; retry after reviewing the current grant state.') }}>Reset outcome fixture</Button>
+          </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <Field id="emergency-review-outcome" label="Opaque review outcome code" value={emergencyReviewOutcome} onChange={(event) => setEmergencyReviewOutcome(event.target.value)} />
+            <div className="rounded-box border border-base-300 p-3 text-sm text-base-content/75"><p className="font-semibold text-base-content">Review deadline</p><p className="mt-1">One business day after the emergency grant is recorded; overdue is derived deterministically and never grants access.</p></div>
+          </div>
+        </div>
+        <p role="status" aria-live="polite" className="mt-4 text-sm text-base-content/75">{emergencyNotice}</p>
       </Panel>
 
       <Panel title="IAM-SCR-03 · Segregation rule administration" description="IAM-owned versioned rules, independent approval evidence, and safe maintenance outcomes. Finance action screens remain in their owning modules.">
@@ -385,6 +528,7 @@ export function IdentityAccessWorkspace() {
 
       {conflictOpen ? <VersionConflictDialog conflict={conflictFixture} onClose={() => setConflictOpen(false)} onRefresh={() => { setConflictOpen(false); setNotice('Authoritative user state refreshed. Review the current version before retrying.') }} onRetry={() => { setConflictOpen(false); setNotice('Retry remains blocked until the refreshed assignment set is reviewed.') }} /> : null}
       {roleConflictOpen ? <VersionConflictDialog conflict={{ ...conflictFixture, attemptedAction: 'Replace complete permission grant set', record: { label: selectedRole?.name ?? 'Role', href: '/administration/identity-access' }, expected: { version: selectedRole?.version ?? 1, state: selectedRole?.status ?? 'active' }, current: { version: (selectedRole?.version ?? 1) + 1, state: selectedRole?.status ?? 'active' }, changedValues: [{ id: 'grants', label: 'Permission grants', reviewedValue: 'finance.gl.submit.posting.request', currentValue: 'finance.gl.apply.journal.approval.decision' }] }} onClose={() => setRoleConflictOpen(false)} onRefresh={() => { setRoleConflictOpen(false); setRoleNotice('Authoritative role state refreshed. Review the current version before retrying.') }} onRetry={() => { setRoleConflictOpen(false); setRoleNotice('Retry remains blocked until the refreshed role revision is reviewed.') }} /> : null}
+      {emergencyConflictOpen ? <VersionConflictDialog conflict={{ ...conflictFixture, attemptedAction: 'Revoke emergency access grant', record: { label: selectedEmergencyGrant?.id ?? 'Emergency grant', href: '/identity-access/iam-scr-04' }, expected: { version: selectedEmergencyGrant?.version ?? 1, state: selectedEmergencyGrant?.status ?? 'active' }, current: { version: (selectedEmergencyGrant?.version ?? 1) + 1, state: selectedEmergencyGrant?.status ?? 'active' }, changedValues: [{ id: 'lifecycle', label: 'Grant lifecycle state', reviewedValue: 'active', currentValue: selectedEmergencyGrant?.status ?? 'revoked' }, { id: 'review', label: 'Post-use review', reviewedValue: 'pending', currentValue: selectedEmergencyGrant?.reviewStatus ?? 'completed' }] }} onClose={() => setEmergencyConflictOpen(false)} onRefresh={() => { setEmergencyConflictOpen(false); setEmergencyNotice('Authoritative emergency grant state refreshed. Review the current version before retrying.') }} onRetry={() => { setEmergencyConflictOpen(false); setEmergencyNotice('Retry remains blocked until the refreshed grant and review state are confirmed.') }} /> : null}
     </section>
   )
 }

@@ -407,7 +407,7 @@ type Handler interface {
 	// IamGrantEmergencyAccess implements iamGrantEmergencyAccess operation.
 	//
 	// POST /identity-access/actions/grant-emergency-access
-	IamGrantEmergencyAccess(ctx context.Context, req *CommandRequest, params IamGrantEmergencyAccessParams) (IamGrantEmergencyAccessRes, error)
+	IamGrantEmergencyAccess(ctx context.Context, req *IamGrantEmergencyAccessCommandRequest, params IamGrantEmergencyAccessParams) (IamGrantEmergencyAccessRes, error)
 	// IamManageAccessPolicies implements iamManageAccessPolicies operation.
 	//
 	// POST /identity-access/actions/manage-access-policies
@@ -427,7 +427,7 @@ type Handler interface {
 	// IamRevokeEmergencyAccess implements iamRevokeEmergencyAccess operation.
 	//
 	// POST /identity-access/actions/revoke-emergency-access
-	IamRevokeEmergencyAccess(ctx context.Context, req *CommandRequest, params IamRevokeEmergencyAccessParams) (IamRevokeEmergencyAccessRes, error)
+	IamRevokeEmergencyAccess(ctx context.Context, req *IamRevokeEmergencyAccessCommandRequest, params IamRevokeEmergencyAccessParams) (IamRevokeEmergencyAccessRes, error)
 	// IcApplyIncomingSettlement implements icApplyIncomingSettlement operation.
 	//
 	// POST /intercompany/actions/apply-incoming-settlement

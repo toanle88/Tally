@@ -35,7 +35,7 @@
 | bank_reconciliation | Bank Feeds & Reconciliation | `app_bank_reconciliation_rw` | `app_bank_reconciliation_ro` | bank_feed_connection, bank_statement, reconciliation_session |
 | tax | Tax Filing | `app_tax_rw` | `app_tax_ro` | tax_configuration, tax_return, filing_submission, tax_amendment, return_level_tax_adjustment, tax_payment_obligation |
 | workflow | Workflow & Approvals | `app_workflow_rw` | `app_workflow_ro` | approval_policy, approval_request, delegation |
-| identity | Identity & Access | `app_identity_rw` | `app_identity_ro` | user, role, access_policy, segregation_rule |
+| identity | Identity & Access | `app_identity_rw` | `app_identity_ro` | user, role, access_policy, emergency_access_grant, emergency_access_grant_revision, emergency_access_grant_permission, emergency_access_grant_scope, segregation_rule |
 | audit | Audit Integrity | `app_audit_rw` | `app_audit_ro` | audit_chain |
 
 ## 3. Common column standards
@@ -125,6 +125,7 @@
 | IAM | User | `identity.user` | `user_id uuid` | Mutable aggregate row or append-only root according to DDD lifecycle |
 | IAM | Role | `identity.role` | `role_id uuid` | Mutable aggregate row or append-only root according to DDD lifecycle |
 | IAM | AccessPolicy | `identity.access_policy` | `access_policy_id uuid` | Mutable aggregate row or append-only root according to DDD lifecycle |
+| IAM | EmergencyAccessGrant | `identity.emergency_access_grant` | `emergency_access_grant_id uuid` | Root with immutable revisions and normalized permission/scope records; effective expiry is derived and deny-by-default |
 | IAM | SegregationRule | `identity.segregation_rule` | `segregation_rule_id uuid` | Mutable aggregate row or append-only root according to DDD lifecycle |
 | AUD | AuditChain | `audit.audit_chain` | `audit_chain_id uuid` | Mutable aggregate row or append-only root according to DDD lifecycle |
 

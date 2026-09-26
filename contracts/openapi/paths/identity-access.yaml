@@ -116,7 +116,7 @@
       required: true
       content:
         application/json:
-          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          schema: { $ref: ../components/common.yaml#/schemas/IamGrantEmergencyAccessCommandRequest }
           examples:
             deterministic:
               $ref: ../examples/command-request.yaml
@@ -138,11 +138,12 @@
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+      - $ref: ../components/common.yaml#/headers/If-Match
     requestBody:
       required: true
       content:
         application/json:
-          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          schema: { $ref: ../components/common.yaml#/schemas/IamRevokeEmergencyAccessCommandRequest }
           examples:
             deterministic:
               $ref: ../examples/command-request.yaml
@@ -154,4 +155,3 @@
       '409': { $ref: ../components/common.yaml#/responses/Problem }
       '422': { $ref: ../components/common.yaml#/responses/Problem }
       '503': { $ref: ../components/common.yaml#/responses/Problem }
-

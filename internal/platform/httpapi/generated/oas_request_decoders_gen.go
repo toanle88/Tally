@@ -7678,7 +7678,7 @@ func (s *Server) decodeGlSubmitPostingRequestRequest(r *http.Request) (
 }
 
 func (s *Server) decodeIamGrantEmergencyAccessRequest(r *http.Request) (
-	req *CommandRequest,
+	req *IamGrantEmergencyAccessCommandRequest,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -7725,7 +7725,7 @@ func (s *Server) decodeIamGrantEmergencyAccessRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request CommandRequest
+		var request IamGrantEmergencyAccessCommandRequest
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -8073,7 +8073,7 @@ func (s *Server) decodeIamManageUsersRequest(r *http.Request) (
 }
 
 func (s *Server) decodeIamRevokeEmergencyAccessRequest(r *http.Request) (
-	req *CommandRequest,
+	req *IamRevokeEmergencyAccessCommandRequest,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -8120,7 +8120,7 @@ func (s *Server) decodeIamRevokeEmergencyAccessRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request CommandRequest
+		var request IamRevokeEmergencyAccessCommandRequest
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err

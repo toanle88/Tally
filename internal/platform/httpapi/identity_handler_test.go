@@ -380,3 +380,107 @@ func TestIdentityHandlerManagesTypedRolesAndMapsSafeOutcomes(t *testing.T) {
 		t.Fatalf("validation response = %#v, want typed validation failure", invalid)
 	}
 }
+
+type testEmergencyAuthorizer struct {
+	allowed bool
+}
+
+func (authorizer testEmergencyAuthorizer) AuthorizeEmergencyAccess(_ context.Context, _ identity.ApplicationActor, command identity.EmergencyAccessGrantCommand, _ *identity.EmergencyAccessGrant) (identity.AuthorizationDecision, error) {
+	permission := identity.EmergencyAccessRevokePermission
+	if command.Action == identity.EmergencyAccessActionGrant {
+		permission = identity.EmergencyAccessGrantPermission
+	}
+	return identity.AuthorizationDecision{Allowed: authorizer.allowed, Permission: permission, Outcome: identity.AuthorizationAllowed, PolicyVersion: "emergency-policy-v1", PolicyReference: "emergency-policy", DecisionReference: uuid.New(), ApprovedScopeIDs: []string{"*"}}, nil
+}
+
+type testEmergencyApproval struct{}
+
+func (testEmergencyApproval) ValidateEmergencyAccessApproval(context.Context, identity.ApplicationActor, identity.EmergencyAccessGrantCommand, *identity.EmergencyAccessGrant, string) error {
+	return nil
+}
+
+func testEmergencyHTTPService(t *testing.T, allowed bool) (*identity.EmergencyAccessService, identity.ApplicationActor) {
+	t.Helper()
+	now := time.Date(2026, 9, 25, 8, 0, 0, 0, time.UTC)
+	repository := identity.NewMemoryEmergencyAccessRepository()
+	service, err := identity.NewEmergencyAccessService(repository, testEmergencyAuthorizer{allowed: allowed}, testEmergencyApproval{}, &identity.MemoryEmergencyAccessAuditRecorder{}, identity.WeekdayEmergencyAccessCalendar{}, func() time.Time { return now })
+	if err != nil {
+		t.Fatal(err)
+	}
+	actor := identity.ApplicationActor{UserID: uuid.New(), Subject: identity.AuthenticationSubject{OID: "emergency-admin-oid", TID: "tenant", Sub: "emergency-admin-sub", Assurance: identity.AuthenticationAssurance{AuthenticatedAt: now.Add(-time.Minute), AssuranceLevel: "high", Methods: "mfa"}}}
+	return service, actor
+}
+
+func TestIdentityHandlerManagesEmergencyAccessAndReview(t *testing.T) {
+	service, actor := testEmergencyHTTPService(t, true)
+	handler := IdentityHandler{EmergencyAccessService: service}
+	ctx, err := identity.WithActor(context.Background(), actor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	grantRequest := &generated.IamGrantEmergencyAccessCommandRequest{
+		CommandId: generated.UUID(uuid.New()),
+		Data: generated.IamGrantEmergencyAccessCommandData{
+			TargetActorId: generated.UUID(uuid.New()), Permissions: []string{"finance.gl.submit.posting.request"}, ScopeIds: []string{"entity-1"},
+			ReasonCode: "break-fix", StartsAt: time.Date(2026, 9, 25, 8, 0, 0, 0, time.UTC), ExpiresAt: time.Date(2026, 9, 25, 10, 0, 0, 0, time.UTC),
+			Approval: generated.IamApprovalDecisionReference{ApprovalRequestId: generated.UUID(uuid.New()), DecisionId: generated.UUID(uuid.New()), PolicyVersion: "emergency-policy-v1", DecisionVersion: 1, SubjectVersion: 1, CandidateFingerprint: "test", ApproverUserId: generated.UUID(uuid.New())},
+		},
+	}
+	created, err := handler.IamGrantEmergencyAccess(ctx, grantRequest, generated.IamGrantEmergencyAccessParams{IdempotencyKey: "emergency-grant-http"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	createdResult, ok := created.(*generated.EstablishedResult)
+	if !ok || createdResult.AggregateVersion != 1 {
+		t.Fatalf("grant result = %#v, want established version 1", created)
+	}
+
+	revokeRequest := &generated.IamRevokeEmergencyAccessCommandRequest{CommandId: generated.UUID(uuid.New()), ExpectedVersion: 1, Data: generated.IamRevokeEmergencyAccessCommandData{GrantId: createdResult.AggregateId, ReasonCode: "incident-contained", ReviewStatus: generated.NewOptIamRevokeEmergencyAccessCommandDataReviewStatus(generated.IamRevokeEmergencyAccessCommandDataReviewStatusPending)}}
+	revoked, err := handler.IamRevokeEmergencyAccess(ctx, revokeRequest, generated.IamRevokeEmergencyAccessParams{IdempotencyKey: "emergency-revoke-http", IfMatch: generated.NewOptString("\"1\"")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	revokedResult, ok := revoked.(*generated.EstablishedResult)
+	if !ok || revokedResult.AggregateVersion != 2 || string(revokedResult.Data["status"]) != `"revoked"` {
+		t.Fatalf("revoke result = %#v, want revoked version 2", revoked)
+	}
+
+	completeRequest := &generated.IamRevokeEmergencyAccessCommandRequest{CommandId: generated.UUID(uuid.New()), ExpectedVersion: 2, Data: generated.IamRevokeEmergencyAccessCommandData{GrantId: createdResult.AggregateId, ReasonCode: "post-use-review", ReviewStatus: generated.NewOptIamRevokeEmergencyAccessCommandDataReviewStatus(generated.IamRevokeEmergencyAccessCommandDataReviewStatusCompleted), ReviewOutcomeCode: generated.NewOptString("review-code-001"), ReviewReference: generated.NewOptString("review-http-1")}}
+	completed, err := handler.IamRevokeEmergencyAccess(ctx, completeRequest, generated.IamRevokeEmergencyAccessParams{IdempotencyKey: "emergency-review-http", IfMatch: generated.NewOptString("\"2\"")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result, ok := completed.(*generated.EstablishedResult); !ok || result.AggregateVersion != 3 || string(result.Data["reviewStatus"]) != `"completed"` {
+		t.Fatalf("review result = %#v, want completed version 3", completed)
+	}
+}
+
+func TestIdentityHandlerMapsEmergencyStepUpAndDenial(t *testing.T) {
+	service, actor := testEmergencyHTTPService(t, false)
+	actor.Subject.Assurance.AuthenticatedAt = time.Date(2026, 9, 25, 7, 0, 0, 0, time.UTC)
+	ctx, err := identity.WithActor(context.Background(), actor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := &generated.IamGrantEmergencyAccessCommandRequest{CommandId: generated.UUID(uuid.New()), Data: generated.IamGrantEmergencyAccessCommandData{TargetActorId: generated.UUID(uuid.New()), Permissions: []string{"finance.gl.submit.posting.request"}, ScopeIds: []string{"entity-1"}, ReasonCode: "break-fix", StartsAt: time.Date(2026, 9, 25, 8, 0, 0, 0, time.UTC), ExpiresAt: time.Date(2026, 9, 25, 10, 0, 0, 0, time.UTC), Approval: generated.IamApprovalDecisionReference{ApprovalRequestId: generated.UUID(uuid.New()), DecisionId: generated.UUID(uuid.New()), PolicyVersion: "emergency-policy-v1", DecisionVersion: 1, SubjectVersion: 1, CandidateFingerprint: "test", ApproverUserId: generated.UUID(uuid.New())}}}
+	response, err := (IdentityHandler{EmergencyAccessService: service}).IamGrantEmergencyAccess(ctx, request, generated.IamGrantEmergencyAccessParams{IdempotencyKey: "emergency-step-up"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if forbidden, ok := response.(*generated.IamGrantEmergencyAccessForbidden); !ok || forbidden.Code != "STEP_UP_REQUIRED" {
+		t.Fatalf("step-up response = %#v, want typed STEP_UP_REQUIRED", response)
+	}
+
+	actor.Subject.Assurance.AuthenticatedAt = time.Date(2026, 9, 25, 7, 59, 0, 0, time.UTC)
+	ctx, err = identity.WithActor(context.Background(), actor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err = (IdentityHandler{EmergencyAccessService: service}).IamGrantEmergencyAccess(ctx, request, generated.IamGrantEmergencyAccessParams{IdempotencyKey: "emergency-denied"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if forbidden, ok := response.(*generated.IamGrantEmergencyAccessForbidden); !ok || forbidden.Code != "AUTHORIZATION_DENIED" {
+		t.Fatalf("denial response = %#v, want typed AUTHORIZATION_DENIED", response)
+	}
+}

@@ -69,7 +69,7 @@ infra/terraform/
 | BFR | Bank Feeds & Reconciliation | `internal/bankfeeds` | `bank_reconciliation` | BankFeedConnection, BankStatement, ReconciliationSession | FR-BFR-001, FR-BFR-002, FR-BFR-003, FR-BFR-004, FR-BFR-005, FR-BFR-006 |
 | TAX | Tax Filing | `internal/tax` | `tax` | TaxConfiguration, TaxReturn, FilingSubmission, TaxAmendment, ReturnLevelTaxAdjustment, TaxPaymentObligation | FR-TAX-001, FR-TAX-002, FR-TAX-003, FR-TAX-004, FR-TAX-005, FR-TAX-006, FR-TAX-007, FR-TAX-008, FR-TAX-009, FR-TAX-010, FR-TAX-011, FR-TAX-012, FR-TAX-013, FR-TAX-014, FR-TAX-015, FR-TAX-016 |
 | WFA | Workflow & Approvals | `internal/workflow` | `workflow` | ApprovalPolicy, ApprovalRequest, Delegation | FR-WFA-001, FR-WFA-002, FR-WFA-003, FR-WFA-004, FR-WFA-005 |
-| IAM | Identity & Access | `internal/identity` | `identity` | User, Role, AccessPolicy, SegregationRule | FR-IAM-001, FR-IAM-002, FR-IAM-003, FR-IAM-004, FR-IAM-005, FR-IAM-006 |
+| IAM | Identity & Access | `internal/identity` | `identity` | User, Role, AccessPolicy, EmergencyAccessGrant, SegregationRule | FR-IAM-001, FR-IAM-002, FR-IAM-003, FR-IAM-004, FR-IAM-005, FR-IAM-006 |
 | AUD | Audit Integrity | `internal/audit` | `audit` | AuditChain | FR-AUD-001, FR-AUD-002, FR-AUD-003, FR-AUD-004, FR-AUD-005 |
 
 ## 5. Aggregate persistence contract
@@ -146,6 +146,7 @@ infra/terraform/
 | IAM | User | `identity.user` | `aggregate_version bigint` | Repository interface in owning module only |
 | IAM | Role | `identity.role` | `aggregate_version bigint` | Repository interface in owning module only |
 | IAM | AccessPolicy | `identity.access_policy` | `aggregate_version bigint` | Repository interface in owning module only |
+| IAM | EmergencyAccessGrant | `identity.emergency_access_grant` | `aggregate_version bigint` | Repository interface in owning module only; immutable revisions and normalized permissions/scopes remain IAM-owned |
 | IAM | SegregationRule | `identity.segregation_rule` | `aggregate_version bigint` | Repository interface in owning module only |
 | AUD | AuditChain | `audit.audit_chain` | `aggregate_version bigint` | Repository interface in owning module only |
 

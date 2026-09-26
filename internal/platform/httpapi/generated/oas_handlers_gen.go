@@ -14955,7 +14955,7 @@ func (s *Server) handleIamGrantEmergencyAccessRequest(args [0]string, argsEscape
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *IamGrantEmergencyAccessCommandRequest
 			Params   = IamGrantEmergencyAccessParams
 			Response = IamGrantEmergencyAccessRes
 		)
@@ -15707,12 +15707,16 @@ func (s *Server) handleIamRevokeEmergencyAccessRequest(args [0]string, argsEscap
 					Name: "Idempotency-Key",
 					In:   "header",
 				}: params.IdempotencyKey,
+				{
+					Name: "If-Match",
+					In:   "header",
+				}: params.IfMatch,
 			},
 			Raw: r,
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *IamRevokeEmergencyAccessCommandRequest
 			Params   = IamRevokeEmergencyAccessParams
 			Response = IamRevokeEmergencyAccessRes
 		)

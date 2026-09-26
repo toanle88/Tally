@@ -30,6 +30,25 @@ func TestFixtureResolverMapsValidatedSubjectToApplicationActor(t *testing.T) {
 	}
 }
 
+func TestFixtureResolverPreservesSubjectAssuranceUnlessExplicitOverrideProvided(t *testing.T) {
+	subject, err := NewAuthenticationSubject("oid-assurance", "tenant-1", "sub-assurance")
+	if err != nil {
+		t.Fatal(err)
+	}
+	subject.Assurance = AuthenticationAssurance{AssuranceLevel: "high", StepUpReference: "fixture-step-up"}
+	resolver, err := NewFixtureResolver([]FixtureIdentity{{Subject: subject, UserID: uuid.New()}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	actor, err := resolver.ResolveApplicationActor(context.Background(), subject)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if actor.Subject.Assurance != subject.Assurance {
+		t.Fatalf("assurance = %#v, want %#v", actor.Subject.Assurance, subject.Assurance)
+	}
+}
+
 func TestFixtureResolverDoesNotResolveUnknownSubject(t *testing.T) {
 	known, err := NewAuthenticationSubject("oid-1", "tenant-1", "sub-1")
 	if err != nil {

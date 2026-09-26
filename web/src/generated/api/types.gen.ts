@@ -142,6 +142,35 @@ export type IamManageSegregationRulesCommandRequest = {
     data: IamManageSegregationRulesCommandData;
 };
 
+export type IamGrantEmergencyAccessCommandData = {
+    targetActorId: Uuid;
+    permissions: Array<string>;
+    scopeIds: Array<string>;
+    reasonCode: string;
+    startsAt: string;
+    expiresAt: string;
+    approval: IamApprovalDecisionReference;
+};
+
+export type IamGrantEmergencyAccessCommandRequest = {
+    commandId: Uuid;
+    data: IamGrantEmergencyAccessCommandData;
+};
+
+export type IamRevokeEmergencyAccessCommandData = {
+    grantId: Uuid;
+    reasonCode: string;
+    reviewStatus?: 'pending' | 'completed';
+    reviewOutcomeCode?: string;
+    reviewReference?: string;
+};
+
+export type IamRevokeEmergencyAccessCommandRequest = {
+    commandId: Uuid;
+    expectedVersion: number;
+    data: IamRevokeEmergencyAccessCommandData;
+};
+
 export type PageSize = number;
 
 export type PageAfter = string;
@@ -9506,7 +9535,7 @@ export type IamManageSegregationRulesResponses = {
 export type IamManageSegregationRulesResponse = IamManageSegregationRulesResponses[keyof IamManageSegregationRulesResponses];
 
 export type IamGrantEmergencyAccessData = {
-    body: CommandRequest;
+    body: IamGrantEmergencyAccessCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
@@ -9556,11 +9585,12 @@ export type IamGrantEmergencyAccessResponses = {
 export type IamGrantEmergencyAccessResponse = IamGrantEmergencyAccessResponses[keyof IamGrantEmergencyAccessResponses];
 
 export type IamRevokeEmergencyAccessData = {
-    body: CommandRequest;
+    body: IamRevokeEmergencyAccessCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
+        'If-Match'?: string;
     };
     path?: never;
     query?: never;

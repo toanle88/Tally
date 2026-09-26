@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -22,9 +23,32 @@ var (
 // enterprise identity provider. Token scopes and roles are deliberately not
 // part of this value; finance authorization remains application-owned.
 type AuthenticationSubject struct {
-	OID string
-	TID string
-	Sub string
+	OID       string
+	TID       string
+	Sub       string
+	Assurance AuthenticationAssurance
+}
+
+// AuthenticationAssurance contains non-sensitive assurance evidence from the
+// validated authentication boundary. Raw tokens and unapproved claims never
+// cross into the identity domain.
+type AuthenticationAssurance struct {
+	AuthenticatedAt time.Time
+	AssuranceLevel  string
+	Methods         string
+	StepUpReference string
+}
+
+func (assurance AuthenticationAssurance) Satisfies(now time.Time, maxAge time.Duration) bool {
+	if strings.TrimSpace(assurance.StepUpReference) != "" {
+		return true
+	}
+	if assurance.AuthenticatedAt.IsZero() || maxAge <= 0 {
+		return false
+	}
+	now = now.UTC()
+	authenticatedAt := assurance.AuthenticatedAt.UTC()
+	return !authenticatedAt.After(now) && now.Sub(authenticatedAt) <= maxAge
 }
 
 func NewAuthenticationSubject(oid, tid, sub string) (AuthenticationSubject, error) {
@@ -106,13 +130,14 @@ func (resolver *RevalidatingUserResolver) ResolveApplicationActor(ctx context.Co
 	if user.ID != actor.UserID || user.Status != UserStatusActive {
 		return ApplicationActor{}, ErrApplicationActorUnavailable
 	}
-	return ApplicationActor{UserID: user.ID, Subject: user.AuthenticationSubject}, nil
+	return ApplicationActor{UserID: user.ID, Subject: subject}, nil
 }
 
 // FixtureIdentity describes a clearly marked local-only identity mapping.
 type FixtureIdentity struct {
-	Subject AuthenticationSubject
-	UserID  uuid.UUID
+	Subject   AuthenticationSubject
+	UserID    uuid.UUID
+	Assurance AuthenticationAssurance
 }
 
 type subjectKey struct {
@@ -133,7 +158,11 @@ func NewFixtureResolver(entries []FixtureIdentity) (*FixtureResolver, error) {
 		if err := entry.Subject.Validate(); err != nil {
 			return nil, err
 		}
-		actor := ApplicationActor{UserID: entry.UserID, Subject: entry.Subject}
+		subject := entry.Subject
+		if entry.Assurance != (AuthenticationAssurance{}) {
+			subject.Assurance = entry.Assurance
+		}
+		actor := ApplicationActor{UserID: entry.UserID, Subject: subject}
 		if err := actor.Validate(); err != nil {
 			return nil, err
 		}
