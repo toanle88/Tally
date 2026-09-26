@@ -9,7 +9,7 @@ import { LifecycleTimeline } from '@/components/lifecycle-timeline'
 import { MoneyAndCurrencyPanel } from '@/components/money-and-currency-panel'
 import { RecordIdentityHeader } from '@/components/record-identity-header'
 import { SensitiveDataGuard } from '@/components/sensitive-data-guard'
-import type { MoneyAmount } from '@/components/record-context'
+import type { MoneyAmount, SensitiveAccessAuditEvent } from '@/components/record-context'
 
 import { evidenceFixture, lifecycleFixture, lineageReferences, moneyFixture, recordIdentityFixture } from '@/app/record-detail-fixtures'
 
@@ -84,7 +84,7 @@ describe('record context components', () => {
   it('masks restricted values, records denied actions, and permits explicit authorized actions', () => {
     const onAccessDenied = vi.fn()
     const onExport = vi.fn()
-    const onAccess = vi.fn(() => true)
+    const onAccess = vi.fn((_event: SensitiveAccessAuditEvent) => true)
     render(<><SensitiveDataGuard label="Restricted value" classification="Bank-sensitive" value="SYNTHETIC-SECRET" access="restricted" canReveal={true} canExport={true} actorReference="actor-fixture" targetReference="record-fixture" scopeReference="scope-fixture" purpose="review-evidence" decisionReference="decision-fixture-1" policyVersion="policy-fixture-v1" onAccess={onAccess} onAccessDenied={onAccessDenied} /><SensitiveDataGuard label="Authorized value" classification="Synthetic" value="SYNTHETIC-AUTHORIZED" access="authorized" canReveal={true} canExport={true} actorReference="actor-fixture" targetReference="record-fixture" scopeReference="scope-fixture" purpose="review-evidence" decisionReference="decision-fixture-2" policyVersion="policy-fixture-v1" onAccess={onAccess} onExport={onExport} onAccessDenied={onAccessDenied} /></>)
 
     fireEvent.click(screen.getByRole('button', { name: 'Reveal unavailable' }))
