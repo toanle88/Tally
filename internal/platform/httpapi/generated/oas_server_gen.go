@@ -415,7 +415,7 @@ type Handler interface {
 	// IamManageRoles implements iamManageRoles operation.
 	//
 	// POST /identity-access/actions/manage-roles
-	IamManageRoles(ctx context.Context, req *CommandRequest, params IamManageRolesParams) (IamManageRolesRes, error)
+	IamManageRoles(ctx context.Context, req *IamManageRolesCommandRequest, params IamManageRolesParams) (IamManageRolesRes, error)
 	// IamManageSegregationRules implements iamManageSegregationRules operation.
 	//
 	// POST /identity-access/actions/manage-segregation-rules

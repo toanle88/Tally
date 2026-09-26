@@ -216,16 +216,47 @@ Traceability: `DLV-FR-IAM-002`, `NFR-SEC-004`, `NFR-SEC-012`,
 
 Acceptance criteria:
 
-- [ ] Authorized administrators can create and maintain roles with explicit
+- [x] Authorized administrators can create and maintain roles with explicit
   permission grants and applicable scope constraints.
-- [ ] Role changes validate permission, scope, effective-date, duplicate, and
+- [x] Role changes validate permission, scope, effective-date, duplicate, and
   segregation conflicts before they can become active.
-- [ ] Administrative policy and role changes require the independent approval
+- [x] Administrative policy and role changes require the independent approval
   and audit evidence required by the approved policy.
-- [ ] Historical decisions retain the role/policy version used at the time;
+- [x] Historical decisions retain the role/policy version used at the time;
   later changes do not rewrite prior authorization evidence.
-- [ ] Tests prove least privilege, deny-by-default behavior, role removal,
+- [x] Tests prove least privilege, deny-by-default behavior, role removal,
   stale-version conflict, and safe repeat behavior.
+
+#### User Story 3 implementation evidence
+
+- [x] internal/identity implements a versioned Role aggregate with explicit
+  permission grants, opaque scopes, effective dates, complete grant-set
+  replacement, non-destructive retirement, approved-catalogue validation,
+  actor-scope containment, independent approval evidence, segregation and audit
+  ports, idempotency, and optimistic concurrency.
+- [x] Identity-owned role/revision/grant tables, SQLC queries/generated output,
+  role-assignment foreign-key enforcement, PostgreSQL atomic revision commits,
+  historical revision retention, audit linkage, retired/unknown assignment
+  rejection, and durable role-command replay are covered.
+- [x] The manage-roles API is typed in OpenAPI and generated Go/TypeScript
+  artifacts, including If-Match consistency and safe 400/403/409/422/503
+  outcomes. HTTP tests cover typed role creation/update, denial, validation,
+  and stale-version recovery.
+- [x] IAM-WS-01 and IAM-SCR-02 render synthetic role worklist/detail states
+  with grants, scopes, effective dates, approval/validation states, retirement,
+  masked evidence, duplicate handling, and accessible version-conflict
+  recovery.
+- [x] Focused domain, security, idempotency, concurrency, PostgreSQL, API, and
+  frontend tests pass through the available host toolchains. The Workflow
+  approval and segregation adapters remain explicit ports with synthetic
+  local doubles; production workflow/segregation qualification remains future
+  scope.
+- [ ] The exact pnpm check web step and make api-check wrapper remain
+  environment-limited: Windows pnpm cannot execute the POSIX Vitest shim, and
+  the WSL-to-Windows Redocly wrapper maps the workspace path incorrectly.
+  Direct Windows Node/Vitest, TypeScript build, Redocly lint, typed artifact
+  generation, Go tests, and SQLC checks pass.
+- Evidence record: docs/verification/DLV-IAM-002-us3-role-permission-grants.md.
 
 ### 7.4 User Story 4 — Evaluate scoped access policies
 
