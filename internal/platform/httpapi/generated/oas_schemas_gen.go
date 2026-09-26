@@ -2752,6 +2752,113 @@ type IamGrantEmergencyAccessBadRequest ProblemDetails
 
 func (*IamGrantEmergencyAccessBadRequest) iamGrantEmergencyAccessRes() {}
 
+// Ref: #/components/schemas/IamGrantEmergencyAccessCommandData
+type IamGrantEmergencyAccessCommandData struct {
+	TargetActorId UUID                         `json:"targetActorId"`
+	Permissions   []string                     `json:"permissions"`
+	ScopeIds      []string                     `json:"scopeIds"`
+	ReasonCode    string                       `json:"reasonCode"`
+	StartsAt      time.Time                    `json:"startsAt"`
+	ExpiresAt     time.Time                    `json:"expiresAt"`
+	Approval      IamApprovalDecisionReference `json:"approval"`
+}
+
+// GetTargetActorId returns the value of TargetActorId.
+func (s *IamGrantEmergencyAccessCommandData) GetTargetActorId() UUID {
+	return s.TargetActorId
+}
+
+// GetPermissions returns the value of Permissions.
+func (s *IamGrantEmergencyAccessCommandData) GetPermissions() []string {
+	return s.Permissions
+}
+
+// GetScopeIds returns the value of ScopeIds.
+func (s *IamGrantEmergencyAccessCommandData) GetScopeIds() []string {
+	return s.ScopeIds
+}
+
+// GetReasonCode returns the value of ReasonCode.
+func (s *IamGrantEmergencyAccessCommandData) GetReasonCode() string {
+	return s.ReasonCode
+}
+
+// GetStartsAt returns the value of StartsAt.
+func (s *IamGrantEmergencyAccessCommandData) GetStartsAt() time.Time {
+	return s.StartsAt
+}
+
+// GetExpiresAt returns the value of ExpiresAt.
+func (s *IamGrantEmergencyAccessCommandData) GetExpiresAt() time.Time {
+	return s.ExpiresAt
+}
+
+// GetApproval returns the value of Approval.
+func (s *IamGrantEmergencyAccessCommandData) GetApproval() IamApprovalDecisionReference {
+	return s.Approval
+}
+
+// SetTargetActorId sets the value of TargetActorId.
+func (s *IamGrantEmergencyAccessCommandData) SetTargetActorId(val UUID) {
+	s.TargetActorId = val
+}
+
+// SetPermissions sets the value of Permissions.
+func (s *IamGrantEmergencyAccessCommandData) SetPermissions(val []string) {
+	s.Permissions = val
+}
+
+// SetScopeIds sets the value of ScopeIds.
+func (s *IamGrantEmergencyAccessCommandData) SetScopeIds(val []string) {
+	s.ScopeIds = val
+}
+
+// SetReasonCode sets the value of ReasonCode.
+func (s *IamGrantEmergencyAccessCommandData) SetReasonCode(val string) {
+	s.ReasonCode = val
+}
+
+// SetStartsAt sets the value of StartsAt.
+func (s *IamGrantEmergencyAccessCommandData) SetStartsAt(val time.Time) {
+	s.StartsAt = val
+}
+
+// SetExpiresAt sets the value of ExpiresAt.
+func (s *IamGrantEmergencyAccessCommandData) SetExpiresAt(val time.Time) {
+	s.ExpiresAt = val
+}
+
+// SetApproval sets the value of Approval.
+func (s *IamGrantEmergencyAccessCommandData) SetApproval(val IamApprovalDecisionReference) {
+	s.Approval = val
+}
+
+// Ref: #/components/schemas/IamGrantEmergencyAccessCommandRequest
+type IamGrantEmergencyAccessCommandRequest struct {
+	CommandId UUID                               `json:"commandId"`
+	Data      IamGrantEmergencyAccessCommandData `json:"data"`
+}
+
+// GetCommandId returns the value of CommandId.
+func (s *IamGrantEmergencyAccessCommandRequest) GetCommandId() UUID {
+	return s.CommandId
+}
+
+// GetData returns the value of Data.
+func (s *IamGrantEmergencyAccessCommandRequest) GetData() IamGrantEmergencyAccessCommandData {
+	return s.Data
+}
+
+// SetCommandId sets the value of CommandId.
+func (s *IamGrantEmergencyAccessCommandRequest) SetCommandId(val UUID) {
+	s.CommandId = val
+}
+
+// SetData sets the value of Data.
+func (s *IamGrantEmergencyAccessCommandRequest) SetData(val IamGrantEmergencyAccessCommandData) {
+	s.Data = val
+}
+
 type IamGrantEmergencyAccessConflict ProblemDetails
 
 func (*IamGrantEmergencyAccessConflict) iamGrantEmergencyAccessRes() {}
@@ -3454,6 +3561,143 @@ type IamRevokeEmergencyAccessBadRequest ProblemDetails
 
 func (*IamRevokeEmergencyAccessBadRequest) iamRevokeEmergencyAccessRes() {}
 
+// Ref: #/components/schemas/IamRevokeEmergencyAccessCommandData
+type IamRevokeEmergencyAccessCommandData struct {
+	GrantId           UUID                                               `json:"grantId"`
+	ReasonCode        string                                             `json:"reasonCode"`
+	ReviewStatus      OptIamRevokeEmergencyAccessCommandDataReviewStatus `json:"reviewStatus"`
+	ReviewOutcomeCode OptString                                          `json:"reviewOutcomeCode"`
+	ReviewReference   OptString                                          `json:"reviewReference"`
+}
+
+// GetGrantId returns the value of GrantId.
+func (s *IamRevokeEmergencyAccessCommandData) GetGrantId() UUID {
+	return s.GrantId
+}
+
+// GetReasonCode returns the value of ReasonCode.
+func (s *IamRevokeEmergencyAccessCommandData) GetReasonCode() string {
+	return s.ReasonCode
+}
+
+// GetReviewStatus returns the value of ReviewStatus.
+func (s *IamRevokeEmergencyAccessCommandData) GetReviewStatus() OptIamRevokeEmergencyAccessCommandDataReviewStatus {
+	return s.ReviewStatus
+}
+
+// GetReviewOutcomeCode returns the value of ReviewOutcomeCode.
+func (s *IamRevokeEmergencyAccessCommandData) GetReviewOutcomeCode() OptString {
+	return s.ReviewOutcomeCode
+}
+
+// GetReviewReference returns the value of ReviewReference.
+func (s *IamRevokeEmergencyAccessCommandData) GetReviewReference() OptString {
+	return s.ReviewReference
+}
+
+// SetGrantId sets the value of GrantId.
+func (s *IamRevokeEmergencyAccessCommandData) SetGrantId(val UUID) {
+	s.GrantId = val
+}
+
+// SetReasonCode sets the value of ReasonCode.
+func (s *IamRevokeEmergencyAccessCommandData) SetReasonCode(val string) {
+	s.ReasonCode = val
+}
+
+// SetReviewStatus sets the value of ReviewStatus.
+func (s *IamRevokeEmergencyAccessCommandData) SetReviewStatus(val OptIamRevokeEmergencyAccessCommandDataReviewStatus) {
+	s.ReviewStatus = val
+}
+
+// SetReviewOutcomeCode sets the value of ReviewOutcomeCode.
+func (s *IamRevokeEmergencyAccessCommandData) SetReviewOutcomeCode(val OptString) {
+	s.ReviewOutcomeCode = val
+}
+
+// SetReviewReference sets the value of ReviewReference.
+func (s *IamRevokeEmergencyAccessCommandData) SetReviewReference(val OptString) {
+	s.ReviewReference = val
+}
+
+type IamRevokeEmergencyAccessCommandDataReviewStatus string
+
+const (
+	IamRevokeEmergencyAccessCommandDataReviewStatusPending   IamRevokeEmergencyAccessCommandDataReviewStatus = "pending"
+	IamRevokeEmergencyAccessCommandDataReviewStatusCompleted IamRevokeEmergencyAccessCommandDataReviewStatus = "completed"
+)
+
+// AllValues returns all IamRevokeEmergencyAccessCommandDataReviewStatus values.
+func (IamRevokeEmergencyAccessCommandDataReviewStatus) AllValues() []IamRevokeEmergencyAccessCommandDataReviewStatus {
+	return []IamRevokeEmergencyAccessCommandDataReviewStatus{
+		IamRevokeEmergencyAccessCommandDataReviewStatusPending,
+		IamRevokeEmergencyAccessCommandDataReviewStatusCompleted,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s IamRevokeEmergencyAccessCommandDataReviewStatus) MarshalText() ([]byte, error) {
+	switch s {
+	case IamRevokeEmergencyAccessCommandDataReviewStatusPending:
+		return []byte(s), nil
+	case IamRevokeEmergencyAccessCommandDataReviewStatusCompleted:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *IamRevokeEmergencyAccessCommandDataReviewStatus) UnmarshalText(data []byte) error {
+	switch IamRevokeEmergencyAccessCommandDataReviewStatus(data) {
+	case IamRevokeEmergencyAccessCommandDataReviewStatusPending:
+		*s = IamRevokeEmergencyAccessCommandDataReviewStatusPending
+		return nil
+	case IamRevokeEmergencyAccessCommandDataReviewStatusCompleted:
+		*s = IamRevokeEmergencyAccessCommandDataReviewStatusCompleted
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/IamRevokeEmergencyAccessCommandRequest
+type IamRevokeEmergencyAccessCommandRequest struct {
+	CommandId       UUID                                `json:"commandId"`
+	ExpectedVersion int                                 `json:"expectedVersion"`
+	Data            IamRevokeEmergencyAccessCommandData `json:"data"`
+}
+
+// GetCommandId returns the value of CommandId.
+func (s *IamRevokeEmergencyAccessCommandRequest) GetCommandId() UUID {
+	return s.CommandId
+}
+
+// GetExpectedVersion returns the value of ExpectedVersion.
+func (s *IamRevokeEmergencyAccessCommandRequest) GetExpectedVersion() int {
+	return s.ExpectedVersion
+}
+
+// GetData returns the value of Data.
+func (s *IamRevokeEmergencyAccessCommandRequest) GetData() IamRevokeEmergencyAccessCommandData {
+	return s.Data
+}
+
+// SetCommandId sets the value of CommandId.
+func (s *IamRevokeEmergencyAccessCommandRequest) SetCommandId(val UUID) {
+	s.CommandId = val
+}
+
+// SetExpectedVersion sets the value of ExpectedVersion.
+func (s *IamRevokeEmergencyAccessCommandRequest) SetExpectedVersion(val int) {
+	s.ExpectedVersion = val
+}
+
+// SetData sets the value of Data.
+func (s *IamRevokeEmergencyAccessCommandRequest) SetData(val IamRevokeEmergencyAccessCommandData) {
+	s.Data = val
+}
+
 type IamRevokeEmergencyAccessConflict ProblemDetails
 
 func (*IamRevokeEmergencyAccessConflict) iamRevokeEmergencyAccessRes() {}
@@ -4121,6 +4365,52 @@ func (o OptIamAuthenticationSubject) Get() (v IamAuthenticationSubject, ok bool)
 
 // Or returns value if set, or given parameter if does not.
 func (o OptIamAuthenticationSubject) Or(d IamAuthenticationSubject) IamAuthenticationSubject {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptIamRevokeEmergencyAccessCommandDataReviewStatus returns new OptIamRevokeEmergencyAccessCommandDataReviewStatus with value set to v.
+func NewOptIamRevokeEmergencyAccessCommandDataReviewStatus(v IamRevokeEmergencyAccessCommandDataReviewStatus) OptIamRevokeEmergencyAccessCommandDataReviewStatus {
+	return OptIamRevokeEmergencyAccessCommandDataReviewStatus{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptIamRevokeEmergencyAccessCommandDataReviewStatus is optional IamRevokeEmergencyAccessCommandDataReviewStatus.
+type OptIamRevokeEmergencyAccessCommandDataReviewStatus struct {
+	Value IamRevokeEmergencyAccessCommandDataReviewStatus
+	Set   bool
+}
+
+// IsSet returns true if OptIamRevokeEmergencyAccessCommandDataReviewStatus was set.
+func (o OptIamRevokeEmergencyAccessCommandDataReviewStatus) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptIamRevokeEmergencyAccessCommandDataReviewStatus) Reset() {
+	var v IamRevokeEmergencyAccessCommandDataReviewStatus
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptIamRevokeEmergencyAccessCommandDataReviewStatus) SetTo(v IamRevokeEmergencyAccessCommandDataReviewStatus) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptIamRevokeEmergencyAccessCommandDataReviewStatus) Get() (v IamRevokeEmergencyAccessCommandDataReviewStatus, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptIamRevokeEmergencyAccessCommandDataReviewStatus) Or(d IamRevokeEmergencyAccessCommandDataReviewStatus) IamRevokeEmergencyAccessCommandDataReviewStatus {
 	if v, ok := o.Get(); ok {
 		return v
 	}

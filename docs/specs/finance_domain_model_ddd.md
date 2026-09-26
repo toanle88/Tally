@@ -175,7 +175,7 @@ The finance domain is decomposed into bounded contexts with explicit ownership, 
 | **Bank Feeds & Reconciliation** | Supporting | Provider connections, statement ingestion, transaction matching and reconciliation | BankFeedConnection, BankStatement, ReconciliationSession |
 | **Tax Filing** | Supporting | Tax determination inputs, returns, submissions, amendments, return-level adjustments, tax-payment obligations, and filing status | TaxConfiguration, TaxReturn, FilingSubmission, TaxAmendment, ReturnLevelTaxAdjustment, TaxPaymentObligation |
 | **Workflow & Approvals** | Generic | Configurable approval policies, steps, decisions, delegation and escalation | ApprovalPolicy, ApprovalRequest, Delegation |
-| **Identity & Access** | Generic | Users, roles, permissions, access scopes and segregation-of-duties controls | User, Role, AccessPolicy, SegregationRule |
+| **Identity & Access** | Generic | Users, roles, permissions, access scopes, emergency access, and segregation-of-duties controls | User, Role, AccessPolicy, EmergencyAccessGrant, SegregationRule |
 | **Audit Integrity** | Supporting | Append-only audit evidence, integrity sealing, proof generation, verification, and incident lineage | AuditChain |
 
 <a id="section-1-1"></a>
@@ -577,6 +577,9 @@ Period statuses are `Open`, `SoftClosed`, `Closing`, `HardClosed`, and `Reopenin
   - Value Objects: AccessPolicyId, PolicyVersion, SubjectScope, ResourceScope, ActionSet, EffectiveDateRange
 - **Aggregate Root: SegregationRule**
   - Value Objects: SegregationRuleId, ConflictingPermissionSet, EnforcementMode
+- **Aggregate Root: EmergencyAccessGrant**
+  - Value Objects: EmergencyAccessGrantId, TargetActorReference, PermissionSet, ScopeSet, EmergencyReasonCode, ApprovalDecisionReference, PolicyVersion, StartTime, ExpiryTime, ReviewDeadline, ReviewOutcomeReference, AuditReference, Version
+  - Lifecycle: `active` -> `revoked` or effective `expired`; post-use review is `pending` or derived `overdue` until it becomes `completed`.
 
 <a id="section-2-19"></a>
 ### 2.19 Audit Integrity
@@ -2144,7 +2147,7 @@ Authorization is evaluated across:
 <a id="section-8-3"></a>
 ### 8.3 Emergency Access
 
-Emergency access must be time-bound, reason-coded, independently approved where possible, and reviewed after use. Every emergency action is included in the audit chain.
+Emergency access is owned by IAM through `EmergencyAccessGrant`. It must be time-bound, reason-coded, independently approved, and reviewed after use. The default policy caps a grant at four hours; high-risk use requires authentication assurance no older than five minutes or an explicit step-up. Expiry and revocation deny access even if cleanup is delayed, and every emergency action carries the grant reference into the audit chain.
 
 <a id="section-9"></a>
 ## 9. Consistency, Concurrency, and Recovery Rules

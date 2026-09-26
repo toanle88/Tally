@@ -113,8 +113,9 @@ func newEnvironmentFixtureResolver(getenv func(string) string, tenantID string) 
 		return nil, err
 	}
 	return identity.NewFixtureResolver([]identity.FixtureIdentity{{
-		Subject: identity.AuthenticationSubject{OID: oid, TID: fixtureTenant, Sub: sub},
-		UserID:  parsedUserID,
+		Subject:   identity.AuthenticationSubject{OID: oid, TID: fixtureTenant, Sub: sub},
+		UserID:    parsedUserID,
+		Assurance: identity.AuthenticationAssurance{AssuranceLevel: "fixture", StepUpReference: "local-fixture-step-up"},
 	}})
 }
 

@@ -20,6 +20,7 @@ describe('route registry', () => {
   it('keeps operational contracts discoverable without implementing capabilities', () => {
     expect(routeRegistry.filter((route) => route.kind === 'operational').map((route) => [route.screenId, route.path])).toEqual([
       ['IAM-WS-01', '/administration/identity-access'],
+      ['IAM-SCR-04', '/identity-access/iam-scr-04'],
       ['XCT-WS-01', '/operations/xct-ws-01'],
       ['XCT-SCR-01', '/operations/xct-scr-01'],
       ['CON-SCR-01', '/operations/con-scr-01'],

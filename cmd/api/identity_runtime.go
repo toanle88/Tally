@@ -18,9 +18,10 @@ import (
 )
 
 const (
-	identityOperationID    = "identity.manage-users.v1"
-	roleOperationID        = "identity.manage-roles.v1"
-	segregationOperationID = "identity.manage-segregation-rules.v1"
+	identityOperationID        = "identity.manage-users.v1"
+	roleOperationID            = "identity.manage-roles.v1"
+	segregationOperationID     = "identity.manage-segregation-rules.v1"
+	emergencyAccessOperationID = "identity.emergency-access.v1"
 )
 
 func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) http.Handler {
@@ -60,6 +61,10 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	segregationRepository, err := identity.NewPostgresSegregationRuleRepositoryWithAudit(pool, postgresSegregationRuleAuditWriter(auditWriter))
 	if err != nil {
 		return identityUnavailableHandler("identity segregation-rule persistence unavailable")
+	}
+	emergencyRepository, err := identity.NewPostgresEmergencyAccessRepositoryWithAudit(pool, postgresEmergencyAccessAuditWriter(auditWriter))
+	if err != nil {
+		return identityUnavailableHandler("identity emergency-access persistence unavailable")
 	}
 	segregationEvaluator, err := identity.NewSegregationEvaluator(segregationRepository, time.Now, segregationDecisionObserver(instrumentation...))
 	if err != nil {
@@ -109,8 +114,24 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err != nil {
 		return identityUnavailableHandler("identity role service unavailable")
 	}
+	emergencyAccessService, err := identity.NewEmergencyAccessServiceWithDurableIdempotency(
+		emergencyRepository,
+		authorizer,
+		environmentEmergencyAccessApproval{getenv: getenv},
+		&identity.MemoryEmergencyAccessAuditRecorder{},
+		identity.WeekdayEmergencyAccessCalendar{},
+		time.Now,
+		identity.DurableEmergencyAccessServiceConfig{
+			Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(),
+			Policy:      platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute},
+			OperationID: emergencyAccessOperationID,
+		},
+	)
+	if err != nil {
+		return identityUnavailableHandler("identity emergency-access service unavailable")
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService},
+		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -157,6 +178,22 @@ func postgresSegregationRuleAuditWriter(auditWriter identity.PostgresAuditWriter
 	}
 }
 
+func postgresEmergencyAccessAuditWriter(auditWriter identity.PostgresAuditWriter) identity.PostgresEmergencyAccessAuditWriter {
+	return func(ctx context.Context, tx pgx.Tx, record identity.EmergencyAccessAuditRecord) (uuid.UUID, error) {
+		if auditWriter == nil {
+			return uuid.Nil, identity.ErrEmergencyAccessAuditUnavailable
+		}
+		return auditWriter(ctx, tx, identity.AuditRecord{
+			UserID: record.GrantID, ActorUserID: record.ActorUserID, ActorAuthenticationSubjectRef: record.ActorAuthenticationRef,
+			Action: record.Action, ScopeIDs: append([]string(nil), record.ScopeIDs...), Permission: record.Permission,
+			PolicyReference: record.PolicyReference, PolicyVersion: record.PolicyVersion, DecisionReference: record.DecisionReference,
+			ApprovalRequestID: record.ApprovalRequestID, ApprovalDecisionID: record.ApprovalDecisionID, ApproverUserID: record.ApproverUserID,
+			RevisionVersion: record.GrantVersion, BeforeFingerprint: record.BeforeFingerprint, AfterFingerprint: record.AfterFingerprint,
+			CorrelationID: record.CorrelationID, CausationID: record.CausationID,
+		})
+	}
+}
+
 func identityUnavailableHandler(message string) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
 		http.Error(writer, message, http.StatusServiceUnavailable)
@@ -184,6 +221,7 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err != nil {
 		return identityUnavailableHandler("identity segregation-rule evaluator unavailable")
 	}
+	emergencyRepository := identity.NewMemoryEmergencyAccessRepository()
 	segregationAudit := &identity.MemorySegregationRuleAuditRecorder{}
 	segregationService, err := identity.NewSegregationRuleService(segregationRepository, authorizer, identity.AllowAllSegregationRuleApprovalPort{}, segregationAudit, time.Now)
 	if err != nil {
@@ -210,8 +248,19 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err != nil {
 		return identityUnavailableHandler("identity role service unavailable")
 	}
+	emergencyAccessService, err := identity.NewEmergencyAccessService(
+		emergencyRepository,
+		authorizer,
+		environmentEmergencyAccessApproval{getenv: getenv},
+		&identity.MemoryEmergencyAccessAuditRecorder{},
+		identity.WeekdayEmergencyAccessCalendar{},
+		time.Now,
+	)
+	if err != nil {
+		return identityUnavailableHandler("identity emergency-access service unavailable")
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService},
+		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -255,6 +304,18 @@ func (authorizer evaluatorIdentityAuthorizer) AuthorizeSegregationRuleManagement
 		scopes = append(scopes, current.ScopeIDs...)
 	}
 	return authorizer.evaluate(ctx, actor, identity.SegregationRuleManagementPermission, scopes)
+}
+
+func (authorizer evaluatorIdentityAuthorizer) AuthorizeEmergencyAccess(ctx context.Context, actor identity.ApplicationActor, command identity.EmergencyAccessGrantCommand, current *identity.EmergencyAccessGrant) (identity.AuthorizationDecision, error) {
+	scopes := append([]string(nil), command.ScopeIDs...)
+	if len(scopes) == 0 && current != nil {
+		scopes = append(scopes, current.ScopeIDs...)
+	}
+	permission := identity.EmergencyAccessRevokePermission
+	if command.Action == identity.EmergencyAccessActionGrant {
+		permission = identity.EmergencyAccessGrantPermission
+	}
+	return authorizer.evaluate(ctx, actor, permission, scopes)
 }
 
 func (authorizer evaluatorIdentityAuthorizer) evaluate(ctx context.Context, actor identity.ApplicationActor, permission string, scopes []string) (identity.AuthorizationDecision, error) {
@@ -368,6 +429,12 @@ func newEnvironmentIdentityAuthorizer(getenv func(string) string, instrumentatio
 			Rules: []identity.AccessRule{{ScopeIDs: configuredScopes(getenv)}},
 		})
 	}
+	if strings.EqualFold(strings.TrimSpace(getenv("TALLY_IAM_ALLOW_EMERGENCY_ACCESS")), "true") {
+		policies = append(policies,
+			identity.AccessPolicy{ID: uuid.New(), Version: "environment-emergency-access-grant-v1", Status: identity.AccessPolicyStatusActive, Permissions: []string{identity.EmergencyAccessGrantPermission}, EffectiveFrom: now, Rules: []identity.AccessRule{{ScopeIDs: configuredScopes(getenv)}}},
+			identity.AccessPolicy{ID: uuid.New(), Version: "environment-emergency-access-revoke-v1", Status: identity.AccessPolicyStatusActive, Permissions: []string{identity.EmergencyAccessRevokePermission}, EffectiveFrom: now, Rules: []identity.AccessRule{{ScopeIDs: configuredScopes(getenv)}}},
+		)
+	}
 	store, err := identity.NewMemoryAccessPolicyStore(policies...)
 	if err != nil {
 		return evaluatorIdentityAuthorizer{}, err
@@ -388,6 +455,17 @@ func (approval environmentRoleApproval) ValidateRoleApproval(ctx context.Context
 		return identity.ErrApprovalUnavailable
 	}
 	return identity.AllowAllRoleApprovalPort{}.ValidateRoleApproval(ctx, actor, command, current, fingerprint)
+}
+
+type environmentEmergencyAccessApproval struct {
+	getenv func(string) string
+}
+
+func (approval environmentEmergencyAccessApproval) ValidateEmergencyAccessApproval(ctx context.Context, actor identity.ApplicationActor, command identity.EmergencyAccessGrantCommand, current *identity.EmergencyAccessGrant, fingerprint string) error {
+	if !strings.EqualFold(strings.TrimSpace(approval.getenv("TALLY_IAM_ALLOW_EMERGENCY_ACCESS_APPROVAL")), "true") {
+		return identity.ErrEmergencyAccessApprovalUnavailable
+	}
+	return identity.AllowAllEmergencyAccessApprovalPort{}.ValidateEmergencyAccessApproval(ctx, actor, command, current, fingerprint)
 }
 
 func configuredScopes(getenv func(string) string) []string {

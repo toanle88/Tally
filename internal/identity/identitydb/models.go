@@ -29,6 +29,55 @@ type IdentityAccessPolicyRevision struct {
 	CreatedAt       pgtype.Timestamptz
 }
 
+type IdentityEmergencyAccessGrant struct {
+	ID                 pgtype.UUID
+	TargetActorID      pgtype.UUID
+	CurrentVersion     int64
+	Status             string
+	CreatedAt          pgtype.Timestamptz
+	UpdatedAt          pgtype.Timestamptz
+	LastAuditReference pgtype.UUID
+}
+
+type IdentityEmergencyAccessGrantPermission struct {
+	GrantID      pgtype.UUID
+	GrantVersion int64
+	Permission   string
+}
+
+type IdentityEmergencyAccessGrantRevision struct {
+	GrantID              pgtype.UUID
+	RevisionVersion      int64
+	TargetActorID        pgtype.UUID
+	Status               string
+	ReasonCode           string
+	GrantingActorID      pgtype.UUID
+	ApproverUserID       pgtype.UUID
+	ApprovalRequestID    pgtype.UUID
+	ApprovalDecisionID   pgtype.UUID
+	PolicyVersion        string
+	DecisionVersion      int64
+	SubjectVersion       int64
+	CandidateFingerprint string
+	StartAt              pgtype.Timestamptz
+	ExpiresAt            pgtype.Timestamptz
+	ReviewStatus         string
+	ReviewOutcomeCode    pgtype.Text
+	ReviewReference      pgtype.Text
+	ReviewDueAt          pgtype.Timestamptz
+	RevokedAt            pgtype.Timestamptz
+	RevokedBy            pgtype.UUID
+	RevocationReason     pgtype.Text
+	AuditReference       pgtype.UUID
+	CreatedAt            pgtype.Timestamptz
+}
+
+type IdentityEmergencyAccessGrantScope struct {
+	GrantID      pgtype.UUID
+	GrantVersion int64
+	ScopeID      string
+}
+
 type IdentityRole struct {
 	ID                 pgtype.UUID
 	Name               string

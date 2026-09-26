@@ -212,6 +212,53 @@ schemas:
       subjectVersion: { type: integer, minimum: 1 }
       candidateFingerprint: { type: string, minLength: 1 }
       approverUserId: { $ref: "#/schemas/Uuid" }
+  IamGrantEmergencyAccessCommandRequest:
+    type: object
+    additionalProperties: false
+    required: [commandId, data]
+    properties:
+      commandId: { $ref: "#/schemas/Uuid" }
+      data: { $ref: "#/schemas/IamGrantEmergencyAccessCommandData" }
+  IamGrantEmergencyAccessCommandData:
+    type: object
+    additionalProperties: false
+    required: [targetActorId, permissions, scopeIds, reasonCode, startsAt, expiresAt, approval]
+    properties:
+      targetActorId: { $ref: "#/schemas/Uuid" }
+      permissions:
+        type: array
+        minItems: 1
+        uniqueItems: true
+        items: { type: string, minLength: 1 }
+      scopeIds:
+        type: array
+        minItems: 1
+        uniqueItems: true
+        items: { type: string, minLength: 1 }
+      reasonCode: { type: string, minLength: 1, maxLength: 160 }
+      startsAt: { type: string, format: date-time }
+      expiresAt: { type: string, format: date-time }
+      approval: { $ref: "#/schemas/IamApprovalDecisionReference" }
+  IamRevokeEmergencyAccessCommandRequest:
+    type: object
+    additionalProperties: false
+    required: [commandId, expectedVersion, data]
+    properties:
+      commandId: { $ref: "#/schemas/Uuid" }
+      expectedVersion: { type: integer, minimum: 1 }
+      data: { $ref: "#/schemas/IamRevokeEmergencyAccessCommandData" }
+  IamRevokeEmergencyAccessCommandData:
+    type: object
+    additionalProperties: false
+    required: [grantId, reasonCode]
+    properties:
+      grantId: { $ref: "#/schemas/Uuid" }
+      reasonCode: { type: string, minLength: 1, maxLength: 160 }
+      reviewStatus:
+        type: string
+        enum: [pending, completed]
+      reviewOutcomeCode: { type: string, minLength: 1, maxLength: 160 }
+      reviewReference: { type: string, minLength: 1, maxLength: 240 }
   EstablishedResult:
     type: object
     required: [status, aggregateId, aggregateVersion, correlationId, links, data]

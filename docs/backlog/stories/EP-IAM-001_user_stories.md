@@ -346,17 +346,47 @@ Traceability: `DLV-FR-IAM-005`, `DLV-FR-IAM-006`, DDD §8.3,
 
 Acceptance criteria:
 
-- [ ] A grant records the actor, permissions/scopes, reason, approver, start,
+- [x] A grant records the actor, permissions/scopes, reason, approver, start,
   expiry, policy version, and required post-use review state.
-- [ ] A grant is time-bound to no more than four hours by default, cannot be
+- [x] A grant is time-bound to no more than four hours by default, cannot be
   used after expiry even when cleanup is delayed, and requires step-up or the
   approved authentication assurance for high-risk use.
-- [ ] Authorized actors can revoke a grant, and revocation takes effect within
+- [x] Authorized actors can revoke a grant, and revocation takes effect within
   the approved 15-minute target across interactive and noninteractive access.
-- [ ] Every action performed under a grant carries the grant reference and is
+- [x] Every action performed under a grant carries the grant reference and is
   included in the audit boundary without exposing sensitive action payloads.
-- [ ] Revocation, expiry, failed approval, duplicate submission, and post-use
+- [x] Revocation, expiry, failed approval, duplicate submission, and post-use
   review outcomes are visible as distinct states and are safe to retry.
+
+#### User Story 6 implementation evidence
+
+Status: IAM-owned emergency grant lifecycle, approval and assurance ports,
+append-only persistence, typed grant/revoke operations, authorization
+evaluation, review deadlines, and the IAM-SCR-04 synthetic workflow are
+implemented. Workflow Approval remains an external dependency represented by
+the versioned approval port; no new public review operation or integration
+event was introduced.
+
+- [x] `EmergencyAccessGrant` is present in the DDD, backend aggregate, and
+  identity database catalogs. Its lifecycle records target actor,
+  permission/scope set, reason, granting actor, approval reference/version,
+  policy version, start/expiry, audit references, revocation, and review state.
+- [x] Domain and service tests cover the four-hour cap, reason and permission
+  validation, independent version-matched approval, five-minute assurance or
+  explicit step-up, expiry/revocation denial, review completion/overdue state,
+  optimistic concurrency, durable idempotency, and safe retries.
+- [x] The identity migration and repository use immutable grant revisions,
+  normalized permission/scope rows, aggregate-version checks, and IAM-owned
+  audit linkage without cross-schema writes.
+- [x] `iamGrantEmergencyAccess` and `iamRevokeEmergencyAccess` use the typed
+  command payloads and map authorization, approval, assurance, conflict,
+  duplicate, unavailable, and validation failures to typed HTTP responses.
+- [x] Authorization decisions carry the explicit grant reference and deny
+  expired or revoked grants regardless of delayed cleanup.
+- [x] IAM-SCR-04 at `/identity-access/iam-scr-04` demonstrates grant, revoke,
+  expiry, review, denial, duplicate, conflict, and step-up states using masked
+  synthetic values.
+- [x] Evidence record: `docs/verification/DLV-IAM-005-us6-emergency-access.md`.
 
 ### 7.7 User Story 7 — Protect sensitive access evidence and explain decisions
 

@@ -49,8 +49,11 @@ type Validator struct {
 }
 
 type accessTokenClaims struct {
-	OID string `json:"oid"`
-	TID string `json:"tid"`
+	OID      string           `json:"oid"`
+	TID      string           `json:"tid"`
+	ACR      string           `json:"acr"`
+	AMR      []string         `json:"amr"`
+	AuthTime *jwt.NumericDate `json:"auth_time,omitempty"`
 	jwt.RegisteredClaims
 }
 
@@ -145,5 +148,10 @@ func (validator *Validator) ValidateAccessToken(ctx context.Context, raw string)
 	if err != nil {
 		return identity.AuthenticationSubject{}, ErrInvalidToken
 	}
+	if claims.AuthTime != nil {
+		subject.Assurance.AuthenticatedAt = claims.AuthTime.Time.UTC()
+	}
+	subject.Assurance.AssuranceLevel = strings.TrimSpace(claims.ACR)
+	subject.Assurance.Methods = strings.Join(claims.AMR, ",")
 	return subject, nil
 }

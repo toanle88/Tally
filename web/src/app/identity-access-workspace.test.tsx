@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { IdentityAccessWorkspace } from './identity-access-workspace'
@@ -39,7 +39,8 @@ describe('identity access workspace', () => {
 
     expect(screen.getByRole('heading', { name: 'Role and permission worklist' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'IAM-SCR-02 - Role detail' })).toBeInTheDocument()
-    expect(screen.getByText('finance.gl.submit.posting.request')).toBeInTheDocument()
+    const roleGrants = screen.getByRole('table', { name: 'Permission grants for Scoped finance operator' })
+    expect(within(roleGrants).getByText('finance.gl.submit.posting.request')).toBeInTheDocument()
     expect(screen.getAllByText('2026-10-01').length).toBeGreaterThan(0)
     expect(screen.getAllByText('approved').length).toBeGreaterThan(0)
   })
@@ -102,5 +103,33 @@ describe('identity access workspace', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Retire rule revision' }))
     expect(screen.getByText(/historical revisions remain available/)).toBeInTheDocument()
+  })
+
+  it('grants, revokes, expires, and reviews emergency access with safe denial fixtures', () => {
+    render(<IdentityAccessWorkspace />)
+
+    expect(screen.getByRole('heading', { name: 'IAM-SCR-04 · Emergency access' })).toBeInTheDocument()
+    expect(screen.getByText('grant-003')).toBeInTheDocument()
+    expect(screen.getAllByText('overdue').length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Revoke selected grant' }))
+    expect(screen.getByText(/grant-001 was revoked/)).toBeInTheDocument()
+    expect(screen.getAllByRole('status', { name: 'revoked' }).length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Complete review' }))
+    expect(screen.getByText(/review was completed with outcome review-code-001/)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Simulate denial' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Grant emergency access' }))
+    expect(screen.getByRole('alert')).toHaveTextContent('outside the current policy decision')
+    expect(screen.getByText(/no privileged access side effect/)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Require step-up' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Grant emergency access' }))
+    expect(screen.getByRole('alert')).toHaveTextContent('step-up challenge')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Simulate emergency version conflict' }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText('Grant lifecycle state')).toBeInTheDocument()
   })
 })
