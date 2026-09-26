@@ -68,7 +68,19 @@ func TestIdentityUserRepositoryPersistence(t *testing.T) {
 		}
 	})
 
+	seedRole := func(id uuid.UUID) {
+		_, err := fixture.pool.Exec(ctx, `
+			INSERT INTO identity.role (id, name, status, aggregate_version, created_at, updated_at)
+			VALUES ($1, $2, $3, 1, NOW(), NOW())
+			ON CONFLICT (id) DO NOTHING
+		`, id, "fixture-role-"+id.String(), "active")
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
 	roleID := uuid.New()
+	seedRole(roleID)
 	user, err := identity.NewUser(
 		uuid.New(),
 		identity.AuthenticationSubject{OID: "oid-1", TID: "tenant-1", Sub: "subject-1"},
@@ -96,7 +108,9 @@ func TestIdentityUserRepositoryPersistence(t *testing.T) {
 			t.Fatal(err)
 		}
 		before := stored
-		stored.Assignments = []identity.RoleAssignment{{RoleID: uuid.New(), Scopes: []identity.EntityAccessScope{{ScopeID: "entity-2"}}}}
+		replacementRoleID := uuid.New()
+		seedRole(replacementRoleID)
+		stored.Assignments = []identity.RoleAssignment{{RoleID: replacementRoleID, Scopes: []identity.EntityAccessScope{{ScopeID: "entity-2"}}}}
 		stored.UpdatedAt = stored.UpdatedAt.Add(time.Minute)
 		nextVersion, err := stored.Version.Advance()
 		if err != nil {
@@ -199,6 +213,17 @@ func TestIdentityUserServiceDurableIdempotencyReplaysAfterRestart(t *testing.T) 
 	applyAndVerifyMigrations(t, ctx, fixture.databaseURL, fixture.migrationSets)
 	fixture.openPool(t, ctx)
 
+	seedRole := func(id uuid.UUID) {
+		_, err := fixture.pool.Exec(ctx, `
+			INSERT INTO identity.role (id, name, status, aggregate_version, created_at, updated_at)
+			VALUES ($1, $2, $3, 1, NOW(), NOW())
+			ON CONFLICT (id) DO NOTHING
+		`, id, "fixture-role-"+id.String(), "active")
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
 	auditReference := uuid.New()
 	auditWriter := identity.PostgresAuditWriter(func(ctx context.Context, tx pgx.Tx, _ identity.AuditRecord) (uuid.UUID, error) {
 		if _, err := tx.Exec(ctx, "SELECT 1"); err != nil {
@@ -219,10 +244,12 @@ func TestIdentityUserServiceDurableIdempotencyReplaysAfterRestart(t *testing.T) 
 		Allowed: true, Permission: identity.UserManagementPermission,
 		ApprovedScopeIDs: []string{"*"}, PolicyReference: "policy-v1", DecisionReference: uuid.New(),
 	}}
+	durableRoleID := uuid.New()
+	seedRole(durableRoleID)
 	command := identity.UserCommand{
 		Action:                identity.UserActionCreate,
 		AuthenticationSubject: &identity.AuthenticationSubject{OID: "durable-oid", TID: "tenant", Sub: "durable-sub"},
-		Assignments:           []identity.RoleAssignment{{RoleID: uuid.New(), Scopes: []identity.EntityAccessScope{{ScopeID: "entity-1"}}}},
+		Assignments:           []identity.RoleAssignment{{RoleID: durableRoleID, Scopes: []identity.EntityAccessScope{{ScopeID: "entity-1"}}}},
 		IdempotencyKey:        "durable-create-1",
 	}
 

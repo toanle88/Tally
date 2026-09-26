@@ -2630,6 +2630,87 @@ type GlSubmitPostingRequestUnprocessableEntity ProblemDetails
 
 func (*GlSubmitPostingRequestUnprocessableEntity) glSubmitPostingRequestRes() {}
 
+// Ref: #/components/schemas/IamApprovalDecisionReference
+type IamApprovalDecisionReference struct {
+	ApprovalRequestId    UUID   `json:"approvalRequestId"`
+	DecisionId           UUID   `json:"decisionId"`
+	PolicyVersion        string `json:"policyVersion"`
+	DecisionVersion      int    `json:"decisionVersion"`
+	SubjectVersion       int    `json:"subjectVersion"`
+	CandidateFingerprint string `json:"candidateFingerprint"`
+	ApproverUserId       UUID   `json:"approverUserId"`
+}
+
+// GetApprovalRequestId returns the value of ApprovalRequestId.
+func (s *IamApprovalDecisionReference) GetApprovalRequestId() UUID {
+	return s.ApprovalRequestId
+}
+
+// GetDecisionId returns the value of DecisionId.
+func (s *IamApprovalDecisionReference) GetDecisionId() UUID {
+	return s.DecisionId
+}
+
+// GetPolicyVersion returns the value of PolicyVersion.
+func (s *IamApprovalDecisionReference) GetPolicyVersion() string {
+	return s.PolicyVersion
+}
+
+// GetDecisionVersion returns the value of DecisionVersion.
+func (s *IamApprovalDecisionReference) GetDecisionVersion() int {
+	return s.DecisionVersion
+}
+
+// GetSubjectVersion returns the value of SubjectVersion.
+func (s *IamApprovalDecisionReference) GetSubjectVersion() int {
+	return s.SubjectVersion
+}
+
+// GetCandidateFingerprint returns the value of CandidateFingerprint.
+func (s *IamApprovalDecisionReference) GetCandidateFingerprint() string {
+	return s.CandidateFingerprint
+}
+
+// GetApproverUserId returns the value of ApproverUserId.
+func (s *IamApprovalDecisionReference) GetApproverUserId() UUID {
+	return s.ApproverUserId
+}
+
+// SetApprovalRequestId sets the value of ApprovalRequestId.
+func (s *IamApprovalDecisionReference) SetApprovalRequestId(val UUID) {
+	s.ApprovalRequestId = val
+}
+
+// SetDecisionId sets the value of DecisionId.
+func (s *IamApprovalDecisionReference) SetDecisionId(val UUID) {
+	s.DecisionId = val
+}
+
+// SetPolicyVersion sets the value of PolicyVersion.
+func (s *IamApprovalDecisionReference) SetPolicyVersion(val string) {
+	s.PolicyVersion = val
+}
+
+// SetDecisionVersion sets the value of DecisionVersion.
+func (s *IamApprovalDecisionReference) SetDecisionVersion(val int) {
+	s.DecisionVersion = val
+}
+
+// SetSubjectVersion sets the value of SubjectVersion.
+func (s *IamApprovalDecisionReference) SetSubjectVersion(val int) {
+	s.SubjectVersion = val
+}
+
+// SetCandidateFingerprint sets the value of CandidateFingerprint.
+func (s *IamApprovalDecisionReference) SetCandidateFingerprint(val string) {
+	s.CandidateFingerprint = val
+}
+
+// SetApproverUserId sets the value of ApproverUserId.
+func (s *IamApprovalDecisionReference) SetApproverUserId(val UUID) {
+	s.ApproverUserId = val
+}
+
 // Ref: #/components/schemas/IamAuthenticationSubject
 type IamAuthenticationSubject struct {
 	Oid string `json:"oid"`
@@ -2710,6 +2791,150 @@ func (*IamManageAccessPoliciesUnprocessableEntity) iamManageAccessPoliciesRes() 
 type IamManageRolesBadRequest ProblemDetails
 
 func (*IamManageRolesBadRequest) iamManageRolesRes() {}
+
+// Ref: #/components/schemas/IamManageRolesCommandData
+type IamManageRolesCommandData struct {
+	Action   IamManageRolesCommandDataAction `json:"action"`
+	RoleId   OptUUID                         `json:"roleId"`
+	Name     string                          `json:"name"`
+	Grants   []IamPermissionGrant            `json:"grants"`
+	Approval IamApprovalDecisionReference    `json:"approval"`
+}
+
+// GetAction returns the value of Action.
+func (s *IamManageRolesCommandData) GetAction() IamManageRolesCommandDataAction {
+	return s.Action
+}
+
+// GetRoleId returns the value of RoleId.
+func (s *IamManageRolesCommandData) GetRoleId() OptUUID {
+	return s.RoleId
+}
+
+// GetName returns the value of Name.
+func (s *IamManageRolesCommandData) GetName() string {
+	return s.Name
+}
+
+// GetGrants returns the value of Grants.
+func (s *IamManageRolesCommandData) GetGrants() []IamPermissionGrant {
+	return s.Grants
+}
+
+// GetApproval returns the value of Approval.
+func (s *IamManageRolesCommandData) GetApproval() IamApprovalDecisionReference {
+	return s.Approval
+}
+
+// SetAction sets the value of Action.
+func (s *IamManageRolesCommandData) SetAction(val IamManageRolesCommandDataAction) {
+	s.Action = val
+}
+
+// SetRoleId sets the value of RoleId.
+func (s *IamManageRolesCommandData) SetRoleId(val OptUUID) {
+	s.RoleId = val
+}
+
+// SetName sets the value of Name.
+func (s *IamManageRolesCommandData) SetName(val string) {
+	s.Name = val
+}
+
+// SetGrants sets the value of Grants.
+func (s *IamManageRolesCommandData) SetGrants(val []IamPermissionGrant) {
+	s.Grants = val
+}
+
+// SetApproval sets the value of Approval.
+func (s *IamManageRolesCommandData) SetApproval(val IamApprovalDecisionReference) {
+	s.Approval = val
+}
+
+type IamManageRolesCommandDataAction string
+
+const (
+	IamManageRolesCommandDataActionCreate IamManageRolesCommandDataAction = "create"
+	IamManageRolesCommandDataActionUpdate IamManageRolesCommandDataAction = "update"
+	IamManageRolesCommandDataActionRetire IamManageRolesCommandDataAction = "retire"
+)
+
+// AllValues returns all IamManageRolesCommandDataAction values.
+func (IamManageRolesCommandDataAction) AllValues() []IamManageRolesCommandDataAction {
+	return []IamManageRolesCommandDataAction{
+		IamManageRolesCommandDataActionCreate,
+		IamManageRolesCommandDataActionUpdate,
+		IamManageRolesCommandDataActionRetire,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s IamManageRolesCommandDataAction) MarshalText() ([]byte, error) {
+	switch s {
+	case IamManageRolesCommandDataActionCreate:
+		return []byte(s), nil
+	case IamManageRolesCommandDataActionUpdate:
+		return []byte(s), nil
+	case IamManageRolesCommandDataActionRetire:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *IamManageRolesCommandDataAction) UnmarshalText(data []byte) error {
+	switch IamManageRolesCommandDataAction(data) {
+	case IamManageRolesCommandDataActionCreate:
+		*s = IamManageRolesCommandDataActionCreate
+		return nil
+	case IamManageRolesCommandDataActionUpdate:
+		*s = IamManageRolesCommandDataActionUpdate
+		return nil
+	case IamManageRolesCommandDataActionRetire:
+		*s = IamManageRolesCommandDataActionRetire
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/IamManageRolesCommandRequest
+type IamManageRolesCommandRequest struct {
+	CommandId       UUID                      `json:"commandId"`
+	ExpectedVersion OptInt                    `json:"expectedVersion"`
+	Data            IamManageRolesCommandData `json:"data"`
+}
+
+// GetCommandId returns the value of CommandId.
+func (s *IamManageRolesCommandRequest) GetCommandId() UUID {
+	return s.CommandId
+}
+
+// GetExpectedVersion returns the value of ExpectedVersion.
+func (s *IamManageRolesCommandRequest) GetExpectedVersion() OptInt {
+	return s.ExpectedVersion
+}
+
+// GetData returns the value of Data.
+func (s *IamManageRolesCommandRequest) GetData() IamManageRolesCommandData {
+	return s.Data
+}
+
+// SetCommandId sets the value of CommandId.
+func (s *IamManageRolesCommandRequest) SetCommandId(val UUID) {
+	s.CommandId = val
+}
+
+// SetExpectedVersion sets the value of ExpectedVersion.
+func (s *IamManageRolesCommandRequest) SetExpectedVersion(val OptInt) {
+	s.ExpectedVersion = val
+}
+
+// SetData sets the value of Data.
+func (s *IamManageRolesCommandRequest) SetData(val IamManageRolesCommandData) {
+	s.Data = val
+}
 
 type IamManageRolesConflict ProblemDetails
 
@@ -2914,6 +3139,54 @@ func (*IamManageUsersServiceUnavailable) iamManageUsersRes() {}
 type IamManageUsersUnprocessableEntity ProblemDetails
 
 func (*IamManageUsersUnprocessableEntity) iamManageUsersRes() {}
+
+// Ref: #/components/schemas/IamPermissionGrant
+type IamPermissionGrant struct {
+	Permission    string    `json:"permission"`
+	ScopeIds      []string  `json:"scopeIds"`
+	EffectiveFrom time.Time `json:"effectiveFrom"`
+	EffectiveTo   OptDate   `json:"effectiveTo"`
+}
+
+// GetPermission returns the value of Permission.
+func (s *IamPermissionGrant) GetPermission() string {
+	return s.Permission
+}
+
+// GetScopeIds returns the value of ScopeIds.
+func (s *IamPermissionGrant) GetScopeIds() []string {
+	return s.ScopeIds
+}
+
+// GetEffectiveFrom returns the value of EffectiveFrom.
+func (s *IamPermissionGrant) GetEffectiveFrom() time.Time {
+	return s.EffectiveFrom
+}
+
+// GetEffectiveTo returns the value of EffectiveTo.
+func (s *IamPermissionGrant) GetEffectiveTo() OptDate {
+	return s.EffectiveTo
+}
+
+// SetPermission sets the value of Permission.
+func (s *IamPermissionGrant) SetPermission(val string) {
+	s.Permission = val
+}
+
+// SetScopeIds sets the value of ScopeIds.
+func (s *IamPermissionGrant) SetScopeIds(val []string) {
+	s.ScopeIds = val
+}
+
+// SetEffectiveFrom sets the value of EffectiveFrom.
+func (s *IamPermissionGrant) SetEffectiveFrom(val time.Time) {
+	s.EffectiveFrom = val
+}
+
+// SetEffectiveTo sets the value of EffectiveTo.
+func (s *IamPermissionGrant) SetEffectiveTo(val OptDate) {
+	s.EffectiveTo = val
+}
 
 type IamRevokeEmergencyAccessBadRequest ProblemDetails
 

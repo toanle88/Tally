@@ -129,6 +129,53 @@ schemas:
         minItems: 1
         uniqueItems: true
         items: { type: string, minLength: 1 }
+  IamManageRolesCommandRequest:
+    type: object
+    additionalProperties: false
+    required: [commandId, data]
+    properties:
+      commandId: { $ref: "#/schemas/Uuid" }
+      expectedVersion: { type: integer, minimum: 1 }
+      data: { $ref: "#/schemas/IamManageRolesCommandData" }
+  IamManageRolesCommandData:
+    type: object
+    additionalProperties: false
+    required: [action, name, grants, approval]
+    properties:
+      action:
+        type: string
+        enum: [create, update, retire]
+      roleId: { $ref: "#/schemas/Uuid" }
+      name: { type: string, minLength: 1, maxLength: 120 }
+      grants:
+        type: array
+        items: { $ref: "#/schemas/IamPermissionGrant" }
+      approval: { $ref: "#/schemas/IamApprovalDecisionReference" }
+  IamPermissionGrant:
+    type: object
+    additionalProperties: false
+    required: [permission, scopeIds, effectiveFrom]
+    properties:
+      permission: { type: string, minLength: 1 }
+      scopeIds:
+        type: array
+        minItems: 1
+        uniqueItems: true
+        items: { type: string, minLength: 1 }
+      effectiveFrom: { type: string, format: date }
+      effectiveTo: { type: string, format: date }
+  IamApprovalDecisionReference:
+    type: object
+    additionalProperties: false
+    required: [approvalRequestId, decisionId, policyVersion, decisionVersion, subjectVersion, candidateFingerprint, approverUserId]
+    properties:
+      approvalRequestId: { $ref: "#/schemas/Uuid" }
+      decisionId: { $ref: "#/schemas/Uuid" }
+      policyVersion: { type: string, minLength: 1 }
+      decisionVersion: { type: integer, minimum: 1 }
+      subjectVersion: { type: integer, minimum: 1 }
+      candidateFingerprint: { type: string, minLength: 1 }
+      approverUserId: { $ref: "#/schemas/Uuid" }
   EstablishedResult:
     type: object
     required: [status, aggregateId, aggregateVersion, correlationId, links, data]

@@ -90,6 +90,37 @@ export type ProblemDetails = {
     fieldErrors?: Array<ProblemFieldError>;
 };
 
+export type IamPermissionGrant = {
+    permission: string;
+    scopeIds: Array<string>;
+    effectiveFrom: string;
+    effectiveTo?: string;
+};
+
+export type IamApprovalDecisionReference = {
+    approvalRequestId: Uuid;
+    decisionId: Uuid;
+    policyVersion: string;
+    decisionVersion: number;
+    subjectVersion: number;
+    candidateFingerprint: string;
+    approverUserId: Uuid;
+};
+
+export type IamManageRolesCommandData = {
+    action: 'create' | 'update' | 'retire';
+    roleId?: Uuid;
+    name: string;
+    grants: Array<IamPermissionGrant>;
+    approval: IamApprovalDecisionReference;
+};
+
+export type IamManageRolesCommandRequest = {
+    commandId: Uuid;
+    expectedVersion?: number;
+    data: IamManageRolesCommandData;
+};
+
 export type PageSize = number;
 
 export type PageAfter = string;
@@ -9302,11 +9333,12 @@ export type IamManageUsersResponses = {
 export type IamManageUsersResponse = IamManageUsersResponses[keyof IamManageUsersResponses];
 
 export type IamManageRolesData = {
-    body: CommandRequest;
+    body: IamManageRolesCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
+        'If-Match'?: string;
     };
     path?: never;
     query?: never;

@@ -134,6 +134,10 @@ type AuditRecord struct {
 	Permission                    string
 	PolicyReference               string
 	DecisionReference             uuid.UUID
+	ApprovalRequestID             uuid.UUID
+	ApprovalDecisionID            uuid.UUID
+	ApproverUserID                uuid.UUID
+	RevisionVersion               int64
 	BeforeFingerprint             string
 	AfterFingerprint              string
 	CorrelationID                 string

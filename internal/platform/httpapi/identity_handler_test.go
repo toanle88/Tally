@@ -56,8 +56,8 @@ func TestIdentityHandlerUsesTypedActionsAndMasksAuthenticationSubject(t *testing
 		CommandId:       generated.UUID(uuid.New()),
 		ExpectedVersion: generated.NewOptInt(1),
 		Data: generated.IamManageUsersCommandData{
-			Action: generated.IamManageUsersCommandDataActionUpdate,
-			UserId: generated.NewOptUUID(generated.UUID(userID)),
+			Action:      generated.IamManageUsersCommandDataActionUpdate,
+			UserId:      generated.NewOptUUID(generated.UUID(userID)),
 			Assignments: []generated.IamRoleAssignment{},
 		},
 	}
@@ -128,8 +128,8 @@ func TestIdentityHandlerMapsDenialAndVersionConflict(t *testing.T) {
 		CommandId:       generated.UUID(uuid.New()),
 		ExpectedVersion: generated.NewOptInt(1),
 		Data: generated.IamManageUsersCommandData{
-			Action: generated.IamManageUsersCommandDataActionUpdate,
-			UserId: generated.NewOptUUID(createdResult.AggregateId),
+			Action:      generated.IamManageUsersCommandDataActionUpdate,
+			UserId:      generated.NewOptUUID(createdResult.AggregateId),
 			Assignments: []generated.IamRoleAssignment{},
 		},
 	}
@@ -205,4 +205,126 @@ func testIdentityHTTPService(t *testing.T, allowed bool) (*identity.UserService,
 	}
 	actor := identity.ApplicationActor{UserID: uuid.New(), Subject: identity.AuthenticationSubject{OID: "admin-oid", TID: "tenant", Sub: "admin-sub"}}
 	return service, actor
+}
+
+type testRoleApproval struct{}
+
+func (testRoleApproval) ValidateRoleApproval(context.Context, identity.ApplicationActor, identity.RoleCommand, *identity.Role, string) error {
+	return nil
+}
+
+func testRoleHTTPService(t *testing.T, allowed bool) (*identity.RoleService, identity.ApplicationActor) {
+	t.Helper()
+	repository := identity.NewMemoryRoleRepository()
+	service, err := identity.NewRoleService(
+		repository,
+		identity.MemoryRoleAuthorizer{Decision: identity.AuthorizationDecision{
+			Allowed: allowed, Permission: identity.RoleManagementPermission,
+			ApprovedScopeIDs: []string{"*"}, PolicyReference: "role-policy-v1", DecisionReference: uuid.New(),
+		}},
+		testRoleApproval{},
+		identity.AllowAllRoleSegregationPort{},
+		&identity.MemoryRoleAuditRecorder{},
+		func() time.Time { return time.Date(2026, 9, 25, 8, 0, 0, 0, time.UTC) },
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	actor := identity.ApplicationActor{UserID: uuid.New(), Subject: identity.AuthenticationSubject{OID: "role-admin-oid", TID: "tenant", Sub: "role-admin-sub"}}
+	return service, actor
+}
+
+func testRoleRequest(action generated.IamManageRolesCommandDataAction, roleID generated.OptUUID, name string, scope string) *generated.IamManageRolesCommandRequest {
+	return &generated.IamManageRolesCommandRequest{
+		CommandId: generated.UUID(uuid.New()),
+		Data: generated.IamManageRolesCommandData{
+			Action: action, RoleId: roleID, Name: name,
+			Grants: []generated.IamPermissionGrant{{
+				Permission: "finance.iam.manage.roles", ScopeIds: []string{scope},
+				EffectiveFrom: time.Date(2026, 9, 25, 0, 0, 0, 0, time.UTC),
+			}},
+			Approval: generated.IamApprovalDecisionReference{
+				ApprovalRequestId: generated.UUID(uuid.New()), DecisionId: generated.UUID(uuid.New()),
+				PolicyVersion: "role-policy-v1", DecisionVersion: 1, SubjectVersion: 1,
+				CandidateFingerprint: "test-candidate", ApproverUserId: generated.UUID(uuid.New()),
+			},
+		},
+	}
+}
+
+func TestIdentityHandlerManagesTypedRolesAndMapsSafeOutcomes(t *testing.T) {
+	service, actor := testRoleHTTPService(t, true)
+	handler := IdentityHandler{RoleService: service}
+	ctx, err := identity.WithActor(context.Background(), actor)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	createRequest := testRoleRequest(generated.IamManageRolesCommandDataActionCreate, generated.OptUUID{}, "Scoped role", "entity-1")
+	created, err := handler.IamManageRoles(ctx, createRequest, generated.IamManageRolesParams{IdempotencyKey: "role-http-create"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	createdResult, ok := created.(*generated.EstablishedResult)
+	if !ok || createdResult.AggregateVersion != 1 {
+		t.Fatalf("create response = %#v, want typed version 1 result", created)
+	}
+
+	updateRequest := testRoleRequest(
+		generated.IamManageRolesCommandDataActionUpdate,
+		generated.NewOptUUID(createdResult.AggregateId),
+		"Scoped role v2", "entity-1",
+	)
+	updateRequest.ExpectedVersion = generated.NewOptInt(1)
+	updateRequest.Data.Approval.SubjectVersion = 2
+	updated, err := handler.IamManageRoles(ctx, updateRequest, generated.IamManageRolesParams{
+		IdempotencyKey: "role-http-update", IfMatch: generated.NewOptString("\"1\""),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	updatedResult, ok := updated.(*generated.EstablishedResult)
+	if !ok || updatedResult.AggregateVersion != 2 {
+		t.Fatalf("update response = %#v, want typed version 2 result", updated)
+	}
+
+	conflictRequest := testRoleRequest(
+		generated.IamManageRolesCommandDataActionUpdate,
+		generated.NewOptUUID(createdResult.AggregateId),
+		"Scoped role conflict", "entity-1",
+	)
+	conflictRequest.ExpectedVersion = generated.NewOptInt(1)
+	conflictRequest.Data.Approval.SubjectVersion = 2
+	conflict, err := handler.IamManageRoles(ctx, conflictRequest, generated.IamManageRolesParams{
+		IdempotencyKey: "role-http-conflict", IfMatch: generated.NewOptString("\"2\""),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if response, ok := conflict.(*generated.IamManageRolesConflict); !ok || response.Code != "VERSION_CONFLICT" {
+		t.Fatalf("version mismatch response = %#v, want typed conflict", conflict)
+	}
+
+	deniedService, deniedActor := testRoleHTTPService(t, false)
+	deniedContext, err := identity.WithActor(context.Background(), deniedActor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	denied, err := (IdentityHandler{RoleService: deniedService}).IamManageRoles(deniedContext, createRequest, generated.IamManageRolesParams{IdempotencyKey: "role-http-denied"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if response, ok := denied.(*generated.IamManageRolesForbidden); !ok || response.Code != "AUTHORIZATION_DENIED" {
+		t.Fatalf("denial response = %#v, want typed forbidden", denied)
+	}
+
+	invalidRequest := testRoleRequest(generated.IamManageRolesCommandDataActionCreate, generated.OptUUID{}, "Duplicate scope role", "entity-1")
+	invalidRequest.Data.Grants[0].ScopeIds = []string{"entity-1", "entity-1"}
+	invalid, err := handler.IamManageRoles(ctx, invalidRequest, generated.IamManageRolesParams{IdempotencyKey: "role-http-invalid"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if response, ok := invalid.(*generated.IamManageRolesUnprocessableEntity); !ok || response.Code != "VALIDATION_FAILED" {
+		t.Fatalf("validation response = %#v, want typed validation failure", invalid)
+	}
 }

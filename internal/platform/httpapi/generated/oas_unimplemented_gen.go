@@ -723,7 +723,7 @@ func (UnimplementedHandler) IamManageAccessPolicies(ctx context.Context, req *Co
 // IamManageRoles implements iamManageRoles operation.
 //
 // POST /identity-access/actions/manage-roles
-func (UnimplementedHandler) IamManageRoles(ctx context.Context, req *CommandRequest, params IamManageRolesParams) (r IamManageRolesRes, _ error) {
+func (UnimplementedHandler) IamManageRoles(ctx context.Context, req *IamManageRolesCommandRequest, params IamManageRolesParams) (r IamManageRolesRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

@@ -315,7 +315,7 @@ var (
 		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
 	}
 	rn161AllowedHeaders = map[string]string{
-		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",
+		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,If-Match,X-Correlation-Id",
 	}
 	rn162AllowedHeaders = map[string]string{
 		"POST": "Accept-Language,Authorization,Content-Type,Idempotency-Key,X-Correlation-Id",

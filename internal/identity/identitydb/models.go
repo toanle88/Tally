@@ -8,6 +8,41 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type IdentityRole struct {
+	ID                 pgtype.UUID
+	Name               string
+	Status             string
+	AggregateVersion   int64
+	CreatedAt          pgtype.Timestamptz
+	UpdatedAt          pgtype.Timestamptz
+	LastAuditReference pgtype.UUID
+}
+
+type IdentityRolePermissionGrant struct {
+	RoleID        pgtype.UUID
+	RoleVersion   int64
+	Permission    string
+	ScopeID       string
+	EffectiveFrom pgtype.Timestamptz
+	EffectiveTo   pgtype.Timestamptz
+}
+
+type IdentityRoleRevision struct {
+	RoleID               pgtype.UUID
+	RevisionVersion      int64
+	Name                 string
+	Status               string
+	ApprovalRequestID    pgtype.UUID
+	ApprovalDecisionID   pgtype.UUID
+	ApproverUserID       pgtype.UUID
+	PolicyVersion        string
+	DecisionVersion      int64
+	SubjectVersion       int64
+	CandidateFingerprint string
+	AuditReference       pgtype.UUID
+	CreatedAt            pgtype.Timestamptz
+}
+
 type IdentityUserAccount struct {
 	ID                       pgtype.UUID
 	AuthenticationSubjectOid string

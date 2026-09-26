@@ -15248,12 +15248,16 @@ func (s *Server) handleIamManageRolesRequest(args [0]string, argsEscaped bool, w
 					Name: "Idempotency-Key",
 					In:   "header",
 				}: params.IdempotencyKey,
+				{
+					Name: "If-Match",
+					In:   "header",
+				}: params.IfMatch,
 			},
 			Raw: r,
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *IamManageRolesCommandRequest
 			Params   = IamManageRolesParams
 			Response = IamManageRolesRes
 		)

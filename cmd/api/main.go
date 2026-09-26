@@ -142,8 +142,7 @@ func run(logger *telemetry.Logger) error {
 }
 
 type apiRuntimeDependencies struct {
-	IdentityAuditWriter      identity.PostgresAuditWriter
-	IdentityRolePolicyLookup identity.RolePolicyLookup
+	IdentityAuditWriter identity.PostgresAuditWriter
 }
 
 func newRuntimeRouter(ctx context.Context, instrumentation *telemetry.Instrumentation, logger *telemetry.Logger, getenv func(string) string, dependencies apiRuntimeDependencies) (http.Handler, func(), error) {
@@ -153,8 +152,8 @@ func newRuntimeRouter(ctx context.Context, instrumentation *telemetry.Instrument
 	if strings.TrimSpace(getenv("DATABASE_URL")) == "" {
 		return newRouter(instrumentation, logger, getenv), func() {}, nil
 	}
-	if dependencies.IdentityAuditWriter == nil || dependencies.IdentityRolePolicyLookup == nil {
-		return nil, func() {}, errors.New("identity audit and role-policy integrations are required when DATABASE_URL is configured")
+	if dependencies.IdentityAuditWriter == nil {
+		return nil, func() {}, errors.New("identity audit integration is required when DATABASE_URL is configured")
 	}
 	pool, err := database.Open(ctx, database.Config{
 		DatabaseURL:    getenv("DATABASE_URL"),
@@ -170,7 +169,12 @@ func newRuntimeRouter(ctx context.Context, instrumentation *telemetry.Instrument
 		closeRuntime()
 		return nil, func() {}, fmt.Errorf("construct identity repository: %w", err)
 	}
-	identityServer := newIdentityAPIServerWithPostgresRepository(getenv, pool, repository, dependencies.IdentityRolePolicyLookup)
+	roleRepository, err := identity.NewPostgresRoleRepositoryWithAudit(pool, postgresRoleAuditWriter(dependencies.IdentityAuditWriter))
+	if err != nil {
+		closeRuntime()
+		return nil, func() {}, fmt.Errorf("construct identity role repository: %w", err)
+	}
+	identityServer := newIdentityAPIServerWithPostgresRepository(getenv, pool, repository, roleRepository)
 	return newRouterWithIdentityServer(instrumentation, logger, getenv, repository, identityServer), closeRuntime, nil
 }
 

@@ -1,0 +1,17 @@
+commandId: 5f4d6a5a-9a3d-4b62-9b38-3a8a86adf5c0
+data:
+  action: create
+  name: Scoped finance operator
+  grants:
+    - permission: finance.gl.submit.posting.request
+      scopeIds:
+        - entity-001
+      effectiveFrom: 2026-10-01
+  approval:
+    approvalRequestId: b8a4de55-cd7d-4d9c-922f-f3af7730cf01
+    decisionId: c2cdbf68-23dc-4c04-90ab-a1e7da0c7588
+    policyVersion: wfa-policy-v1
+    decisionVersion: 1
+    subjectVersion: 1
+    candidateFingerprint: sha256:example-candidate
+    approverUserId: f0f209c7-df33-4d0e-8ec9-2e0a1a91dfd4
