@@ -432,7 +432,7 @@ func roleDurableFailureCode(err error) (string, bool) {
 	switch {
 	case errors.Is(err, ErrRoleAuthorizationDenied):
 		return "AUTHORIZATION_DENIED", true
-	case errors.Is(err, ErrAuthorizationUnavailable):
+	case errors.Is(err, ErrAuthorizationUnavailable), errors.Is(err, ErrSegregationUnavailable), errors.Is(err, ErrSegregationRuleUnavailable):
 		return "AUTHORIZATION_UNAVAILABLE", true
 	case errors.Is(err, ErrAuthorizationExpired):
 		return "AUTHORIZATION_EXPIRED", true

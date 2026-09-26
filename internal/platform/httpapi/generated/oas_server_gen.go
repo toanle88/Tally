@@ -419,7 +419,7 @@ type Handler interface {
 	// IamManageSegregationRules implements iamManageSegregationRules operation.
 	//
 	// POST /identity-access/actions/manage-segregation-rules
-	IamManageSegregationRules(ctx context.Context, req *CommandRequest, params IamManageSegregationRulesParams) (IamManageSegregationRulesRes, error)
+	IamManageSegregationRules(ctx context.Context, req *IamManageSegregationRulesCommandRequest, params IamManageSegregationRulesParams) (IamManageSegregationRulesRes, error)
 	// IamManageUsers implements iamManageUsers operation.
 	//
 	// POST /identity-access/actions/manage-users

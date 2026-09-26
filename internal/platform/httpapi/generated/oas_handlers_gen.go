@@ -15401,12 +15401,16 @@ func (s *Server) handleIamManageSegregationRulesRequest(args [0]string, argsEsca
 					Name: "Idempotency-Key",
 					In:   "header",
 				}: params.IdempotencyKey,
+				{
+					Name: "If-Match",
+					In:   "header",
+				}: params.IfMatch,
 			},
 			Raw: r,
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *IamManageSegregationRulesCommandRequest
 			Params   = IamManageSegregationRulesParams
 			Response = IamManageSegregationRulesRes
 		)

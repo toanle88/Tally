@@ -121,6 +121,27 @@ export type IamManageRolesCommandRequest = {
     data: IamManageRolesCommandData;
 };
 
+export type IamManageSegregationRulesCommandData = {
+    action: 'create' | 'update' | 'retire';
+    ruleId?: Uuid;
+    code: string;
+    name: string;
+    conflictingPermissions: Array<string>;
+    enforcementMode: 'block' | 'exception-required';
+    scopeIds?: Array<string>;
+    amountThreshold?: Money;
+    coolingOffSeconds?: number;
+    effectiveFrom: string;
+    effectiveTo?: string;
+    approval: IamApprovalDecisionReference;
+};
+
+export type IamManageSegregationRulesCommandRequest = {
+    commandId: Uuid;
+    expectedVersion?: number;
+    data: IamManageSegregationRulesCommandData;
+};
+
 export type PageSize = number;
 
 export type PageAfter = string;
@@ -9434,11 +9455,12 @@ export type IamManageAccessPoliciesResponses = {
 export type IamManageAccessPoliciesResponse = IamManageAccessPoliciesResponses[keyof IamManageAccessPoliciesResponses];
 
 export type IamManageSegregationRulesData = {
-    body: CommandRequest;
+    body: IamManageSegregationRulesCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
+        'If-Match'?: string;
     };
     path?: never;
     query?: never;

@@ -64,6 +64,40 @@ type IdentityRoleRevision struct {
 	CreatedAt            pgtype.Timestamptz
 }
 
+type IdentitySegregationRule struct {
+	ID                 pgtype.UUID
+	Code               string
+	CurrentVersion     int64
+	Status             string
+	CreatedAt          pgtype.Timestamptz
+	UpdatedAt          pgtype.Timestamptz
+	LastAuditReference pgtype.UUID
+}
+
+type IdentitySegregationRuleRevision struct {
+	RuleID                 pgtype.UUID
+	RevisionVersion        int64
+	Code                   string
+	Name                   string
+	Status                 string
+	ConflictingPermissions []string
+	EnforcementMode        string
+	ScopeIds               []string
+	AmountThreshold        pgtype.Numeric
+	CoolingOffSeconds      int64
+	EffectiveFrom          pgtype.Timestamptz
+	EffectiveTo            pgtype.Timestamptz
+	ApprovalRequestID      pgtype.UUID
+	ApprovalDecisionID     pgtype.UUID
+	ApproverUserID         pgtype.UUID
+	PolicyVersion          string
+	DecisionVersion        int64
+	SubjectVersion         int64
+	CandidateFingerprint   string
+	AuditReference         pgtype.UUID
+	CreatedAt              pgtype.Timestamptz
+}
+
 type IdentityUserAccount struct {
 	ID                       pgtype.UUID
 	AuthenticationSubjectOid string

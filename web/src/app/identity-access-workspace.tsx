@@ -26,6 +26,50 @@ type ManagedRole = {
   grants: Array<{ permission: string; scopes: string[]; effectiveFrom: string; effectiveTo?: string }>
 }
 
+type ManagedSegregationRule = {
+  id: string
+  code: string
+  name: string
+  status: "active" | "retired"
+  version: number
+  mode: "block" | "exception-required"
+  permissions: string[]
+  scopes: string[]
+  threshold?: string
+  coolingOffHours?: number
+  approvalStatus: "approved" | "pending" | "rejected"
+}
+
+type SegregationDecisionOutcome = "allowed" | "conflict" | "exception-required" | "stale" | "unavailable"
+type SegregationDecisionExplanation = {
+  outcome: SegregationDecisionOutcome
+  reason: string
+  resolution: string
+  ruleVersion: string
+  decisionReference: string
+}
+
+const initialSegregationRules: ManagedSegregationRule[] = [
+  { id: "rule-001", code: "payment-batch-preparation-approval", name: "Payment batch preparer and approver", status: "active", version: 1, mode: "exception-required", permissions: ["finance.pcm.prepare.payment.batch", "finance.pcm.apply.payment.batch.approval.decision"], scopes: ["all accounting scopes"], approvalStatus: "approved" },
+  { id: "rule-002", code: "fiscal-period-reopen-request-approval", name: "Fiscal-period reopen requester and approver", status: "active", version: 1, mode: "block", permissions: ["finance.fpm.request.reopen", "finance.fpm.apply.reopen.approval.decision"], scopes: ["all accounting scopes"], approvalStatus: "approved" },
+  { id: "rule-003", code: "vendor-bank-detail-payment-release-cooling-off", name: "Vendor bank-detail cooling-off", status: "active", version: 1, mode: "block", permissions: ["finance.omd.maintain.vendor.profiles", "finance.pcm.submit.payment.instruction"], scopes: ["all accounting scopes"], coolingOffHours: 24, approvalStatus: "approved" },
+  { id: "rule-004", code: "manual-journal-self-approval-threshold", name: "Manual-journal self approval threshold", status: "active", version: 1, mode: "block", permissions: ["finance.gl.submit.posting.request", "finance.gl.apply.journal.approval.decision"], scopes: ["all accounting scopes"], threshold: "10000.00", approvalStatus: "approved" },
+  { id: "rule-005", code: "payroll-detail-summary-ledger", name: "Payroll detail and summary ledger", status: "active", version: 1, mode: "block", permissions: ["finance.payr.maintain.employee.payroll.profiles", "finance.rpt.generate.and.publish.ledger.financial.statements"], scopes: ["all accounting scopes"], approvalStatus: "approved" },
+  { id: "rule-006", code: "independent-policy-approval", name: "Independent policy approval", status: "active", version: 1, mode: "block", permissions: ["finance.iam.manage.access.policies", "finance.wfa.decide.approval.request"], scopes: ["all accounting scopes"], approvalStatus: "approved" },
+]
+
+const segregationDecisionFixtures: Record<SegregationDecisionOutcome, SegregationDecisionExplanation> = {
+  allowed: { outcome: "allowed", reason: "No active rule matched the requested action and actor history.", resolution: "Continue with the requested action.", ruleVersion: "not applicable", decisionReference: "decision-sod-allowed-001" },
+  conflict: { outcome: "conflict", reason: "The actor history shows preparation and approval by the same actor.", resolution: "Use an independent actor or request an approved exception where the rule permits one.", ruleVersion: "payment-batch-preparation-approval v1", decisionReference: "decision-sod-conflict-002" },
+  "exception-required": { outcome: "exception-required", reason: "This conflict requires a current, independently approved exception.", resolution: "Request an exception with a reason, approver, expiry, and matching rule version.", ruleVersion: "payment-batch-preparation-approval v1", decisionReference: "decision-sod-exception-003" },
+  stale: { outcome: "stale", reason: "The rule or policy version changed after the action was prepared.", resolution: "Refresh current IAM policy state and retry.", ruleVersion: "payment-batch-preparation-approval v2", decisionReference: "decision-sod-stale-004" },
+  unavailable: { outcome: "unavailable", reason: "Required rule or actor-history state is unavailable.", resolution: "Retry after the IAM policy dependency is available; no side effect was applied.", ruleVersion: "unavailable", decisionReference: "decision-sod-unavailable-005" },
+}
+
+const segregationDecisionState: Record<SegregationDecisionOutcome, SemanticState> = {
+  allowed: "success", conflict: "error", "exception-required": "pending", stale: "pending", unavailable: "warning",
+}
+
 type AccessDecisionOutcome = 'allowed' | 'denied' | 'expired' | 'unavailable' | 'stale'
 type AccessDecisionExplanation = {
   outcome: AccessDecisionOutcome
@@ -108,9 +152,23 @@ export function IdentityAccessWorkspace() {
   const [roleNotice, setRoleNotice] = useState('Approval, segregation, scope containment, and version checks run before a role revision becomes active.')
   const [roleConflictOpen, setRoleConflictOpen] = useState(false)
   const [decisionOutcome, setDecisionOutcome] = useState<AccessDecisionOutcome>('allowed')
+  const [segregationRules, setSegregationRules] = useState(initialSegregationRules)
+  const [selectedSegregationRuleId, setSelectedSegregationRuleId] = useState(initialSegregationRules[0].id)
+  const [segregationOutcome, setSegregationOutcome] = useState<SegregationDecisionOutcome>('allowed')
+  const [segregationNotice, setSegregationNotice] = useState('Rule revisions require independent approval, expected version, idempotency, and audit linkage.')
 
   const selected = users.find((user) => user.id === selectedId) ?? users[0]
   const selectedRole = roles.find((role) => role.id === selectedRoleId) ?? roles[0]
+  const selectedSegregationRule = segregationRules.find((rule) => rule.id === selectedSegregationRuleId) ?? segregationRules[0]
+  const segregationColumns = useMemo(() => [
+    { key: "rule", header: "Rule", rowHeader: true, render: (rule: ManagedSegregationRule) => <button type="button" className="link link-primary text-left font-semibold" onClick={() => setSelectedSegregationRuleId(rule.id)}>{rule.name}</button> },
+    { key: "mode", header: "Mode", render: (rule: ManagedSegregationRule) => rule.mode },
+    { key: "status", header: "Status", render: (rule: ManagedSegregationRule) => <StatusBadge state={rule.status === "active" ? "success" : "disabled"} label={rule.status} /> },
+    { key: "version", header: "Version", render: (rule: ManagedSegregationRule) => <>v{rule.version}</> },
+    { key: "approval", header: "Approval", render: (rule: ManagedSegregationRule) => <StatusBadge state={rule.approvalStatus === "approved" ? "success" : rule.approvalStatus === "pending" ? "pending" : "error"} label={rule.approvalStatus} /> },
+    { key: "action", header: "Action", render: (rule: ManagedSegregationRule) => <Button size="sm" variant="secondary" onClick={() => setSelectedSegregationRuleId(rule.id)}>Review</Button> },
+  ] as const, [])
+
   const roleColumns = useMemo(() => [
     { key: 'role', header: 'Role', rowHeader: true, render: (role: ManagedRole) => <button type="button" className="link link-primary text-left font-semibold" onClick={() => setSelectedRoleId(role.id)}>{role.name}</button> },
     { key: 'status', header: 'Status', render: (role: ManagedRole) => <StatusBadge state={roleStatusState[role.status]} label={role.status} /> },
@@ -129,6 +187,12 @@ export function IdentityAccessWorkspace() {
     { key: 'review', header: 'Review evidence', render: (user: ManagedUser) => user.reviewEvidence },
     { key: 'action', header: 'Action', render: (user: ManagedUser) => <Button size="sm" variant="secondary" onClick={() => setSelectedId(user.id)}>Review</Button> },
   ] as const, [])
+
+  const retireSegregationRule = () => {
+    if (!selectedSegregationRule || selectedSegregationRule.status === 'retired') return
+    setSegregationRules((current) => current.map((rule) => rule.id === selectedSegregationRule.id ? { ...rule, status: 'retired', version: rule.version + 1, approvalStatus: 'approved' } : rule))
+    setSegregationNotice(selectedSegregationRule.name + ' was retired non-destructively; historical revisions remain available.')
+  }
 
   const runLifecycleAction = (nextStatus: ManagedUser['status']) => {
     if (!selected || selected.status === 'terminated') return
@@ -187,6 +251,33 @@ export function IdentityAccessWorkspace() {
 
       <Panel title="Role and permission worklist" description="IAM-SCR-02 - Versioned grant revisions, opaque scopes, effective dates, and approval state.">
         <DataTable caption="Application roles" columns={roleColumns} rows={roles} getRowKey={(role) => role.id} emptyMessage="No roles match the current review." />
+      </Panel>
+
+      <Panel title="IAM-SCR-03 · Segregation rule administration" description="IAM-owned versioned rules, independent approval evidence, and safe maintenance outcomes. Finance action screens remain in their owning modules.">
+        <DataTable caption="Segregation rules" columns={segregationColumns} rows={segregationRules} getRowKey={(rule) => rule.id} emptyMessage="No segregation rules are available." />
+        {selectedSegregationRule ? <div className="mt-5 rounded-box border border-base-300 p-4">
+          <div className="grid gap-4 lg:grid-cols-4">
+            <div><p className="text-sm text-base-content/70">Rule</p><p className="mt-1 font-semibold">{selectedSegregationRule.name}</p><p className="mt-1 text-sm text-base-content/70">{selectedSegregationRule.code}</p></div>
+            <div><p className="text-sm text-base-content/70">Enforcement</p><p className="mt-1">{selectedSegregationRule.mode}</p><p className="mt-1 text-sm text-base-content/70">Version {selectedSegregationRule.version}</p></div>
+            <div><p className="text-sm text-base-content/70">Conflict permissions</p><p className="mt-1 text-sm">{selectedSegregationRule.permissions.join(" + ")}</p></div>
+            <div><p className="text-sm text-base-content/70">Threshold / cooling-off</p><p className="mt-1 text-sm">{selectedSegregationRule.threshold ? selectedSegregationRule.threshold : selectedSegregationRule.coolingOffHours ? selectedSegregationRule.coolingOffHours + " hours" : "Not applicable"}</p></div>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Button size="sm" variant={segregationOutcome === "conflict" ? "primary" : "ghost"} onClick={() => setSegregationOutcome("conflict")}>Review conflict explanation</Button>
+            <Button size="sm" variant={segregationOutcome === "exception-required" ? "primary" : "ghost"} onClick={() => setSegregationOutcome("exception-required")}>Require approved exception</Button>
+            <Button size="sm" variant={segregationOutcome === "stale" ? "primary" : "ghost"} onClick={() => setSegregationOutcome("stale")}>Simulate stale rule</Button>
+            <Button size="sm" variant={segregationOutcome === "unavailable" ? "primary" : "ghost"} onClick={() => setSegregationOutcome("unavailable")}>Simulate unavailable policy</Button>
+            <Button size="sm" variant="danger" onClick={retireSegregationRule} disabled={selectedSegregationRule.status === "retired"}>Retire rule revision</Button>
+          </div>
+          {(() => {
+            const explanation = segregationDecisionFixtures[segregationOutcome]
+            return <div className="mt-5 rounded-box border border-base-300 p-4">
+              <div className="flex flex-wrap items-center gap-3"><StatusBadge state={segregationDecisionState[explanation.outcome]} label={explanation.outcome} announce /><span className="text-sm text-base-content/75">Decision reference: {explanation.decisionReference}</span></div>
+              <dl className="mt-4 grid gap-4 md:grid-cols-3"><div><dt className="text-sm text-base-content/70">Non-sensitive reason</dt><dd className="mt-1">{explanation.reason}</dd></div><div><dt className="text-sm text-base-content/70">Rule / policy version</dt><dd className="mt-1 font-mono">{explanation.ruleVersion}</dd></div><div><dt className="text-sm text-base-content/70">Permitted resolution</dt><dd className="mt-1">{explanation.resolution}</dd></div></dl>
+            </div>
+          })()}
+          <p role="status" aria-live="polite" className="mt-4 text-sm text-base-content/75">{segregationNotice}</p>
+        </div> : null}
       </Panel>
 
       <Panel title="IAM-SCR-05 · Access decision explanation" description="Synthetic policy evaluation evidence. This explanation never exposes policy rules, token claims, or sensitive values.">
