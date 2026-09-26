@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Epic | `EP-IAM-001` — Identity and access |
-| Status | User Story 1 locally implemented and verified; User Story 2 implementation added with verification pending; User Stories 3–7 remain planned |
+| Status | Locally complete and intentionally closed by owner decision on 2026-09-26; implementation and synthetic evidence are recorded for User Stories 1–7; production and capability qualification remain deferred |
 | Milestone | `M1` — Capability foundation |
 | Parent epic | `EP-PLAT-001` — Engineering foundation |
 | Delivery items | `DLV-GFR-002`, `DLV-GFR-003`, `DLV-GFR-015`, `DLV-FR-IAM-001`–`DLV-FR-IAM-006` |
@@ -597,9 +597,11 @@ runtime. Evidence record: `docs/verification/DLV-IAM-006-us7-sensitive-access-ev
 
 ## 15. Planning status
 
-User Story 1 is implemented on the delivery branch and its local evidence is
-recorded separately. This document does not mark the broader IAM epic, the
-identity schema, user lifecycle, roles, policies, segregation rules, emergency
-access, or any finance authorization behavior complete.
+EP-IAM-001 is locally complete and intentionally closed by owner decision on
+2026-09-26. The seven user-story slices and their local synthetic evidence
+records are retained as the implementation boundary. This closure does not
+claim completion of live Entra qualification, production security or release
+qualification, the future audit-chain bounded context, finance-action
+enforcement, or any later finance-domain capability.
 
-Implementation branch: `codex/iam-us2-user-access-assignments`
+Implementation branch: `codex/iam-us7-sensitive-access-evidence`
