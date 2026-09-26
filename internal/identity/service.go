@@ -101,12 +101,16 @@ func (command UserCommand) Validate() error {
 }
 
 type AuthorizationDecision struct {
-	Allowed           bool
-	Permission        string
-	ApprovedScopeIDs  []string
-	PolicyReference   string
-	DecisionReference uuid.UUID
-	Reason            string
+	Allowed              bool
+	Outcome              AuthorizationOutcome
+	Permission           string
+	ApprovedScopeIDs     []string
+	PolicyReference      string
+	PolicyVersion        string
+	DecisionReference    uuid.UUID
+	ReasonCode           string
+	Reason               string
+	ApplicableDimensions []string
 }
 
 type UserAuthorizer interface {
@@ -133,6 +137,7 @@ type AuditRecord struct {
 	ScopeIDs                      []string
 	Permission                    string
 	PolicyReference               string
+	PolicyVersion                 string
 	DecisionReference             uuid.UUID
 	ApprovalRequestID             uuid.UUID
 	ApprovalDecisionID            uuid.UUID
@@ -392,6 +397,7 @@ func (service *UserService) Execute(ctx context.Context, actor ApplicationActor,
 		ScopeIDs:                      assignedScopeIDs(after.Assignments),
 		Permission:                    decision.Permission,
 		PolicyReference:               decision.PolicyReference,
+		PolicyVersion:                 decision.PolicyVersion,
 		DecisionReference:             decision.DecisionReference,
 		BeforeFingerprint:             fingerprintUser(before),
 		AfterFingerprint:              fingerprintUser(after),
@@ -482,6 +488,12 @@ func durableFailureCode(err error) (string, bool) {
 	switch {
 	case errors.Is(err, ErrAuthorizationDenied):
 		return "AUTHORIZATION_DENIED", true
+	case errors.Is(err, ErrAuthorizationUnavailable):
+		return "AUTHORIZATION_UNAVAILABLE", true
+	case errors.Is(err, ErrAuthorizationExpired):
+		return "AUTHORIZATION_EXPIRED", true
+	case errors.Is(err, ErrAuthorizationStale):
+		return "AUTHORIZATION_STALE", true
 	case errors.Is(err, ErrVersionConflict):
 		return "VERSION_CONFLICT", true
 	case errors.Is(err, ErrUserNotFound):
@@ -503,6 +515,12 @@ func durableFailureError(body []byte) error {
 	switch payload.Code {
 	case "AUTHORIZATION_DENIED":
 		return ErrAuthorizationDenied
+	case "AUTHORIZATION_UNAVAILABLE":
+		return ErrAuthorizationUnavailable
+	case "AUTHORIZATION_EXPIRED":
+		return ErrAuthorizationExpired
+	case "AUTHORIZATION_STALE":
+		return ErrAuthorizationStale
 	case "VERSION_CONFLICT":
 		return ErrVersionConflict
 	case "USER_NOT_FOUND":
@@ -517,6 +535,14 @@ func durableFailureError(body []byte) error {
 }
 
 func authorizeDecision(command UserCommand, decision AuthorizationDecision, current *User) error {
+	switch decision.Outcome {
+	case AuthorizationExpired:
+		return fmt.Errorf("%w: %s", ErrAuthorizationExpired, decision.ReasonCode)
+	case AuthorizationUnavailable:
+		return ErrAuthorizationUnavailable
+	case AuthorizationStale:
+		return ErrAuthorizationStale
+	}
 	if !decision.Allowed || decision.Permission != UserManagementPermission {
 		return fmt.Errorf("%w: %s", ErrAuthorizationDenied, decision.Reason)
 	}
@@ -725,6 +751,7 @@ func (recorder *MemoryAuditRecorder) RecordUserMutation(_ context.Context, recor
 
 func cloneAuthorizationDecision(decision AuthorizationDecision) AuthorizationDecision {
 	decision.ApprovedScopeIDs = append([]string(nil), decision.ApprovedScopeIDs...)
+	decision.ApplicableDimensions = append([]string(nil), decision.ApplicableDimensions...)
 	return decision
 }
 

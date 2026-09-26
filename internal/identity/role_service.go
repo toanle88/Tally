@@ -112,6 +112,7 @@ type RoleAuditRecord struct {
 	ScopeIDs               []string
 	Permission             string
 	PolicyReference        string
+	PolicyVersion          string
 	DecisionReference      uuid.UUID
 	ApprovalRequestID      uuid.UUID
 	ApprovalDecisionID     uuid.UUID
@@ -343,7 +344,7 @@ func (service *RoleService) Execute(ctx context.Context, actor ApplicationActor,
 		RoleID: after.ID, ActorUserID: actor.UserID,
 		ActorAuthenticationRef: fingerprintSubject(actor.Subject), Action: command.Action,
 		ScopeIDs: roleScopeIDs(after), Permission: decision.Permission,
-		PolicyReference: decision.PolicyReference, DecisionReference: decision.DecisionReference,
+		PolicyReference: decision.PolicyReference, PolicyVersion: decision.PolicyVersion, DecisionReference: decision.DecisionReference,
 		ApprovalRequestID:  command.Approval.ApprovalRequestID,
 		ApprovalDecisionID: command.Approval.DecisionID, ApproverUserID: command.Approval.ApproverUserID,
 		RoleVersion:       after.Version.Value(),
@@ -431,6 +432,12 @@ func roleDurableFailureCode(err error) (string, bool) {
 	switch {
 	case errors.Is(err, ErrRoleAuthorizationDenied):
 		return "AUTHORIZATION_DENIED", true
+	case errors.Is(err, ErrAuthorizationUnavailable):
+		return "AUTHORIZATION_UNAVAILABLE", true
+	case errors.Is(err, ErrAuthorizationExpired):
+		return "AUTHORIZATION_EXPIRED", true
+	case errors.Is(err, ErrAuthorizationStale):
+		return "AUTHORIZATION_STALE", true
 	case errors.Is(err, ErrVersionConflict):
 		return "VERSION_CONFLICT", true
 	case errors.Is(err, ErrRoleNotFound):
@@ -452,6 +459,12 @@ func roleDurableFailureError(body []byte) error {
 	switch payload.Code {
 	case "AUTHORIZATION_DENIED":
 		return ErrRoleAuthorizationDenied
+	case "AUTHORIZATION_UNAVAILABLE":
+		return ErrAuthorizationUnavailable
+	case "AUTHORIZATION_EXPIRED":
+		return ErrAuthorizationExpired
+	case "AUTHORIZATION_STALE":
+		return ErrAuthorizationStale
 	case "VERSION_CONFLICT":
 		return ErrVersionConflict
 	case "ROLE_NOT_FOUND":
@@ -472,6 +485,14 @@ func decodeRoleCommandResult(body []byte) (RoleCommandResult, error) {
 }
 
 func authorizeRoleDecision(command RoleCommand, decision AuthorizationDecision, current *Role) error {
+	switch decision.Outcome {
+	case AuthorizationExpired:
+		return fmt.Errorf("%w: %s", ErrAuthorizationExpired, decision.ReasonCode)
+	case AuthorizationUnavailable:
+		return ErrAuthorizationUnavailable
+	case AuthorizationStale:
+		return ErrAuthorizationStale
+	}
 	if !decision.Allowed || decision.Permission != RoleManagementPermission || decision.DecisionReference == uuid.Nil {
 		return fmt.Errorf("%w: %s", ErrRoleAuthorizationDenied, decision.Reason)
 	}

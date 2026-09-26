@@ -203,6 +203,12 @@ func establishedIdentityResult(result identity.UserCommandResult, correlationID 
 
 func mapIdentityError(err error, correlationID uuid.UUID) (generated.IamManageUsersRes, error) {
 	switch {
+	case errors.Is(err, identity.ErrAuthorizationStale):
+		return iamProblem(http.StatusConflict, "POLICY_STALE", "The authorization policy changed. Refresh and retry.", correlationID, nil)
+	case errors.Is(err, identity.ErrAuthorizationExpired):
+		return iamProblem(http.StatusForbidden, "POLICY_EXPIRED", "The authorization policy is no longer effective.", correlationID, nil)
+	case errors.Is(err, identity.ErrAuthorizationUnavailable):
+		return iamProblem(http.StatusServiceUnavailable, "POLICY_UNAVAILABLE", "The authorization policy could not be evaluated. Retry later.", correlationID, nil)
 	case errors.Is(err, identity.ErrAuthorizationDenied):
 		return iamProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The requested assignment set is outside the administering actor scope.", correlationID, nil)
 	case errors.Is(err, identity.ErrVersionConflict):
@@ -299,6 +305,12 @@ func establishedRoleResult(result identity.RoleCommandResult, correlationID uuid
 
 func mapRoleError(err error, correlationID uuid.UUID) (generated.IamManageRolesRes, error) {
 	switch {
+	case errors.Is(err, identity.ErrAuthorizationStale):
+		return iamRoleProblem(http.StatusConflict, "POLICY_STALE", "The authorization policy changed. Refresh and retry.", correlationID, nil)
+	case errors.Is(err, identity.ErrAuthorizationExpired):
+		return iamRoleProblem(http.StatusForbidden, "POLICY_EXPIRED", "The authorization policy is no longer effective.", correlationID, nil)
+	case errors.Is(err, identity.ErrAuthorizationUnavailable):
+		return iamRoleProblem(http.StatusServiceUnavailable, "POLICY_UNAVAILABLE", "The authorization policy could not be evaluated. Retry later.", correlationID, nil)
 	case errors.Is(err, identity.ErrRoleAuthorizationDenied):
 		return iamRoleProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The requested role change is outside the administering actor scope.", correlationID, nil)
 	case errors.Is(err, identity.ErrVersionConflict):

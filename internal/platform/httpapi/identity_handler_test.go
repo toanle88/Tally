@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -142,6 +143,57 @@ func TestIdentityHandlerMapsDenialAndVersionConflict(t *testing.T) {
 	versionConflict, ok := conflict.(*generated.IamManageUsersConflict)
 	if !ok || versionConflict.Code != "VERSION_CONFLICT" {
 		t.Fatalf("version conflict response = %#v, want typed VERSION_CONFLICT", conflict)
+	}
+}
+
+func TestIdentityHandlerMapsScopedPolicyOutcomesWithoutMutation(t *testing.T) {
+	for _, testCase := range []struct {
+		name    string
+		outcome identity.AuthorizationOutcome
+		status  int
+		code    string
+	}{
+		{name: "expired", outcome: identity.AuthorizationExpired, status: http.StatusForbidden, code: "POLICY_EXPIRED"},
+		{name: "stale", outcome: identity.AuthorizationStale, status: http.StatusConflict, code: "POLICY_STALE"},
+		{name: "unavailable", outcome: identity.AuthorizationUnavailable, status: http.StatusServiceUnavailable, code: "POLICY_UNAVAILABLE"},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			repository := identity.NewMemoryUserRepository()
+			audit := &identity.MemoryAuditRecorder{}
+			service, err := identity.NewUserService(repository, identity.MemoryUserAuthorizer{Decision: identity.AuthorizationDecision{
+				Permission: identity.UserManagementPermission, Outcome: testCase.outcome, DecisionReference: uuid.New(), ReasonCode: string(testCase.outcome),
+			}}, audit, time.Now)
+			if err != nil {
+				t.Fatal(err)
+			}
+			actor := identity.ApplicationActor{UserID: uuid.New(), Subject: identity.AuthenticationSubject{OID: "oid", TID: "tid", Sub: "sub"}}
+			ctx, err := identity.WithActor(context.Background(), actor)
+			if err != nil {
+				t.Fatal(err)
+			}
+			request := &generated.IamManageUsersCommandRequest{CommandId: generated.UUID(uuid.New()), Data: generated.IamManageUsersCommandData{
+				Action:                generated.IamManageUsersCommandDataActionCreate,
+				AuthenticationSubject: generated.NewOptIamAuthenticationSubject(generated.IamAuthenticationSubject{Oid: "oid", Tid: "tid", Sub: "subject"}),
+			}}
+			response, err := (IdentityHandler{Service: service}).IamManageUsers(ctx, request, generated.IamManageUsersParams{IdempotencyKey: "outcome-" + testCase.name})
+			if err != nil {
+				t.Fatal(err)
+			}
+			body, err := json.Marshal(response)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Contains(body, []byte(testCase.code)) || !bytes.Contains(body, []byte(fmt.Sprintf("\"status\":%d", testCase.status))) {
+				t.Fatalf("response body = %s, want status %d and safe code %s", body, testCase.status, testCase.code)
+			}
+			users, err := repository.List(context.Background())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(users) != 0 || len(audit.Records) != 0 {
+				t.Fatalf("denied outcome mutated state: users=%d audit=%d", len(users), len(audit.Records))
+			}
+		})
 	}
 }
 

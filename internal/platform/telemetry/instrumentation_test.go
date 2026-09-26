@@ -68,6 +68,39 @@ func TestInstrumentationUsesAllowListedSpansAndMirrorsTraceContext(t *testing.T)
 	}
 }
 
+func TestAuthorizationDecisionTelemetryUsesOnlyBoundedOutcomeClasses(t *testing.T) {
+	recorder := tracetest.NewSpanRecorder()
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorder))
+	instrumentation, err := NewInstrumentation(InstrumentationConfig{Service: "tally-api", TracerProvider: tracerProvider})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = instrumentation.Shutdown(context.Background()) }()
+
+	for _, outcome := range []string{"allowed", "denied", "expired", "stale", "unavailable", "unexpected-sensitive-policy-payload"} {
+		instrumentation.RecordAuthorizationDecision(context.Background(), outcome)
+	}
+	spans := recorder.Ended()
+	if len(spans) != 6 {
+		t.Fatalf("authorization spans = %d, want 6", len(spans))
+	}
+	wanted := []string{"allowed", "denied", "expired", "stale", "unavailable", "internal_failure"}
+	for index, span := range spans {
+		result := ""
+		for _, attribute := range span.Attributes() {
+			if attribute.Key == "result" {
+				result = attribute.Value.AsString()
+			}
+			if strings.Contains(attribute.Value.AsString(), "sensitive-policy-payload") {
+				t.Fatal("raw outcome was recorded")
+			}
+		}
+		if result != wanted[index] {
+			t.Fatalf("span %d result = %q, want %q", index, result, wanted[index])
+		}
+	}
+}
+
 func TestInstrumentationPublishesOnlyBoundedPlatformMetrics(t *testing.T) {
 	reader := metric.NewManualReader()
 	meterProvider := metric.NewMeterProvider(metric.WithReader(reader))

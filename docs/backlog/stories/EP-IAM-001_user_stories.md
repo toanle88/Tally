@@ -260,6 +260,12 @@ Acceptance criteria:
 
 ### 7.4 User Story 4 — Evaluate scoped access policies
 
+Status: implementation complete for authorization evaluation and durable policy
+reads. Full policy administration UI/API remains a follow-up and is not marked
+complete by this story.
+
+Evidence: `docs/verification/DLV-IAM-003-us4-scoped-access-policies.md`.
+
 **As an application module, I want one authoritative authorization decision
 contract, so that every protected action evaluates the dimensions that apply to
 that operation.**
@@ -269,18 +275,18 @@ Traceability: `DLV-FR-IAM-003`, `DLV-GFR-002`, `NFR-SEC-004`,
 
 Acceptance criteria:
 
-- [ ] Policy evaluation supports applicable legal-entity, business-unit or
+- [x] Policy evaluation supports applicable legal-entity, business-unit or
   segment, account or account-class, transaction-type, amount, currency,
   fiscal-period, sensitivity, and action dimensions.
-- [ ] The decision is default-deny, identifies the permission/policy version,
+- [x] The decision is default-deny, identifies the permission/policy version,
   and returns an auditable decision reference without exposing restricted policy
   implementation details.
-- [ ] The API rejects unauthorized actions even when the SPA displays the
+- [x] The API rejects unauthorized actions even when the SPA displays the
   action; authorization is re-evaluated at the authoritative mutation boundary.
-- [ ] Field-level sensitive-data restrictions are enforced independently from
+- [x] Field-level sensitive-data restrictions are enforced independently from
   record-level access, including filters, counts, comparisons, errors, and
   exports where those surfaces exist.
-- [ ] Allowed, denied, expired, unavailable-policy, and stale-policy results
+- [x] Allowed, denied, expired, unavailable-policy, and stale-policy results
   are distinct and have safe next-action guidance.
 
 ### 7.5 User Story 5 — Enforce segregation-of-duties rules

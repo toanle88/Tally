@@ -11,7 +11,7 @@ describe('identity access workspace', () => {
     expect(screen.getByRole('heading', { name: 'User access worklist' })).toBeInTheDocument()
     expect(screen.getByText('Authentication subject reference')).toBeInTheDocument()
     expect(screen.queryByText('subject-ref-01')).not.toBeInTheDocument()
-    expect(screen.getByText('••••••••')).toBeInTheDocument()
+    expect(screen.getAllByText('••••••••').length).toBeGreaterThan(0)
   })
 
   it('supports lifecycle actions and safe validation states', () => {
@@ -64,6 +64,26 @@ describe('identity access workspace', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText('Permission grants')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Refresh authoritative state' })).toBeInTheDocument()
+  })
+
+  it('explains distinct scoped access outcomes and keeps field access independent', () => {
+    render(<IdentityAccessWorkspace />)
+
+    expect(screen.getByRole('heading', { name: 'IAM-SCR-05 · Access decision explanation' })).toBeInTheDocument()
+    expect(screen.getByText('policy-2026.09-v4')).toBeInTheDocument()
+    expect(screen.getByText('decision-allowed-001')).toBeInTheDocument()
+    expect(screen.getByText('Legal entity + segment + action')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'stale' }))
+    expect(screen.getByRole('status', { name: 'stale' })).toBeInTheDocument()
+    expect(screen.getByText('Refresh policy state and retry with the current version.')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'expired' }))
+    expect(screen.getByRole('status', { name: 'expired' })).toBeInTheDocument()
+    expect(screen.getByText('Request a current policy revision before retrying.')).toBeInTheDocument()
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Reveal unavailable' })[0])
+    expect(screen.getByText('Field reveal and export remain unavailable; record access does not grant field access.')).toBeInTheDocument()
   })
 
 })
