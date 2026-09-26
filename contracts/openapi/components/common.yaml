@@ -151,6 +151,42 @@ schemas:
         type: array
         items: { $ref: "#/schemas/IamPermissionGrant" }
       approval: { $ref: "#/schemas/IamApprovalDecisionReference" }
+  IamManageSegregationRulesCommandRequest:
+    type: object
+    additionalProperties: false
+    required: [commandId, data]
+    properties:
+      commandId: { $ref: "#/schemas/Uuid" }
+      expectedVersion: { type: integer, minimum: 1 }
+      data: { $ref: "#/schemas/IamManageSegregationRulesCommandData" }
+  IamManageSegregationRulesCommandData:
+    type: object
+    additionalProperties: false
+    required: [action, code, name, conflictingPermissions, enforcementMode, effectiveFrom, approval]
+    properties:
+      action:
+        type: string
+        enum: [create, update, retire]
+      ruleId: { $ref: "#/schemas/Uuid" }
+      code: { type: string, minLength: 1, maxLength: 160 }
+      name: { type: string, minLength: 1, maxLength: 160 }
+      conflictingPermissions:
+        type: array
+        minItems: 2
+        uniqueItems: true
+        items: { type: string, minLength: 1 }
+      enforcementMode:
+        type: string
+        enum: [block, exception-required]
+      scopeIds:
+        type: array
+        uniqueItems: true
+        items: { type: string, minLength: 1 }
+      amountThreshold: { $ref: "#/schemas/Money" }
+      coolingOffSeconds: { type: integer, minimum: 0 }
+      effectiveFrom: { type: string, format: date-time }
+      effectiveTo: { type: string, format: date-time }
+      approval: { $ref: "#/schemas/IamApprovalDecisionReference" }
   IamPermissionGrant:
     type: object
     additionalProperties: false

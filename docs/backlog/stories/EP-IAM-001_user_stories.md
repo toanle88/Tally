@@ -300,19 +300,40 @@ Traceability: `DLV-FR-IAM-004`, `DLV-GFR-003`, DDD §8.2,
 
 Acceptance criteria:
 
-- [ ] Authorized administrators can maintain versioned segregation rules with
+- [x] Authorized administrators can maintain versioned segregation rules with
   conflicting permission sets and enforcement modes.
-- [ ] The minimum rules are enforced: payment-batch preparation/approval,
+- [x] The minimum rules are enforced: payment-batch preparation/approval,
   fiscal-period reopen request/approval, vendor-bank-detail change/payment
   release during cooling-off, self-approval of high-threshold manual journals,
   payroll-detail versus summary-ledger access, and independent policy approval.
-- [ ] A prohibited combination is rejected before the protected business action
+- [x] A prohibited combination is rejected before the protected business action
   is established and returns a non-sensitive conflict reason and permitted
   resolution path.
-- [ ] The rule is evaluated against current roles, actor history, scope, and
+- [x] The rule is evaluated against current roles, actor history, scope, and
   policy version; stale or changed policy cannot silently authorize the action.
-- [ ] Synthetic negative tests cover each minimum rule, a permitted control
+- [x] Synthetic negative tests cover each minimum rule, a permitted control
   case, an expired exception, and an attempted client-side bypass.
+
+#### User Story 5 implementation evidence
+
+Status: IAM-owned segregation-rule engine, decision port, persistence, API
+administration, and IAM explanation surfaces are implemented. Payment, fiscal-period,
+vendor, payroll, and GL action wiring remains deferred to the future bounded contexts
+that own those actions; synthetic contract tests verify the published IAM boundary.
+
+- [x] Immutable versioned `SegregationRule` revisions, current-version selection,
+  optimistic concurrency, audit linkage through the audit port, and durable
+  idempotency replay are implemented under `internal/identity` and the `identity` schema.
+- [x] The typed `manage-segregation-rules` route enforces actor authorization,
+  independent approval, expected-version/If-Match checks, idempotency, and safe
+  stale, unavailable, denied, approval, and conflict responses.
+- [x] The rule-backed role segregation adapter and IAM-owned `SegregationDecisionPort`
+  fail closed for stale policy, unavailable state, and missing action history.
+- [x] IAM-SCR-03 rule administration and IAM-SCR-05 decision explanation states
+  expose only non-sensitive reasons and permitted resolution guidance.
+- [x] Evidence record: `docs/verification/DLV-IAM-004-us5-segregation-of-duties.md`.
+- [ ] Real finance-action enforcement remains deferred until the owning payment,
+  fiscal-period, vendor, payroll, GL, and workflow bounded contexts are delivered.
 
 ### 7.6 User Story 6 — Grant, revoke, and review emergency access
 

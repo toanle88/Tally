@@ -19,8 +19,9 @@ import (
 
 type IdentityHandler struct {
 	generated.UnimplementedHandler
-	Service     *identity.UserService
-	RoleService *identity.RoleService
+	Service                *identity.UserService
+	RoleService            *identity.RoleService
+	SegregationRuleService *identity.SegregationRuleService
 }
 
 func (handler IdentityHandler) IamManageUsers(ctx context.Context, request *generated.IamManageUsersCommandRequest, params generated.IamManageUsersParams) (generated.IamManageUsersRes, error) {

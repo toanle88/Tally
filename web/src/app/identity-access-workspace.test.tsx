@@ -86,4 +86,21 @@ describe('identity access workspace', () => {
     expect(screen.getByText('Field reveal and export remain unavailable; record access does not grant field access.')).toBeInTheDocument()
   })
 
+  it('administers versioned segregation rules and explains safe outcomes', () => {
+    render(<IdentityAccessWorkspace />)
+
+    expect(screen.getByRole('heading', { name: 'IAM-SCR-03 · Segregation rule administration' })).toBeInTheDocument()
+    expect(screen.getAllByText('Payment batch preparer and approver').length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Review conflict explanation' }))
+    expect(screen.getByRole('status', { name: 'conflict' })).toBeInTheDocument()
+    expect(screen.getByText('Use an independent actor or request an approved exception where the rule permits one.')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Simulate stale rule' }))
+    expect(screen.getByRole('status', { name: 'stale' })).toBeInTheDocument()
+    expect(screen.getByText('Refresh current IAM policy state and retry.')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retire rule revision' }))
+    expect(screen.getByText(/historical revisions remain available/)).toBeInTheDocument()
+  })
 })

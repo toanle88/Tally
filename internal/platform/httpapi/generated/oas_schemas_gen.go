@@ -2956,6 +2956,268 @@ type IamManageSegregationRulesBadRequest ProblemDetails
 
 func (*IamManageSegregationRulesBadRequest) iamManageSegregationRulesRes() {}
 
+// Ref: #/components/schemas/IamManageSegregationRulesCommandData
+type IamManageSegregationRulesCommandData struct {
+	Action                 IamManageSegregationRulesCommandDataAction          `json:"action"`
+	RuleId                 OptUUID                                             `json:"ruleId"`
+	Code                   string                                              `json:"code"`
+	Name                   string                                              `json:"name"`
+	ConflictingPermissions []string                                            `json:"conflictingPermissions"`
+	EnforcementMode        IamManageSegregationRulesCommandDataEnforcementMode `json:"enforcementMode"`
+	ScopeIds               []string                                            `json:"scopeIds"`
+	AmountThreshold        OptMoney                                            `json:"amountThreshold"`
+	CoolingOffSeconds      OptInt                                              `json:"coolingOffSeconds"`
+	EffectiveFrom          time.Time                                           `json:"effectiveFrom"`
+	EffectiveTo            OptDateTime                                         `json:"effectiveTo"`
+	Approval               IamApprovalDecisionReference                        `json:"approval"`
+}
+
+// GetAction returns the value of Action.
+func (s *IamManageSegregationRulesCommandData) GetAction() IamManageSegregationRulesCommandDataAction {
+	return s.Action
+}
+
+// GetRuleId returns the value of RuleId.
+func (s *IamManageSegregationRulesCommandData) GetRuleId() OptUUID {
+	return s.RuleId
+}
+
+// GetCode returns the value of Code.
+func (s *IamManageSegregationRulesCommandData) GetCode() string {
+	return s.Code
+}
+
+// GetName returns the value of Name.
+func (s *IamManageSegregationRulesCommandData) GetName() string {
+	return s.Name
+}
+
+// GetConflictingPermissions returns the value of ConflictingPermissions.
+func (s *IamManageSegregationRulesCommandData) GetConflictingPermissions() []string {
+	return s.ConflictingPermissions
+}
+
+// GetEnforcementMode returns the value of EnforcementMode.
+func (s *IamManageSegregationRulesCommandData) GetEnforcementMode() IamManageSegregationRulesCommandDataEnforcementMode {
+	return s.EnforcementMode
+}
+
+// GetScopeIds returns the value of ScopeIds.
+func (s *IamManageSegregationRulesCommandData) GetScopeIds() []string {
+	return s.ScopeIds
+}
+
+// GetAmountThreshold returns the value of AmountThreshold.
+func (s *IamManageSegregationRulesCommandData) GetAmountThreshold() OptMoney {
+	return s.AmountThreshold
+}
+
+// GetCoolingOffSeconds returns the value of CoolingOffSeconds.
+func (s *IamManageSegregationRulesCommandData) GetCoolingOffSeconds() OptInt {
+	return s.CoolingOffSeconds
+}
+
+// GetEffectiveFrom returns the value of EffectiveFrom.
+func (s *IamManageSegregationRulesCommandData) GetEffectiveFrom() time.Time {
+	return s.EffectiveFrom
+}
+
+// GetEffectiveTo returns the value of EffectiveTo.
+func (s *IamManageSegregationRulesCommandData) GetEffectiveTo() OptDateTime {
+	return s.EffectiveTo
+}
+
+// GetApproval returns the value of Approval.
+func (s *IamManageSegregationRulesCommandData) GetApproval() IamApprovalDecisionReference {
+	return s.Approval
+}
+
+// SetAction sets the value of Action.
+func (s *IamManageSegregationRulesCommandData) SetAction(val IamManageSegregationRulesCommandDataAction) {
+	s.Action = val
+}
+
+// SetRuleId sets the value of RuleId.
+func (s *IamManageSegregationRulesCommandData) SetRuleId(val OptUUID) {
+	s.RuleId = val
+}
+
+// SetCode sets the value of Code.
+func (s *IamManageSegregationRulesCommandData) SetCode(val string) {
+	s.Code = val
+}
+
+// SetName sets the value of Name.
+func (s *IamManageSegregationRulesCommandData) SetName(val string) {
+	s.Name = val
+}
+
+// SetConflictingPermissions sets the value of ConflictingPermissions.
+func (s *IamManageSegregationRulesCommandData) SetConflictingPermissions(val []string) {
+	s.ConflictingPermissions = val
+}
+
+// SetEnforcementMode sets the value of EnforcementMode.
+func (s *IamManageSegregationRulesCommandData) SetEnforcementMode(val IamManageSegregationRulesCommandDataEnforcementMode) {
+	s.EnforcementMode = val
+}
+
+// SetScopeIds sets the value of ScopeIds.
+func (s *IamManageSegregationRulesCommandData) SetScopeIds(val []string) {
+	s.ScopeIds = val
+}
+
+// SetAmountThreshold sets the value of AmountThreshold.
+func (s *IamManageSegregationRulesCommandData) SetAmountThreshold(val OptMoney) {
+	s.AmountThreshold = val
+}
+
+// SetCoolingOffSeconds sets the value of CoolingOffSeconds.
+func (s *IamManageSegregationRulesCommandData) SetCoolingOffSeconds(val OptInt) {
+	s.CoolingOffSeconds = val
+}
+
+// SetEffectiveFrom sets the value of EffectiveFrom.
+func (s *IamManageSegregationRulesCommandData) SetEffectiveFrom(val time.Time) {
+	s.EffectiveFrom = val
+}
+
+// SetEffectiveTo sets the value of EffectiveTo.
+func (s *IamManageSegregationRulesCommandData) SetEffectiveTo(val OptDateTime) {
+	s.EffectiveTo = val
+}
+
+// SetApproval sets the value of Approval.
+func (s *IamManageSegregationRulesCommandData) SetApproval(val IamApprovalDecisionReference) {
+	s.Approval = val
+}
+
+type IamManageSegregationRulesCommandDataAction string
+
+const (
+	IamManageSegregationRulesCommandDataActionCreate IamManageSegregationRulesCommandDataAction = "create"
+	IamManageSegregationRulesCommandDataActionUpdate IamManageSegregationRulesCommandDataAction = "update"
+	IamManageSegregationRulesCommandDataActionRetire IamManageSegregationRulesCommandDataAction = "retire"
+)
+
+// AllValues returns all IamManageSegregationRulesCommandDataAction values.
+func (IamManageSegregationRulesCommandDataAction) AllValues() []IamManageSegregationRulesCommandDataAction {
+	return []IamManageSegregationRulesCommandDataAction{
+		IamManageSegregationRulesCommandDataActionCreate,
+		IamManageSegregationRulesCommandDataActionUpdate,
+		IamManageSegregationRulesCommandDataActionRetire,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s IamManageSegregationRulesCommandDataAction) MarshalText() ([]byte, error) {
+	switch s {
+	case IamManageSegregationRulesCommandDataActionCreate:
+		return []byte(s), nil
+	case IamManageSegregationRulesCommandDataActionUpdate:
+		return []byte(s), nil
+	case IamManageSegregationRulesCommandDataActionRetire:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *IamManageSegregationRulesCommandDataAction) UnmarshalText(data []byte) error {
+	switch IamManageSegregationRulesCommandDataAction(data) {
+	case IamManageSegregationRulesCommandDataActionCreate:
+		*s = IamManageSegregationRulesCommandDataActionCreate
+		return nil
+	case IamManageSegregationRulesCommandDataActionUpdate:
+		*s = IamManageSegregationRulesCommandDataActionUpdate
+		return nil
+	case IamManageSegregationRulesCommandDataActionRetire:
+		*s = IamManageSegregationRulesCommandDataActionRetire
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type IamManageSegregationRulesCommandDataEnforcementMode string
+
+const (
+	IamManageSegregationRulesCommandDataEnforcementModeBlock             IamManageSegregationRulesCommandDataEnforcementMode = "block"
+	IamManageSegregationRulesCommandDataEnforcementModeExceptionRequired IamManageSegregationRulesCommandDataEnforcementMode = "exception-required"
+)
+
+// AllValues returns all IamManageSegregationRulesCommandDataEnforcementMode values.
+func (IamManageSegregationRulesCommandDataEnforcementMode) AllValues() []IamManageSegregationRulesCommandDataEnforcementMode {
+	return []IamManageSegregationRulesCommandDataEnforcementMode{
+		IamManageSegregationRulesCommandDataEnforcementModeBlock,
+		IamManageSegregationRulesCommandDataEnforcementModeExceptionRequired,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s IamManageSegregationRulesCommandDataEnforcementMode) MarshalText() ([]byte, error) {
+	switch s {
+	case IamManageSegregationRulesCommandDataEnforcementModeBlock:
+		return []byte(s), nil
+	case IamManageSegregationRulesCommandDataEnforcementModeExceptionRequired:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *IamManageSegregationRulesCommandDataEnforcementMode) UnmarshalText(data []byte) error {
+	switch IamManageSegregationRulesCommandDataEnforcementMode(data) {
+	case IamManageSegregationRulesCommandDataEnforcementModeBlock:
+		*s = IamManageSegregationRulesCommandDataEnforcementModeBlock
+		return nil
+	case IamManageSegregationRulesCommandDataEnforcementModeExceptionRequired:
+		*s = IamManageSegregationRulesCommandDataEnforcementModeExceptionRequired
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/IamManageSegregationRulesCommandRequest
+type IamManageSegregationRulesCommandRequest struct {
+	CommandId       UUID                                 `json:"commandId"`
+	ExpectedVersion OptInt                               `json:"expectedVersion"`
+	Data            IamManageSegregationRulesCommandData `json:"data"`
+}
+
+// GetCommandId returns the value of CommandId.
+func (s *IamManageSegregationRulesCommandRequest) GetCommandId() UUID {
+	return s.CommandId
+}
+
+// GetExpectedVersion returns the value of ExpectedVersion.
+func (s *IamManageSegregationRulesCommandRequest) GetExpectedVersion() OptInt {
+	return s.ExpectedVersion
+}
+
+// GetData returns the value of Data.
+func (s *IamManageSegregationRulesCommandRequest) GetData() IamManageSegregationRulesCommandData {
+	return s.Data
+}
+
+// SetCommandId sets the value of CommandId.
+func (s *IamManageSegregationRulesCommandRequest) SetCommandId(val UUID) {
+	s.CommandId = val
+}
+
+// SetExpectedVersion sets the value of ExpectedVersion.
+func (s *IamManageSegregationRulesCommandRequest) SetExpectedVersion(val OptInt) {
+	s.ExpectedVersion = val
+}
+
+// SetData sets the value of Data.
+func (s *IamManageSegregationRulesCommandRequest) SetData(val IamManageSegregationRulesCommandData) {
+	s.Data = val
+}
+
 type IamManageSegregationRulesConflict ProblemDetails
 
 func (*IamManageSegregationRulesConflict) iamManageSegregationRulesRes() {}
@@ -3603,6 +3865,8 @@ func (s *Links) SetStatus(val OptString) {
 	s.Status = val
 }
 
+type Money string
+
 type OmdMaintainCustomerProfilesBadRequest ProblemDetails
 
 func (*OmdMaintainCustomerProfilesBadRequest) omdMaintainCustomerProfilesRes() {}
@@ -3771,6 +4035,52 @@ func (o OptDate) Or(d time.Time) time.Time {
 	return d
 }
 
+// NewOptDateTime returns new OptDateTime with value set to v.
+func NewOptDateTime(v time.Time) OptDateTime {
+	return OptDateTime{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptDateTime is optional time.Time.
+type OptDateTime struct {
+	Value time.Time
+	Set   bool
+}
+
+// IsSet returns true if OptDateTime was set.
+func (o OptDateTime) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptDateTime) Reset() {
+	var v time.Time
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptDateTime) SetTo(v time.Time) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptDateTime) Get() (v time.Time, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptDateTime) Or(d time.Time) time.Time {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptIamAuthenticationSubject returns new OptIamAuthenticationSubject with value set to v.
 func NewOptIamAuthenticationSubject(v IamAuthenticationSubject) OptIamAuthenticationSubject {
 	return OptIamAuthenticationSubject{
@@ -3857,6 +4167,52 @@ func (o OptInt) Get() (v int, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptInt) Or(d int) int {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptMoney returns new OptMoney with value set to v.
+func NewOptMoney(v Money) OptMoney {
+	return OptMoney{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptMoney is optional Money.
+type OptMoney struct {
+	Value Money
+	Set   bool
+}
+
+// IsSet returns true if OptMoney was set.
+func (o OptMoney) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptMoney) Reset() {
+	var v Money
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptMoney) SetTo(v Money) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptMoney) Get() (v Money, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptMoney) Or(d Money) Money {
 	if v, ok := o.Get(); ok {
 		return v
 	}

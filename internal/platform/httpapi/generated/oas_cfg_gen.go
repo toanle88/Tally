@@ -8,7 +8,12 @@ import (
 
 	"github.com/ogen-go/ogen/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
+	"github.com/ogen-go/ogen/ogenregex"
 )
+
+var regexMap = map[string]ogenregex.Regexp{
+	"^-?[0-9]+(\\.[0-9]+)?$": ogenregex.MustCompile("^-?[0-9]+(\\.[0-9]+)?$"),
+}
 
 type (
 	optionFunc[C any] func(*C)

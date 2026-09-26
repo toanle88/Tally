@@ -730,7 +730,7 @@ func (UnimplementedHandler) IamManageRoles(ctx context.Context, req *IamManageRo
 // IamManageSegregationRules implements iamManageSegregationRules operation.
 //
 // POST /identity-access/actions/manage-segregation-rules
-func (UnimplementedHandler) IamManageSegregationRules(ctx context.Context, req *CommandRequest, params IamManageSegregationRulesParams) (r IamManageSegregationRulesRes, _ error) {
+func (UnimplementedHandler) IamManageSegregationRules(ctx context.Context, req *IamManageSegregationRulesCommandRequest, params IamManageSegregationRulesParams) (r IamManageSegregationRulesRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

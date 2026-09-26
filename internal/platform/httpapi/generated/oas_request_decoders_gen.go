@@ -7915,7 +7915,7 @@ func (s *Server) decodeIamManageRolesRequest(r *http.Request) (
 }
 
 func (s *Server) decodeIamManageSegregationRulesRequest(r *http.Request) (
-	req *CommandRequest,
+	req *IamManageSegregationRulesCommandRequest,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -7962,7 +7962,7 @@ func (s *Server) decodeIamManageSegregationRulesRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request CommandRequest
+		var request IamManageSegregationRulesCommandRequest
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err

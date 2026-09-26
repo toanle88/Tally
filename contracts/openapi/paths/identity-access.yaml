@@ -88,14 +88,12 @@
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
+      - $ref: ../components/common.yaml#/headers/If-Match
     requestBody:
       required: true
       content:
         application/json:
-          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
-          examples:
-            deterministic:
-              $ref: ../examples/command-request.yaml
+          schema: { $ref: ../components/common.yaml#/schemas/IamManageSegregationRulesCommandRequest }
     responses:
       '200': { $ref: ../components/common.yaml#/responses/Established }
       '400': { $ref: ../components/common.yaml#/responses/Problem }

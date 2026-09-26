@@ -19655,6 +19655,7 @@ type IamManageSegregationRulesParams struct {
 	XCorrelationID OptUUID   `json:",omitempty,omitzero"`
 	AcceptLanguage OptString `json:",omitempty,omitzero"`
 	IdempotencyKey string
+	IfMatch        OptString `json:",omitempty,omitzero"`
 }
 
 func unpackIamManageSegregationRulesParams(packed middleware.Parameters) (params IamManageSegregationRulesParams) {
@@ -19682,6 +19683,15 @@ func unpackIamManageSegregationRulesParams(packed middleware.Parameters) (params
 			In:   "header",
 		}
 		params.IdempotencyKey = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "If-Match",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.IfMatch = v.(OptString)
+		}
 	}
 	return params
 }
@@ -19823,6 +19833,45 @@ func decodeIamManageSegregationRulesParams(args [0]string, argsEscaped bool, r *
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "Idempotency-Key",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	// Decode header: If-Match.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "If-Match",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotIfMatchVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotIfMatchVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.IfMatch.SetTo(paramsDotIfMatchVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "If-Match",
 			In:   "header",
 			Err:  err,
 		}
