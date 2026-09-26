@@ -23,6 +23,33 @@ export type CommandRequest = {
     };
 };
 
+export type IamManageUsersCommandRequest = {
+    commandId: Uuid;
+    expectedVersion?: number;
+    data: IamManageUsersCommandData;
+};
+
+export type IamManageUsersCommandData = {
+    action: 'create' | 'update' | 'activate' | 'suspend' | 'terminate';
+    userId?: Uuid;
+    authenticationSubject?: IamAuthenticationSubject;
+    /**
+     * Required for update and interpreted as the complete replacement set; omit for lifecycle actions.
+     */
+    assignments?: Array<IamRoleAssignment>;
+};
+
+export type IamAuthenticationSubject = {
+    oid: string;
+    tid: string;
+    sub: string;
+};
+
+export type IamRoleAssignment = {
+    roleId: Uuid;
+    scopeIds: Array<string>;
+};
+
 export type EstablishedResult = {
     status: 'established';
     aggregateId: Uuid;
@@ -75,11 +102,6 @@ export type BusinessIdentity = string;
 
 export type EvidenceId = Uuid;
 
-/**
- * Bearer access token validated at the API authentication boundary.
- */
-export type Authorization = string;
-
 export type XCorrelationId = Uuid;
 
 export type AcceptLanguage = string;
@@ -93,10 +115,6 @@ export type XAccountingScopeId = Uuid;
 export type OmdMaintainLegalEntitiesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -148,10 +166,6 @@ export type OmdMaintainLegalEntitiesResponse = OmdMaintainLegalEntitiesResponses
 export type OmdMaintainPartiesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -203,10 +217,6 @@ export type OmdMaintainPartiesResponse = OmdMaintainPartiesResponses[keyof OmdMa
 export type OmdMaintainCustomerProfilesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -258,10 +268,6 @@ export type OmdMaintainCustomerProfilesResponse = OmdMaintainCustomerProfilesRes
 export type OmdMaintainVendorProfilesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -313,10 +319,6 @@ export type OmdMaintainVendorProfilesResponse = OmdMaintainVendorProfilesRespons
 export type OmdMaintainFiscalCalendarsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -368,10 +370,6 @@ export type OmdMaintainFiscalCalendarsResponse = OmdMaintainFiscalCalendarsRespo
 export type OmdPublishApprovedMasterDataChangesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -422,10 +420,6 @@ export type OmdPublishApprovedMasterDataChangesResponse = OmdPublishApprovedMast
 export type GlSubmitPostingRequestData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -477,10 +471,6 @@ export type GlSubmitPostingRequestResponse = GlSubmitPostingRequestResponses[key
 export type GlApplyJournalApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -532,10 +522,6 @@ export type GlApplyJournalApprovalDecisionResponse = GlApplyJournalApprovalDecis
 export type GlReverseJournalEntryData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -587,10 +573,6 @@ export type GlReverseJournalEntryResponse = GlReverseJournalEntryResponses[keyof
 export type GlEnterSoftCloseGateData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -642,10 +624,6 @@ export type GlEnterSoftCloseGateResponse = GlEnterSoftCloseGateResponses[keyof G
 export type GlExitSoftCloseGateData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -697,10 +675,6 @@ export type GlExitSoftCloseGateResponse = GlExitSoftCloseGateResponses[keyof GlE
 export type GlAcquirePostingBarrierData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -752,10 +726,6 @@ export type GlAcquirePostingBarrierResponse = GlAcquirePostingBarrierResponses[k
 export type GlReleasePostingBarrierData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -807,10 +777,6 @@ export type GlReleasePostingBarrierResponse = GlReleasePostingBarrierResponses[k
 export type GlFinalizePostingGateData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -862,10 +828,6 @@ export type GlFinalizePostingGateResponse = GlFinalizePostingGateResponses[keyof
 export type GlOpenScopedReopenGateData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -917,10 +879,6 @@ export type GlOpenScopedReopenGateResponse = GlOpenScopedReopenGateResponses[key
 export type GlCloseScopedReopenGateData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -972,10 +930,6 @@ export type GlCloseScopedReopenGateResponse = GlCloseScopedReopenGateResponses[k
 export type GlOpenOperationalReopenGateData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1027,10 +981,6 @@ export type GlOpenOperationalReopenGateResponse = GlOpenOperationalReopenGateRes
 export type GlCloseOperationalReopenGateData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1082,10 +1032,6 @@ export type GlCloseOperationalReopenGateResponse = GlCloseOperationalReopenGateR
 export type GlBeginRecloseGateData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1136,11 +1082,7 @@ export type GlBeginRecloseGateResponse = GlBeginRecloseGateResponses[keyof GlBeg
 
 export type GlGetPostingGateStatusData = {
     body?: never;
-    headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
+    headers?: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'X-Accounting-Scope-Id'?: Uuid;
@@ -1191,10 +1133,6 @@ export type GlGetPostingGateStatusResponse = GlGetPostingGateStatusResponses[key
 export type GlMaintainLedgersData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1247,10 +1185,6 @@ export type GlMaintainLedgersResponse = GlMaintainLedgersResponses[keyof GlMaint
 export type GlMaintainAccountingBooksData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1303,10 +1237,6 @@ export type GlMaintainAccountingBooksResponse = GlMaintainAccountingBooksRespons
 export type GlMaintainChartsOfAccountsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1359,10 +1289,6 @@ export type GlMaintainChartsOfAccountsResponse = GlMaintainChartsOfAccountsRespo
 export type GlMaintainAccountsAndReportingMappingsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1415,10 +1341,6 @@ export type GlMaintainAccountsAndReportingMappingsResponse = GlMaintainAccountsA
 export type ApRegisterVendorInvoiceData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1469,10 +1391,6 @@ export type ApRegisterVendorInvoiceResponse = ApRegisterVendorInvoiceResponses[k
 export type ApApplyAssetClearingClassificationData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1523,10 +1441,6 @@ export type ApApplyAssetClearingClassificationResponse = ApApplyAssetClearingCla
 export type ApApplyIncomingSettlementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1577,10 +1491,6 @@ export type ApApplyIncomingSettlementResponse = ApApplyIncomingSettlementRespons
 export type ApReverseIncomingSettlementApplicationData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1631,10 +1541,6 @@ export type ApReverseIncomingSettlementApplicationResponse = ApReverseIncomingSe
 export type ApApplyPaymentReturnData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1685,10 +1591,6 @@ export type ApApplyPaymentReturnResponse = ApApplyPaymentReturnResponses[keyof A
 export type ApApplyVendorInvoiceApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1739,10 +1641,6 @@ export type ApApplyVendorInvoiceApprovalDecisionResponse = ApApplyVendorInvoiceA
 export type ApRequestPaymentData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1793,10 +1691,6 @@ export type ApRequestPaymentResponse = ApRequestPaymentResponses[keyof ApRequest
 export type ApValidateVendorInvoiceData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1847,10 +1741,6 @@ export type ApValidateVendorInvoiceResponse = ApValidateVendorInvoiceResponses[k
 export type ApDisputeVendorInvoiceData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1901,10 +1791,6 @@ export type ApDisputeVendorInvoiceResponse = ApDisputeVendorInvoiceResponses[key
 export type ApVoidVendorInvoiceData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -1955,10 +1841,6 @@ export type ApVoidVendorInvoiceResponse = ApVoidVendorInvoiceResponses[keyof ApV
 export type ArIssueCustomerInvoiceData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2009,10 +1891,6 @@ export type ArIssueCustomerInvoiceResponse = ArIssueCustomerInvoiceResponses[key
 export type ArRecordReceiptData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2063,10 +1941,6 @@ export type ArRecordReceiptResponse = ArRecordReceiptResponses[keyof ArRecordRec
 export type ArApplyReceiptData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2117,10 +1991,6 @@ export type ArApplyReceiptResponse = ArApplyReceiptResponses[keyof ArApplyReceip
 export type ArUnapplyReceiptData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2171,10 +2041,6 @@ export type ArUnapplyReceiptResponse = ArUnapplyReceiptResponses[keyof ArUnapply
 export type ArRollbackUnpostedApplicationBatchData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2225,10 +2091,6 @@ export type ArRollbackUnpostedApplicationBatchResponse = ArRollbackUnpostedAppli
 export type ArIssueCreditNoteData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2279,10 +2141,6 @@ export type ArIssueCreditNoteResponse = ArIssueCreditNoteResponses[keyof ArIssue
 export type ArCreateCustomerRefundRequestData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2333,10 +2191,6 @@ export type ArCreateCustomerRefundRequestResponse = ArCreateCustomerRefundReques
 export type ArCancelCustomerRefundRequestData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2387,10 +2241,6 @@ export type ArCancelCustomerRefundRequestResponse = ArCancelCustomerRefundReques
 export type ArApplyCustomerRefundApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2441,10 +2291,6 @@ export type ArApplyCustomerRefundApprovalDecisionResponse = ArApplyCustomerRefun
 export type ArRequestCustomerRefundPaymentData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2495,10 +2341,6 @@ export type ArRequestCustomerRefundPaymentResponse = ArRequestCustomerRefundPaym
 export type ArCancelCustomerRefundPaymentData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2549,10 +2391,6 @@ export type ArCancelCustomerRefundPaymentResponse = ArCancelCustomerRefundPaymen
 export type ArApplyCustomerRefundPaymentResultData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2603,10 +2441,6 @@ export type ArApplyCustomerRefundPaymentResultResponse = ArApplyCustomerRefundPa
 export type ArApplyPaymentReturnData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2657,10 +2491,6 @@ export type ArApplyPaymentReturnResponse = ArApplyPaymentReturnResponses[keyof A
 export type ArResolveCustomerOverpaymentsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2711,10 +2541,6 @@ export type ArResolveCustomerOverpaymentsResponse = ArResolveCustomerOverpayment
 export type ArRecordCustomerChargebacksData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2765,10 +2591,6 @@ export type ArRecordCustomerChargebacksResponse = ArRecordCustomerChargebacksRes
 export type ArRecordReceivableWriteOffsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2819,10 +2641,6 @@ export type ArRecordReceivableWriteOffsResponse = ArRecordReceivableWriteOffsRes
 export type PayrCalculatePayrollRunData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2873,10 +2691,6 @@ export type PayrCalculatePayrollRunResponse = PayrCalculatePayrollRunResponses[k
 export type PayrApplyPayrollRunApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2927,10 +2741,6 @@ export type PayrApplyPayrollRunApprovalDecisionResponse = PayrApplyPayrollRunApp
 export type PayrPostPayrollRunData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -2981,10 +2791,6 @@ export type PayrPostPayrollRunResponse = PayrPostPayrollRunResponses[keyof PayrP
 export type PayrCreatePayrollCorrectionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3035,10 +2841,6 @@ export type PayrCreatePayrollCorrectionResponse = PayrCreatePayrollCorrectionRes
 export type PayrApplyPaymentReturnData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3089,10 +2891,6 @@ export type PayrApplyPaymentReturnResponse = PayrApplyPaymentReturnResponses[key
 export type PayrMaintainEmployeePayrollProfilesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3144,10 +2942,6 @@ export type PayrMaintainEmployeePayrollProfilesResponse = PayrMaintainEmployeePa
 export type PayrMaintainPayrollTaxFilingRecordsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3199,10 +2993,6 @@ export type PayrMaintainPayrollTaxFilingRecordsResponse = PayrMaintainPayrollTax
 export type InvConfigureInvoiceTemplatesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3254,10 +3044,6 @@ export type InvConfigureInvoiceTemplatesResponse = InvConfigureInvoiceTemplatesR
 export type InvConfigureBillingSchedulesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3309,10 +3095,6 @@ export type InvConfigureBillingSchedulesResponse = InvConfigureBillingSchedulesR
 export type InvGenerateInvoicesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3363,10 +3145,6 @@ export type InvGenerateInvoicesResponse = InvGenerateInvoicesResponses[keyof Inv
 export type InvFinalizeGeneratedInvoicesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3417,10 +3195,6 @@ export type InvFinalizeGeneratedInvoicesResponse = InvFinalizeGeneratedInvoicesR
 export type InvRecalculateUnfinalizedInvoicesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3471,10 +3245,6 @@ export type InvRecalculateUnfinalizedInvoicesResponse = InvRecalculateUnfinalize
 export type InvCancelUnfinalizedInvoicesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3525,10 +3295,6 @@ export type InvCancelUnfinalizedInvoicesResponse = InvCancelUnfinalizedInvoicesR
 export type PcmPreparePaymentBatchData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3579,10 +3345,6 @@ export type PcmPreparePaymentBatchResponse = PcmPreparePaymentBatchResponses[key
 export type PcmApplyPaymentBatchApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3633,10 +3395,6 @@ export type PcmApplyPaymentBatchApprovalDecisionResponse = PcmApplyPaymentBatchA
 export type PcmCancelPaymentBatchData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3687,10 +3445,6 @@ export type PcmCancelPaymentBatchResponse = PcmCancelPaymentBatchResponses[keyof
 export type PcmRegisterExpectedIncomingSettlementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3741,10 +3495,6 @@ export type PcmRegisterExpectedIncomingSettlementResponse = PcmRegisterExpectedI
 export type PcmResolveExpectedIncomingSettlementExceptionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3795,10 +3545,6 @@ export type PcmResolveExpectedIncomingSettlementExceptionResponse = PcmResolveEx
 export type PcmCancelExpectedIncomingSettlementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3849,10 +3595,6 @@ export type PcmCancelExpectedIncomingSettlementResponse = PcmCancelExpectedIncom
 export type PcmCloseExpectedIncomingSettlementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3903,10 +3645,6 @@ export type PcmCloseExpectedIncomingSettlementResponse = PcmCloseExpectedIncomin
 export type PcmCreatePaymentInstructionFromObligationData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -3957,10 +3695,6 @@ export type PcmCreatePaymentInstructionFromObligationResponse = PcmCreatePayment
 export type PcmSubmitPaymentInstructionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4011,10 +3745,6 @@ export type PcmSubmitPaymentInstructionResponse = PcmSubmitPaymentInstructionRes
 export type PcmRetryPaymentInstructionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4065,10 +3795,6 @@ export type PcmRetryPaymentInstructionResponse = PcmRetryPaymentInstructionRespo
 export type PcmCancelPaymentInstructionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4119,10 +3845,6 @@ export type PcmCancelPaymentInstructionResponse = PcmCancelPaymentInstructionRes
 export type PcmApplyPaymentInstructionExceptionDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4173,10 +3895,6 @@ export type PcmApplyPaymentInstructionExceptionDecisionResponse = PcmApplyPaymen
 export type PcmRecordPaymentReturnData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4227,10 +3945,6 @@ export type PcmRecordPaymentReturnResponse = PcmRecordPaymentReturnResponses[key
 export type PcmCancelUnpostedPaymentReturnData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4281,10 +3995,6 @@ export type PcmCancelUnpostedPaymentReturnResponse = PcmCancelUnpostedPaymentRet
 export type PcmAcknowledgePaymentReturnData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4335,10 +4045,6 @@ export type PcmAcknowledgePaymentReturnResponse = PcmAcknowledgePaymentReturnRes
 export type PcmResolvePaymentReturnExceptionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4389,10 +4095,6 @@ export type PcmResolvePaymentReturnExceptionResponse = PcmResolvePaymentReturnEx
 export type PcmRecordUnallocatedIncomingSettlementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4443,10 +4145,6 @@ export type PcmRecordUnallocatedIncomingSettlementResponse = PcmRecordUnallocate
 export type PcmResolveUnallocatedIncomingSettlementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4497,10 +4195,6 @@ export type PcmResolveUnallocatedIncomingSettlementResponse = PcmResolveUnalloca
 export type PcmRecordIncomingSettlementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4551,10 +4245,6 @@ export type PcmRecordIncomingSettlementResponse = PcmRecordIncomingSettlementRes
 export type PcmResolveSettlementReceiptValidationExceptionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4605,10 +4295,6 @@ export type PcmResolveSettlementReceiptValidationExceptionResponse = PcmResolveS
 export type PcmResolveIncomingSettlementOwnerExceptionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4659,10 +4345,6 @@ export type PcmResolveIncomingSettlementOwnerExceptionResponse = PcmResolveIncom
 export type PcmCancelUnpostedSettlementReceiptData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4713,10 +4395,6 @@ export type PcmCancelUnpostedSettlementReceiptResponse = PcmCancelUnpostedSettle
 export type PcmAcknowledgeIncomingSettlementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4767,10 +4445,6 @@ export type PcmAcknowledgeIncomingSettlementResponse = PcmAcknowledgeIncomingSet
 export type PcmReverseIncomingSettlementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4821,10 +4495,6 @@ export type PcmReverseIncomingSettlementResponse = PcmReverseIncomingSettlementR
 export type PcmMaintainBankAccountsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4876,10 +4546,6 @@ export type PcmMaintainBankAccountsResponse = PcmMaintainBankAccountsResponses[k
 export type RptRunConsolidationData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4930,10 +4596,6 @@ export type RptRunConsolidationResponse = RptRunConsolidationResponses[keyof Rpt
 export type RptApplyTranslationResultData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -4984,10 +4646,6 @@ export type RptApplyTranslationResultResponse = RptApplyTranslationResultRespons
 export type RptApplyConsolidationApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5038,10 +4696,6 @@ export type RptApplyConsolidationApprovalDecisionResponse = RptApplyConsolidatio
 export type RptPublishConsolidatedStatementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5092,10 +4746,6 @@ export type RptPublishConsolidatedStatementResponse = RptPublishConsolidatedStat
 export type RptMaintainReportDefinitionsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5147,10 +4797,6 @@ export type RptMaintainReportDefinitionsResponse = RptMaintainReportDefinitionsR
 export type RptGenerateAndPublishLedgerFinancialStatementsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5201,10 +4847,6 @@ export type RptGenerateAndPublishLedgerFinancialStatementsResponse = RptGenerate
 export type IcStartSettlementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5255,10 +4897,6 @@ export type IcStartSettlementResponse = IcStartSettlementResponses[keyof IcStart
 export type IcMatchIntercompanyItemsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5309,10 +4947,6 @@ export type IcMatchIntercompanyItemsResponse = IcMatchIntercompanyItemsResponses
 export type IcApplyResidualApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5363,10 +4997,6 @@ export type IcApplyResidualApprovalDecisionResponse = IcApplyResidualApprovalDec
 export type IcCreateSettlementInstructionsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5417,10 +5047,6 @@ export type IcCreateSettlementInstructionsResponse = IcCreateSettlementInstructi
 export type IcCompleteSettlementRunData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5471,10 +5097,6 @@ export type IcCompleteSettlementRunResponse = IcCompleteSettlementRunResponses[k
 export type IcApplyIncomingSettlementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5525,10 +5147,6 @@ export type IcApplyIncomingSettlementResponse = IcApplyIncomingSettlementRespons
 export type IcReverseIncomingSettlementApplicationData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5579,10 +5197,6 @@ export type IcReverseIncomingSettlementApplicationResponse = IcReverseIncomingSe
 export type IcApplyPaymentReturnData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5633,10 +5247,6 @@ export type IcApplyPaymentReturnResponse = IcApplyPaymentReturnResponses[keyof I
 export type IcRunEliminationData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5687,10 +5297,6 @@ export type IcRunEliminationResponse = IcRunEliminationResponses[keyof IcRunElim
 export type IcMaintainIntercompanyAgreementsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5742,10 +5348,6 @@ export type IcMaintainIntercompanyAgreementsResponse = IcMaintainIntercompanyAgr
 export type IcRecordIntercompanyTransactionsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5796,10 +5398,6 @@ export type IcRecordIntercompanyTransactionsResponse = IcRecordIntercompanyTrans
 export type RevAssessContractData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5850,10 +5448,6 @@ export type RevAssessContractResponse = RevAssessContractResponses[keyof RevAsse
 export type RevApplyRevenueScheduleApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5904,10 +5498,6 @@ export type RevApplyRevenueScheduleApprovalDecisionResponse = RevApplyRevenueSch
 export type RevPublishRevenueAccountingProfileData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -5958,10 +5548,6 @@ export type RevPublishRevenueAccountingProfileResponse = RevPublishRevenueAccoun
 export type RevModifyContractData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6012,10 +5598,6 @@ export type RevModifyContractResponse = RevModifyContractResponses[keyof RevModi
 export type RevApplyContractModificationApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6066,10 +5648,6 @@ export type RevApplyContractModificationApprovalDecisionResponse = RevApplyContr
 export type RevRunRecognitionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6120,10 +5698,6 @@ export type RevRunRecognitionResponse = RevRunRecognitionResponses[keyof RevRunR
 export type FaCapitalizeAssetData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6174,10 +5748,6 @@ export type FaCapitalizeAssetResponse = FaCapitalizeAssetResponses[keyof FaCapit
 export type FaCreateAssetAcquisitionClearingData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6228,10 +5798,6 @@ export type FaCreateAssetAcquisitionClearingResponse = FaCreateAssetAcquisitionC
 export type FaRunDepreciationData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6282,10 +5848,6 @@ export type FaRunDepreciationResponse = FaRunDepreciationResponses[keyof FaRunDe
 export type FaApplyImpairmentApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6336,10 +5898,6 @@ export type FaApplyImpairmentApprovalDecisionResponse = FaApplyImpairmentApprova
 export type FaDisposeAssetData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6390,10 +5948,6 @@ export type FaDisposeAssetResponse = FaDisposeAssetResponses[keyof FaDisposeAsse
 export type FaApplyAssetDisposalApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6444,10 +5998,6 @@ export type FaApplyAssetDisposalApprovalDecisionResponse = FaApplyAssetDisposalA
 export type FaCancelUnpostedAssetDisposalData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6498,10 +6048,6 @@ export type FaCancelUnpostedAssetDisposalResponse = FaCancelUnpostedAssetDisposa
 export type FaCompensateFailedDisposalPostingData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6552,10 +6098,6 @@ export type FaCompensateFailedDisposalPostingResponse = FaCompensateFailedDispos
 export type FaCreateDisposalSettlementClearingData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6606,10 +6148,6 @@ export type FaCreateDisposalSettlementClearingResponse = FaCreateDisposalSettlem
 export type FaApplyAssetSupplierLiabilityResultData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6660,10 +6198,6 @@ export type FaApplyAssetSupplierLiabilityResultResponse = FaApplyAssetSupplierLi
 export type FaApplyIncomingSettlementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6714,10 +6248,6 @@ export type FaApplyIncomingSettlementResponse = FaApplyIncomingSettlementRespons
 export type FaReverseIncomingSettlementApplicationData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6768,10 +6298,6 @@ export type FaReverseIncomingSettlementApplicationResponse = FaReverseIncomingSe
 export type FaApplyPaymentReturnData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6822,10 +6348,6 @@ export type FaApplyPaymentReturnResponse = FaApplyPaymentReturnResponses[keyof F
 export type FaApplyAssetSettlementResultData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6876,10 +6398,6 @@ export type FaApplyAssetSettlementResultResponse = FaApplyAssetSettlementResultR
 export type FaReclassifyDisposalCostForPaymentData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6930,10 +6448,6 @@ export type FaReclassifyDisposalCostForPaymentResponse = FaReclassifyDisposalCos
 export type FaRequestDisposalCostPaymentData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -6984,10 +6498,6 @@ export type FaRequestDisposalCostPaymentResponse = FaRequestDisposalCostPaymentR
 export type FaRequestDisposalCostPaymentReplacementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7038,10 +6548,6 @@ export type FaRequestDisposalCostPaymentReplacementResponse = FaRequestDisposalC
 export type FaRecordImpairmentAssessmentsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7092,10 +6598,6 @@ export type FaRecordImpairmentAssessmentsResponse = FaRecordImpairmentAssessment
 export type FaTransferAssetsOrComponentsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7146,10 +6648,6 @@ export type FaTransferAssetsOrComponentsResponse = FaTransferAssetsOrComponentsR
 export type FaSplitAssetsOrComponentsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7200,10 +6698,6 @@ export type FaSplitAssetsOrComponentsResponse = FaSplitAssetsOrComponentsRespons
 export type FaCorrectPostedAssetDisposalsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7254,10 +6748,6 @@ export type FaCorrectPostedAssetDisposalsResponse = FaCorrectPostedAssetDisposal
 export type FxPublishRateSetData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7308,10 +6798,6 @@ export type FxPublishRateSetResponse = FxPublishRateSetResponses[keyof FxPublish
 export type FxRunRevaluationData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7362,10 +6848,6 @@ export type FxRunRevaluationResponse = FxRunRevaluationResponses[keyof FxRunReva
 export type FxApplyRevaluationApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7416,10 +6898,6 @@ export type FxApplyRevaluationApprovalDecisionResponse = FxApplyRevaluationAppro
 export type FxPostRevaluationRunData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7470,10 +6948,6 @@ export type FxPostRevaluationRunResponse = FxPostRevaluationRunResponses[keyof F
 export type FxRunTranslationData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7524,10 +6998,6 @@ export type FxRunTranslationResponse = FxRunTranslationResponses[keyof FxRunTran
 export type FpmStartSoftCloseData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7578,10 +7048,6 @@ export type FpmStartSoftCloseResponse = FpmStartSoftCloseResponses[keyof FpmStar
 export type FpmEndSoftCloseData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7632,10 +7098,6 @@ export type FpmEndSoftCloseResponse = FpmEndSoftCloseResponses[keyof FpmEndSoftC
 export type FpmStartHardCloseData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7686,10 +7148,6 @@ export type FpmStartHardCloseResponse = FpmStartHardCloseResponses[keyof FpmStar
 export type FpmResumeCloseRunData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7740,10 +7198,6 @@ export type FpmResumeCloseRunResponse = FpmResumeCloseRunResponses[keyof FpmResu
 export type FpmAbortCloseRunData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7794,10 +7248,6 @@ export type FpmAbortCloseRunResponse = FpmAbortCloseRunResponses[keyof FpmAbortC
 export type FpmApplyPostingGateResultData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7848,10 +7298,6 @@ export type FpmApplyPostingGateResultResponse = FpmApplyPostingGateResultRespons
 export type FpmApplyCloseExceptionApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7902,10 +7348,6 @@ export type FpmApplyCloseExceptionApprovalDecisionResponse = FpmApplyCloseExcept
 export type FpmApplyCloseApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -7956,10 +7398,6 @@ export type FpmApplyCloseApprovalDecisionResponse = FpmApplyCloseApprovalDecisio
 export type FpmRequestReopenData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8010,10 +7448,6 @@ export type FpmRequestReopenResponse = FpmRequestReopenResponses[keyof FpmReques
 export type FpmApplyReopenApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8064,10 +7498,6 @@ export type FpmApplyReopenApprovalDecisionResponse = FpmApplyReopenApprovalDecis
 export type FpmStartRecloseData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8118,10 +7548,6 @@ export type FpmStartRecloseResponse = FpmStartRecloseResponses[keyof FpmStartRec
 export type FpmTakeOverPeriodControlData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8172,10 +7598,6 @@ export type FpmTakeOverPeriodControlResponse = FpmTakeOverPeriodControlResponses
 export type FpmExtendCloseExceptionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8226,10 +7648,6 @@ export type FpmExtendCloseExceptionResponse = FpmExtendCloseExceptionResponses[k
 export type CoaMaintainSegmentDefinitionsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8281,10 +7699,6 @@ export type CoaMaintainSegmentDefinitionsResponse = CoaMaintainSegmentDefinition
 export type CoaMaintainSegmentValuesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8336,10 +7750,6 @@ export type CoaMaintainSegmentValuesResponse = CoaMaintainSegmentValuesResponses
 export type CoaValidateSegmentCombinationsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8390,10 +7800,6 @@ export type CoaValidateSegmentCombinationsResponse = CoaValidateSegmentCombinati
 export type CoaRequestSegmentChangesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8444,10 +7850,6 @@ export type CoaRequestSegmentChangesResponse = CoaRequestSegmentChangesResponses
 export type CoaApplySegmentChangeApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8498,10 +7900,6 @@ export type CoaApplySegmentChangeApprovalDecisionResponse = CoaApplySegmentChang
 export type BfrImportStatementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8552,10 +7950,6 @@ export type BfrImportStatementResponse = BfrImportStatementResponses[keyof BfrIm
 export type BfrProposeMatchData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8606,10 +8000,6 @@ export type BfrProposeMatchResponse = BfrProposeMatchResponses[keyof BfrProposeM
 export type BfrConfirmMatchData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8660,10 +8050,6 @@ export type BfrConfirmMatchResponse = BfrConfirmMatchResponses[keyof BfrConfirmM
 export type BfrUnmatchData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8714,10 +8100,6 @@ export type BfrUnmatchResponse = BfrUnmatchResponses[keyof BfrUnmatchResponses];
 export type BfrCompleteReconciliationData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8768,10 +8150,6 @@ export type BfrCompleteReconciliationResponse = BfrCompleteReconciliationRespons
 export type BfrMaintainBankFeedConnectionsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8823,10 +8201,6 @@ export type BfrMaintainBankFeedConnectionsResponse = BfrMaintainBankFeedConnecti
 export type TaxDetermineTaxData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8877,10 +8251,6 @@ export type TaxDetermineTaxResponse = TaxDetermineTaxResponses[keyof TaxDetermin
 export type TaxPrepareTaxReturnData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8931,10 +8301,6 @@ export type TaxPrepareTaxReturnResponse = TaxPrepareTaxReturnResponses[keyof Tax
 export type TaxApplyTaxReturnApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -8985,10 +8351,6 @@ export type TaxApplyTaxReturnApprovalDecisionResponse = TaxApplyTaxReturnApprova
 export type TaxSubmitTaxReturnData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9039,10 +8401,6 @@ export type TaxSubmitTaxReturnResponse = TaxSubmitTaxReturnResponses[keyof TaxSu
 export type TaxCreateTaxAmendmentData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9093,10 +8451,6 @@ export type TaxCreateTaxAmendmentResponse = TaxCreateTaxAmendmentResponses[keyof
 export type TaxApplyTaxAmendmentApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9147,10 +8501,6 @@ export type TaxApplyTaxAmendmentApprovalDecisionResponse = TaxApplyTaxAmendmentA
 export type TaxSubmitTaxAmendmentData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9201,10 +8551,6 @@ export type TaxSubmitTaxAmendmentResponse = TaxSubmitTaxAmendmentResponses[keyof
 export type TaxCreateReturnLevelTaxAdjustmentData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9255,10 +8601,6 @@ export type TaxCreateReturnLevelTaxAdjustmentResponse = TaxCreateReturnLevelTaxA
 export type TaxApplyReturnLevelTaxAdjustmentApprovalDecisionData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9309,10 +8651,6 @@ export type TaxApplyReturnLevelTaxAdjustmentApprovalDecisionResponse = TaxApplyR
 export type TaxPostReturnLevelTaxAdjustmentData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9363,10 +8701,6 @@ export type TaxPostReturnLevelTaxAdjustmentResponse = TaxPostReturnLevelTaxAdjus
 export type TaxRequestTaxPaymentData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9417,10 +8751,6 @@ export type TaxRequestTaxPaymentResponse = TaxRequestTaxPaymentResponses[keyof T
 export type TaxRecordTaxPaymentSettlementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9471,10 +8801,6 @@ export type TaxRecordTaxPaymentSettlementResponse = TaxRecordTaxPaymentSettlemen
 export type TaxApplyIncomingSettlementData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9525,10 +8851,6 @@ export type TaxApplyIncomingSettlementResponse = TaxApplyIncomingSettlementRespo
 export type TaxReverseIncomingSettlementApplicationData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9579,10 +8901,6 @@ export type TaxReverseIncomingSettlementApplicationResponse = TaxReverseIncoming
 export type TaxApplyPaymentReturnData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9633,10 +8951,6 @@ export type TaxApplyPaymentReturnResponse = TaxApplyPaymentReturnResponses[keyof
 export type TaxMaintainTaxConfigurationsData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9688,10 +9002,6 @@ export type TaxMaintainTaxConfigurationsResponse = TaxMaintainTaxConfigurationsR
 export type WfaCreateApprovalRequestData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9742,10 +9052,6 @@ export type WfaCreateApprovalRequestResponse = WfaCreateApprovalRequestResponses
 export type WfaDecideApprovalRequestData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9796,10 +9102,6 @@ export type WfaDecideApprovalRequestResponse = WfaDecideApprovalRequestResponses
 export type WfaDelegateApprovalData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9850,10 +9152,6 @@ export type WfaDelegateApprovalResponse = WfaDelegateApprovalResponses[keyof Wfa
 export type WfaEscalateApprovalData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9904,10 +9202,6 @@ export type WfaEscalateApprovalResponse = WfaEscalateApprovalResponses[keyof Wfa
 export type WfaMaintainApprovalPoliciesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -9956,37 +9250,9 @@ export type WfaMaintainApprovalPoliciesResponses = {
 
 export type WfaMaintainApprovalPoliciesResponse = WfaMaintainApprovalPoliciesResponses[keyof WfaMaintainApprovalPoliciesResponses];
 
-export type IamAuthenticationSubject = {
-    oid: string;
-    tid: string;
-    sub: string;
-};
-
-export type IamRoleAssignment = {
-    roleId: Uuid;
-    scopeIds: string[];
-};
-
-export type IamManageUsersCommandData = {
-    action: 'create' | 'update' | 'activate' | 'suspend' | 'terminate';
-    userId?: Uuid;
-    authenticationSubject?: IamAuthenticationSubject;
-    assignments?: IamRoleAssignment[];
-};
-
-export type IamManageUsersCommandRequest = {
-    commandId: Uuid;
-    expectedVersion?: number;
-    data: IamManageUsersCommandData;
-};
-
 export type IamManageUsersData = {
     body: IamManageUsersCommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -10038,10 +9304,6 @@ export type IamManageUsersResponse = IamManageUsersResponses[keyof IamManageUser
 export type IamManageRolesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -10092,10 +9354,6 @@ export type IamManageRolesResponse = IamManageRolesResponses[keyof IamManageRole
 export type IamManageAccessPoliciesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -10146,10 +9404,6 @@ export type IamManageAccessPoliciesResponse = IamManageAccessPoliciesResponses[k
 export type IamManageSegregationRulesData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -10200,10 +9454,6 @@ export type IamManageSegregationRulesResponse = IamManageSegregationRulesRespons
 export type IamGrantEmergencyAccessData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -10254,10 +9504,6 @@ export type IamGrantEmergencyAccessResponse = IamGrantEmergencyAccessResponses[k
 export type IamRevokeEmergencyAccessData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -10308,10 +9554,6 @@ export type IamRevokeEmergencyAccessResponse = IamRevokeEmergencyAccessResponses
 export type AudAppendAuditableEventData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -10362,10 +9604,6 @@ export type AudAppendAuditableEventResponse = AudAppendAuditableEventResponses[k
 export type AudCreateAuditSealData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -10416,10 +9654,6 @@ export type AudCreateAuditSealResponse = AudCreateAuditSealResponses[keyof AudCr
 export type AudRotateVerificationCredentialData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -10470,10 +9704,6 @@ export type AudRotateVerificationCredentialResponse = AudRotateVerificationCrede
 export type AudEscalateIntegrityIncidentData = {
     body: CommandRequest;
     headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
         'Idempotency-Key': string;
@@ -10523,11 +9753,7 @@ export type AudEscalateIntegrityIncidentResponse = AudEscalateIntegrityIncidentR
 
 export type AudVerifyProofData = {
     body?: never;
-    headers: {
-        /**
-         * Bearer access token validated at the API authentication boundary.
-         */
-        Authorization: string;
+    headers?: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
     };

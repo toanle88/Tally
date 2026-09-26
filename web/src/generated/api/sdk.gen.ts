@@ -208,7 +208,7 @@ export const glBeginRecloseGate = <ThrowOnError extends boolean = false>(options
     }
 });
 
-export const glGetPostingGateStatus = <ThrowOnError extends boolean = false>(options: Options<GlGetPostingGateStatusData, ThrowOnError>): RequestResult<GlGetPostingGateStatusResponses, GlGetPostingGateStatusErrors, ThrowOnError> => (options.client ?? client).get<GlGetPostingGateStatusResponses, GlGetPostingGateStatusErrors, ThrowOnError>({
+export const glGetPostingGateStatus = <ThrowOnError extends boolean = false>(options?: Options<GlGetPostingGateStatusData, ThrowOnError>): RequestResult<GlGetPostingGateStatusResponses, GlGetPostingGateStatusErrors, ThrowOnError> => (options?.client ?? client).get<GlGetPostingGateStatusResponses, GlGetPostingGateStatusErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/reference/get-posting-gate-status',
     ...options
@@ -1934,7 +1934,7 @@ export const audEscalateIntegrityIncident = <ThrowOnError extends boolean = fals
     }
 });
 
-export const audVerifyProof = <ThrowOnError extends boolean = false>(options: Options<AudVerifyProofData, ThrowOnError>): RequestResult<AudVerifyProofResponses, AudVerifyProofErrors, ThrowOnError> => (options.client ?? client).get<AudVerifyProofResponses, AudVerifyProofErrors, ThrowOnError>({
+export const audVerifyProof = <ThrowOnError extends boolean = false>(options?: Options<AudVerifyProofData, ThrowOnError>): RequestResult<AudVerifyProofResponses, AudVerifyProofErrors, ThrowOnError> => (options?.client ?? client).get<AudVerifyProofResponses, AudVerifyProofErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/audit-integrity/reference/verify-proof',
     ...options
