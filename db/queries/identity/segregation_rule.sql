@@ -90,7 +90,7 @@ INSERT INTO identity.segregation_rule_revision (
 ) VALUES (
     sqlc.arg(rule_id), sqlc.arg(revision_version), sqlc.arg(code), sqlc.arg(name),
     sqlc.arg(status), sqlc.arg(conflicting_permissions), sqlc.arg(enforcement_mode),
-    sqlc.arg(scope_ids), sqlc.arg(amount_threshold), sqlc.arg(cooling_off_seconds),
+    COALESCE(sqlc.arg(scope_ids)::text[], '{}'::text[]), sqlc.arg(amount_threshold), sqlc.arg(cooling_off_seconds),
     sqlc.arg(effective_from), sqlc.arg(effective_to), sqlc.arg(approval_request_id),
     sqlc.arg(approval_decision_id), sqlc.arg(approver_user_id), sqlc.arg(policy_version),
     sqlc.arg(decision_version), sqlc.arg(subject_version), sqlc.arg(candidate_fingerprint),
