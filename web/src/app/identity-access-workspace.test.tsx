@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { IdentityAccessWorkspace } from './identity-access-workspace'
@@ -39,7 +39,8 @@ describe('identity access workspace', () => {
 
     expect(screen.getByRole('heading', { name: 'Role and permission worklist' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'IAM-SCR-02 - Role detail' })).toBeInTheDocument()
-    expect(screen.getByText('finance.gl.submit.posting.request')).toBeInTheDocument()
+    const roleGrants = screen.getByRole('table', { name: 'Permission grants for Scoped finance operator' })
+    expect(within(roleGrants).getByText('finance.gl.submit.posting.request')).toBeInTheDocument()
     expect(screen.getAllByText('2026-10-01').length).toBeGreaterThan(0)
     expect(screen.getAllByText('approved').length).toBeGreaterThan(0)
   })
