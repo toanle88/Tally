@@ -867,6 +867,20 @@ func (UnimplementedHandler) InvRecalculateUnfinalizedInvoices(ctx context.Contex
 	return r, ht.ErrNotImplemented
 }
 
+// OmdGetLegalEntity implements omdGetLegalEntity operation.
+//
+// GET /master-data/reference/legal-entities/{legalEntityId}
+func (UnimplementedHandler) OmdGetLegalEntity(ctx context.Context, params OmdGetLegalEntityParams) (r OmdGetLegalEntityRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// OmdListLegalEntities implements omdListLegalEntities operation.
+//
+// GET /master-data/reference/legal-entities
+func (UnimplementedHandler) OmdListLegalEntities(ctx context.Context, params OmdListLegalEntitiesParams) (r OmdListLegalEntitiesRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // OmdMaintainCustomerProfiles implements omdMaintainCustomerProfiles operation.
 //
 // PUT /master-data/configuration/maintain-customer-profiles

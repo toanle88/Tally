@@ -104,7 +104,9 @@ Direct usage:
 ./scripts/db/migrate.sh check
 ```
 
-Supported migration creation schemas are `bootstrap` and `platform`. Do not create migration directories or history tables for future finance schemas until their owning delivery item introduces a real migration.
+Supported migration creation schemas are `bootstrap`, `platform`, `identity`, and
+`organization`. The organization migration set is owned by the LegalEntity
+delivery and must remain the only writer of the `organization` schema.
 
 ---
 

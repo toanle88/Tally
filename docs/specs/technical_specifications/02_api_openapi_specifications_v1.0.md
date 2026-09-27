@@ -94,6 +94,19 @@ Cursor pagination uses `page[size]` (default 50, maximum 200) and `page[after]`.
 | FR-OMD-004 | PUT | `/api/v1/master-data/configuration/maintain-vendor-profiles` | `omdMaintainVendorProfiles` | finance.omd.maintain.vendor.profiles | PRD functional action |
 | FR-OMD-005 | PUT | `/api/v1/master-data/configuration/maintain-fiscal-calendars` | `omdMaintainFiscalCalendars` | finance.omd.maintain.fiscal.calendars | PRD functional action |
 | FR-OMD-006 | POST | `/api/v1/master-data/actions/publish-approved-master-data-changes` | `omdPublishApprovedMasterDataChanges` | finance.omd.publish.approved.master.data.changes | PRD functional action |
+
+The Organization & Master Data API includes the following LegalEntity reference
+reads under `/api/v1/master-data/reference/legal-entities`:
+
+- `GET /api/v1/master-data/reference/legal-entities`, operationId
+  `omdListLegalEntities`.
+- `GET /api/v1/master-data/reference/legal-entities/{legalEntityId}`,
+  operationId `omdGetLegalEntity`.
+
+Both operations are owned by Organization & Master Data and require
+`finance.omd.read.legal.entities`. Their safe projection, filtering, pagination,
+and restricted-field rules are part of this API contract and are defined by the
+corresponding OpenAPI paths.
 | FR-GL-001 | POST | `/api/v1/general-ledger/actions/submit-posting-request` | `glSubmitPostingRequest` | finance.gl.submit.posting.request | DDD representative command |
 | FR-GL-002 | POST | `/api/v1/general-ledger/actions/apply-journal-approval-decision` | `glApplyJournalApprovalDecision` | finance.gl.apply.journal.approval.decision | DDD representative command |
 | FR-GL-003 | POST | `/api/v1/general-ledger/actions/reverse-journal-entry` | `glReverseJournalEntry` | finance.gl.reverse.journal.entry | DDD representative command |

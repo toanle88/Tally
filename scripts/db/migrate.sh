@@ -20,9 +20,12 @@ migration_dir_for_schema() {
 		identity)
 			printf '%s\n' "db/migrations/identity"
 			;;
+		organization)
+			printf '%s\n' "db/migrations/organization"
+			;;
 		*)
 			echo "Unknown migration schema: ${schema}" >&2
-			echo "Supported schemas: bootstrap, platform, identity" >&2
+			echo "Supported schemas: bootstrap, platform, identity, organization" >&2
 			exit 2
 			;;
 	esac
@@ -34,7 +37,7 @@ create_migration() {
 	local migration_dir
 
 	if [[ -z "${schema}" || -z "${name}" ]]; then
-		echo "Usage: $0 create <bootstrap|platform|identity> <migration_name>" >&2
+		echo "Usage: $0 create <bootstrap|platform|identity|organization> <migration_name>" >&2
 		exit 2
 	fi
 
@@ -89,6 +92,11 @@ validate_migrations() {
 	echo "Validating db/migrations/identity..."
 	go tool goose \
 		-dir db/migrations/identity \
+		validate
+
+	echo "Validating db/migrations/organization..."
+	go tool goose \
+		-dir db/migrations/organization \
 		validate
 	echo "Migration validation passed."
 }
@@ -162,6 +170,12 @@ run_for_all_migration_sets() {
 	run_goose \
 		"db/migrations/identity" \
 		"identity.goose_db_version" \
+		"${goose_command}"
+
+	echo "Running ${goose_command} for db/migrations/organization..."
+	run_goose \
+		"db/migrations/organization" \
+		"organization.goose_db_version" \
 		"${goose_command}"
 }
 

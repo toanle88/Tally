@@ -10,6 +10,10 @@
   $ref: ./master-data.yaml#/~1master-data~1configuration~1maintain-fiscal-calendars
 /master-data/actions/publish-approved-master-data-changes:
   $ref: ./master-data.yaml#/~1master-data~1actions~1publish-approved-master-data-changes
+/master-data/reference/legal-entities:
+  $ref: ./master-data.yaml#/~1master-data~1reference~1legal-entities
+/master-data/reference/legal-entities/{legalEntityId}:
+  $ref: ./master-data.yaml#/~1master-data~1reference~1legal-entities~1{legalEntityId}
 /general-ledger/actions/submit-posting-request:
   $ref: ./general-ledger.yaml#/~1general-ledger~1actions~1submit-posting-request
 /general-ledger/actions/apply-journal-approval-decision:
@@ -384,4 +388,3 @@
   $ref: ./audit-integrity.yaml#/~1audit-integrity~1actions~1escalate-integrity-incident
 /audit-integrity/reference/verify-proof:
   $ref: ./audit-integrity.yaml#/~1audit-integrity~1reference~1verify-proof
-

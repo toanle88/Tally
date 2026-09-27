@@ -791,6 +791,8 @@ func (*AuthenticationRequiredHeaders) invConfigureInvoiceTemplatesRes()         
 func (*AuthenticationRequiredHeaders) invFinalizeGeneratedInvoicesRes()                     {}
 func (*AuthenticationRequiredHeaders) invGenerateInvoicesRes()                              {}
 func (*AuthenticationRequiredHeaders) invRecalculateUnfinalizedInvoicesRes()                {}
+func (*AuthenticationRequiredHeaders) omdGetLegalEntityRes()                                {}
+func (*AuthenticationRequiredHeaders) omdListLegalEntitiesRes()                             {}
 func (*AuthenticationRequiredHeaders) omdMaintainCustomerProfilesRes()                      {}
 func (*AuthenticationRequiredHeaders) omdMaintainFiscalCalendarsRes()                       {}
 func (*AuthenticationRequiredHeaders) omdMaintainLegalEntitiesRes()                         {}
@@ -1383,6 +1385,8 @@ func (*EstablishedResult) invConfigureInvoiceTemplatesRes()                     
 func (*EstablishedResult) invFinalizeGeneratedInvoicesRes()                     {}
 func (*EstablishedResult) invGenerateInvoicesRes()                              {}
 func (*EstablishedResult) invRecalculateUnfinalizedInvoicesRes()                {}
+func (*EstablishedResult) omdGetLegalEntityRes()                                {}
+func (*EstablishedResult) omdListLegalEntitiesRes()                             {}
 func (*EstablishedResult) omdMaintainCustomerProfilesRes()                      {}
 func (*EstablishedResult) omdMaintainFiscalCalendarsRes()                       {}
 func (*EstablishedResult) omdMaintainLegalEntitiesRes()                         {}
@@ -4110,6 +4114,34 @@ func (s *Links) SetStatus(val OptString) {
 }
 
 type Money string
+
+type OmdGetLegalEntityBadRequest ProblemDetails
+
+func (*OmdGetLegalEntityBadRequest) omdGetLegalEntityRes() {}
+
+type OmdGetLegalEntityForbidden ProblemDetails
+
+func (*OmdGetLegalEntityForbidden) omdGetLegalEntityRes() {}
+
+type OmdGetLegalEntityNotFound ProblemDetails
+
+func (*OmdGetLegalEntityNotFound) omdGetLegalEntityRes() {}
+
+type OmdGetLegalEntityServiceUnavailable ProblemDetails
+
+func (*OmdGetLegalEntityServiceUnavailable) omdGetLegalEntityRes() {}
+
+type OmdListLegalEntitiesBadRequest ProblemDetails
+
+func (*OmdListLegalEntitiesBadRequest) omdListLegalEntitiesRes() {}
+
+type OmdListLegalEntitiesForbidden ProblemDetails
+
+func (*OmdListLegalEntitiesForbidden) omdListLegalEntitiesRes() {}
+
+type OmdListLegalEntitiesServiceUnavailable ProblemDetails
+
+func (*OmdListLegalEntitiesServiceUnavailable) omdListLegalEntitiesRes() {}
 
 type OmdMaintainCustomerProfilesBadRequest ProblemDetails
 

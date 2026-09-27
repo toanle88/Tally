@@ -35,6 +35,15 @@ describe('application router', () => {
     expect(await screen.findByRole('heading', { name: 'Page not found' })).toBeInTheDocument()
   })
 
+  it('supports the OMD worklist and record mutation boundary', async () => {
+    renderRoute('/master-data/omd-ws-01')
+    expect(await screen.findByRole('heading', { name: 'Legal-entity master-data worklist' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('link', { name: 'Acme Vietnam Co., Ltd.' }))
+    expect(await screen.findByRole('heading', { name: 'Legal-entity record' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Save legal-entity revision' })).toBeInTheDocument()
+    expect(screen.getByText('Access restricted. The protected value remains masked and export is unavailable.')).toBeInTheDocument()
+  })
+
   it('updates active navigation and supports back navigation', async () => {
     const router = renderRoute('/')
     fireEvent.click(screen.getByRole('link', { name: 'Exceptions' }))

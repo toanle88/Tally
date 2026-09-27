@@ -496,6 +496,14 @@ type Handler interface {
 	//
 	// POST /invoicing/actions/recalculate-unfinalized-invoices
 	InvRecalculateUnfinalizedInvoices(ctx context.Context, req *CommandRequest, params InvRecalculateUnfinalizedInvoicesParams) (InvRecalculateUnfinalizedInvoicesRes, error)
+	// OmdGetLegalEntity implements omdGetLegalEntity operation.
+	//
+	// GET /master-data/reference/legal-entities/{legalEntityId}
+	OmdGetLegalEntity(ctx context.Context, params OmdGetLegalEntityParams) (OmdGetLegalEntityRes, error)
+	// OmdListLegalEntities implements omdListLegalEntities operation.
+	//
+	// GET /master-data/reference/legal-entities
+	OmdListLegalEntities(ctx context.Context, params OmdListLegalEntitiesParams) (OmdListLegalEntitiesRes, error)
 	// OmdMaintainCustomerProfiles implements omdMaintainCustomerProfiles operation.
 	//
 	// PUT /master-data/configuration/maintain-customer-profiles

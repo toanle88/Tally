@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/toanle88/Tally/internal/identity"
+	"github.com/toanle88/Tally/internal/organization"
 	"github.com/toanle88/Tally/internal/platform/authentication"
 	"github.com/toanle88/Tally/internal/platform/database"
 	"github.com/toanle88/Tally/internal/platform/httpx"
@@ -174,19 +175,22 @@ func newRuntimeRouter(ctx context.Context, instrumentation *telemetry.Instrument
 		closeRuntime()
 		return nil, func() {}, fmt.Errorf("construct identity role repository: %w", err)
 	}
-	identityServer := newIdentityAPIServerWithPostgresRepository(getenv, pool, repository, roleRepository, dependencies.IdentityAuditWriter, instrumentation)
-	return newRouterWithIdentityServer(instrumentation, logger, getenv, repository, identityServer), closeRuntime, nil
+	identityServer, organizationService := newIdentityAPIServerWithPostgresRepository(getenv, pool, repository, roleRepository, dependencies.IdentityAuditWriter, instrumentation)
+	return newRouterWithIdentityServer(instrumentation, logger, getenv, repository, identityServer, organizationService), closeRuntime, nil
 }
 
 func newRouter(instrumentation *telemetry.Instrumentation, logger *telemetry.Logger, getenv func(string) string) http.Handler {
 	identityRepository := identity.NewMemoryUserRepository()
+	identityServer, organizationService := newIdentityAPIServerWithRepository(
+		getenv, identityRepository, instrumentation,
+	)
 	return newRouterWithIdentityServer(
 		instrumentation, logger, getenv, identityRepository,
-		newIdentityAPIServerWithRepository(getenv, identityRepository, instrumentation),
+		identityServer, organizationService,
 	)
 }
 
-func newRouterWithIdentityServer(instrumentation *telemetry.Instrumentation, logger *telemetry.Logger, getenv func(string) string, identityRepository identity.UserRepository, identityServer http.Handler) http.Handler {
+func newRouterWithIdentityServer(instrumentation *telemetry.Instrumentation, logger *telemetry.Logger, getenv func(string) string, identityRepository identity.UserRepository, identityServer http.Handler, organizationService *organization.LegalEntityService) http.Handler {
 	router := chi.NewRouter()
 	router.Use(telemetry.RequestTracingMiddleware(instrumentation))
 	router.Use(telemetry.RequestLoggingMiddleware(logger))
@@ -197,6 +201,7 @@ func newRouterWithIdentityServer(instrumentation *telemetry.Instrumentation, log
 	// The generated finance API is mounted under this boundary as operations
 	// arrive. There is no login or /me endpoint in this story.
 	protectedAPI := authentication.NewMiddlewareFromEnvironmentWithUserRepository(getenv, logger, identityRepository)
-	router.Mount("/api/v1", protectedAPI(identityServer))
+	protectedServer := protectedAPI(identityServer)
+	router.Mount("/api/v1", protectedServer)
 	return router
 }

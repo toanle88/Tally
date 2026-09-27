@@ -498,6 +498,99 @@ export type OmdPublishApprovedMasterDataChangesResponses = {
 
 export type OmdPublishApprovedMasterDataChangesResponse = OmdPublishApprovedMasterDataChangesResponses[keyof OmdPublishApprovedMasterDataChangesResponses];
 
+export type OmdListLegalEntitiesData = {
+    body?: never;
+    headers?: {
+        'X-Correlation-Id'?: Uuid;
+        'Accept-Language'?: string;
+        'X-Accounting-Scope-Id'?: Uuid;
+    };
+    path?: never;
+    query?: {
+        'page[size]'?: number;
+        'page[after]'?: string;
+    };
+    url: '/master-data/reference/legal-entities';
+};
+
+export type OmdListLegalEntitiesErrors = {
+    /**
+     * RFC 9457-style problem details
+     */
+    400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    403: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    503: ProblemDetails;
+};
+
+export type OmdListLegalEntitiesError = OmdListLegalEntitiesErrors[keyof OmdListLegalEntitiesErrors];
+
+export type OmdListLegalEntitiesResponses = {
+    /**
+     * Established result
+     */
+    200: EstablishedResult;
+};
+
+export type OmdListLegalEntitiesResponse = OmdListLegalEntitiesResponses[keyof OmdListLegalEntitiesResponses];
+
+export type OmdGetLegalEntityData = {
+    body?: never;
+    headers?: {
+        'X-Correlation-Id'?: Uuid;
+        'Accept-Language'?: string;
+        'X-Accounting-Scope-Id'?: Uuid;
+    };
+    path: {
+        legalEntityId: Uuid;
+    };
+    query?: never;
+    url: '/master-data/reference/legal-entities/{legalEntityId}';
+};
+
+export type OmdGetLegalEntityErrors = {
+    /**
+     * RFC 9457-style problem details
+     */
+    400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    403: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    404: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    503: ProblemDetails;
+};
+
+export type OmdGetLegalEntityError = OmdGetLegalEntityErrors[keyof OmdGetLegalEntityErrors];
+
+export type OmdGetLegalEntityResponses = {
+    /**
+     * Established result
+     */
+    200: EstablishedResult;
+};
+
+export type OmdGetLegalEntityResponse = OmdGetLegalEntityResponses[keyof OmdGetLegalEntityResponses];
+
 export type GlSubmitPostingRequestData = {
     body: CommandRequest;
     headers: {

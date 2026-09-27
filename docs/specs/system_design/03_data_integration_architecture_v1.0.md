@@ -120,7 +120,7 @@ Each state-changing business operation stores owning context, operation type, bu
 
 | Group | Route prefix | Owning module |
 |---|---|---|
-| Organization & Master Data | `/api/v1/organization` | `internal/organization` |
+| Organization & Master Data | `/api/v1/master-data` (including the approved LegalEntity reference reads) | `internal/organization` |
 | General Ledger | `/api/v1/gl` | `internal/gl` |
 | Accounts Payable | `/api/v1/ap` | `internal/ap` |
 | Accounts Receivable | `/api/v1/ar` | `internal/ar` |

@@ -156,6 +156,8 @@ var operationRolesBearerAuth = map[string][]string{
 	InvFinalizeGeneratedInvoicesOperation:                     []string{},
 	InvGenerateInvoicesOperation:                              []string{},
 	InvRecalculateUnfinalizedInvoicesOperation:                []string{},
+	OmdGetLegalEntityOperation:                                []string{},
+	OmdListLegalEntitiesOperation:                             []string{},
 	OmdMaintainCustomerProfilesOperation:                      []string{},
 	OmdMaintainFiscalCalendarsOperation:                       []string{},
 	OmdMaintainLegalEntitiesOperation:                         []string{},

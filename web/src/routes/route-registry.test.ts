@@ -21,6 +21,8 @@ describe('route registry', () => {
     expect(routeRegistry.filter((route) => route.kind === 'operational').map((route) => [route.screenId, route.path])).toEqual([
       ['IAM-WS-01', '/administration/identity-access'],
       ['IAM-SCR-04', '/identity-access/iam-scr-04'],
+      ['OMD-WS-01', '/master-data/omd-ws-01'],
+      ['OMD-SCR-01', '/master-data/omd-scr-01'],
       ['XCT-WS-01', '/operations/xct-ws-01'],
       ['XCT-SCR-01', '/operations/xct-scr-01'],
       ['CON-SCR-01', '/operations/con-scr-01'],
