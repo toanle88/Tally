@@ -157,3 +157,32 @@ type OrganizationPartyRevision struct {
 	Snapshot         []byte
 	CreatedAt        pgtype.Timestamptz
 }
+
+type OrganizationVendorProfile struct {
+	ID                   pgtype.UUID
+	ScopeID              pgtype.UUID
+	PartyID              pgtype.UUID
+	PartyVersion         int64
+	PaymentTerms         string
+	WithholdingTreatment string
+	RemittancePreference string
+	Status               string
+	EffectiveFrom        pgtype.Date
+	EffectiveTo          pgtype.Date
+	ApprovalReference    []byte
+	AggregateVersion     int64
+	RevisionNumber       int64
+	CreatedAt            pgtype.Timestamptz
+	UpdatedAt            pgtype.Timestamptz
+	LastAuditReference   pgtype.UUID
+}
+
+type OrganizationVendorProfileRevision struct {
+	VendorProfileID  pgtype.UUID
+	RevisionNumber   int64
+	AggregateVersion int64
+	Snapshot         []byte
+	EffectiveFrom    pgtype.Date
+	EffectiveTo      pgtype.Date
+	CreatedAt        pgtype.Timestamptz
+}

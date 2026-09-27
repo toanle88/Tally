@@ -26,6 +26,7 @@ const (
 	organizationOperationID    = "organization.maintain-legal-entities.v1"
 	partyOperationID           = "organization.maintain-parties.v1"
 	customerProfileOperationID = "organization.maintain-customer-profiles.v1"
+	vendorProfileOperationID   = "organization.maintain-vendor-profiles.v1"
 )
 
 func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
@@ -183,8 +184,25 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err != nil {
 		return identityUnavailableHandler("organization customer-profile service unavailable"), nil
 	}
+	vendorProfileRepository, err := organization.NewPostgresVendorProfileRepository(pool, postgresOrganizationVendorProfileAuditWriter(auditWriter))
+	if err != nil {
+		return identityUnavailableHandler("organization vendor-profile persistence unavailable"), nil
+	}
+	vendorProfileService, err := organization.NewVendorProfileServiceWithDurableIdempotency(
+		vendorProfileRepository,
+		partyRepository,
+		evaluatorOrganizationAuthorizer{evaluator: policyEvaluator},
+		evaluatorOrganizationAuthorizer{evaluator: policyEvaluator},
+		organization.AllowAllVendorProfileApprovalValidator{},
+		&organization.MemoryVendorProfileAuditRecorder{},
+		time.Now,
+		organization.DurableVendorProfileServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, OperationID: vendorProfileOperationID},
+	)
+	if err != nil {
+		return identityUnavailableHandler("organization vendor-profile service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -264,6 +282,26 @@ func postgresOrganizationCustomerProfileAuditWriter(auditWriter identity.Postgre
 		}
 		return auditWriter(ctx, tx, identity.AuditRecord{
 			UserID: record.CustomerProfileID, ActorUserID: record.ActorUserID, ActorAuthenticationSubjectRef: record.ActorSubjectReference,
+			Action: record.Action, ScopeIDs: []string{record.ScopeID.String()}, Permission: record.Permission,
+			PolicyReference: record.PolicyReference, PolicyVersion: record.PolicyVersion, DecisionReference: record.DecisionReference,
+			ApprovalRequestID: approvalRequestID, ApprovalDecisionID: approvalDecisionID, ApproverUserID: approverUserID,
+			RevisionVersion: record.RevisionNumber, BeforeFingerprint: record.BeforeFingerprint, AfterFingerprint: record.AfterFingerprint,
+			CorrelationID: record.CorrelationID, CausationID: record.CausationID,
+		})
+	}
+}
+
+func postgresOrganizationVendorProfileAuditWriter(auditWriter identity.PostgresAuditWriter) organization.PostgresVendorProfileAuditWriter {
+	return func(ctx context.Context, tx pgx.Tx, record organization.VendorProfileAuditRecord) (uuid.UUID, error) {
+		if auditWriter == nil {
+			return uuid.Nil, organization.ErrVendorProfileAuditUnavailable
+		}
+		var approvalRequestID, approvalDecisionID, approverUserID uuid.UUID
+		if record.Approval != nil {
+			approvalRequestID, approvalDecisionID, approverUserID = record.Approval.ApprovalRequestID, record.Approval.DecisionID, record.Approval.ApproverUserID
+		}
+		return auditWriter(ctx, tx, identity.AuditRecord{
+			UserID: record.VendorProfileID, ActorUserID: record.ActorUserID, ActorAuthenticationSubjectRef: record.ActorSubjectReference,
 			Action: record.Action, ScopeIDs: []string{record.ScopeID.String()}, Permission: record.Permission,
 			PolicyReference: record.PolicyReference, PolicyVersion: record.PolicyVersion, DecisionReference: record.DecisionReference,
 			ApprovalRequestID: approvalRequestID, ApprovalDecisionID: approvalDecisionID, ApproverUserID: approverUserID,
@@ -402,8 +440,21 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err != nil {
 		return identityUnavailableHandler("organization customer-profile service unavailable"), nil
 	}
+	vendorProfileRepository := organization.NewMemoryVendorProfileRepository(partyRepository)
+	vendorProfileService, err := organization.NewVendorProfileService(
+		vendorProfileRepository,
+		partyRepository,
+		permissiveOrganizationAuthorizer{},
+		permissiveOrganizationAuthorizer{},
+		organization.AllowAllVendorProfileApprovalValidator{},
+		&organization.MemoryVendorProfileAuditRecorder{},
+		time.Now,
+	)
+	if err != nil {
+		return identityUnavailableHandler("organization vendor-profile service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -465,6 +516,21 @@ func (authorizer evaluatorOrganizationAuthorizer) AuthorizeCustomerProfileFields
 		return organization.CustomerProfileFieldAuthorization{}, nil
 	}
 	return organization.CustomerProfileFieldAuthorization{CreditTerms: true, CreditLimit: true, BillingPreference: true, TaxTreatment: true}, nil
+}
+
+func (authorizer evaluatorOrganizationAuthorizer) AuthorizeVendorProfile(ctx context.Context, actor organization.Actor, command organization.VendorProfileCommand, _ *organization.VendorProfile) (organization.AuthorizationDecision, error) {
+	return authorizer.evaluateVendorProfile(ctx, actor, organization.VendorProfileManagementPermission, command.ScopeID)
+}
+
+func (authorizer evaluatorOrganizationAuthorizer) AuthorizeVendorProfileFields(ctx context.Context, actor organization.Actor, command organization.VendorProfileCommand, _ *organization.VendorProfile) (organization.VendorProfileFieldAuthorization, error) {
+	decision, err := authorizer.evaluateVendorProfile(ctx, actor, organization.VendorProfileManagementPermission, command.ScopeID)
+	if err != nil {
+		return organization.VendorProfileFieldAuthorization{}, err
+	}
+	if !decision.Allowed {
+		return organization.VendorProfileFieldAuthorization{}, nil
+	}
+	return organization.VendorProfileFieldAuthorization{PaymentTerms: true, WithholdingTreatment: true, RemittancePreference: true}, nil
 }
 
 func (authorizer evaluatorOrganizationAuthorizer) evaluate(ctx context.Context, actor organization.Actor, permission string, scopeID uuid.UUID) (organization.AuthorizationDecision, error) {
@@ -551,6 +617,34 @@ func (authorizer evaluatorOrganizationAuthorizer) evaluateCustomerProfile(ctx co
 	return result, nil
 }
 
+func (authorizer evaluatorOrganizationAuthorizer) evaluateVendorProfile(ctx context.Context, actor organization.Actor, permission string, scopeID uuid.UUID) (organization.AuthorizationDecision, error) {
+	if authorizer.evaluator == nil {
+		return organization.AuthorizationDecision{}, organization.ErrVendorProfileAuthorizationUnavailable
+	}
+	decision, err := authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{ActorID: actor.UserID, Permission: permission, RequestedScopeIDs: []string{scopeID.String()}})
+	if err != nil {
+		return organization.AuthorizationDecision{}, organization.ErrVendorProfileAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationUnavailable {
+		return organization.AuthorizationDecision{}, organization.ErrVendorProfileAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationStale {
+		return organization.AuthorizationDecision{}, organization.ErrVendorProfileAuthorizationStale
+	}
+	result := organization.AuthorizationDecision{Allowed: decision.Allowed, Outcome: string(decision.Outcome), Permission: decision.Permission, PolicyReference: decision.PolicyReference, PolicyVersion: decision.PolicyVersion, DecisionReference: decision.DecisionReference}
+	for _, value := range decision.ApprovedScopeIDs {
+		if value == "*" {
+			result.ApprovedScopeIDs = append(result.ApprovedScopeIDs, uuid.Nil)
+			continue
+		}
+		parsed, parseErr := uuid.Parse(value)
+		if parseErr == nil {
+			result.ApprovedScopeIDs = append(result.ApprovedScopeIDs, parsed)
+		}
+	}
+	return result, nil
+}
+
 type permissiveOrganizationAuthorizer struct{}
 
 func (permissiveOrganizationAuthorizer) AuthorizeLegalEntity(context.Context, organization.Actor, organization.LegalEntityCommand, *organization.LegalEntity) (organization.AuthorizationDecision, error) {
@@ -574,6 +668,14 @@ func (permissiveOrganizationAuthorizer) AuthorizeCustomerProfile(context.Context
 
 func (permissiveOrganizationAuthorizer) AuthorizeCustomerProfileFields(context.Context, organization.Actor, organization.CustomerProfileCommand, *organization.CustomerProfile) (organization.CustomerProfileFieldAuthorization, error) {
 	return organization.CustomerProfileFieldAuthorization{CreditTerms: true, CreditLimit: true, BillingPreference: true, TaxTreatment: true}, nil
+}
+
+func (permissiveOrganizationAuthorizer) AuthorizeVendorProfile(context.Context, organization.Actor, organization.VendorProfileCommand, *organization.VendorProfile) (organization.AuthorizationDecision, error) {
+	return organization.AuthorizationDecision{Allowed: true, Permission: organization.VendorProfileManagementPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{uuid.Nil}}, nil
+}
+
+func (permissiveOrganizationAuthorizer) AuthorizeVendorProfileFields(context.Context, organization.Actor, organization.VendorProfileCommand, *organization.VendorProfile) (organization.VendorProfileFieldAuthorization, error) {
+	return organization.VendorProfileFieldAuthorization{PaymentTerms: true, WithholdingTreatment: true, RemittancePreference: true}, nil
 }
 
 type unavailablePartyBankControlEvaluator struct{}
