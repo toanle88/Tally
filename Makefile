@@ -170,7 +170,7 @@ db-migrate-validate:
 
 db-migrate-create:
 	@if [ -z "$(SCHEMA)" ] || [ -z "$(NAME)" ]; then \
-		echo "Usage: make db-migrate-create SCHEMA=<bootstrap|platform|identity> NAME=<migration_name>" >&2; \
+		echo "Usage: make db-migrate-create SCHEMA=<bootstrap|platform|identity|organization> NAME=<migration_name>" >&2; \
 		exit 2; \
 	fi
 	./scripts/db/migrate.sh create "$(SCHEMA)" "$(NAME)"

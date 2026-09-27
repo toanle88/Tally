@@ -69,8 +69,11 @@ reference contracts.
   unrestricted tax/personal data in OMD records, API errors, telemetry,
   notifications, exports, or published payloads.
 - No new public route, event name, database schema/table family, cross-schema
-  query, or generated API contract. Existing master-data contracts are wired
-  only where their approved ownership and semantics are implemented.
+  query, or generated API contract outside the approved technical/API
+  specifications. Those specifications define the two additive
+  `/master-data/reference/legal-entities` read operations and the
+  `organization.legal_entity` child/revision tables needed for the LegalEntity
+  owner. No other OMD public surface is authorized here.
 - No production-data qualification, live Entra qualification, finance-module
   enforcement, or full audit-chain qualification.
 
@@ -153,17 +156,17 @@ dependent capabilities can use an authoritative organizational record.
 
 Acceptance criteria:
 
-- [ ] An authorized command can create or maintain the legal-entity fields
+- [x] An authorized command can create or maintain the legal-entity fields
   defined by `FR-OMD-001`, including end-dating a no-longer-applicable entity.
-- [ ] Scoped uniqueness, lifecycle status, effective-date, approval-where-
+- [x] Scoped uniqueness, lifecycle status, effective-date, approval-where-
   applicable, and historical-version validation outcomes are explicit and
   typed; invalid input does not partially change the aggregate.
-- [ ] A successful result identifies the accepted aggregate/version and
+- [x] A successful result identifies the accepted aggregate/version and
   applicable effective interval without exposing restricted values.
-- [ ] `If-Match`, idempotency, correlation, audit, and material-action
+- [x] `If-Match`, idempotency, correlation, audit, and material-action
   evidence follow the existing platform contracts; stale or replayed commands
   cannot silently overwrite a newer version.
-- [ ] `OMD-SCR-01` and `OMD-WS-01` expose identity, state, effective dates,
+- [x] `OMD-SCR-01` and `OMD-WS-01` expose identity, state, effective dates,
   validation, approval, and next action without creating a second mutation
   surface in another capability.
 
@@ -181,14 +184,28 @@ Suggested implementation steps:
 
 Required test evidence:
 
-- [ ] Domain tests for identity, child records, lifecycle, effective dates,
+- [x] Domain tests for identity, child records, lifecycle, effective dates,
   validation, and aggregate-version conflicts.
-- [ ] Transactional API tests for authorization, idempotent retry, stale
+- [x] Transactional API tests for authorization, idempotent retry, stale
   version, typed problem details, audit failure, and correlation propagation.
-- [ ] Persistence tests proving organization-schema ownership and historical
+- [x] Persistence tests proving organization-schema ownership and historical
   version preservation.
-- [ ] UI and Playwright tests for `OMD-SCR-01`, masked sensitive values,
+- [x] UI and Playwright tests for `OMD-SCR-01`, masked sensitive values,
   keyboard behavior, and safe status/error announcements.
+
+Verification evidence (2026-09-27):
+
+- `go test ./...` and the focused organization/API tests pass through the
+  Linux `make api-check` gate.
+- `make api-check`, `make db-migrate-validate db-migrate-check`, and
+  `make sqlc-compile` pass; generated Go and TypeScript artifacts are
+  deterministic and current.
+- The PostgreSQL integration test
+  `TestOrganizationLegalEntityRepositoryPreservesRevisionsAndRollsBackAuditFailure`
+  passes with Docker.
+- `pnpm -C web` Vitest passes 14 files / 69 tests; Playwright accessibility
+  passes 18 tests, including keyboard, masking, announcements, and visual
+  adaptability coverage.
 
 ### User Story 2 — Maintain parties
 

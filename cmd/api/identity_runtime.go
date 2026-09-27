@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/toanle88/Tally/internal/identity"
+	"github.com/toanle88/Tally/internal/organization"
 	"github.com/toanle88/Tally/internal/platform/httpapi"
 	"github.com/toanle88/Tally/internal/platform/httpapi/generated"
 	platformidempotency "github.com/toanle88/Tally/internal/platform/idempotency"
@@ -22,58 +23,59 @@ const (
 	roleOperationID            = "identity.manage-roles.v1"
 	segregationOperationID     = "identity.manage-segregation-rules.v1"
 	emergencyAccessOperationID = "identity.emergency-access.v1"
+	organizationOperationID    = "organization.maintain-legal-entities.v1"
 )
 
-func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) http.Handler {
+func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
 	if getenv == nil {
 		getenv = func(string) string { return "" }
 	}
 	if pool == nil || auditWriter == nil {
-		return identityUnavailableHandler("identity persistence or audit integration unavailable")
+		return identityUnavailableHandler("identity persistence or audit integration unavailable"), nil
 	}
 	repository, err := identity.NewPostgresUserRepositoryWithAudit(pool, auditWriter)
 	if err != nil {
-		return identityUnavailableHandler("identity persistence unavailable")
+		return identityUnavailableHandler("identity persistence unavailable"), nil
 	}
 	roleRepository, err := identity.NewPostgresRoleRepositoryWithAudit(pool, postgresRoleAuditWriter(auditWriter))
 	if err != nil {
-		return identityUnavailableHandler("identity role persistence unavailable")
+		return identityUnavailableHandler("identity role persistence unavailable"), nil
 	}
 	return newIdentityAPIServerWithPostgresRepository(getenv, pool, repository, roleRepository, auditWriter, instrumentation...)
 }
 
-func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool *pgxpool.Pool, repository *identity.PostgresUserRepository, roleRepository *identity.PostgresRoleRepository, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) http.Handler {
+func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool *pgxpool.Pool, repository *identity.PostgresUserRepository, roleRepository *identity.PostgresRoleRepository, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
 	if getenv == nil {
 		getenv = func(string) string { return "" }
 	}
 	if pool == nil || repository == nil || roleRepository == nil || auditWriter == nil {
-		return identityUnavailableHandler("identity persistence or role integration unavailable")
+		return identityUnavailableHandler("identity persistence or role integration unavailable"), nil
 	}
 	policyStore, err := identity.NewPostgresAccessPolicyStore(pool)
 	if err != nil {
-		return identityUnavailableHandler("identity policy persistence unavailable")
+		return identityUnavailableHandler("identity policy persistence unavailable"), nil
 	}
 	policyEvaluator, err := identity.NewPolicyEvaluator(policyStore, time.Now, authorizationDecisionObserver(instrumentation...))
 	if err != nil {
-		return identityUnavailableHandler("identity policy evaluator unavailable")
+		return identityUnavailableHandler("identity policy evaluator unavailable"), nil
 	}
 	authorizer := evaluatorIdentityAuthorizer{evaluator: policyEvaluator}
 	segregationRepository, err := identity.NewPostgresSegregationRuleRepositoryWithAudit(pool, postgresSegregationRuleAuditWriter(auditWriter))
 	if err != nil {
-		return identityUnavailableHandler("identity segregation-rule persistence unavailable")
+		return identityUnavailableHandler("identity segregation-rule persistence unavailable"), nil
 	}
 	emergencyRepository, err := identity.NewPostgresEmergencyAccessRepositoryWithAudit(pool, postgresEmergencyAccessAuditWriter(auditWriter))
 	if err != nil {
-		return identityUnavailableHandler("identity emergency-access persistence unavailable")
+		return identityUnavailableHandler("identity emergency-access persistence unavailable"), nil
 	}
 	segregationEvaluator, err := identity.NewSegregationEvaluator(segregationRepository, time.Now, segregationDecisionObserver(instrumentation...))
 	if err != nil {
-		return identityUnavailableHandler("identity segregation-rule evaluator unavailable")
+		return identityUnavailableHandler("identity segregation-rule evaluator unavailable"), nil
 	}
 	segregationAudit := &identity.MemorySegregationRuleAuditRecorder{}
 	segregationService, err := identity.NewSegregationRuleServiceWithDurableIdempotency(segregationRepository, authorizer, identity.AllowAllSegregationRuleApprovalPort{}, segregationAudit, time.Now, identity.DurableSegregationRuleServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, OperationID: segregationOperationID})
 	if err != nil {
-		return identityUnavailableHandler("identity segregation-rule service unavailable")
+		return identityUnavailableHandler("identity segregation-rule service unavailable"), nil
 	}
 	userService, err := identity.NewUserServiceWithDurableIdempotency(
 		repository,
@@ -92,7 +94,7 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 		roleRepository,
 	)
 	if err != nil {
-		return identityUnavailableHandler("identity user service unavailable")
+		return identityUnavailableHandler("identity user service unavailable"), nil
 	}
 	roleService, err := identity.NewRoleServiceWithDurableIdempotency(
 		roleRepository,
@@ -112,7 +114,7 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 		},
 	)
 	if err != nil {
-		return identityUnavailableHandler("identity role service unavailable")
+		return identityUnavailableHandler("identity role service unavailable"), nil
 	}
 	emergencyAccessService, err := identity.NewEmergencyAccessServiceWithDurableIdempotency(
 		emergencyRepository,
@@ -128,16 +130,31 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 		},
 	)
 	if err != nil {
-		return identityUnavailableHandler("identity emergency-access service unavailable")
+		return identityUnavailableHandler("identity emergency-access service unavailable"), nil
+	}
+	organizationRepository, err := organization.NewPostgresLegalEntityRepository(pool, postgresOrganizationAuditWriter(auditWriter))
+	if err != nil {
+		return identityUnavailableHandler("organization persistence unavailable"), nil
+	}
+	organizationService, err := organization.NewLegalEntityServiceWithDurableIdempotency(
+		organizationRepository,
+		evaluatorOrganizationAuthorizer{evaluator: policyEvaluator},
+		organization.AllowAllApprovalValidator{},
+		&organization.MemoryAuditRecorder{},
+		time.Now,
+		organization.DurableLegalEntityServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, OperationID: organizationOperationID},
+	)
+	if err != nil {
+		return identityUnavailableHandler("organization service unavailable"), nil
 	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService},
+		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
-		return identityUnavailableHandler("identity API unavailable")
+		return identityUnavailableHandler("identity API unavailable"), nil
 	}
-	return server
+	return server, organizationService
 }
 
 func postgresRoleAuditWriter(auditWriter identity.PostgresAuditWriter) identity.PostgresRoleAuditWriter {
@@ -164,6 +181,19 @@ func postgresRoleAuditWriter(auditWriter identity.PostgresAuditWriter) identity.
 			CorrelationID:                 record.CorrelationID,
 			CausationID:                   record.CausationID,
 		})
+	}
+}
+
+func postgresOrganizationAuditWriter(auditWriter identity.PostgresAuditWriter) organization.PostgresAuditWriter {
+	return func(ctx context.Context, tx pgx.Tx, record organization.AuditRecord) (uuid.UUID, error) {
+		if auditWriter == nil {
+			return uuid.Nil, organization.ErrLegalEntityAuditUnavailable
+		}
+		var approvalRequestID, approvalDecisionID, approverUserID uuid.UUID
+		if record.Approval != nil {
+			approvalRequestID, approvalDecisionID, approverUserID = record.Approval.ApprovalRequestID, record.Approval.DecisionID, record.Approval.ApproverUserID
+		}
+		return auditWriter(ctx, tx, identity.AuditRecord{UserID: record.LegalEntityID, ActorUserID: record.ActorUserID, ActorAuthenticationSubjectRef: record.ActorSubjectReference, Action: record.Action, ScopeIDs: []string{record.ScopeID.String()}, Permission: record.Permission, PolicyReference: record.PolicyReference, PolicyVersion: record.PolicyVersion, DecisionReference: record.DecisionReference, ApprovalRequestID: approvalRequestID, ApprovalDecisionID: approvalDecisionID, ApproverUserID: approverUserID, RevisionVersion: record.RevisionNumber, BeforeFingerprint: record.BeforeFingerprint, AfterFingerprint: record.AfterFingerprint, CorrelationID: record.CorrelationID, CausationID: record.CausationID})
 	}
 }
 
@@ -200,32 +230,32 @@ func identityUnavailableHandler(message string) http.Handler {
 	})
 }
 
-func newIdentityAPIServer(getenv func(string) string) http.Handler {
+func newIdentityAPIServer(getenv func(string) string) (http.Handler, *organization.LegalEntityService) {
 	return newIdentityAPIServerWithRepository(getenv, identity.NewMemoryUserRepository())
 }
 
-func newIdentityAPIServerWithRepository(getenv func(string) string, repository identity.UserRepository, instrumentation ...*telemetry.Instrumentation) http.Handler {
+func newIdentityAPIServerWithRepository(getenv func(string) string, repository identity.UserRepository, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
 	if getenv == nil {
 		getenv = func(string) string { return "" }
 	}
 	roleRepository := identity.NewMemoryRoleRepository()
 	authorizer, err := newEnvironmentIdentityAuthorizer(getenv, instrumentation...)
 	if err != nil {
-		return identityUnavailableHandler("identity policy evaluator unavailable")
+		return identityUnavailableHandler("identity policy evaluator unavailable"), nil
 	}
 	segregationRepository, err := identity.NewMemorySegregationRuleRepository(identity.DefaultSegregationRules(time.Now())...)
 	if err != nil {
-		return identityUnavailableHandler("identity segregation-rule persistence unavailable")
+		return identityUnavailableHandler("identity segregation-rule persistence unavailable"), nil
 	}
 	segregationEvaluator, err := identity.NewSegregationEvaluator(segregationRepository, time.Now, segregationDecisionObserver(instrumentation...))
 	if err != nil {
-		return identityUnavailableHandler("identity segregation-rule evaluator unavailable")
+		return identityUnavailableHandler("identity segregation-rule evaluator unavailable"), nil
 	}
 	emergencyRepository := identity.NewMemoryEmergencyAccessRepository()
 	segregationAudit := &identity.MemorySegregationRuleAuditRecorder{}
 	segregationService, err := identity.NewSegregationRuleService(segregationRepository, authorizer, identity.AllowAllSegregationRuleApprovalPort{}, segregationAudit, time.Now)
 	if err != nil {
-		return identityUnavailableHandler("identity segregation-rule service unavailable")
+		return identityUnavailableHandler("identity segregation-rule service unavailable"), nil
 	}
 	userService, err := identity.NewUserService(
 		repository,
@@ -235,7 +265,7 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 		roleRepository,
 	)
 	if err != nil {
-		return identityUnavailableHandler("identity service unavailable")
+		return identityUnavailableHandler("identity service unavailable"), nil
 	}
 	roleService, err := identity.NewRoleService(
 		roleRepository,
@@ -246,7 +276,7 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 		time.Now,
 	)
 	if err != nil {
-		return identityUnavailableHandler("identity role service unavailable")
+		return identityUnavailableHandler("identity role service unavailable"), nil
 	}
 	emergencyAccessService, err := identity.NewEmergencyAccessService(
 		emergencyRepository,
@@ -257,16 +287,27 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 		time.Now,
 	)
 	if err != nil {
-		return identityUnavailableHandler("identity emergency-access service unavailable")
+		return identityUnavailableHandler("identity emergency-access service unavailable"), nil
+	}
+	organizationRepository := organization.NewMemoryLegalEntityRepository()
+	organizationService, err := organization.NewLegalEntityService(
+		organizationRepository,
+		permissiveOrganizationAuthorizer{},
+		organization.AllowAllApprovalValidator{},
+		&organization.MemoryAuditRecorder{},
+		time.Now,
+	)
+	if err != nil {
+		return identityUnavailableHandler("organization service unavailable"), nil
 	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService},
+		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
-		return identityUnavailableHandler("identity API unavailable")
+		return identityUnavailableHandler("identity API unavailable"), nil
 	}
-	return server
+	return server, organizationService
 }
 
 type apiBearerSecurityHandler struct{}
@@ -280,6 +321,55 @@ func (apiBearerSecurityHandler) HandleBearerAuth(ctx context.Context, _ generate
 
 type evaluatorIdentityAuthorizer struct {
 	evaluator identity.AuthorizationEvaluator
+}
+
+type evaluatorOrganizationAuthorizer struct {
+	evaluator identity.AuthorizationEvaluator
+}
+
+func (authorizer evaluatorOrganizationAuthorizer) AuthorizeLegalEntity(ctx context.Context, actor organization.Actor, command organization.LegalEntityCommand, _ *organization.LegalEntity) (organization.AuthorizationDecision, error) {
+	return authorizer.evaluate(ctx, actor, organization.LegalEntityManagementPermission, command.ScopeID)
+}
+
+func (authorizer evaluatorOrganizationAuthorizer) AuthorizeLegalEntityRead(ctx context.Context, actor organization.Actor, scopeID uuid.UUID) (organization.AuthorizationDecision, error) {
+	return authorizer.evaluate(ctx, actor, organization.LegalEntityReadPermission, scopeID)
+}
+
+func (authorizer evaluatorOrganizationAuthorizer) evaluate(ctx context.Context, actor organization.Actor, permission string, scopeID uuid.UUID) (organization.AuthorizationDecision, error) {
+	if authorizer.evaluator == nil {
+		return organization.AuthorizationDecision{}, organization.ErrLegalEntityAuthorizationUnavailable
+	}
+	decision, err := authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{ActorID: actor.UserID, Permission: permission, RequestedScopeIDs: []string{scopeID.String()}})
+	if err != nil {
+		return organization.AuthorizationDecision{}, organization.ErrLegalEntityAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationUnavailable {
+		return organization.AuthorizationDecision{}, organization.ErrLegalEntityAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationStale {
+		return organization.AuthorizationDecision{}, organization.ErrLegalEntityAuthorizationStale
+	}
+	result := organization.AuthorizationDecision{Allowed: decision.Allowed, Outcome: string(decision.Outcome), Permission: decision.Permission, PolicyReference: decision.PolicyReference, PolicyVersion: decision.PolicyVersion, DecisionReference: decision.DecisionReference}
+	for _, value := range decision.ApprovedScopeIDs {
+		if value == "*" {
+			result.ApprovedScopeIDs = append(result.ApprovedScopeIDs, uuid.Nil)
+			continue
+		}
+		parsed, parseErr := uuid.Parse(value)
+		if parseErr == nil {
+			result.ApprovedScopeIDs = append(result.ApprovedScopeIDs, parsed)
+		}
+	}
+	return result, nil
+}
+
+type permissiveOrganizationAuthorizer struct{}
+
+func (permissiveOrganizationAuthorizer) AuthorizeLegalEntity(context.Context, organization.Actor, organization.LegalEntityCommand, *organization.LegalEntity) (organization.AuthorizationDecision, error) {
+	return organization.AuthorizationDecision{Allowed: true, Permission: organization.LegalEntityManagementPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{uuid.Nil}}, nil
+}
+func (permissiveOrganizationAuthorizer) AuthorizeLegalEntityRead(context.Context, organization.Actor, uuid.UUID) (organization.AuthorizationDecision, error) {
+	return organization.AuthorizationDecision{Allowed: true, Permission: organization.LegalEntityReadPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{uuid.Nil}}, nil
 }
 
 func (authorizer evaluatorIdentityAuthorizer) AuthorizeUserManagement(ctx context.Context, actor identity.ApplicationActor, command identity.UserCommand, current *identity.User) (identity.AuthorizationDecision, error) {

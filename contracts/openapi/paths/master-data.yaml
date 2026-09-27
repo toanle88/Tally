@@ -160,3 +160,43 @@
       '422': { $ref: ../components/common.yaml#/responses/Problem }
       '503': { $ref: ../components/common.yaml#/responses/Problem }
 
+/master-data/reference/legal-entities:
+  get:
+    tags: [master-data]
+    operationId: omdListLegalEntities
+    x-owner-capability: master-data
+    x-permission: finance.omd.read.legal.entities
+    parameters:
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/X-Accounting-Scope-Id
+      - $ref: ../components/common.yaml#/parameters/PageSize
+      - $ref: ../components/common.yaml#/parameters/PageAfter
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+
+/master-data/reference/legal-entities/{legalEntityId}:
+  get:
+    tags: [master-data]
+    operationId: omdGetLegalEntity
+    x-owner-capability: master-data
+    x-permission: finance.omd.read.legal.entities
+    parameters:
+      - name: legalEntityId
+        in: path
+        required: true
+        schema: { $ref: ../components/common.yaml#/schemas/Uuid }
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/X-Accounting-Scope-Id
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '404': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }

@@ -128,6 +128,8 @@ const (
 	InvFinalizeGeneratedInvoicesOperation                     OperationName = "InvFinalizeGeneratedInvoices"
 	InvGenerateInvoicesOperation                              OperationName = "InvGenerateInvoices"
 	InvRecalculateUnfinalizedInvoicesOperation                OperationName = "InvRecalculateUnfinalizedInvoices"
+	OmdGetLegalEntityOperation                                OperationName = "OmdGetLegalEntity"
+	OmdListLegalEntitiesOperation                             OperationName = "OmdListLegalEntities"
 	OmdMaintainCustomerProfilesOperation                      OperationName = "OmdMaintainCustomerProfiles"
 	OmdMaintainFiscalCalendarsOperation                       OperationName = "OmdMaintainFiscalCalendars"
 	OmdMaintainLegalEntitiesOperation                         OperationName = "OmdMaintainLegalEntities"

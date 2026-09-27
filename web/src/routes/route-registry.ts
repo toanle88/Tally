@@ -8,7 +8,7 @@ export type NavigationArea =
   | 'Administration'
   | 'Audit'
 
-export type ScreenId = 'XCT-WS-01' | 'XCT-SCR-01' | 'CON-SCR-01' | 'IAM-WS-01' | 'IAM-SCR-01' | 'IAM-SCR-04'
+export type ScreenId = 'XCT-WS-01' | 'XCT-SCR-01' | 'CON-SCR-01' | 'IAM-WS-01' | 'IAM-SCR-01' | 'IAM-SCR-04' | 'OMD-WS-01' | 'OMD-SCR-01'
 
 export type RouteId =
   | 'home'
@@ -20,6 +20,8 @@ export type RouteId =
   | 'administration'
   | 'iamWorklist'
   | 'iamEmergencyAccess'
+  | 'omdWorklist'
+  | 'omdDetail'
   | 'audit'
   | 'xctWorklist'
   | 'xctDetail'
@@ -46,6 +48,8 @@ export const routeRegistry = [
   { id: 'administration', path: '/administration', title: 'Administration', kind: 'area', navigationArea: 'Administration', requiresScope: true },
   { id: 'iamWorklist', path: '/administration/identity-access', title: 'Users and access assignments', kind: 'operational', navigationArea: 'Administration', screenId: 'IAM-WS-01', requiresScope: true },
   { id: 'iamEmergencyAccess', path: '/identity-access/iam-scr-04', title: 'Emergency access grant and review', kind: 'operational', navigationArea: 'Administration', screenId: 'IAM-SCR-04', requiresScope: true },
+  { id: 'omdWorklist', path: '/master-data/omd-ws-01', title: 'Legal-entity master-data worklist', kind: 'operational', navigationArea: 'Records', screenId: 'OMD-WS-01', requiresScope: true },
+  { id: 'omdDetail', path: '/master-data/omd-scr-01', title: 'Legal-entity record', kind: 'operational', navigationArea: 'Records', screenId: 'OMD-SCR-01', requiresScope: true },
   { id: 'audit', path: '/audit', title: 'Audit', kind: 'area', navigationArea: 'Audit', requiresScope: true },
   { id: 'xctWorklist', path: '/operations/xct-ws-01', title: 'Cross-context event exception worklist', kind: 'operational', navigationArea: 'Exceptions', screenId: 'XCT-WS-01', requiresScope: true },
   { id: 'xctDetail', path: '/operations/xct-scr-01', title: 'Cross-context event outcome detail', kind: 'operational', navigationArea: 'Exceptions', screenId: 'XCT-SCR-01', requiresScope: true },

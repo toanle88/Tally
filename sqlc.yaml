@@ -25,3 +25,15 @@ sql:
         package: identitydb
         out: internal/identity/identitydb
         sql_package: pgx/v5
+  - name: organization
+    engine: postgresql
+    schema:
+      - db/migrations/bootstrap
+      - db/migrations/organization
+    queries:
+      - db/queries/organization
+    gen:
+      go:
+        package: organizationdb
+        out: internal/organization/organizationdb
+        sql_package: pgx/v5

@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-generated_dir="internal/platform/database/platformdb"
+generated_dirs=(
+  "internal/platform/database/platformdb"
+  "internal/identity/identitydb"
+  "internal/organization/organizationdb"
+)
 
 fail() {
   printf 'sqlc check failed: %s\n' "$1" >&2
@@ -23,42 +27,46 @@ if [[ ! -f scripts/tools/sqlc.sh ]]; then
   fail "scripts/tools/sqlc.sh is missing"
 fi
 
-if [[ ! -d "${generated_dir}" ]]; then
-  fail "generated directory is missing; run make db-sqlc-generate and commit the output first"
-fi
+for generated_dir in "${generated_dirs[@]}"; do
+  if [[ ! -d "${generated_dir}" ]]; then
+    fail "generated directory is missing: ${generated_dir}; run make db-sqlc-generate and commit the output first"
+  fi
 
-if [[ -z "$(git ls-files -- "${generated_dir}")" ]]; then
-  fail "generated output is not committed"
-fi
+  if [[ -z "$(git ls-files -- "${generated_dir}")" ]]; then
+    fail "generated output is not committed: ${generated_dir}"
+  fi
 
-# Check before generation so a manual edit cannot be overwritten and hidden.
-if ! git diff --quiet -- "${generated_dir}"; then
-  fail "generated output has unstaged changes"
-fi
+  # Check before generation so a manual edit cannot be overwritten and hidden.
+  if ! git diff --quiet -- "${generated_dir}"; then
+    fail "generated output has unstaged changes: ${generated_dir}"
+  fi
 
-if ! git diff --cached --quiet -- "${generated_dir}"; then
-  fail "generated output has staged changes"
-fi
+  if ! git diff --cached --quiet -- "${generated_dir}"; then
+    fail "generated output has staged changes: ${generated_dir}"
+  fi
 
-if [[ -n "$(git ls-files --others --exclude-standard -- "${generated_dir}")" ]]; then
-  fail "generated output contains untracked files"
-fi
+  if [[ -n "$(git ls-files --others --exclude-standard -- "${generated_dir}")" ]]; then
+    fail "generated output contains untracked files: ${generated_dir}"
+  fi
+done
 
 bash ./scripts/tools/sqlc.sh generate -f sqlc.yaml
 
 # Source/schema drift is detected when regeneration changes committed output.
-if ! git diff --quiet -- "${generated_dir}"; then
-  git --no-pager diff -- "${generated_dir}" >&2
-  fail "generated output is stale; run make db-sqlc-generate and commit the result"
-fi
+for generated_dir in "${generated_dirs[@]}"; do
+  if ! git diff --quiet -- "${generated_dir}"; then
+    git --no-pager diff -- "${generated_dir}" >&2
+    fail "generated output is stale: ${generated_dir}; run make db-sqlc-generate and commit the result"
+  fi
 
-if ! git diff --cached --quiet -- "${generated_dir}"; then
-  fail "generation left staged changes in generated output"
-fi
+  if ! git diff --cached --quiet -- "${generated_dir}"; then
+    fail "generation left staged changes in generated output: ${generated_dir}"
+  fi
 
-if [[ -n "$(git ls-files --others --exclude-standard -- "${generated_dir}")" ]]; then
-  git ls-files --others --exclude-standard -- "${generated_dir}" >&2
-  fail "generation created untracked output"
-fi
+  if [[ -n "$(git ls-files --others --exclude-standard -- "${generated_dir}")" ]]; then
+    git ls-files --others --exclude-standard -- "${generated_dir}" >&2
+    fail "generation created untracked output: ${generated_dir}"
+  fi
+done
 
 go test ./...

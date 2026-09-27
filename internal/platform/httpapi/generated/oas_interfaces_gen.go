@@ -489,6 +489,14 @@ type InvRecalculateUnfinalizedInvoicesRes interface {
 	invRecalculateUnfinalizedInvoicesRes()
 }
 
+type OmdGetLegalEntityRes interface {
+	omdGetLegalEntityRes()
+}
+
+type OmdListLegalEntitiesRes interface {
+	omdListLegalEntitiesRes()
+}
+
 type OmdMaintainCustomerProfilesRes interface {
 	omdMaintainCustomerProfilesRes()
 }

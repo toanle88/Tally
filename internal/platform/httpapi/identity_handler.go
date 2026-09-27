@@ -13,6 +13,7 @@ import (
 	"github.com/go-faster/jx"
 	"github.com/google/uuid"
 	"github.com/toanle88/Tally/internal/identity"
+	"github.com/toanle88/Tally/internal/organization"
 	"github.com/toanle88/Tally/internal/platform/aggregateversion"
 	"github.com/toanle88/Tally/internal/platform/httpapi/generated"
 )
@@ -23,6 +24,7 @@ type IdentityHandler struct {
 	RoleService            *identity.RoleService
 	SegregationRuleService *identity.SegregationRuleService
 	EmergencyAccessService *identity.EmergencyAccessService
+	OrganizationService    *organization.LegalEntityService
 }
 
 func (handler IdentityHandler) IamManageUsers(ctx context.Context, request *generated.IamManageUsersCommandRequest, params generated.IamManageUsersParams) (generated.IamManageUsersRes, error) {
