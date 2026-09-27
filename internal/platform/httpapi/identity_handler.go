@@ -27,6 +27,7 @@ type IdentityHandler struct {
 	EmergencyAccessService *identity.EmergencyAccessService
 	OrganizationService    *organization.LegalEntityService
 	PartyService           *organization.PartyService
+	CustomerProfileService *organization.CustomerProfileService
 	Instrumentation        *telemetry.Instrumentation
 }
 

@@ -54,6 +54,16 @@ describe('application router', () => {
     expect(screen.getByText(/Accepted fixture revision v6/)).toBeInTheDocument()
   })
 
+  it('supports the customer-profile maintenance screen with Party and profile versions', async () => {
+    renderRoute('/master-data/omd-scr-03?customerProfileId=customer-profile-northwind')
+    expect(await screen.findByRole('heading', { name: 'Customer profile record' })).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Northwind Distribution')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('v2')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('250000')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Save customer-profile revision' }))
+    expect(screen.getByText(/Accepted customer-profile revision v4/)).toBeInTheDocument()
+  })
+
   it('updates active navigation and supports back navigation', async () => {
     const router = renderRoute('/')
     fireEvent.click(screen.getByRole('link', { name: 'Exceptions' }))
