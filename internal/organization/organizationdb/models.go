@@ -68,3 +68,61 @@ type OrganizationLegalEntityRevision struct {
 	EffectiveTo      pgtype.Date
 	CreatedAt        pgtype.Timestamptz
 }
+
+type OrganizationParty struct {
+	ID                 pgtype.UUID
+	ScopeID            pgtype.UUID
+	Name               string
+	PartyType          string
+	Status             string
+	TaxIdentifier      pgtype.Text
+	BankControl        []byte
+	AggregateVersion   int64
+	RevisionNumber     int64
+	CreatedAt          pgtype.Timestamptz
+	UpdatedAt          pgtype.Timestamptz
+	LastAuditReference pgtype.UUID
+}
+
+type OrganizationPartyAddress struct {
+	ID          pgtype.UUID
+	PartyID     pgtype.UUID
+	AddressType string
+	Line1       string
+	Line2       pgtype.Text
+	Locality    string
+	Region      pgtype.Text
+	PostalCode  string
+	CountryCode string
+}
+
+type OrganizationPartyBankDetailReference struct {
+	ID               pgtype.UUID
+	PartyID          pgtype.UUID
+	Reference        string
+	ProviderCode     pgtype.Text
+	ConsentReference pgtype.Text
+}
+
+type OrganizationPartyClassification struct {
+	ID                  pgtype.UUID
+	PartyID             pgtype.UUID
+	ClassificationCode  string
+	ClassificationValue string
+}
+
+type OrganizationPartyContactMethod struct {
+	ID           pgtype.UUID
+	PartyID      pgtype.UUID
+	ContactType  string
+	ContactValue string
+	Label        pgtype.Text
+}
+
+type OrganizationPartyRevision struct {
+	PartyID          pgtype.UUID
+	RevisionNumber   int64
+	AggregateVersion int64
+	Snapshot         []byte
+	CreatedAt        pgtype.Timestamptz
+}

@@ -41,7 +41,17 @@ describe('application router', () => {
     fireEvent.click(screen.getByRole('link', { name: 'Acme Vietnam Co., Ltd.' }))
     expect(await screen.findByRole('heading', { name: 'Legal-entity record' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Save legal-entity revision' })).toBeInTheDocument()
-    expect(screen.getByText('Access restricted. The protected value remains masked and export is unavailable.')).toBeInTheDocument()
+    expect(screen.getAllByText('Access restricted. The protected value remains masked and export is unavailable.').length).toBeGreaterThan(0)
+  })
+
+  it('supports the Party maintenance screen with safe bank-control data', async () => {
+    renderRoute('/master-data/omd-scr-02?partyId=party-acme-vendor')
+    expect(await screen.findByRole('heading', { name: 'Party record' })).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Acme Industrial Supplies')).toBeInTheDocument()
+    expect(screen.getByText('provider-ref-001')).toBeInTheDocument()
+    expect(screen.getAllByText('Access restricted. The protected value remains masked and export is unavailable.').length).toBeGreaterThan(0)
+    fireEvent.click(screen.getByRole('button', { name: 'Save party fixture revision' }))
+    expect(screen.getByText(/Accepted fixture revision v6/)).toBeInTheDocument()
   })
 
   it('updates active navigation and supports back navigation', async () => {

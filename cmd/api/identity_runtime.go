@@ -24,6 +24,7 @@ const (
 	segregationOperationID     = "identity.manage-segregation-rules.v1"
 	emergencyAccessOperationID = "identity.emergency-access.v1"
 	organizationOperationID    = "organization.maintain-legal-entities.v1"
+	partyOperationID           = "organization.maintain-parties.v1"
 )
 
 func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
@@ -147,8 +148,25 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err != nil {
 		return identityUnavailableHandler("organization service unavailable"), nil
 	}
+	partyRepository, err := organization.NewPostgresPartyRepository(pool, postgresOrganizationPartyAuditWriter(auditWriter))
+	if err != nil {
+		return identityUnavailableHandler("organization party persistence unavailable"), nil
+	}
+	partyService, err := organization.NewPartyServiceWithDurableIdempotency(
+		partyRepository,
+		evaluatorOrganizationAuthorizer{evaluator: policyEvaluator},
+		evaluatorOrganizationAuthorizer{evaluator: policyEvaluator},
+		unavailablePartyBankReferenceValidator{},
+		unavailablePartyBankControlEvaluator{},
+		&organization.MemoryPartyAuditRecorder{},
+		time.Now,
+		organization.DurablePartyServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, OperationID: partyOperationID},
+	)
+	if err != nil {
+		return identityUnavailableHandler("organization party service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService},
+		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -194,6 +212,26 @@ func postgresOrganizationAuditWriter(auditWriter identity.PostgresAuditWriter) o
 			approvalRequestID, approvalDecisionID, approverUserID = record.Approval.ApprovalRequestID, record.Approval.DecisionID, record.Approval.ApproverUserID
 		}
 		return auditWriter(ctx, tx, identity.AuditRecord{UserID: record.LegalEntityID, ActorUserID: record.ActorUserID, ActorAuthenticationSubjectRef: record.ActorSubjectReference, Action: record.Action, ScopeIDs: []string{record.ScopeID.String()}, Permission: record.Permission, PolicyReference: record.PolicyReference, PolicyVersion: record.PolicyVersion, DecisionReference: record.DecisionReference, ApprovalRequestID: approvalRequestID, ApprovalDecisionID: approvalDecisionID, ApproverUserID: approverUserID, RevisionVersion: record.RevisionNumber, BeforeFingerprint: record.BeforeFingerprint, AfterFingerprint: record.AfterFingerprint, CorrelationID: record.CorrelationID, CausationID: record.CausationID})
+	}
+}
+
+func postgresOrganizationPartyAuditWriter(auditWriter identity.PostgresAuditWriter) organization.PostgresPartyAuditWriter {
+	return func(ctx context.Context, tx pgx.Tx, record organization.PartyAuditRecord) (uuid.UUID, error) {
+		if auditWriter == nil {
+			return uuid.Nil, organization.ErrPartyAuditUnavailable
+		}
+		var approvalRequestID, approvalDecisionID, approverUserID uuid.UUID
+		if record.Approval != nil {
+			approvalRequestID, approvalDecisionID, approverUserID = record.Approval.ApprovalRequestID, record.Approval.DecisionID, record.Approval.ApproverUserID
+		}
+		return auditWriter(ctx, tx, identity.AuditRecord{
+			UserID: record.PartyID, ActorUserID: record.ActorUserID, ActorAuthenticationSubjectRef: record.ActorSubjectReference,
+			Action: record.Action, ScopeIDs: []string{record.ScopeID.String()}, Permission: record.Permission,
+			PolicyReference: record.PolicyReference, PolicyVersion: record.PolicyVersion, DecisionReference: record.DecisionReference,
+			ApprovalRequestID: approvalRequestID, ApprovalDecisionID: approvalDecisionID, ApproverUserID: approverUserID,
+			RevisionVersion: record.RevisionNumber, BeforeFingerprint: record.BeforeFingerprint, AfterFingerprint: record.AfterFingerprint,
+			CorrelationID: record.CorrelationID, CausationID: record.CausationID,
+		})
 	}
 }
 
@@ -300,8 +338,21 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err != nil {
 		return identityUnavailableHandler("organization service unavailable"), nil
 	}
+	partyRepository := organization.NewMemoryPartyRepository()
+	partyService, err := organization.NewPartyService(
+		partyRepository,
+		permissiveOrganizationAuthorizer{},
+		permissiveOrganizationAuthorizer{},
+		unavailablePartyBankReferenceValidator{},
+		unavailablePartyBankControlEvaluator{},
+		&organization.MemoryPartyAuditRecorder{},
+		time.Now,
+	)
+	if err != nil {
+		return identityUnavailableHandler("organization party service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService},
+		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -335,6 +386,21 @@ func (authorizer evaluatorOrganizationAuthorizer) AuthorizeLegalEntityRead(ctx c
 	return authorizer.evaluate(ctx, actor, organization.LegalEntityReadPermission, scopeID)
 }
 
+func (authorizer evaluatorOrganizationAuthorizer) AuthorizeParty(ctx context.Context, actor organization.Actor, command organization.PartyCommand, _ *organization.Party) (organization.AuthorizationDecision, error) {
+	return authorizer.evaluateParty(ctx, actor, organization.PartyManagementPermission, command.ScopeID)
+}
+
+func (authorizer evaluatorOrganizationAuthorizer) AuthorizePartyFields(ctx context.Context, actor organization.Actor, command organization.PartyCommand, current *organization.Party) (organization.PartyFieldAuthorization, error) {
+	decision, err := authorizer.evaluateParty(ctx, actor, organization.PartyManagementPermission, command.ScopeID)
+	if err != nil {
+		return organization.PartyFieldAuthorization{}, err
+	}
+	if !decision.Allowed {
+		return organization.PartyFieldAuthorization{}, nil
+	}
+	return organization.PartyFieldAuthorization{Identity: true, RestrictedTaxIdentifier: true, PersonalData: true, Classifications: true, BankDetailReferences: true}, nil
+}
+
 func (authorizer evaluatorOrganizationAuthorizer) evaluate(ctx context.Context, actor organization.Actor, permission string, scopeID uuid.UUID) (organization.AuthorizationDecision, error) {
 	if authorizer.evaluator == nil {
 		return organization.AuthorizationDecision{}, organization.ErrLegalEntityAuthorizationUnavailable
@@ -363,6 +429,34 @@ func (authorizer evaluatorOrganizationAuthorizer) evaluate(ctx context.Context, 
 	return result, nil
 }
 
+func (authorizer evaluatorOrganizationAuthorizer) evaluateParty(ctx context.Context, actor organization.Actor, permission string, scopeID uuid.UUID) (organization.AuthorizationDecision, error) {
+	if authorizer.evaluator == nil {
+		return organization.AuthorizationDecision{}, organization.ErrPartyAuthorizationUnavailable
+	}
+	decision, err := authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{ActorID: actor.UserID, Permission: permission, RequestedScopeIDs: []string{scopeID.String()}})
+	if err != nil {
+		return organization.AuthorizationDecision{}, organization.ErrPartyAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationUnavailable {
+		return organization.AuthorizationDecision{}, organization.ErrPartyAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationStale {
+		return organization.AuthorizationDecision{}, organization.ErrPartyAuthorizationStale
+	}
+	result := organization.AuthorizationDecision{Allowed: decision.Allowed, Outcome: string(decision.Outcome), Permission: decision.Permission, PolicyReference: decision.PolicyReference, PolicyVersion: decision.PolicyVersion, DecisionReference: decision.DecisionReference}
+	for _, value := range decision.ApprovedScopeIDs {
+		if value == "*" {
+			result.ApprovedScopeIDs = append(result.ApprovedScopeIDs, uuid.Nil)
+			continue
+		}
+		parsed, parseErr := uuid.Parse(value)
+		if parseErr == nil {
+			result.ApprovedScopeIDs = append(result.ApprovedScopeIDs, parsed)
+		}
+	}
+	return result, nil
+}
+
 type permissiveOrganizationAuthorizer struct{}
 
 func (permissiveOrganizationAuthorizer) AuthorizeLegalEntity(context.Context, organization.Actor, organization.LegalEntityCommand, *organization.LegalEntity) (organization.AuthorizationDecision, error) {
@@ -370,6 +464,33 @@ func (permissiveOrganizationAuthorizer) AuthorizeLegalEntity(context.Context, or
 }
 func (permissiveOrganizationAuthorizer) AuthorizeLegalEntityRead(context.Context, organization.Actor, uuid.UUID) (organization.AuthorizationDecision, error) {
 	return organization.AuthorizationDecision{Allowed: true, Permission: organization.LegalEntityReadPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{uuid.Nil}}, nil
+}
+
+func (permissiveOrganizationAuthorizer) AuthorizeParty(context.Context, organization.Actor, organization.PartyCommand, *organization.Party) (organization.AuthorizationDecision, error) {
+	return organization.AuthorizationDecision{Allowed: true, Permission: organization.PartyManagementPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{uuid.Nil}}, nil
+}
+
+func (permissiveOrganizationAuthorizer) AuthorizePartyFields(context.Context, organization.Actor, organization.PartyCommand, *organization.Party) (organization.PartyFieldAuthorization, error) {
+	return organization.PartyFieldAuthorization{Identity: true, RestrictedTaxIdentifier: true, PersonalData: true, Classifications: true, BankDetailReferences: true}, nil
+}
+
+type unavailablePartyBankControlEvaluator struct{}
+
+func (unavailablePartyBankControlEvaluator) EvaluatePartyBankControl(context.Context, organization.PartyBankControlRequest) (organization.BankDetailControlState, error) {
+	return organization.BankDetailControlState{}, organization.ErrPartyBankControlUnavailable
+}
+
+type unavailablePartyBankReferenceValidator struct{}
+
+func (unavailablePartyBankReferenceValidator) ValidateAndCanonicalizePartyBankReferences(context.Context, organization.PartyBankReferenceValidationRequest) ([]organization.PartyBankDetailReference, error) {
+	return nil, organization.ErrPartyBankReferenceUnavailable
+}
+
+func optionalInstrumentation(values ...*telemetry.Instrumentation) *telemetry.Instrumentation {
+	if len(values) == 0 {
+		return nil
+	}
+	return values[0]
 }
 
 func (authorizer evaluatorIdentityAuthorizer) AuthorizeUserManagement(ctx context.Context, actor identity.ApplicationActor, command identity.UserCommand, current *identity.User) (identity.AuthorizationDecision, error) {

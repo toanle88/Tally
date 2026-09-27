@@ -220,18 +220,18 @@ customer and vendor capabilities can reference safe, current party data.
 
 Acceptance criteria:
 
-- [ ] An authorized command maintains the Party fields named by `FR-OMD-002`
+- [x] An authorized command maintains the Party fields named by `FR-OMD-002`
   and returns the accepted identity, `PartyStatus`, version, and validation
   outcome.
-- [ ] Bank details are represented only by approved references; raw account
+- [x] Bank details are represented only by approved references; raw account
   values, credentials, and provider tokens never enter records, responses,
   errors, logs, exports, notifications, or published payloads.
-- [ ] Vendor-related bank-detail changes expose applicable approval and
+- [x] Vendor-related bank-detail changes expose applicable approval and
   cooling-off state without allowing OMD to bypass IAM, Workflow, or payment
   controls.
-- [ ] Field-level authorization is independent: a user may see allowed party
+- [x] Field-level authorization is independent: a user may see allowed party
   fields while restricted bank/tax/personal values remain masked or absent.
-- [ ] Conflicts, invalid references, stale versions, unavailable audit or
+- [x] Conflicts, invalid references, stale versions, unavailable audit or
   dependency checks, and unauthorized attempts fail closed with safe typed
   outcomes.
 
@@ -250,14 +250,37 @@ Suggested implementation steps:
 
 Required test evidence:
 
-- [ ] Unit tests for PartyStatus, field-level independence, reference-only
+- [x] Unit tests for PartyStatus, field-level independence, reference-only
   bank details, approval/cooling-off outcomes, and version conflicts.
-- [ ] API tests proving no raw secret or sensitive value appears in any
+- [x] API tests proving no raw secret or sensitive value appears in any
   response or problem detail.
-- [ ] Audit and telemetry tests proving actor, scope, purpose, classification,
+- [x] Audit and telemetry tests proving actor, scope, purpose, classification,
   outcome, correlation, and support references are bounded and safe.
-- [ ] Component and Playwright tests for masking, accessible-name safety,
+- [x] Component and Playwright tests for masking, accessible-name safety,
   keyboard reveal behavior, and denied-field filters.
+
+Verification evidence (2026-09-27):
+
+- `go test ./...` passes with local socket access; focused Party domain,
+  service, API, runtime, and integration-test compilation are included. Party
+  service tests cover approved, pending, rejected, stale, and unavailable
+  bank-control outcomes, rollback, versioning, idempotency, and safe
+  field-level projections.
+- `make db-migrate-validate`, `make db-migrate-check`, and `make sqlc-compile`
+  pass. The Party migration and generated organization SQLC
+  models are current; `make db-sqlc-check` was not run to completion because
+  its clean-tree guard correctly rejects the intentionally uncommitted
+  generated changes in this working tree.
+- `make api-check` passes without changing the generated OpenAPI or
+  TypeScript client surface.
+- `pnpm -C web test -- --pool=forks --maxWorkers=1` passes 14 files / 70
+  tests; `pnpm -C web build` passes.
+- `pnpm -C web test:a11y` passes 18 tests, and the focused OMD Party check
+  `tests/a11y/omd-party.spec.ts` passes for OMD-WS-01 search and OMD-SCR-02.
+- Testcontainers PostgreSQL execution was not available because `docker info`
+  could not reach a Docker daemon; the Party integration test is present
+  and compiles with `go test -tags integration ./internal/platform/database
+  -run '^$'`, but no runtime integration result is claimed here.
 
 ### User Story 3 — Maintain customer profiles
 
