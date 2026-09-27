@@ -24,6 +24,7 @@ describe('route registry', () => {
       ['OMD-WS-01', '/master-data/omd-ws-01'],
       ['OMD-SCR-01', '/master-data/omd-scr-01'],
       ['OMD-SCR-02', '/master-data/omd-scr-02'],
+      ['OMD-SCR-03', '/master-data/omd-scr-03'],
       ['XCT-WS-01', '/operations/xct-ws-01'],
       ['XCT-SCR-01', '/operations/xct-scr-01'],
       ['CON-SCR-01', '/operations/con-scr-01'],

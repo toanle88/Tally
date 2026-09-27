@@ -8,6 +8,37 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type OrganizationCustomerProfile struct {
+	ID                  pgtype.UUID
+	ScopeID             pgtype.UUID
+	PartyID             pgtype.UUID
+	PartyVersion        int64
+	CreditTerms         string
+	CreditLimitAmount   pgtype.Numeric
+	CreditLimitCurrency string
+	BillingPreference   string
+	TaxTreatment        string
+	Status              string
+	EffectiveFrom       pgtype.Date
+	EffectiveTo         pgtype.Date
+	ApprovalReference   []byte
+	AggregateVersion    int64
+	RevisionNumber      int64
+	CreatedAt           pgtype.Timestamptz
+	UpdatedAt           pgtype.Timestamptz
+	LastAuditReference  pgtype.UUID
+}
+
+type OrganizationCustomerProfileRevision struct {
+	CustomerProfileID pgtype.UUID
+	RevisionNumber    int64
+	AggregateVersion  int64
+	Snapshot          []byte
+	EffectiveFrom     pgtype.Date
+	EffectiveTo       pgtype.Date
+	CreatedAt         pgtype.Timestamptz
+}
+
 type OrganizationLegalEntity struct {
 	ID                   pgtype.UUID
 	ScopeID              pgtype.UUID

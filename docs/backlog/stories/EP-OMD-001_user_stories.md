@@ -288,6 +288,7 @@ Verification evidence (2026-09-27):
 **Existing API operation:** `omdMaintainCustomerProfiles`
 **Permission:** `finance.omd.maintain.customer.profiles`
 **Primary screen:** `OMD-SCR-03`; worklist entry `OMD-WS-01`
+**Implementation status:** Implemented on `codex/omd-maintain-customer-profiles`; repository/runtime integration and Playwright evidence are complete. Approved CustomerProfile publication remains deferred to User Story 6 because the current event catalog defines no CustomerProfile publication event.
 
 As a Master Data Steward, I want to maintain customer terms, limits, billing
 preferences, and tax treatment against an authoritative party so that AR and
@@ -295,18 +296,18 @@ invoicing can consume a validated customer reference.
 
 Acceptance criteria:
 
-- [ ] An authorized command maintains the `CustomerProfile` fields defined by
+- [x] An authorized command maintains the `CustomerProfile` fields defined by
   `FR-OMD-003`, including its `PartyId`, and reports accepted or rejected
   validation without partial state.
-- [ ] Customer profile changes preserve aggregate version, effective-date,
+- [x] Customer profile changes preserve aggregate version, effective-date,
   approval-where-applicable, and historical-reference rules.
-- [ ] A missing, unauthorized, stale, or invalid party reference is rejected
+- [x] A missing, unauthorized, stale, or invalid party reference is rejected
   safely; OMD does not create customer invoices, receivables, credit, or
   collection state.
-- [ ] Customer tax, limit, and terms values are classified and projected only
+- [x] Customer tax, limit, and terms values are classified and projected only
   to authorized fields in records, filters, notifications, exports, and
   telemetry.
-- [ ] `OMD-SCR-03` identifies the authoritative Party and profile version and
+- [x] `OMD-SCR-03` identifies the authoritative Party and profile version and
   shows the next permitted action without exposing unrelated parties.
 
 Suggested implementation steps:
@@ -322,14 +323,32 @@ Suggested implementation steps:
 
 Required test evidence:
 
-- [ ] Domain tests for terms, limits, billing preference, tax treatment,
+- [x] Domain tests for terms, limits, billing preference, tax treatment,
   PartyId, lifecycle, effective dates, and conflicts.
-- [ ] API tests for typed rejection, authorization, idempotency, and safe
+- [x] API tests for typed rejection, authorization, idempotency, and safe
   correlation/support references.
-- [ ] Integration tests proving OMD publishes identifiers/versions without
-  writing AR or invoicing state.
-- [ ] UI tests for field-filtered details, counts, filters, and export-safe
-  projections.
+- [ ] Integration runtime test proving the approved publication boundary exposes
+  identifiers/versions without writing AR or invoicing state. The repository
+  transaction test is implemented and compiles, but the approved event catalog
+  contains no CustomerProfile publication event; durable publication remains
+  deferred to User Story 6.
+- [x] Component and Playwright tests for field-filtered details, counts,
+  filters, keyboard access, and safe projections are implemented. No separate
+  CustomerProfile export operation exists in the approved API contract; any
+  future export must reuse the same field-filtered projection.
+
+Verification evidence (2026-09-27):
+
+- `GOCACHE=/tmp/tally-go-cache go test ./internal/organization ./internal/platform/httpapi ./cmd/api` passes, including CustomerProfile domain, service, API, and runtime wiring tests.
+- `GOCACHE=/tmp/tally-go-cache go test ./...` passes across all Go packages.
+- `GOCACHE=/tmp/tally-go-cache go vet ./internal/organization ./internal/platform/httpapi ./cmd/api` passes.
+- `GOCACHE=/tmp/tally-go-cache go test -tags=integration ./internal/platform/database -run '^$'` passes for integration-test compilation.
+- `make db-migrate-validate`, `make db-migrate-check`, and `make sqlc-check` pass after adding the organization CustomerProfile migration and regenerated SQLC models.
+- `bash scripts/openapi/typescript-client-check.sh` and `pnpm -C web build` pass; the existing generic OpenAPI operation and generated client surface remain unchanged.
+- `pnpm -C web exec vitest run src/routes/route-registry.test.ts src/routes/router.test.tsx --reporter=verbose` passes 9 focused route/UI tests, including OMD-SCR-03.
+- `make persistence-integration-test` passes with PostgreSQL/Testcontainers (`internal/platform/database`, 82.646s), including CustomerProfile revision, Party-version, and audit-rollback coverage.
+- `pnpm -C web test:a11y -- tests/a11y/omd-customer-profile.spec.ts` passes 20 browser accessibility/keyboard tests, including OMD-SCR-03.
+- `make api-check` passes, including OpenAPI contract validation, deterministic bundling, Go/TypeScript generated-artifact checks, and the full Go test stage.
 
 ### User Story 4 — Maintain vendor profiles
 
