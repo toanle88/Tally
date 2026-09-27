@@ -3,6 +3,7 @@ import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 
 import { SensitiveDataGuard } from '@/components/sensitive-data-guard'
 import { Button, DataTable, Field, Panel, StatusBadge, type SemanticState } from '@/components/ui'
+import { initialParties, type PartyFixture } from '@/app/party-workspace'
 
 type LegalEntityStatus = 'draft' | 'active' | 'end_dated'
 type LegalEntity = {
@@ -34,6 +35,7 @@ const statusState: Record<LegalEntityStatus, SemanticState> = { draft: 'pending'
 export function LegalEntityWorklist() {
   const [search, setSearch] = useState('')
   const rows = useMemo(() => initialLegalEntities.filter((entity) => entity.legalName.toLowerCase().includes(search.toLowerCase()) || entity.id.includes(search.toLowerCase())), [search])
+  const partyRows = useMemo(() => initialParties.filter((party) => party.name.toLowerCase().includes(search.toLowerCase()) || party.id.includes(search.toLowerCase())), [search])
   const columns = useMemo(() => [
     { key: 'name', header: 'Legal entity', rowHeader: true, render: (entity: LegalEntity) => <RouterLink className="link link-primary font-semibold" to={`/master-data/omd-scr-01?legalEntityId=${entity.id}`}>{entity.legalName}</RouterLink> },
     { key: 'status', header: 'State', render: (entity: LegalEntity) => <StatusBadge state={statusState[entity.status]} label={entity.status} /> },
@@ -43,7 +45,15 @@ export function LegalEntityWorklist() {
     { key: 'nextAction', header: 'Next action', render: (entity: LegalEntity) => entity.nextAction },
   ] as const, [])
 
-  return <section aria-labelledby="omd-worklist-title" className="space-y-6"><div><p className="text-sm font-semibold uppercase tracking-wide text-primary">OMD-WS-01</p><h2 id="omd-worklist-title" className="mt-1 text-2xl font-semibold">Legal-entity master-data worklist</h2><p className="mt-2 max-w-3xl text-base-content/75">Search and review authoritative legal-entity records. Maintenance is available only on the record screen.</p></div><Panel title="Search and review" description="Results are scoped to the selected accounting context and show only safe projections."><div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end"><Field id="omd-search" label="Search legal entities" placeholder="Name or record identifier" value={search} onChange={(event) => setSearch(event.target.value)} /><p className="text-sm text-base-content/70" role="status" aria-live="polite">{rows.length} record{rows.length === 1 ? '' : 's'} found.</p></div><div className="mt-6"><DataTable caption="Authoritative legal-entity records" columns={columns} rows={rows} getRowKey={(entity) => entity.id} emptyMessage="No authorized legal entities match this search." /></div></Panel></section>
+  const partyColumns = useMemo(() => [
+    { key: 'name', header: 'Party', rowHeader: true, render: (party: PartyFixture) => <RouterLink className="link link-primary font-semibold" to={`/master-data/omd-scr-02?partyId=${party.id}`}>{party.name}</RouterLink> },
+    { key: 'type', header: 'Type', render: (party: PartyFixture) => party.partyType },
+    { key: 'status', header: 'State', render: (party: PartyFixture) => <StatusBadge state={party.status === 'active' ? 'success' : 'pending'} label={party.status} /> },
+    { key: 'bankControl', header: 'Bank control', render: (party: PartyFixture) => <StatusBadge state={party.bankDetailReferences.every((reference) => reference.status === 'approved') ? 'success' : 'pending'} label={party.bankDetailReferences.every((reference) => reference.status === 'approved') ? 'approved' : 'pending'} /> },
+    { key: 'version', header: 'Version', render: (party: PartyFixture) => `v${party.version}` },
+  ] as const, [])
+
+  return <section aria-labelledby="omd-worklist-title" className="space-y-6"><div><p className="text-sm font-semibold uppercase tracking-wide text-primary">OMD-WS-01</p><h2 id="omd-worklist-title" className="mt-1 text-2xl font-semibold">Legal-entity master-data worklist</h2><p className="mt-2 max-w-3xl text-base-content/75">Search and review authoritative legal-entity and party records. Maintenance is available only on the record screens.</p></div><Panel title="Search and review" description="Results are scoped to the selected accounting context and show only safe projections."><div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end"><Field id="omd-search" label="Search master-data records" placeholder="Name or record identifier" value={search} onChange={(event) => setSearch(event.target.value)} /><p className="text-sm text-base-content/70" role="status" aria-live="polite">{rows.length + partyRows.length} record{rows.length + partyRows.length === 1 ? '' : 's'} found.</p></div><div className="mt-6"><DataTable caption="Authoritative legal-entity records" columns={columns} rows={rows} getRowKey={(entity) => entity.id} emptyMessage="No authorized legal entities match this search." /></div><div className="mt-8"><DataTable caption="Safe party records" columns={partyColumns} rows={partyRows} getRowKey={(party) => party.id} emptyMessage="No authorized parties match this search." /></div></Panel></section>
 }
 
 export function LegalEntityRecord() {

@@ -16,6 +16,7 @@ import (
 	"github.com/toanle88/Tally/internal/organization"
 	"github.com/toanle88/Tally/internal/platform/aggregateversion"
 	"github.com/toanle88/Tally/internal/platform/httpapi/generated"
+	"github.com/toanle88/Tally/internal/platform/telemetry"
 )
 
 type IdentityHandler struct {
@@ -25,6 +26,8 @@ type IdentityHandler struct {
 	SegregationRuleService *identity.SegregationRuleService
 	EmergencyAccessService *identity.EmergencyAccessService
 	OrganizationService    *organization.LegalEntityService
+	PartyService           *organization.PartyService
+	Instrumentation        *telemetry.Instrumentation
 }
 
 func (handler IdentityHandler) IamManageUsers(ctx context.Context, request *generated.IamManageUsersCommandRequest, params generated.IamManageUsersParams) (generated.IamManageUsersRes, error) {
