@@ -1,11 +1,12 @@
 import { createContext, useContext, type ReactNode } from 'react'
-import { createBrowserRouter, NavLink, Outlet, type RouteObject } from 'react-router-dom'
+import { createBrowserRouter, NavLink, Outlet, useSearchParams, type RouteObject } from 'react-router-dom'
 
 import { AppShell } from '@/app/app-shell'
 import { DevelopmentExamples } from '@/app/development-examples'
 import { IdentityAccessWorkspace } from '@/app/identity-access-workspace'
 import { LegalEntityRecord, LegalEntityWorklist } from '@/app/legal-entity-workspace'
 import { CustomerProfileRecord } from '@/app/customer-profile-workspace'
+import { VendorProfileRecord } from '@/app/vendor-profile-workspace'
 import { PartyRecord } from '@/app/party-workspace'
 import { WorkflowExample } from '@/app/workflow-example'
 import { AccountingScopeSelector } from '@/components/accounting-scope-selector'
@@ -69,7 +70,7 @@ function AccessState({ title, detail }: { title: string; detail: string }) {
 }
 
 function AreaPage({ route }: { route: RouteDefinition }) {
-  return <section><h2 className="text-2xl font-semibold">{route.title}</h2><p className="mt-2 max-w-3xl text-base-content/75">This shared route is ready for a later capability delivery. No finance capability or authoritative record is connected.</p>{route.id === 'records' ? <div className="mt-5 space-y-2"><p><NavLink className="link link-primary" to="/master-data/omd-ws-01">OMD-WS-01: Legal-entity master-data worklist</NavLink></p><p><NavLink className="link link-primary" to="/master-data/omd-scr-01">OMD-SCR-01: Legal-entity record</NavLink></p><p><NavLink className="link link-primary" to="/master-data/omd-scr-02">OMD-SCR-02: Party record</NavLink></p><p><NavLink className="link link-primary" to="/master-data/omd-scr-03">OMD-SCR-03: Customer-profile record</NavLink></p></div> : null}{route.id === 'administration' ? <div className="mt-5 space-y-2"><p><NavLink className="link link-primary" to="/administration/identity-access">IAM-WS-01: Users and access assignments</NavLink></p><p><NavLink className="link link-primary" to="/identity-access/iam-scr-04">IAM-SCR-04: Emergency access grant and review</NavLink></p></div> : null}{route.id === 'exceptions' ? <div className="mt-5 space-y-2">{routeRegistry.filter((candidate) => candidate.kind === 'operational').map((candidate) => <p key={candidate.id}><NavLink className="link link-primary" to={candidate.path}>{candidate.screenId}: {candidate.title}</NavLink></p>)}</div> : null}</section>
+  return <section><h2 className="text-2xl font-semibold">{route.title}</h2><p className="mt-2 max-w-3xl text-base-content/75">This shared route is ready for a later capability delivery. No finance capability or authoritative record is connected.</p>{route.id === 'records' ? <div className="mt-5 space-y-2"><p><NavLink className="link link-primary" to="/master-data/omd-ws-01">OMD-WS-01: Legal-entity master-data worklist</NavLink></p><p><NavLink className="link link-primary" to="/master-data/omd-scr-01">OMD-SCR-01: Legal-entity record</NavLink></p><p><NavLink className="link link-primary" to="/master-data/omd-scr-02">OMD-SCR-02: Party record</NavLink></p><p><NavLink className="link link-primary" to="/master-data/omd-scr-03">OMD-SCR-03: Customer/vendor profile record</NavLink></p></div> : null}{route.id === 'administration' ? <div className="mt-5 space-y-2"><p><NavLink className="link link-primary" to="/administration/identity-access">IAM-WS-01: Users and access assignments</NavLink></p><p><NavLink className="link link-primary" to="/identity-access/iam-scr-04">IAM-SCR-04: Emergency access grant and review</NavLink></p></div> : null}{route.id === 'exceptions' ? <div className="mt-5 space-y-2">{routeRegistry.filter((candidate) => candidate.kind === 'operational').map((candidate) => <p key={candidate.id}><NavLink className="link link-primary" to={candidate.path}>{candidate.screenId}: {candidate.title}</NavLink></p>)}</div> : null}</section>
 }
 
 function OperationalPage({ route }: { route: RouteDefinition }) {
@@ -81,8 +82,13 @@ function NotFoundPage() {
   return <section><h2 className="text-2xl font-semibold">Page not found</h2><p className="mt-2 text-base-content/75">The requested route is not part of the TALLY foundation route tree.</p></section>
 }
 
+function MasterDataProfileRecord() {
+  const [params] = useSearchParams()
+  return params.get('vendorProfileId') ? <VendorProfileRecord /> : <CustomerProfileRecord />
+}
+
 function routeElement(route: RouteDefinition) {
-  const content = route.id === 'iamWorklist' || route.id === 'iamEmergencyAccess' ? <IdentityAccessWorkspace /> : route.id === 'omdWorklist' ? <LegalEntityWorklist /> : route.id === 'omdDetail' ? <LegalEntityRecord /> : route.id === 'omdPartyDetail' ? <PartyRecord /> : route.id === 'omdCustomerProfileDetail' ? <CustomerProfileRecord /> : route.kind === 'operational' ? <OperationalPage route={route} /> : route.kind === 'development' ? <DevelopmentExamples /> : <AreaPage route={route} />
+  const content = route.id === 'iamWorklist' || route.id === 'iamEmergencyAccess' ? <IdentityAccessWorkspace /> : route.id === 'omdWorklist' ? <LegalEntityWorklist /> : route.id === 'omdDetail' ? <LegalEntityRecord /> : route.id === 'omdPartyDetail' ? <PartyRecord /> : route.id === 'omdCustomerProfileDetail' ? <MasterDataProfileRecord /> : route.kind === 'operational' ? <OperationalPage route={route} /> : route.kind === 'development' ? <DevelopmentExamples /> : <AreaPage route={route} />
   return <ProtectedRoute route={route}>{content}</ProtectedRoute>
 }
 

@@ -364,38 +364,54 @@ the payable or payment lifecycle.
 
 Acceptance criteria:
 
-- [ ] An authorized command maintains the `VendorProfile` fields defined by
+- [x] An authorized command maintains the `VendorProfile` fields defined by
   `FR-OMD-004`, including its `PartyId`, and reports all validation outcomes
   without partial state.
-- [ ] Vendor profile revisions preserve aggregate versions, effective dates,
+- [x] Vendor profile revisions preserve aggregate versions, effective dates,
   applicable approvals, and historical references.
-- [ ] Bank-detail references and remittance preferences remain minimized and
+- [x] Bank-detail references and remittance preferences remain minimized and
   field-authorized; raw account values and provider secrets are never exposed.
-- [ ] Invalid or unavailable Party, approval, authorization, audit, or
+- [x] Invalid or unavailable Party, approval, authorization, audit, or
   dependency checks fail closed; OMD does not create vendor invoices,
   liabilities, payment requests, or payment instructions.
-- [ ] The UI clearly separates profile maintenance from AP payment behavior
+- [x] The UI clearly separates profile maintenance from AP payment behavior
   and exposes only the next permitted action.
 
 Suggested implementation steps:
 
-1. Implement VendorProfile rules and Party linkage in OMD.
-2. Integrate applicable approval, cooling-off, and field-authorization ports.
-3. Add transactional persistence, idempotency, optimistic concurrency, and
+1. [x] Implement VendorProfile rules and Party linkage in OMD.
+2. [x] Integrate applicable approval, cooling-off, and field-authorization ports.
+3. [x] Add transactional persistence, idempotency, optimistic concurrency, and
    the existing OpenAPI operation.
-4. Add vendor projections to `OMD-SCR-03`, including safe rejection and
+4. [x] Add vendor projections to `OMD-SCR-03`, including safe rejection and
    publication states.
-5. Test downstream AP handoff as an immutable reference/snapshot boundary.
+5. [x] Test the downstream boundary as an immutable reference/snapshot boundary;
+   publication remains deferred because the approved event catalog has no
+   VendorProfile publication event until User Story 6.
 
 Required test evidence:
 
-- [ ] Domain tests for payment terms, withholding treatment, remittance
+- [x] Domain tests for payment terms, withholding treatment, remittance
   preference, PartyId, effective dates, and version conflicts.
-- [ ] API tests for denied, stale, unavailable, and validation outcomes with
+- [x] API tests for denied, stale, unavailable, and validation outcomes with
   no sensitive leakage.
-- [ ] Integration tests proving no AP or payment schema writes occur.
-- [ ] UI and Playwright tests for restricted remittance/bank fields, status
-  announcements, and safe bulk/export projections.
+- [x] Integration tests proving no AP or payment schema writes occur.
+- [x] UI and Playwright tests for restricted remittance/bank fields and status
+  announcements. No separate vendor-profile export operation exists in the
+  approved API contract; any future export must reuse the safe projection.
+
+Verification evidence (2026-09-27):
+
+- `GOCACHE=/tmp/tally-go-cache go test ./...` passes across all Go packages.
+- `GOCACHE=/tmp/tally-go-cache go vet ./internal/organization ./internal/platform/httpapi ./cmd/api` passes.
+- `GOCACHE=/tmp/tally-go-cache go test -tags=integration ./internal/platform/database -run '^$'` passes for integration-test compilation.
+- `make db-migrate-validate`, `make db-migrate-check`, and `make sqlc-check` pass after adding the organization VendorProfile migration and regenerated sqlc models.
+- `GOCACHE=/tmp/tally-go-cache make persistence-integration-test` passes with PostgreSQL 18/Testcontainers, including VendorProfile revision, Party locking, and audit-rollback coverage.
+- `bash scripts/openapi/typescript-client-check.sh` passes with the repository tool timeout extended to 120 seconds; the existing generic operation and generated client surface remain unchanged.
+- `GOCACHE=/tmp/tally-go-cache OPENAPI_CHECK_TIMEOUT_SECONDS=120 bash scripts/openapi/api-check.sh` passes the OpenAPI, generated-artifact, negative-fixture, and full Go stages.
+- `pnpm -C web test -- --run` passes all 72 route/component tests and `pnpm -C web build` passes.
+- `GOCACHE=/tmp/tally-go-cache go test -race ./internal/organization ./internal/platform/httpapi ./cmd/api` passes.
+- `pnpm -C web test:a11y` passes all 21 Playwright accessibility/keyboard/semantic/visual tests, including Party, customer-profile, and vendor-profile OMD flows.
 
 ### User Story 5 — Maintain fiscal calendars
 

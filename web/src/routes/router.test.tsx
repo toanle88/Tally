@@ -64,6 +64,17 @@ describe('application router', () => {
     expect(screen.getByText(/Accepted customer-profile revision v4/)).toBeInTheDocument()
   })
 
+  it('supports the vendor-profile maintenance screen with safe Party-owned remittance state', async () => {
+    renderRoute('/master-data/omd-scr-03?vendorProfileId=vendor-profile-acme-industrial')
+    expect(await screen.findByRole('heading', { name: 'Vendor profile record' })).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Acme Industrial Supplies')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('v5')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('net_30')).toBeInTheDocument()
+    expect(screen.getByText(/Party bank control: approved/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Save vendor-profile revision' }))
+    expect(screen.getByText(/Accepted vendor-profile revision v5/)).toBeInTheDocument()
+  })
+
   it('updates active navigation and supports back navigation', async () => {
     const router = renderRoute('/')
     fireEvent.click(screen.getByRole('link', { name: 'Exceptions' }))
