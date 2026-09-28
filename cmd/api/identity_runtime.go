@@ -27,6 +27,7 @@ const (
 	partyOperationID           = "organization.maintain-parties.v1"
 	customerProfileOperationID = "organization.maintain-customer-profiles.v1"
 	vendorProfileOperationID   = "organization.maintain-vendor-profiles.v1"
+	fiscalCalendarOperationID  = "organization.maintain-fiscal-calendars.v1"
 )
 
 func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
@@ -201,8 +202,24 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err != nil {
 		return identityUnavailableHandler("organization vendor-profile service unavailable"), nil
 	}
+	fiscalCalendarRepository, err := organization.NewPostgresFiscalCalendarRepository(pool, postgresOrganizationFiscalCalendarAuditWriter(auditWriter))
+	if err != nil {
+		return identityUnavailableHandler("organization fiscal-calendar persistence unavailable"), nil
+	}
+	fiscalCalendarService, err := organization.NewFiscalCalendarServiceWithDurableIdempotency(
+		fiscalCalendarRepository,
+		evaluatorOrganizationAuthorizer{evaluator: policyEvaluator},
+		organization.AllowAllFiscalCalendarApprovalValidator{},
+		&organization.MemoryFiscalCalendarAuditRecorder{},
+		organization.UnavailableFiscalCalendarImpactReader{},
+		time.Now,
+		organization.DurableFiscalCalendarServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, OperationID: fiscalCalendarOperationID},
+	)
+	if err != nil {
+		return identityUnavailableHandler("organization fiscal-calendar service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -302,6 +319,26 @@ func postgresOrganizationVendorProfileAuditWriter(auditWriter identity.PostgresA
 		}
 		return auditWriter(ctx, tx, identity.AuditRecord{
 			UserID: record.VendorProfileID, ActorUserID: record.ActorUserID, ActorAuthenticationSubjectRef: record.ActorSubjectReference,
+			Action: record.Action, ScopeIDs: []string{record.ScopeID.String()}, Permission: record.Permission,
+			PolicyReference: record.PolicyReference, PolicyVersion: record.PolicyVersion, DecisionReference: record.DecisionReference,
+			ApprovalRequestID: approvalRequestID, ApprovalDecisionID: approvalDecisionID, ApproverUserID: approverUserID,
+			RevisionVersion: record.RevisionNumber, BeforeFingerprint: record.BeforeFingerprint, AfterFingerprint: record.AfterFingerprint,
+			CorrelationID: record.CorrelationID, CausationID: record.CausationID,
+		})
+	}
+}
+
+func postgresOrganizationFiscalCalendarAuditWriter(auditWriter identity.PostgresAuditWriter) organization.PostgresFiscalCalendarAuditWriter {
+	return func(ctx context.Context, tx pgx.Tx, record organization.FiscalCalendarAuditRecord) (uuid.UUID, error) {
+		if auditWriter == nil {
+			return uuid.Nil, organization.ErrFiscalCalendarAuditUnavailable
+		}
+		var approvalRequestID, approvalDecisionID, approverUserID uuid.UUID
+		if record.Approval != nil {
+			approvalRequestID, approvalDecisionID, approverUserID = record.Approval.ApprovalRequestID, record.Approval.DecisionID, record.Approval.ApproverUserID
+		}
+		return auditWriter(ctx, tx, identity.AuditRecord{
+			UserID: record.FiscalCalendarID, ActorUserID: record.ActorUserID, ActorAuthenticationSubjectRef: record.ActorSubjectReference,
 			Action: record.Action, ScopeIDs: []string{record.ScopeID.String()}, Permission: record.Permission,
 			PolicyReference: record.PolicyReference, PolicyVersion: record.PolicyVersion, DecisionReference: record.DecisionReference,
 			ApprovalRequestID: approvalRequestID, ApprovalDecisionID: approvalDecisionID, ApproverUserID: approverUserID,
@@ -453,8 +490,20 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err != nil {
 		return identityUnavailableHandler("organization vendor-profile service unavailable"), nil
 	}
+	fiscalCalendarRepository := organization.NewMemoryFiscalCalendarRepository()
+	fiscalCalendarService, err := organization.NewFiscalCalendarService(
+		fiscalCalendarRepository,
+		permissiveOrganizationAuthorizer{},
+		organization.AllowAllFiscalCalendarApprovalValidator{},
+		&organization.MemoryFiscalCalendarAuditRecorder{},
+		organization.UnavailableFiscalCalendarImpactReader{},
+		time.Now,
+	)
+	if err != nil {
+		return identityUnavailableHandler("organization fiscal-calendar service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -531,6 +580,10 @@ func (authorizer evaluatorOrganizationAuthorizer) AuthorizeVendorProfileFields(c
 		return organization.VendorProfileFieldAuthorization{}, nil
 	}
 	return organization.VendorProfileFieldAuthorization{PaymentTerms: true, WithholdingTreatment: true, RemittancePreference: true}, nil
+}
+
+func (authorizer evaluatorOrganizationAuthorizer) AuthorizeFiscalCalendar(ctx context.Context, actor organization.Actor, command organization.FiscalCalendarCommand, _ *organization.FiscalCalendar) (organization.AuthorizationDecision, error) {
+	return authorizer.evaluateFiscalCalendar(ctx, actor, organization.FiscalCalendarManagementPermission, command.ScopeID)
 }
 
 func (authorizer evaluatorOrganizationAuthorizer) evaluate(ctx context.Context, actor organization.Actor, permission string, scopeID uuid.UUID) (organization.AuthorizationDecision, error) {
@@ -645,6 +698,34 @@ func (authorizer evaluatorOrganizationAuthorizer) evaluateVendorProfile(ctx cont
 	return result, nil
 }
 
+func (authorizer evaluatorOrganizationAuthorizer) evaluateFiscalCalendar(ctx context.Context, actor organization.Actor, permission string, scopeID uuid.UUID) (organization.AuthorizationDecision, error) {
+	if authorizer.evaluator == nil {
+		return organization.AuthorizationDecision{}, organization.ErrFiscalCalendarAuthorizationUnavailable
+	}
+	decision, err := authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{ActorID: actor.UserID, Permission: permission, RequestedScopeIDs: []string{scopeID.String()}})
+	if err != nil {
+		return organization.AuthorizationDecision{}, organization.ErrFiscalCalendarAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationUnavailable {
+		return organization.AuthorizationDecision{}, organization.ErrFiscalCalendarAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationStale {
+		return organization.AuthorizationDecision{}, organization.ErrFiscalCalendarAuthorizationStale
+	}
+	result := organization.AuthorizationDecision{Allowed: decision.Allowed, Outcome: string(decision.Outcome), Permission: decision.Permission, PolicyReference: decision.PolicyReference, PolicyVersion: decision.PolicyVersion, DecisionReference: decision.DecisionReference}
+	for _, value := range decision.ApprovedScopeIDs {
+		if value == "*" {
+			result.ApprovedScopeIDs = append(result.ApprovedScopeIDs, uuid.Nil)
+			continue
+		}
+		parsed, parseErr := uuid.Parse(value)
+		if parseErr == nil {
+			result.ApprovedScopeIDs = append(result.ApprovedScopeIDs, parsed)
+		}
+	}
+	return result, nil
+}
+
 type permissiveOrganizationAuthorizer struct{}
 
 func (permissiveOrganizationAuthorizer) AuthorizeLegalEntity(context.Context, organization.Actor, organization.LegalEntityCommand, *organization.LegalEntity) (organization.AuthorizationDecision, error) {
@@ -676,6 +757,10 @@ func (permissiveOrganizationAuthorizer) AuthorizeVendorProfile(context.Context, 
 
 func (permissiveOrganizationAuthorizer) AuthorizeVendorProfileFields(context.Context, organization.Actor, organization.VendorProfileCommand, *organization.VendorProfile) (organization.VendorProfileFieldAuthorization, error) {
 	return organization.VendorProfileFieldAuthorization{PaymentTerms: true, WithholdingTreatment: true, RemittancePreference: true}, nil
+}
+
+func (permissiveOrganizationAuthorizer) AuthorizeFiscalCalendar(context.Context, organization.Actor, organization.FiscalCalendarCommand, *organization.FiscalCalendar) (organization.AuthorizationDecision, error) {
+	return organization.AuthorizationDecision{Allowed: true, Permission: organization.FiscalCalendarManagementPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{uuid.Nil}}, nil
 }
 
 type unavailablePartyBankControlEvaluator struct{}
