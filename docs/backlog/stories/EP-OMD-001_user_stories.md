@@ -427,17 +427,28 @@ state.
 
 Acceptance criteria:
 
-- [ ] An authorized command creates or maintains the `FiscalCalendar` pattern
+- [x] An authorized command creates or maintains the `FiscalCalendar` pattern
   and `CalendarPeriod` definitions required by `FR-OMD-005`.
-- [ ] Calendar validation rejects invalid, conflicting, or incomplete period
+- [x] Calendar validation rejects invalid, conflicting, or incomplete period
   definitions as a typed result before persistence; no partial calendar is
   published.
-- [ ] Effective dates, lifecycle state, aggregate version, historical
+- [x] Effective dates, lifecycle state, aggregate version, historical
   references, and dependent-scope impact are visible and preserved.
-- [ ] OMD does not modify `FiscalPeriod` state, posting gates, close state, or
+- [x] OMD does not modify `FiscalPeriod` state, posting gates, close state, or
   any ledger-bound record owned by another context.
-- [ ] `OMD-SCR-04` supports accessible period editing and impact review while
+- [x] `OMD-SCR-04` supports accessible period editing and impact review while
   `OMD-WS-01` links to the authoritative calendar record.
+
+Implementation decisions (2026-09-27): the command accepts every period
+definition explicitly and validates `CalendarType` and `PeriodPattern` as
+canonical metadata; it never generates periods. The approved OMD lifecycle is
+draft/active/end-dated with effective dating, optimistic versions, approval
+references, and immutable revision snapshots. The approved read-only impact
+port returns an explicit unavailable state until a downstream reader is
+approved, and it performs no FPM, posting-gate, close, or GL writes. The
+organization persistence follows the existing normalized OMD pattern with
+`fiscal_calendar`, `fiscal_calendar_period`, and `fiscal_calendar_revision`
+tables; no public OpenAPI route or downstream schema was added.
 
 Suggested implementation steps:
 
@@ -451,14 +462,33 @@ Suggested implementation steps:
 
 Required test evidence:
 
-- [ ] Domain tests for calendar type, pattern, periods, effective dates,
+- [x] Domain tests for calendar type, pattern, periods, effective dates,
   lifecycle, invalid overlaps/order, and version conflicts according to the
   approved domain rules.
-- [ ] API and persistence tests for typed validation, authorization, retry,
+- [x] API and persistence tests for typed validation, authorization, retry,
   and organization-schema ownership.
-- [ ] Integration tests proving fiscal-period and GL state remain outside OMD.
-- [ ] Accessibility and semantic tests for period editing, impact review,
+- [x] Integration tests proving fiscal-period and GL state remain outside OMD.
+- [x] Accessibility and semantic tests for period editing, impact review,
   keyboard operation, and safe validation announcements.
+
+Verification evidence (2026-09-27):
+
+- `GOCACHE=/tmp/tally-go-cache go test ./...` passes, including the fiscal-calendar
+  domain and HTTP tests.
+- `GOCACHE=/tmp/tally-go-cache go test -race ./internal/organization ./internal/platform/httpapi ./cmd/api`
+  and `GOCACHE=/tmp/tally-go-cache go vet ./internal/organization ./internal/platform/httpapi ./cmd/api`
+  pass.
+- `make db-migrate-validate`, `make db-migrate-check`, `make sqlc-compile`, and
+  `GOCACHE=/tmp/tally-go-cache go test -tags=integration ./internal/platform/database -run '^$'`
+  pass; the migration and integration test compile are verified.
+- `GOCACHE=/tmp/tally-go-cache make persistence-integration-test` passes with
+  the Docker-backed PostgreSQL fixture, including fiscal-calendar period and
+  revision preservation and audit-failure rollback.
+- `GOCACHE=/tmp/tally-go-cache OPENAPI_CHECK_TIMEOUT_SECONDS=120 bash scripts/openapi/api-generate-check.sh`
+  and `bash scripts/openapi/typescript-client-check.sh` pass; the existing
+  generic fiscal-calendar operation and generated API surfaces remain current.
+- `pnpm -C web test -- --run` passes 14 files and 72 tests, `pnpm -C web build` passes,
+  and `pnpm -C web test:a11y` passes all 22 Playwright accessibility tests.
 
 ### User Story 6 — Publish approved master-data changes
 

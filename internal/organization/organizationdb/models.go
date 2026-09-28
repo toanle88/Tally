@@ -39,6 +39,41 @@ type OrganizationCustomerProfileRevision struct {
 	CreatedAt         pgtype.Timestamptz
 }
 
+type OrganizationFiscalCalendar struct {
+	ID                 pgtype.UUID
+	ScopeID            pgtype.UUID
+	CalendarType       string
+	PeriodPattern      string
+	Status             string
+	EffectiveFrom      pgtype.Date
+	EffectiveTo        pgtype.Date
+	ApprovalReference  []byte
+	AggregateVersion   int64
+	RevisionNumber     int64
+	CreatedAt          pgtype.Timestamptz
+	UpdatedAt          pgtype.Timestamptz
+	LastAuditReference pgtype.UUID
+}
+
+type OrganizationFiscalCalendarPeriod struct {
+	FiscalCalendarID pgtype.UUID
+	PeriodID         pgtype.UUID
+	PeriodReference  string
+	PeriodOrdinal    int32
+	StartDate        pgtype.Date
+	EndDate          pgtype.Date
+}
+
+type OrganizationFiscalCalendarRevision struct {
+	FiscalCalendarID pgtype.UUID
+	RevisionNumber   int64
+	AggregateVersion int64
+	Snapshot         []byte
+	EffectiveFrom    pgtype.Date
+	EffectiveTo      pgtype.Date
+	CreatedAt        pgtype.Timestamptz
+}
+
 type OrganizationLegalEntity struct {
 	ID                   pgtype.UUID
 	ScopeID              pgtype.UUID

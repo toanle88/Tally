@@ -91,7 +91,7 @@ Legal entities, parties, customer and vendor profiles, and fiscal calendars.
 - [ ] `DLV-FR-OMD-002` — FR-OMD-002 — `Maintain parties`
 - [ ] `DLV-FR-OMD-003` — FR-OMD-003 — `Maintain customer profiles`
 - [x] `DLV-FR-OMD-004` — FR-OMD-004 — `Maintain vendor profiles`
-- [ ] `DLV-FR-OMD-005` — FR-OMD-005 — `Maintain fiscal calendars`
+- [x] `DLV-FR-OMD-005` — FR-OMD-005 — `Maintain fiscal calendars`
 - [ ] `DLV-FR-OMD-006` — FR-OMD-006 — `Publish approved master-data changes`
 
 ## [ ] EP-COA-001 — COA segment configuration (M1)
