@@ -60,6 +60,7 @@
 | OMD | CustomerProfile | `organization.customer_profile` | `customer_profile_id uuid` | Mutable aggregate row or append-only root according to DDD lifecycle |
 | OMD | VendorProfile | `organization.vendor_profile` | `vendor_profile_id uuid` | Mutable aggregate row or append-only root according to DDD lifecycle |
 | OMD | FiscalCalendar | `organization.fiscal_calendar` | `fiscal_calendar_id uuid` | Mutable aggregate row or append-only root according to DDD lifecycle |
+| OMD | MasterDataPublication | `organization.master_data_publication` | `publication_id uuid` | OMD-owned publication/process record unique by aggregate type, identity, and source version; stores safe publication and availability evidence |
 | GL | Ledger | `gl.ledger` | `ledger_id uuid` | Mutable aggregate row or append-only root according to DDD lifecycle |
 | GL | AccountingBook | `gl.accounting_book` | `accounting_book_id uuid` | Mutable aggregate row or append-only root according to DDD lifecycle |
 | GL | ChartOfAccounts | `gl.chart_of_accounts` | `chart_of_accounts_id uuid` | Mutable aggregate row or append-only root according to DDD lifecycle |
@@ -129,7 +130,24 @@
 | IAM | SegregationRule | `identity.segregation_rule` | `segregation_rule_id uuid` | Mutable aggregate row or append-only root according to DDD lifecycle |
 | AUD | AuditChain | `audit.audit_chain` | `audit_chain_id uuid` | Mutable aggregate row or append-only root according to DDD lifecycle |
 
-## 5. Monetary representation
+## 5. OMD publication record
+
+`organization.master_data_publication` is owned by OMD and is keyed by
+`(aggregate_type, aggregate_id, aggregate_version)`. It records the publication
+identity, event/message identity, source revision, effective interval where the
+source defines one, approval reference, source fingerprint, publication state,
+dependent availability, and audit reference. A unique source-version key makes
+replay and duplicate publication attempts explicit conflicts; it cannot create
+a second outbox message for the same source version.
+
+The table is not a replacement aggregate and does not copy raw aggregate
+snapshots. The transactional publication command locks the source root,
+revalidates version, approval, status, and fingerprint, then inserts the
+publication record, audit evidence, idempotency result, and existing integration
+outbox row in one transaction. The outbox payload contains the event contract's
+safe immutable snapshot only.
+
+## 6. Monetary representation
 
 ```sql
 create domain platform.currency_code as text
@@ -142,7 +160,7 @@ create domain platform.money_amount as numeric(38,12);
 - `numeric` values are never converted through binary floating point.
 - A money value is stored as amount plus currency; functional and presentation amounts use separate labeled columns.
 
-## 6. Platform tables
+## 7. Platform tables
 
 ```sql
 create table platform.idempotency_record (
@@ -215,9 +233,9 @@ create table integration.inbox (
 );
 ```
 
-## 7. High-integrity DDL baselines
+## 8. High-integrity DDL baselines
 
-### 7.1 GL journal
+### 8.1 GL journal
 
 ```sql
 create table gl.journal_entry (
@@ -268,7 +286,7 @@ Posting additionally validates balanced transaction and functional totals inside
 
 `gl.period_posting_gate` is unique by `(accounting_scope_id, fiscal_period_id)`. Gate transition, version increment, active admission counters and frozen summary history commit with the admission decision. Finalized command results are immutable and keyed by command fingerprint.
 
-## 8. Index baseline
+## 9. Index baseline
 
 | Workload | Required index pattern |
 |---|---|
@@ -283,7 +301,7 @@ Posting additionally validates balanced transaction and functional totals inside
 
 Every added index requires the target query, expected cardinality and `EXPLAIN (ANALYZE, BUFFERS)` evidence in a representative dataset.
 
-## 9. Migration policy
+## 10. Migration policy
 
 1. Migrations are forward-only in shared environments; rollback uses a reviewed compensating migration or restored disposable environment.
 2. Expand/migrate/contract separates incompatible changes across releases.
@@ -292,7 +310,7 @@ Every added index requires the target query, expected cardinality and `EXPLAIN (
 5. Schema ownership roles are applied by migration and verified in CI.
 6. Destructive contract steps require evidence that old application versions and data paths are retired.
 
-## 10. Retention, legal hold and archival
+## 11. Retention, legal hold and archival
 
 - Retention policy is represented by record type, jurisdiction and accounting scope.
 - Legal hold blocks destruction while preserving business correction behavior.

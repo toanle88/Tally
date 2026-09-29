@@ -135,6 +135,28 @@ type OrganizationLegalEntityRevision struct {
 	CreatedAt        pgtype.Timestamptz
 }
 
+type OrganizationMasterDataPublication struct {
+	PublicationID         pgtype.UUID
+	AggregateType         string
+	AggregateID           pgtype.UUID
+	ScopeID               pgtype.UUID
+	AggregateVersion      int64
+	RevisionNumber        int64
+	Status                string
+	DependentAvailability string
+	EventType             string
+	EventVersion          int32
+	MessageID             pgtype.UUID
+	EffectiveFrom         pgtype.Date
+	EffectiveTo           pgtype.Date
+	ApprovalReference     []byte
+	SourceFingerprint     string
+	AuditReference        pgtype.UUID
+	PublishedAt           pgtype.Timestamptz
+	CreatedAt             pgtype.Timestamptz
+	UpdatedAt             pgtype.Timestamptz
+}
+
 type OrganizationParty struct {
 	ID                 pgtype.UUID
 	ScopeID            pgtype.UUID

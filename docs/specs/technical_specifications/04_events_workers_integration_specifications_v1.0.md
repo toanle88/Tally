@@ -70,6 +70,7 @@ follow-up capability work.
 
 | Owner | Command | Contract identity | Implementation |
 |---|---|---|---|
+| OMD | PublishApprovedMasterDataChanges | `organization.publish-approved-master-data-changes.v1` | Owning OMD application handler with transactional publication record and outbox |
 | GL | SubmitPostingRequest | `submit-posting-request.v1` | Owning module application handler |
 | GL | ApplyJournalApprovalDecision | `apply-journal-approval-decision.v1` | Owning module application handler |
 | GL | ReverseJournalEntry | `reverse-journal-entry.v1` | Owning module application handler |
@@ -223,6 +224,11 @@ follow-up capability work.
 
 | Producer | Event | Version | Source schema | Payload schema name |
 |---|---|---|---|---|
+| OMD | LegalEntityPublished | 1 | organization | `legal_entity_published` |
+| OMD | PartyPublished | 1 | organization | `party_published` |
+| OMD | CustomerProfilePublished | 1 | organization | `customer_profile_published` |
+| OMD | VendorProfilePublished | 1 | organization | `vendor_profile_published` |
+| OMD | FiscalCalendarPublished | 1 | organization | `fiscal_calendar_published` |
 | GL | JournalEntryPosted | 1 | gl | `journal_entry_posted` |
 | GL | PostingRejected | 1 | gl | `posting_rejected` |
 | GL | PostingPendingApproval | 1 | gl | `posting_pending_approval` |
@@ -442,6 +448,44 @@ follow-up capability work.
 | AUD | IntegrityIncidentEscalated | 1 | audit | `integrity_incident_escalated` |
 
 Each payload schema contains only the minimum facts required by approved consumers. Full aggregates, secrets, bank numbers, payroll details and unrestricted remittance text are prohibited.
+
+### 4.1 OMD publication payload contract
+
+The OMD publication operation emits one aggregate-specific event per source
+version. The five event names above are the approved v1 contract; they are not
+interchangeable aliases. Each payload contains the following safe fields:
+
+```json
+{
+  "aggregateType": "customer_profile",
+  "aggregateId": "...",
+  "scopeId": "...",
+  "aggregateVersion": 2,
+  "revisionNumber": 2,
+  "status": "active",
+  "effectiveFrom": "2026-01-01T00:00:00Z",
+  "effectiveTo": null,
+  "approval": {
+    "approvalRequestId": "...",
+    "decisionId": "...",
+    "policyVersion": "...",
+    "decisionVersion": 1,
+    "subjectVersion": 2,
+    "candidateFingerprint": "sha256:...",
+    "approverUserId": "..."
+  },
+  "snapshot": {}
+}
+```
+
+`snapshot` is the owning OMD safe projection for the aggregate type. Legal
+entity registrations and party tax values remain masked; party bank values are
+opaque provider references and bounded control state. A Party has no
+aggregate-level effective date, so its effective-date fields are omitted. The
+event is `internal`, is written to the existing outbox in the same transaction
+as `organization.master_data_publication`, and has no downstream OMD write
+semantics. Dependent availability is therefore eventual and is not encoded as
+a fabricated consumer-side success.
 
 ## 5. Outbox claiming algorithm
 

@@ -3,13 +3,18 @@
 | Field | Value |
 |---|---|
 | Epic | `EP-OMD-001` — Organization and master data |
-| Status | Planned — story decomposition created on 2026-09-26; implementation evidence is not yet available |
+| Status | Locally complete and intentionally closed on 2026-09-29; implementation and synthetic verification are recorded for User Stories 1–6; downstream runtime, production, live Entra, full audit-chain, and release qualification remain deferred |
 | Milestone | `M1` |
 | Dependencies | `EP-PLAT-001`, `EP-IAM-001` |
 | Delivery items | `DLV-GFR-019`, `DLV-FR-OMD-001` through `DLV-FR-OMD-006` |
 | Owning bounded context | Organization & Master Data — `internal/organization`, `organization` schema |
 | Primary users | Master Data Steward; Finance Administrator |
-| Exit evidence | All six stories pass the acceptance and verification evidence in this document; `EP-OMD-001` remains open until then. |
+| Exit evidence | Local implementation, API, persistence, authorization, audit, outbox, UI, and accessibility evidence is recorded below; deferred downstream and external qualification is not claimed by this closure. |
+
+**Current closure status (2026-09-29):** The local implementation and evidence
+scope for `EP-OMD-001` is complete and intentionally closed. The separate
+CustomerProfile downstream runtime proof, the clean-tree generated-code gate,
+and production or cross-context qualification remain deferred follow-up work.
 
 ## 1. Outcome
 
@@ -68,12 +73,13 @@ reference contracts.
 - No raw bank account data, credentials, provider tokens, secrets, or
   unrestricted tax/personal data in OMD records, API errors, telemetry,
   notifications, exports, or published payloads.
-- No new public route, event name, database schema/table family, cross-schema
-  query, or generated API contract outside the approved technical/API
-  specifications. Those specifications define the two additive
-  `/master-data/reference/legal-entities` read operations and the
-  `organization.legal_entity` child/revision tables needed for the LegalEntity
-  owner. No other OMD public surface is authorized here.
+- No new public route, cross-schema query, or generated API contract outside
+  the approved technical/API specifications. Story 6 uses the existing
+  publication route and the contract-first v1 event amendment now recorded in
+  the DDD and integration specifications: `LegalEntityPublished`,
+  `PartyPublished`, `CustomerProfilePublished`, `VendorProfilePublished`, and
+  `FiscalCalendarPublished`. The OMD publication record is the approved
+  owning-schema table for publication state; no downstream OMD write is added.
 - No production-data qualification, live Entra qualification, finance-module
   enforcement, or full audit-chain qualification.
 
@@ -288,7 +294,7 @@ Verification evidence (2026-09-27):
 **Existing API operation:** `omdMaintainCustomerProfiles`
 **Permission:** `finance.omd.maintain.customer.profiles`
 **Primary screen:** `OMD-SCR-03`; worklist entry `OMD-WS-01`
-**Implementation status:** Implemented on `codex/omd-maintain-customer-profiles`; repository/runtime integration and Playwright evidence are complete. Approved CustomerProfile publication remains deferred to User Story 6 because the current event catalog defines no CustomerProfile publication event.
+**Implementation status:** Implemented on `codex/omd-maintain-customer-profiles`; repository/runtime integration and Playwright evidence are complete. Approved CustomerProfile publication is now covered by User Story 6's aggregate-specific publication contract.
 
 As a Master Data Steward, I want to maintain customer terms, limits, billing
 preferences, and tax treatment against an authoritative party so that AR and
@@ -328,10 +334,9 @@ Required test evidence:
 - [x] API tests for typed rejection, authorization, idempotency, and safe
   correlation/support references.
 - [ ] Integration runtime test proving the approved publication boundary exposes
-  identifiers/versions without writing AR or invoicing state. The repository
-  transaction test is implemented and compiles, but the approved event catalog
-  contains no CustomerProfile publication event; durable publication remains
-  deferred to User Story 6.
+  identifiers/versions without writing AR or invoicing state. The Story 6
+  publication contract now defines the CustomerProfile event; this separate
+  cross-context runtime proof remains in the epic-level verification checklist.
 - [x] Component and Playwright tests for field-filtered details, counts,
   filters, keyboard access, and safe projections are implemented. No separate
   CustomerProfile export operation exists in the approved API contract; any
@@ -386,8 +391,8 @@ Suggested implementation steps:
 4. [x] Add vendor projections to `OMD-SCR-03`, including safe rejection and
    publication states.
 5. [x] Test the downstream boundary as an immutable reference/snapshot boundary;
-   publication remains deferred because the approved event catalog has no
-   VendorProfile publication event until User Story 6.
+   VendorProfile publication is now provided by User Story 6's approved
+   aggregate-specific event contract.
 
 Required test evidence:
 
@@ -504,20 +509,20 @@ approval or changing historical facts.
 
 Acceptance criteria:
 
-- [ ] Publication accepts only an approved, current, applicable aggregate
+- [x] Publication accepts only an approved, current, applicable aggregate
   version and records the approval evidence required by the applicable rule.
-- [ ] The result identifies the published record/version, applicable status or
+- [x] The result identifies the published record/version, applicable status or
   effective date, dependent-capability availability, and any safe publication
   rejection.
-- [ ] Publication is idempotent and replay-safe; retries cannot duplicate a
+- [x] Publication is idempotent and replay-safe; retries cannot duplicate a
   state transition or silently publish a superseded version.
-- [ ] Aggregate state and any approved integration publication are coordinated
+- [x] Aggregate state and any approved integration publication are coordinated
   transactionally through the existing outbox/integration boundary. Raw
   policy payloads, secrets, and restricted values are not published.
-- [ ] `OMD-SCR-05` distinguishes pending approval, approved, published,
+- [x] `OMD-SCR-05` distinguishes pending approval, approved, published,
   rejected, stale, and unavailable states and provides only the next permitted
   action.
-- [ ] Consumers receive identifiers and required immutable snapshots through
+- [x] Consumers receive identifiers and required immutable snapshots through
   the existing published-language/reference contract; they do not gain write
   access to OMD storage.
 
@@ -527,22 +532,30 @@ Suggested implementation steps:
    using the existing approval and audit ports.
 2. Coordinate OMD state, outbox intent, idempotency result, and audit evidence
    in one transaction where the existing platform supports it.
-3. Wire the existing publication operation without adding a new public route
-   or event name.
+3. Wire the existing publication operation and the approved aggregate-specific
+   event names without adding another public route.
 4. Build publication review and dependent-availability projections.
 5. Test duplicate delivery, crash/retry, stale approval, dependency
    unavailability, and safe payload projection.
 
 Required test evidence:
 
-- [ ] Domain/application tests for approved, rejected, stale, superseded,
+- [x] Domain/application tests for approved, rejected, stale, superseded,
   duplicate, and unavailable publication outcomes.
-- [ ] Transactional API and outbox tests for idempotency, audit dependency
+- [x] Transactional API and outbox tests for idempotency, audit dependency
   failure, correlation/causation, and no partial publication.
-- [ ] Contract tests for consumer identifiers, versions, effective dates, and
+- [x] Contract tests for consumer identifiers, versions, effective dates, and
   restricted-field omission.
-- [ ] UI and Playwright tests for publication states, status announcements,
+- [x] UI and Playwright tests for publication states, status announcements,
   keyboard actions, and safe error/support references.
+
+Verification evidence (2026-09-29):
+
+- `GOCACHE=/tmp/tally-gocache go test ./...` and `GOCACHE=/tmp/tally-gocache go vet ./...` pass.
+- `GOCACHE=/tmp/tally-gocache go test -race ./internal/organization ./internal/platform/httpapi ./cmd/api` and `GOCACHE=/tmp/tally-gocache go test -race ./internal/platform/integration` pass.
+- `GOCACHE=/tmp/tally-gocache go test -tags=integration ./internal/platform/database -run TestOrganizationMasterDataPublicationCommitsPublicationAndOutboxAtomically -count=1` passes with PostgreSQL 18/Testcontainers, proving durable replay, source-version duplicate protection, correlation/causation propagation, safe payload omission, and audit-failure rollback.
+- `make db-migrate-validate`, `make db-migrate-check`, `make sqlc-compile`, `GOCACHE=/tmp/tally-gocache make api-check`, and `pnpm docs:check` pass. The generated organization sqlc model is regenerated for migration `00006`.
+- `pnpm -C web exec vitest run --pool=forks --reporter=dot` passes 14 files and 72 tests; `pnpm -C web run build` passes; `pnpm test:a11y` passes all 23 Playwright accessibility tests, including OMD-SCR-05.
 
 ## 8. Cross-cutting delivery contract
 
@@ -620,23 +633,21 @@ part of this epic's story decomposition.
 4. Deliver User Stories 1–5 in aggregate order, beginning with Party and Legal
    Entity references needed by customer/vendor profiles and consumers.
 5. Deliver User Story 6 after approval and publication integration boundaries
-   are available.
+   are available. (Completed for this story on 2026-09-29.)
 6. Qualify downstream handoffs with COA, GL, AP, AR, and Fiscal Period
    Management only through their approved contracts; downstream epics remain
    separate.
 
 ## 10. Risks and open decisions
 
-- The repository has approved OMD OpenAPI paths and generated adapters, but no
-  `internal/organization` or `web/src/capabilities/master-data` implementation
-  yet. Implementation must reconcile generated stubs with the owning module
-  without changing the contract casually.
+- The approved OMD OpenAPI path and generated adapters are now implemented by
+  the owning `internal/organization` publication service and HTTP adapter.
 - The exact approval applicability for each aggregate is domain/workflow
   policy, not an OMD-only decision. Do not encode a new approval rule in this
   backlog without an approved source.
-- The exact published master-data event names and payload versions must come
-  from the existing event/integration contract. This document intentionally
-  does not invent event names.
+- The contract-first event decision is resolved for Story 6: the v1 event names
+  and safe payload shape are recorded in the DDD and events/integration
+  specifications and implemented by the OMD outbox writer.
 - Dependent-scope impact for fiscal calendars must use an approved read/query
   boundary; it must not become a cross-schema write or an accidental owner of
   fiscal-period state.
@@ -646,8 +657,10 @@ part of this epic's story decomposition.
 
 ## 11. Required verification evidence
 
-The following evidence is required when implementation begins; no item below
-is claimed as complete by this planning document.
+The following evidence remains as traceability for the complete-slice review.
+Local implementation evidence is recorded in the six story sections above;
+deferred downstream or external qualification remains explicitly open and is
+not claimed by this closure.
 
 - [ ] Focused OMD domain/application/persistence/API tests for all six stories.
 - [ ] HTTP contract tests for permissions, typed problem details, correlation,
@@ -669,20 +682,20 @@ is claimed as complete by this planning document.
 
 ## 12. Definition of done
 
-- [ ] All six child stories satisfy their acceptance criteria and have reviewable
-  implementation evidence.
-- [ ] The `organization` schema and `internal/organization` module preserve
-  bounded-context ownership and approved repository boundaries.
-- [ ] Existing OpenAPI routes and generated artifacts remain synchronized; no
-  unapproved route, event, schema, or cross-module dependency is introduced.
-- [ ] Effective dates, aggregate versions, approval references, idempotency,
-  retries, failure behavior, and historical source versions are proven.
-- [ ] Authorization, field-level privacy, material-action audit, safe
-  observability, accessibility, and export/bulk filtering evidence passes.
-- [ ] Downstream handoffs use stable identifiers, versions, and immutable
-  snapshots without allowing downstream mutation of OMD records.
-- [ ] Roadmap and epic status are changed to complete only after the evidence
-  above is successful; this story document does not close the epic by itself.
+The local OMD delivery scope is complete: all six child stories have
+reviewable implementation and acceptance evidence; the `organization` schema
+and `internal/organization` module preserve bounded-context ownership; the
+existing API and generated artifacts remain synchronized; effective dates,
+versions, approvals, idempotency, retries, failure behavior, privacy,
+authorization, audit, accessibility, and safe downstream handoff evidence are
+recorded in the story sections above.
+
+`EP-OMD-001` is now marked locally complete and intentionally closed in the
+roadmap. This closure does not claim the deferred CustomerProfile
+cross-context runtime proof, the clean-tree generated-code gate while this
+worktree contains staged generated output, production data qualification, live
+Entra behavior, full audit-chain qualification, finance-module enforcement, or
+release qualification.
 
 ## 13. Source references
 

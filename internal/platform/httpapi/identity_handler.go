@@ -30,6 +30,7 @@ type IdentityHandler struct {
 	CustomerProfileService *organization.CustomerProfileService
 	VendorProfileService   *organization.VendorProfileService
 	FiscalCalendarService  *organization.FiscalCalendarService
+	PublicationService     *organization.MasterDataPublicationService
 	Instrumentation        *telemetry.Instrumentation
 }
 

@@ -271,6 +271,15 @@ do.
 | FR-OMD-005 | Maintain fiscal calendars | PRD functional action | `omdMaintainFiscalCalendarsHandler` | finance.omd.maintain.fiscal.calendars |
 | FR-OMD-006 | Publish approved master-data changes | PRD functional action | `omdPublishApprovedMasterDataChangesHandler` | finance.omd.publish.approved.master.data.changes |
 
+`omdPublishApprovedMasterDataChangesHandler` accepts the existing generic
+`CommandRequest` envelope with semantic `data.aggregateType` and
+`data.aggregateId`, explicit `accountingScopeId`, and `expectedVersion`. OMD
+loads and locks the owning aggregate, revalidates the applicable approval
+reference and candidate fingerprint, and emits exactly one of the approved
+aggregate-specific v1 events. Approval evidence and snapshots are never
+accepted from the client. The OMD publication record, audit evidence,
+idempotency result, and integration outbox row share one transaction.
+
 ### 9.2 General Ledger
 
 | Requirement | Operation | Provenance | Handler | Permission |

@@ -4,7 +4,7 @@
 > `[x]` means complete or intentionally closed; `[ ]` means open, planned, or awaiting qualification evidence.
 > Workflow and NFR delivery tables do not define an Epic column, so those items are grouped under their primary roadmap epic for navigation.
 
-**Last updated:** 2026-09-26
+**Last updated:** 2026-09-29
 
 ## [x] EP-PLAT-001 — Engineering foundation (M0)
 
@@ -82,17 +82,23 @@ User-story plan: [EP-IAM-001 user stories](docs/backlog/stories/EP-IAM-001_user_
 - [ ] `DLV-FR-IAM-005` — FR-IAM-005 — `Grant emergency access`
 - [ ] `DLV-FR-IAM-006` — FR-IAM-006 — `Revoke emergency access`
 
-## [ ] EP-OMD-001 — Organization and master data (M1)
+## [x] EP-OMD-001 — Organization and master data (M1)
 
 Legal entities, parties, customer and vendor profiles, and fiscal calendars.
 
-- [ ] `DLV-GFR-019` — GFR-019 — EP-OMD-001
-- [ ] `DLV-FR-OMD-001` — FR-OMD-001 — `Maintain legal entities`
-- [ ] `DLV-FR-OMD-002` — FR-OMD-002 — `Maintain parties`
-- [ ] `DLV-FR-OMD-003` — FR-OMD-003 — `Maintain customer profiles`
+Locally complete and intentionally closed on 2026-09-29. The six OMD story
+slices have local implementation and synthetic verification evidence.
+Downstream cross-context runtime qualification, the GFR capability-level
+qualification, production data, live Entra, full audit-chain, and release
+qualification remain deferred.
+
+- [ ] `DLV-GFR-019` — GFR-019 — EP-OMD-001 (capability-level qualification remains open; not closed by the local OMD implementation)
+- [x] `DLV-FR-OMD-001` — FR-OMD-001 — `Maintain legal entities`
+- [x] `DLV-FR-OMD-002` — FR-OMD-002 — `Maintain parties`
+- [x] `DLV-FR-OMD-003` — FR-OMD-003 — `Maintain customer profiles`
 - [x] `DLV-FR-OMD-004` — FR-OMD-004 — `Maintain vendor profiles`
 - [x] `DLV-FR-OMD-005` — FR-OMD-005 — `Maintain fiscal calendars`
-- [ ] `DLV-FR-OMD-006` — FR-OMD-006 — `Publish approved master-data changes`
+- [x] `DLV-FR-OMD-006` — FR-OMD-006 — `Publish approved master-data changes`
 
 ## [ ] EP-COA-001 — COA segment configuration (M1)
 
