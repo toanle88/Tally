@@ -205,7 +205,7 @@ The finance domain is decomposed into bounded contexts with explicit ownership, 
 
 | Upstream Context | Downstream Context | Relationship | Published Contract | Consistency |
 |---|---|---|---|---|
-| Organization & Master Data | All business contexts | Published language | Master-data events and authoritative reference contract | Eventual propagation with immediate authoritative validation for critical commands |
+| Organization & Master Data | All business contexts | Published language | `LegalEntityPublished`, `PartyPublished`, `CustomerProfilePublished`, `VendorProfilePublished`, `FiscalCalendarPublished` v1 and authoritative reference contract | Eventual propagation with immediate authoritative validation for critical commands |
 | Invoicing | AR | Customer-supplier | `InvoiceFinalized`, `IssueCustomerInvoice` | Idempotent handoff with eventual downstream state |
 | Revenue Recognition | AR | Published language | `RevenueAccountingProfilePublished`, versioned profile reference contract | Immutable versioned classification required before invoice accounting |
 | AP, AR, Payroll, Payments & Cash Management, Fixed Assets, Revenue Recognition, Multi-Currency, Multi-Entity / Intercompany | GL | Customer-supplier | `PostingRequest`, `JournalEntryPosted`, `PostingRejected`, `PostingPendingApproval`, `IdempotencyConflict` | Idempotent cross-context handoff with command-fingerprint validation |
@@ -276,6 +276,10 @@ Each business accounting event has exactly one subledger producer. Other context
 - **Aggregate Root: FiscalCalendar**
   - Entities: CalendarPeriod
   - Value Objects: CalendarId, CalendarType, PeriodPattern
+- **OMD publication record: MasterDataPublication**
+  - OMD-owned process record keyed by aggregate type, aggregate identity, and source aggregate version.
+  - Retains publication identity, event identity, approval evidence, effective interval where defined, publication state, dependent availability, source fingerprint, and audit reference.
+  - It does not replace or mutate the source aggregate and never stores restricted source values; consumers establish their own immutable local snapshots from the safe event payload.
 
 <a id="section-2-2"></a>
 ### 2.2 General Ledger
@@ -711,6 +715,8 @@ An `AuditEvent` or `AuditSeal` is appended to one scoped chain and cannot be edi
 3. Unknown contract versions, invalid scope, or missing prerequisites produce an explicit deferred, rejected, or exception outcome without silently changing domain state.
 4. Audit events are append-only and include actor, action, subject, before and after state fingerprints, timestamp, source context, and correlation reference.
 5. Secrets, tokens, personal payroll data, and full bank-account numbers are never copied into ordinary domain events.
+6. OMD publication accepts only the current source version after revalidating the applicable approval reference, status, effective interval, and candidate fingerprint. The publication record and its aggregate-specific outbox event commit atomically.
+7. OMD publication payloads contain stable identifiers, source version/revision, applicable effective dates, approval evidence, and a safe immutable snapshot. They never contain raw tax identifiers, bank credentials, provider tokens, or policy payloads.
 
 <a id="section-4"></a>
 ## 4. Aggregate Lifecycle Models
@@ -1096,6 +1102,7 @@ A changed assessment publishes a new profile version. It never overwrites the ve
 
 | Context | Commands | Events |
 |---|---|---|
+| Organization & Master Data (OMD) | `PublishApprovedMasterDataChanges` | `LegalEntityPublished`, `PartyPublished`, `CustomerProfilePublished`, `VendorProfilePublished`, `FiscalCalendarPublished` |
 | General Ledger (GL) | `SubmitPostingRequest`, `ApplyJournalApprovalDecision`, `ReverseJournalEntry`, `EnterSoftCloseGate`, `ExitSoftCloseGate`, `AcquirePostingBarrier`, `ReleasePostingBarrier`, `FinalizePostingGate`, `OpenScopedReopenGate`, `CloseScopedReopenGate`, `OpenOperationalReopenGate`, `CloseOperationalReopenGate`, `BeginRecloseGate` | `JournalEntryPosted`, `PostingRejected`, `PostingPendingApproval`, `IdempotencyConflict`, `JournalEntryReversed`, `PostingAdmissionRecorded`, `SoftCloseGateEntered`, `SoftCloseGateExited`, `PostingBarrierAcquired`, `PostingBarrierReleased`, `PostingGateFinalized`, `ScopedReopenGateOpened`, `ScopedReopenGateClosed`, `OperationalReopenGateOpened`, `OperationalReopenGateClosed`, `OperationalReopenGateExpired`, `RecloseGateBegun` |
 | Fiscal Period Management | `StartSoftClose`, `EndSoftClose`, `StartHardClose`, `ResumeCloseRun`, `AbortCloseRun`, `ApplyPostingGateResult`, `ApplyCloseExceptionApprovalDecision`, `ApplyCloseApprovalDecision`, `RequestReopen`, `ApplyReopenApprovalDecision`, `StartReclose`, `TakeOverPeriodControl`, `ExtendCloseException` | `SoftCloseStarted`, `SoftCloseEnded`, `SoftCloseHandoffStarted`, `SoftCloseResumed`, `SoftCloseSuperseded`, `GateAdmissionSummaryRecorded`, `PeriodStateChanged`, `CloseStepCompleted`, `CloseRunResumed`, `CloseRunAborted`, `ReopenRequested`, `PeriodReopened`, `ReopenCompletedNoChange`, `RecloseHandoffStarted`, `OperationalReopenActivated`, `OperationalReopenRequestExpired`, `PeriodReclosed` |
 | Workflow & Approvals | `CreateApprovalRequest`, `DecideApprovalRequest`, `DelegateApproval`, `EscalateApproval` | `ApprovalRequested`, `ApprovalDecisionRecorded`, `ApprovalDelegated`, `ApprovalEscalated` |

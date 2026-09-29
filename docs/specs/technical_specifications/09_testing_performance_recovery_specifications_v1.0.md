@@ -43,6 +43,19 @@
 | IAM | Identity & Access | 6 | `internal/identity/...` | `web/src/capabilities/identity-access/...` | Domain + application + DB + API + UI |
 | AUD | Audit Integrity | 5 | `internal/audit/...` | `web/src/capabilities/audit-integrity/...` | Domain + application + DB + API + UI |
 
+### 2.1 OMD publication verification matrix
+
+User Story 6 requires the OMD layers to prove the following boundaries:
+
+| Concern | Evidence boundary |
+|---|---|
+| Approval/current-version decision | `internal/organization/publication_test.go` and typed HTTP problem responses |
+| Aggregate-specific event contract | Five v1 event names, stable identity/version/effective-date fields, and restricted-field omission tests |
+| Transactional publication | `organization.master_data_publication`, audit, idempotency finalization, and `integration.outbox` share the Postgres transaction |
+| Replay and duplicate safety | Same idempotency identity returns the stored result; source-version uniqueness rejects another publication |
+| Consumer boundary | Synthetic contract assertions inspect the envelope/payload; no production downstream OMD consumer or cross-schema write is introduced |
+| Review UI | `OMD-SCR-05` route, status/next-action coverage, and Playwright accessibility test |
+
 ## 3. Workflow end-to-end catalog
 
 | Workflow | Title | Playwright specification | Required paths |

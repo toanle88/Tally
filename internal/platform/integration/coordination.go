@@ -172,7 +172,7 @@ func (c *Coordinator) Publish(ctx context.Context, publication Publication, effe
 		Module:    "platform.integration",
 		Operation: "outbox_insert",
 	})
-	insertErr := insertPublication(repositoryContext, tx, publication)
+	insertErr := WritePublication(repositoryContext, tx, publication)
 	c.finishSpan(repositorySpan, repositoryStarted, "platform.integration", "outbox_insert", insertErr)
 	if insertErr != nil {
 		return insertErr
@@ -492,14 +492,24 @@ func insertPublications(ctx context.Context, tx pgx.Tx, publications []Publicati
 		if err := validatePublication(publication); err != nil {
 			return err
 		}
-		if err := insertPublication(ctx, tx, publication); err != nil {
+		if err := WritePublication(ctx, tx, publication); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func insertPublication(ctx context.Context, tx pgx.Tx, publication Publication) error {
+// WritePublication writes an already validated event to the outbox using the
+// caller's transaction. It is intentionally small: owning contexts use it
+// when their aggregate publication record and the integration message must be
+// committed atomically in one database transaction.
+func WritePublication(ctx context.Context, tx pgx.Tx, publication Publication) error {
+	if ctx == nil || tx == nil {
+		return ErrInvalidCoordinator
+	}
+	if err := validatePublication(publication); err != nil {
+		return err
+	}
 	event := publication.Event
 	messageID, _ := uuid.Parse(event.MessageID())
 	aggregateID, _ := uuid.Parse(event.AggregateID())
