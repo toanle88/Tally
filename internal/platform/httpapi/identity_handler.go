@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-faster/jx"
 	"github.com/google/uuid"
+	"github.com/toanle88/Tally/internal/coa"
 	"github.com/toanle88/Tally/internal/identity"
 	"github.com/toanle88/Tally/internal/organization"
 	"github.com/toanle88/Tally/internal/platform/aggregateversion"
@@ -21,17 +22,18 @@ import (
 
 type IdentityHandler struct {
 	generated.UnimplementedHandler
-	Service                *identity.UserService
-	RoleService            *identity.RoleService
-	SegregationRuleService *identity.SegregationRuleService
-	EmergencyAccessService *identity.EmergencyAccessService
-	OrganizationService    *organization.LegalEntityService
-	PartyService           *organization.PartyService
-	CustomerProfileService *organization.CustomerProfileService
-	VendorProfileService   *organization.VendorProfileService
-	FiscalCalendarService  *organization.FiscalCalendarService
-	PublicationService     *organization.MasterDataPublicationService
-	Instrumentation        *telemetry.Instrumentation
+	SegmentDefinitionService *coa.SegmentDefinitionService
+	Service                  *identity.UserService
+	RoleService              *identity.RoleService
+	SegregationRuleService   *identity.SegregationRuleService
+	EmergencyAccessService   *identity.EmergencyAccessService
+	OrganizationService      *organization.LegalEntityService
+	PartyService             *organization.PartyService
+	CustomerProfileService   *organization.CustomerProfileService
+	VendorProfileService     *organization.VendorProfileService
+	FiscalCalendarService    *organization.FiscalCalendarService
+	PublicationService       *organization.MasterDataPublicationService
+	Instrumentation          *telemetry.Instrumentation
 }
 
 func (handler IdentityHandler) IamManageUsers(ctx context.Context, request *generated.IamManageUsersCommandRequest, params generated.IamManageUsersParams) (generated.IamManageUsersRes, error) {

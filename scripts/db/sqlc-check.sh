@@ -5,6 +5,7 @@ generated_dirs=(
   "internal/platform/database/platformdb"
   "internal/identity/identitydb"
   "internal/organization/organizationdb"
+  "internal/coa/coadb"
 )
 
 fail() {
