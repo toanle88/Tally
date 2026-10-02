@@ -187,6 +187,8 @@ run_for_all_migration_sets() {
 		"${goose_command}"
 
 	echo "Running ${goose_command} for db/migrations/coa..."
+	# The bootstrap migration set creates coa before this set initializes its
+	# schema-owned Goose history table.
 	run_goose \
 		"db/migrations/coa" \
 		"coa.goose_db_version" \

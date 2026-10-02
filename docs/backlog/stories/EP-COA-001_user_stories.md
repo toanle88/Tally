@@ -280,7 +280,7 @@ Story-level definition of done:
 - [ ] Required domain, persistence, API, authorization, audit, idempotency,
   concurrency, UI, and accessibility evidence is attached.
 
-#### User Story 1 implementation evidence — 2026-09-30
+#### User Story 1 implementation evidence — 2026-10-01
 
 Implementation is on branch `feat/coa-maintain-segment-definitions` and keeps
 the approved COA OpenAPI operation, permission, and common command/result
@@ -294,6 +294,9 @@ Verified locally:
 - `GOCACHE=/tmp/tally-go-cache go test ./...` — PASS.
 - `GOCACHE=/tmp/tally-go-cache go test -tags integration ./internal/platform/database -run '^$'` — PASS; integration-tagged persistence tests compile.
 - `make db-migrate-inventory && make db-migrate-validate && make db-migrate-check` — PASS.
+- `make persistence-check` — PASS; clean PostgreSQL 18 persistence integration
+  tests passed, including COA migration initialization and repository
+  revision/rollback coverage.
 - `make sqlc-compile` and `make db-sqlc-generate` — PASS; generated COA query output is present under `internal/coa/coadb`.
 - `pnpm exec vitest run src/app/coa-segment-workspace.test.tsx src/routes/route-registry.test.ts src/routes/router.test.tsx --pool=threads --maxWorkers=1` — PASS, 14 tests.
 - `pnpm run build` — PASS.
@@ -301,8 +304,6 @@ Verified locally:
 
 Qualification still open:
 
-- The COA PostgreSQL integration test is added but was not executed against a
-  live PostgreSQL/Testcontainers environment in this workspace.
 - `make db-sqlc-check` remains a post-commit gate because its repository guard
   requires generated output to be committed; `make sqlc-compile` and
   `make db-sqlc-generate` passed and the generated COA package is present.
