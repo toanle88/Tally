@@ -4,7 +4,7 @@
 > `[x]` means complete or intentionally closed; `[ ]` means open, planned, or awaiting qualification evidence.
 > Workflow and NFR delivery tables do not define an Epic column, so those items are grouped under their primary roadmap epic for navigation.
 
-**Last updated:** 2026-09-29
+**Last updated:** 2026-09-30
 
 ## [x] EP-PLAT-001 — Engineering foundation (M0)
 
@@ -103,6 +103,8 @@ qualification remain deferred.
 ## [ ] EP-COA-001 — COA segment configuration (M1)
 
 Segment definitions, segment values, account combinations, and approved segment changes.
+
+User-story plan: [EP-COA-001 user stories](docs/backlog/stories/EP-COA-001_user_stories.md)
 
 - [ ] `DLV-FR-COA-001` — FR-COA-001 — `Maintain segment definitions`
 - [ ] `DLV-FR-COA-002` — FR-COA-002 — `Maintain segment values`

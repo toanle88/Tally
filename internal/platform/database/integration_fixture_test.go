@@ -91,6 +91,12 @@ func startIntegrationFixture(
 				historySchema: "organization",
 				historyTable:  "goose_db_version",
 			},
+			{
+				name:          "coa",
+				directory:     filepath.Join(root, "db", "migrations", "coa"),
+				historySchema: "coa",
+				historyTable:  "goose_db_version",
+			},
 		},
 	}
 

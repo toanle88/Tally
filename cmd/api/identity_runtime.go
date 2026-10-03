@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/toanle88/Tally/internal/coa"
 	"github.com/toanle88/Tally/internal/identity"
 	"github.com/toanle88/Tally/internal/organization"
 	"github.com/toanle88/Tally/internal/platform/httpapi"
@@ -19,16 +20,17 @@ import (
 )
 
 const (
-	identityOperationID        = "identity.manage-users.v1"
-	roleOperationID            = "identity.manage-roles.v1"
-	segregationOperationID     = "identity.manage-segregation-rules.v1"
-	emergencyAccessOperationID = "identity.emergency-access.v1"
-	organizationOperationID    = "organization.maintain-legal-entities.v1"
-	partyOperationID           = "organization.maintain-parties.v1"
-	customerProfileOperationID = "organization.maintain-customer-profiles.v1"
-	vendorProfileOperationID   = "organization.maintain-vendor-profiles.v1"
-	fiscalCalendarOperationID  = "organization.maintain-fiscal-calendars.v1"
-	publicationOperationID     = "organization.publish-approved-master-data-changes.v1"
+	identityOperationID             = "identity.manage-users.v1"
+	roleOperationID                 = "identity.manage-roles.v1"
+	segregationOperationID          = "identity.manage-segregation-rules.v1"
+	emergencyAccessOperationID      = "identity.emergency-access.v1"
+	organizationOperationID         = "organization.maintain-legal-entities.v1"
+	partyOperationID                = "organization.maintain-parties.v1"
+	customerProfileOperationID      = "organization.maintain-customer-profiles.v1"
+	vendorProfileOperationID        = "organization.maintain-vendor-profiles.v1"
+	fiscalCalendarOperationID       = "organization.maintain-fiscal-calendars.v1"
+	publicationOperationID          = "organization.publish-approved-master-data-changes.v1"
+	coaSegmentDefinitionOperationID = "coa.maintain-segment-definitions.v1"
 )
 
 func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
@@ -233,14 +235,52 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err != nil {
 		return identityUnavailableHandler("organization master-data publication service unavailable"), nil
 	}
+	coaRepository, err := coa.NewPostgresSegmentDefinitionRepository(pool, postgresCoaAuditWriter(auditWriter))
+	if err != nil {
+		return identityUnavailableHandler("coa segment-definition persistence unavailable"), nil
+	}
+	coaService, err := coa.NewSegmentDefinitionServiceWithDurableIdempotency(
+		coaRepository,
+		evaluatorCoaAuthorizer{evaluator: policyEvaluator},
+		&coa.MemoryAuditRecorder{},
+		time.Now,
+		coa.DurableSegmentDefinitionServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, OperationID: coaSegmentDefinitionOperationID},
+	)
+	if err != nil {
+		return identityUnavailableHandler("coa segment-definition service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
 		return identityUnavailableHandler("identity API unavailable"), nil
 	}
 	return server, organizationService
+}
+
+func postgresCoaAuditWriter(auditWriter identity.PostgresAuditWriter) coa.PostgresSegmentDefinitionAuditWriter {
+	return func(ctx context.Context, tx pgx.Tx, record coa.AuditRecord) (uuid.UUID, error) {
+		if auditWriter == nil {
+			return uuid.Nil, coa.ErrSegmentDefinitionAuditUnavailable
+		}
+		return auditWriter(ctx, tx, identity.AuditRecord{
+			UserID:                        record.SegmentDefinitionID,
+			ActorUserID:                   record.ActorUserID,
+			ActorAuthenticationSubjectRef: record.ActorSubjectReference,
+			Action:                        record.Action,
+			ScopeIDs:                      []string{record.ScopeID.String()},
+			Permission:                    record.Permission,
+			PolicyReference:               record.PolicyReference,
+			PolicyVersion:                 record.PolicyVersion,
+			DecisionReference:             record.DecisionReference,
+			RevisionVersion:               record.RevisionNumber,
+			BeforeFingerprint:             record.BeforeFingerprint,
+			AfterFingerprint:              record.AfterFingerprint,
+			CorrelationID:                 record.CorrelationID,
+			CausationID:                   record.CausationID,
+		})
+	}
 }
 
 func postgresRoleAuditWriter(auditWriter identity.PostgresAuditWriter) identity.PostgresRoleAuditWriter {
@@ -547,8 +587,18 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err != nil {
 		return identityUnavailableHandler("organization master-data publication service unavailable"), nil
 	}
+	coaRepository := coa.NewMemorySegmentDefinitionRepository()
+	coaService, err := coa.NewSegmentDefinitionService(
+		coaRepository,
+		permissiveCoaAuthorizer{},
+		&coa.MemoryAuditRecorder{},
+		time.Now,
+	)
+	if err != nil {
+		return identityUnavailableHandler("coa segment-definition service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -572,6 +622,38 @@ type evaluatorIdentityAuthorizer struct {
 
 type evaluatorOrganizationAuthorizer struct {
 	evaluator identity.AuthorizationEvaluator
+}
+
+type evaluatorCoaAuthorizer struct {
+	evaluator identity.AuthorizationEvaluator
+}
+
+func (authorizer evaluatorCoaAuthorizer) AuthorizeSegmentDefinition(ctx context.Context, actor coa.Actor, command coa.SegmentDefinitionCommand, _ *coa.SegmentDefinition) (coa.AuthorizationDecision, error) {
+	if authorizer.evaluator == nil {
+		return coa.AuthorizationDecision{}, coa.ErrSegmentDefinitionAuthorizationUnavailable
+	}
+	decision, err := authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{ActorID: actor.UserID, Permission: coa.SegmentDefinitionManagementPermission, RequestedScopeIDs: []string{command.ScopeID.String()}})
+	if err != nil {
+		return coa.AuthorizationDecision{}, coa.ErrSegmentDefinitionAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationUnavailable {
+		return coa.AuthorizationDecision{}, coa.ErrSegmentDefinitionAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationStale {
+		return coa.AuthorizationDecision{}, coa.ErrSegmentDefinitionAuthorizationStale
+	}
+	result := coa.AuthorizationDecision{Allowed: decision.Allowed, Outcome: string(decision.Outcome), Permission: decision.Permission, PolicyReference: decision.PolicyReference, PolicyVersion: decision.PolicyVersion, DecisionReference: decision.DecisionReference}
+	for _, value := range decision.ApprovedScopeIDs {
+		if value == "*" {
+			result.ApprovedScopeIDs = append(result.ApprovedScopeIDs, uuid.Nil)
+			continue
+		}
+		parsed, parseErr := uuid.Parse(value)
+		if parseErr == nil {
+			result.ApprovedScopeIDs = append(result.ApprovedScopeIDs, parsed)
+		}
+	}
+	return result, nil
 }
 
 func (authorizer evaluatorOrganizationAuthorizer) AuthorizeLegalEntity(ctx context.Context, actor organization.Actor, command organization.LegalEntityCommand, _ *organization.LegalEntity) (organization.AuthorizationDecision, error) {
@@ -777,6 +859,12 @@ func (authorizer evaluatorOrganizationAuthorizer) evaluateFiscalCalendar(ctx con
 		}
 	}
 	return result, nil
+}
+
+type permissiveCoaAuthorizer struct{}
+
+func (permissiveCoaAuthorizer) AuthorizeSegmentDefinition(context.Context, coa.Actor, coa.SegmentDefinitionCommand, *coa.SegmentDefinition) (coa.AuthorizationDecision, error) {
+	return coa.AuthorizationDecision{Allowed: true, Permission: coa.SegmentDefinitionManagementPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{uuid.Nil}}, nil
 }
 
 type permissiveOrganizationAuthorizer struct{}

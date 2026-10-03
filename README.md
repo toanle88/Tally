@@ -83,14 +83,14 @@ All commands must be run from the repository root.
 | `make db-shell` | Open `psql` against the configured local database |
 | `make db-version` | Query `SHOW server_version` inside the container |
 | `make db-down` | Stop the PostgreSQL container (preserves data volume) |
-| `make db-migrate` | Apply all pending Goose migrations (bootstrap, platform, and identity schemas) |
+| `make db-migrate` | Apply all pending Goose migrations (bootstrap, platform, identity, organization, and COA schemas) |
 | `make db-seed` | Apply the committed synthetic seed data |
 | `make db-verify` | Verify migration status and seed checksum |
 | `make db-prepare` | Run db-migrate → db-seed → db-verify in order, stop on failure |
 | `make db-reset` | Destroy and recreate the PostgreSQL volume from scratch |
 | `make db-migrate-status` | Show applied and pending Goose migrations per schema |
 | `make db-migrate-validate` | Validate migration ordering and Goose syntax without connecting |
-| `make db-migrate-create` | Create a migration skeleton for `bootstrap`, `platform`, or `identity`: `make db-migrate-create SCHEMA=identity NAME=desc` |
+| `make db-migrate-create` | Create a migration skeleton for `bootstrap`, `platform`, `identity`, `organization`, or `coa`: `make db-migrate-create SCHEMA=coa NAME=desc` |
 | `make db-migrate-check` | Verify migration checksum inventory matches committed migrations |
 | `make db-migrate-inventory` | Regenerate `db/migrations/checksums.sha256` |
 | `make db-sqlc-version` | Show the pinned sqlc version |
@@ -440,9 +440,9 @@ The technology baseline (from the approved solution architecture):
 | Area | Current | Planned |
 |---|---|---|
 | Backend | Go 1.26.3 + chi/v5 5.3.1 | — |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, daisyUI 5, shared semantic UI primitives, routed shell, fixture-backed scope context, operational route seams, record-context/lifecycle/money/evidence/privacy wrappers, and TanStack Table-backed operational worklist/process fixtures | Capability screens |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, daisyUI 5, shared semantic UI primitives, routed shell, fixture-backed scope context, operational route seams, record-context/lifecycle/money/evidence/privacy wrappers, TanStack Table-backed operational worklist/process fixtures, and the initial COA segment-definition workspace | Further capability screens |
 | Package manager | pnpm 11.9.0 | — |
-| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform queries, seed/verify scripts, migration checksum inventory, focused persistence drift command and aggregate PR quality workflow | — |
+| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform, identity, organization, and COA queries, seed/verify scripts, migration checksum inventory, focused persistence drift command and aggregate PR quality workflow | — |
 | Styling | Tailwind CSS 4 as the primary styling/layout system with daisyUI 5 theme and wrapper support | — |
 | Client state | — | TanStack Query |
 | API contract | OpenAPI 3.1 source with generated Go and TypeScript artifacts; runtime currently exposes GET /health/live; focused contract/generated-artifact drift CI | — |
@@ -471,8 +471,12 @@ The technology baseline (from the approved solution architecture):
 │   │   │   ├── 00004_add_outbox_envelope_metadata.sql
 │   │   │   ├── 00005_add_outbox_managed_exception.sql
 │   │   │   └── 00006_protect_outbox_event_facts.sql
+│   │   ├── coa/
+│   │   │   └── 00001_create_segment_definition_schema.sql
 │   │   └── checksums.sha256              # Migration integrity checksums
 │   ├── queries/
+│   │   ├── coa/
+│   │   │   └── segment_definition.sql  # COA segment-definition query source
 │   │   └── platform/
 │   │       ├── integration_inbox.sql      # sqlc inbox queries
 │   │       ├── integration_outbox.sql     # sqlc outbox queries
@@ -489,6 +493,9 @@ The technology baseline (from the approved solution architecture):
 │           ├── demo/                   # Disposable environment root
 │           └── prod-reference/         # Production topology reference root
 ├── internal/
+│   ├── coa/
+│   │   ├── segment_definition.go       # SegmentDefinition domain and service boundary
+│   │   └── coadb/                      # sqlc-generated COA query package
 │   ├── .gitkeep
 │   └── platform/
 │       ├── money/
@@ -685,7 +692,11 @@ internal/<module>/
 The planned modules are: `organization`, `gl`, `ap`, `ar`, `payroll`,
 `invoicing`, `payments`, `reporting`, `intercompany`, `revenue`,
 `fixedassets`, `multicurrency`, `fiscalperiod`, `coa`, `bankfeeds`, `tax`,
-`workflow`, `identity`, `audit`. None of these packages exist yet.
+`workflow`, `identity`, `audit`. Capability delivery remains incremental.
+
+The initial `coa` segment-definition slice is now implemented under
+`internal/coa` and does not imply that the remaining COA stories or other
+planned modules are delivered.
 
 Cross-module rules (from the approved design):
 - Domain packages import only the Go standard library.

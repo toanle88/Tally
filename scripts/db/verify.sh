@@ -114,6 +114,16 @@ verify_migration_set \
 	"db/migrations/identity" \
 	"identity.goose_db_version"
 
+verify_migration_set \
+	"organization" \
+	"db/migrations/organization" \
+	"organization.goose_db_version"
+
+verify_migration_set \
+	"coa" \
+	"db/migrations/coa" \
+	"coa.goose_db_version"
+
 verify_seed_manifest
 
 echo "Database migration and seed verification passed."

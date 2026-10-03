@@ -23,9 +23,12 @@ migration_dir_for_schema() {
 		organization)
 			printf '%s\n' "db/migrations/organization"
 			;;
+		coa)
+			printf '%s\n' "db/migrations/coa"
+			;;
 		*)
 			echo "Unknown migration schema: ${schema}" >&2
-			echo "Supported schemas: bootstrap, platform, identity, organization" >&2
+			echo "Supported schemas: bootstrap, platform, identity, organization, coa" >&2
 			exit 2
 			;;
 	esac
@@ -37,7 +40,7 @@ create_migration() {
 	local migration_dir
 
 	if [[ -z "${schema}" || -z "${name}" ]]; then
-		echo "Usage: $0 create <bootstrap|platform|identity|organization> <migration_name>" >&2
+		echo "Usage: $0 create <bootstrap|platform|identity|organization|coa> <migration_name>" >&2
 		exit 2
 	fi
 
@@ -97,6 +100,11 @@ validate_migrations() {
 	echo "Validating db/migrations/organization..."
 	go tool goose \
 		-dir db/migrations/organization \
+		validate
+
+	echo "Validating db/migrations/coa..."
+	go tool goose \
+		-dir db/migrations/coa \
 		validate
 	echo "Migration validation passed."
 }
@@ -176,6 +184,14 @@ run_for_all_migration_sets() {
 	run_goose \
 		"db/migrations/organization" \
 		"organization.goose_db_version" \
+		"${goose_command}"
+
+	echo "Running ${goose_command} for db/migrations/coa..."
+	# The bootstrap migration set creates coa before this set initializes its
+	# schema-owned Goose history table.
+	run_goose \
+		"db/migrations/coa" \
+		"coa.goose_db_version" \
 		"${goose_command}"
 }
 

@@ -75,6 +75,15 @@ describe('application router', () => {
     expect(screen.getByText(/Accepted vendor-profile revision v5/)).toBeInTheDocument()
   })
 
+  it('supports the COA segment worklist and record mutation boundary', async () => {
+    renderRoute('/coa-segments/coa-ws-01')
+    expect(await screen.findByRole('heading', { name: 'Segment administration worklist' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('link', { name: 'Create segment definition' }))
+    expect(await screen.findByRole('heading', { name: 'Segment definition' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Create segment definition' })).toBeInTheDocument()
+    expect(screen.getByRole('note')).toHaveTextContent('local safe adapter')
+  })
+
   it('updates active navigation and supports back navigation', async () => {
     const router = renderRoute('/')
     fireEvent.click(screen.getByRole('link', { name: 'Exceptions' }))

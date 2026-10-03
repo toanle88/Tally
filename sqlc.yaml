@@ -37,3 +37,15 @@ sql:
         package: organizationdb
         out: internal/organization/organizationdb
         sql_package: pgx/v5
+  - name: coa
+    engine: postgresql
+    schema:
+      - db/migrations/bootstrap
+      - db/migrations/coa
+    queries:
+      - db/queries/coa
+    gen:
+      go:
+        package: coadb
+        out: internal/coa/coadb
+        sql_package: pgx/v5
