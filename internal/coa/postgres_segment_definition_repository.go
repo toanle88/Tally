@@ -74,6 +74,14 @@ func (repository *PostgresSegmentDefinitionRepository) CommitSegmentDefinitionMu
 	return repository.commit(ctx, mutation, &commit)
 }
 
+func (repository *PostgresSegmentDefinitionRepository) CommitSegmentValueMutation(ctx context.Context, mutation SegmentValueMutation) error {
+	return repository.commitSegmentValue(ctx, mutation, nil)
+}
+
+func (repository *PostgresSegmentDefinitionRepository) CommitSegmentValueMutationWithIdempotency(ctx context.Context, mutation SegmentValueMutation, commit DurableSegmentValueMutationCommit) error {
+	return repository.commitSegmentValue(ctx, mutation, &commit)
+}
+
 func (repository *PostgresSegmentDefinitionRepository) commit(ctx context.Context, mutation SegmentDefinitionMutation, durable *DurableSegmentDefinitionMutationCommit) error {
 	if repository == nil || repository.pool == nil {
 		return ErrInvalidSegmentDefinitionService
@@ -205,6 +213,148 @@ func (repository *PostgresSegmentDefinitionRepository) ensureNoOverlap(ctx conte
 	return ErrSegmentDefinitionDuplicate
 }
 
+func (repository *PostgresSegmentDefinitionRepository) commitSegmentValue(ctx context.Context, mutation SegmentValueMutation, durable *DurableSegmentValueMutationCommit) error {
+	if repository == nil || repository.pool == nil {
+		return ErrInvalidSegmentValueService
+	}
+	if repository.auditWriter == nil {
+		return ErrSegmentValueAuditUnavailable
+	}
+	if err := validateSegmentValueMutation(mutation); err != nil {
+		return err
+	}
+
+	tx, err := repository.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	committed := false
+	defer func() {
+		if !committed {
+			_ = tx.Rollback(ctx)
+		}
+	}()
+
+	var currentVersion, currentRevision int64
+	var currentScope uuid.UUID
+	err = tx.QueryRow(ctx, `
+		SELECT scope_id, aggregate_version, revision_number
+		FROM coa.segment_definition
+		WHERE segment_definition_id=$1
+		FOR UPDATE`, mutation.After.ID).Scan(&currentScope, &currentVersion, &currentRevision)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return ErrSegmentDefinitionNotFound
+	}
+	if err != nil {
+		return mapSegmentValuePostgresError(err)
+	}
+	if currentScope != mutation.After.ScopeID || currentVersion != mutation.ExpectedVersion.Value() || currentRevision != mutation.Before.RevisionNumber {
+		return ErrSegmentValueVersionConflict
+	}
+
+	if err := repository.ensureNoValueOverlap(ctx, tx, mutation.After.ID, mutation.ValueAfter); err != nil {
+		return err
+	}
+	if mutation.ValueBefore == nil {
+		_, err = tx.Exec(ctx, `
+			INSERT INTO coa.segment_value
+			(segment_value_id, segment_definition_id, value, description, status,
+			 effective_from, effective_to, created_at, updated_at)
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+			mutation.ValueAfter.ID, mutation.After.ID, mutation.ValueAfter.Value, mutation.ValueAfter.Description, mutation.ValueAfter.Status,
+			mutation.ValueAfter.EffectiveDateFrom, mutation.ValueAfter.EffectiveDateTo, mutation.ValueAfter.CreatedAt, mutation.ValueAfter.UpdatedAt)
+	} else {
+		var tag pgconn.CommandTag
+		tag, err = tx.Exec(ctx, `
+			UPDATE coa.segment_value
+			SET value=$1, description=$2, status=$3, effective_from=$4, effective_to=$5, updated_at=$6
+			WHERE segment_value_id=$7 AND segment_definition_id=$8`,
+			mutation.ValueAfter.Value, mutation.ValueAfter.Description, mutation.ValueAfter.Status, mutation.ValueAfter.EffectiveDateFrom,
+			mutation.ValueAfter.EffectiveDateTo, mutation.ValueAfter.UpdatedAt, mutation.ValueAfter.ID, mutation.After.ID)
+		if err == nil && tag.RowsAffected() != 1 {
+			return ErrSegmentValueNotFound
+		}
+	}
+	if err != nil {
+		return mapSegmentValuePostgresError(err)
+	}
+
+	var tag pgconn.CommandTag
+	tag, err = tx.Exec(ctx, `
+		UPDATE coa.segment_definition
+		SET aggregate_version=$1, revision_number=$2, updated_at=$3
+		WHERE segment_definition_id=$4 AND aggregate_version=$5`,
+		mutation.After.Version.Value(), mutation.After.RevisionNumber, mutation.After.UpdatedAt,
+		mutation.After.ID, mutation.ExpectedVersion.Value())
+	if err == nil && tag.RowsAffected() != 1 {
+		return ErrSegmentValueVersionConflict
+	}
+	if err != nil {
+		return mapSegmentValuePostgresError(err)
+	}
+
+	snapshot, err := json.Marshal(mutation.After.Snapshot())
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(ctx, `
+		INSERT INTO coa.segment_definition_revision
+		(segment_definition_id, revision_number, aggregate_version, snapshot,
+		 effective_from, effective_to, created_at)
+		VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+		mutation.After.ID, mutation.After.RevisionNumber, mutation.After.Version.Value(), snapshot,
+		mutation.After.EffectiveDateFrom, mutation.After.EffectiveDateTo, mutation.After.UpdatedAt)
+	if err != nil {
+		return mapSegmentValuePostgresError(err)
+	}
+
+	auditReference, err := repository.auditWriter(ctx, tx, mutation.Audit)
+	if err != nil || auditReference == uuid.Nil {
+		if err != nil {
+			return err
+		}
+		return ErrSegmentValueAuditUnavailable
+	}
+	if _, err := tx.Exec(ctx, `UPDATE coa.segment_definition SET last_audit_reference=$1 WHERE segment_definition_id=$2`, auditReference, mutation.After.ID); err != nil {
+		return mapSegmentValuePostgresError(err)
+	}
+
+	if durable != nil {
+		if durable.Coordinator == nil {
+			return ErrInvalidSegmentValueService
+		}
+		if err := durable.Coordinator.Finalize(ctx, tx, durable.Acquisition, durable.Result); err != nil {
+			return err
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return err
+	}
+	committed = true
+	return nil
+}
+
+func (repository *PostgresSegmentDefinitionRepository) ensureNoValueOverlap(ctx context.Context, tx pgx.Tx, definitionID uuid.UUID, candidate SegmentValue) error {
+	var existingID uuid.UUID
+	err := tx.QueryRow(ctx, `
+		SELECT segment_value_id
+		FROM coa.segment_value
+		WHERE segment_definition_id=$1
+		  AND value=$2
+		  AND segment_value_id <> $3
+		  AND effective_from <= COALESCE($4::date, DATE '9999-12-31')
+		  AND COALESCE(effective_to, DATE '9999-12-31') >= $5::date
+		LIMIT 1
+		FOR UPDATE`, definitionID, candidate.Value, candidate.ID, candidate.EffectiveDateTo, candidate.EffectiveDateFrom).Scan(&existingID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil
+	}
+	if err != nil {
+		return mapSegmentValuePostgresError(err)
+	}
+	return ErrSegmentValueDuplicate
+}
+
 type coaQueryer interface {
 	QueryRow(context.Context, string, ...any) pgx.Row
 	Query(context.Context, string, ...any) (pgx.Rows, error)
@@ -241,10 +391,47 @@ func readSegmentDefinition(ctx context.Context, queryer coaQueryer, id uuid.UUID
 		return SegmentDefinition{}, err
 	}
 	definition.Revisions = revisions
+	values, err := querySegmentValues(ctx, queryer, id)
+	if err != nil {
+		return SegmentDefinition{}, err
+	}
+	definition.Values = values
 	if err := definition.Validate(); err != nil {
 		return SegmentDefinition{}, err
 	}
 	return definition, nil
+}
+
+func querySegmentValues(ctx context.Context, queryer coaQueryer, definitionID uuid.UUID) ([]SegmentValue, error) {
+	rows, err := queryer.Query(ctx, `
+		SELECT segment_value_id, segment_definition_id, value, description, status,
+		       effective_from, effective_to, created_at, updated_at
+		FROM coa.segment_value
+		WHERE segment_definition_id=$1
+		ORDER BY value, effective_from, segment_value_id`, definitionID)
+	if err != nil {
+		return nil, mapSegmentValuePostgresError(err)
+	}
+	defer rows.Close()
+	result := make([]SegmentValue, 0)
+	for rows.Next() {
+		var value SegmentValue
+		var effectiveTo *time.Time
+		if err := rows.Scan(&value.ID, &value.SegmentDefinitionID, &value.Value, &value.Description, &value.Status, &value.EffectiveDateFrom, &effectiveTo, &value.CreatedAt, &value.UpdatedAt); err != nil {
+			return nil, mapSegmentValuePostgresError(err)
+		}
+		value.Value = normalizeSegmentValue(value.Value)
+		value.EffectiveDateFrom = dateOnly(value.EffectiveDateFrom)
+		value.EffectiveDateTo = cloneDate(effectiveTo)
+		value.CreatedAt = value.CreatedAt.UTC()
+		value.UpdatedAt = value.UpdatedAt.UTC()
+		result = append(result, value)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, mapSegmentValuePostgresError(err)
+	}
+	sortSegmentValues(result)
+	return result, nil
 }
 
 func querySegmentDefinitionRevisions(ctx context.Context, queryer coaQueryer, id uuid.UUID) ([]SegmentDefinitionRevision, error) {
@@ -275,6 +462,7 @@ func querySegmentDefinitionRevisions(ctx context.Context, queryer coaQueryer, id
 		}
 		revision.Snapshot.EffectiveDateFrom = dateOnly(revision.Snapshot.EffectiveDateFrom)
 		revision.Snapshot.EffectiveDateTo = cloneDate(revision.Snapshot.EffectiveDateTo)
+		revision.Snapshot.Values = cloneValueSnapshots(revision.Snapshot.Values)
 		result = append(result, revision)
 	}
 	if err := rows.Err(); err != nil {
@@ -306,5 +494,25 @@ func mapSegmentDefinitionPostgresError(err error) error {
 	return err
 }
 
+func mapSegmentValuePostgresError(err error) error {
+	if err == nil {
+		return nil
+	}
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		switch pgErr.Code {
+		case "23505":
+			return ErrSegmentValueDuplicate
+		case "23503":
+			return ErrSegmentDefinitionNotFound
+		case "23514":
+			return ErrInvalidSegmentValue
+		}
+	}
+	return err
+}
+
 var _ SegmentDefinitionRepository = (*PostgresSegmentDefinitionRepository)(nil)
 var _ DurableSegmentDefinitionRepository = (*PostgresSegmentDefinitionRepository)(nil)
+var _ SegmentValueRepository = (*PostgresSegmentDefinitionRepository)(nil)
+var _ DurableSegmentValueRepository = (*PostgresSegmentDefinitionRepository)(nil)

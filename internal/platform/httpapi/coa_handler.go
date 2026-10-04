@@ -26,6 +26,17 @@ type coaSegmentDefinitionCommandData struct {
 	EffectiveDateTo     *string `json:"effectiveDateTo"`
 }
 
+type coaSegmentValueCommandData struct {
+	Action              string  `json:"action"`
+	SegmentDefinitionID string  `json:"segmentDefinitionId"`
+	SegmentValueID      string  `json:"segmentValueId"`
+	Value               string  `json:"value"`
+	Description         string  `json:"description"`
+	Status              string  `json:"status"`
+	EffectiveDateFrom   string  `json:"effectiveDateFrom"`
+	EffectiveDateTo     *string `json:"effectiveDateTo"`
+}
+
 func (handler IdentityHandler) CoaMaintainSegmentDefinitions(ctx context.Context, request *generated.CommandRequest, params generated.CoaMaintainSegmentDefinitionsParams) (generated.CoaMaintainSegmentDefinitionsRes, error) {
 	correlationID := correlationFromCoaParams(params)
 	if handler.SegmentDefinitionService == nil {
@@ -55,6 +66,37 @@ func (handler IdentityHandler) CoaMaintainSegmentDefinitions(ctx context.Context
 		return mapCoaSegmentDefinitionError(err, correlationID), nil
 	}
 	return establishedCoaSegmentDefinitionResult(result, correlationID), nil
+}
+
+func (handler IdentityHandler) CoaMaintainSegmentValues(ctx context.Context, request *generated.CommandRequest, params generated.CoaMaintainSegmentValuesParams) (generated.CoaMaintainSegmentValuesRes, error) {
+	correlationID := correlationFromCoaValueParams(params)
+	if handler.SegmentValueService == nil {
+		return coaValueProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The segment-value service is unavailable.", correlationID), nil
+	}
+	actor, ok := identity.ActorFromContext(ctx)
+	if !ok {
+		return coaValueProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The administering actor is not authorized.", correlationID), nil
+	}
+	if request == nil || request.CommandId == (generated.UUID{}) {
+		return coaValueProblem(http.StatusBadRequest, "INVALID_REQUEST", "The segment-value command is invalid.", correlationID), nil
+	}
+	data, err := json.Marshal(request.Data)
+	if err != nil {
+		return coaValueProblem(http.StatusBadRequest, "INVALID_REQUEST", "The segment-value command data is invalid.", correlationID), nil
+	}
+	var payload coaSegmentValueCommandData
+	if err := json.Unmarshal(data, &payload); err != nil {
+		return coaValueProblem(http.StatusBadRequest, "INVALID_REQUEST", "The segment-value command data is invalid.", correlationID), nil
+	}
+	command, err := coaSegmentValueCommandFromTransport(request, params, payload, correlationID)
+	if err != nil {
+		return coaValueProblem(http.StatusBadRequest, "INVALID_REQUEST", "The segment-value command data is invalid.", correlationID), nil
+	}
+	result, err := handler.SegmentValueService.Execute(ctx, coa.Actor{UserID: actor.UserID, SubjectReference: actor.UserID.String()}, command)
+	if err != nil {
+		return mapCoaSegmentValueError(err, correlationID), nil
+	}
+	return establishedCoaSegmentValueResult(result, correlationID), nil
 }
 
 func coaSegmentDefinitionCommandFromTransport(request *generated.CommandRequest, params generated.CoaMaintainSegmentDefinitionsParams, payload coaSegmentDefinitionCommandData, correlationID uuid.UUID) (coa.SegmentDefinitionCommand, error) {
@@ -110,6 +152,65 @@ func coaSegmentDefinitionCommandFromTransport(request *generated.CommandRequest,
 	return command, nil
 }
 
+func coaSegmentValueCommandFromTransport(request *generated.CommandRequest, params generated.CoaMaintainSegmentValuesParams, payload coaSegmentValueCommandData, correlationID uuid.UUID) (coa.SegmentValueCommand, error) {
+	command := coa.SegmentValueCommand{
+		Action:         payload.Action,
+		Value:          payload.Value,
+		Description:    payload.Description,
+		Status:         coa.SegmentStatus(payload.Status),
+		IdempotencyKey: params.IdempotencyKey,
+		CorrelationID:  correlationID.String(),
+		CausationID:    uuid.UUID(request.CommandId).String(),
+	}
+	if request.AccountingScopeId.Set {
+		command.ScopeID = uuid.UUID(request.AccountingScopeId.Value)
+	}
+	if payload.SegmentDefinitionID != "" {
+		parsed, err := uuid.Parse(strings.TrimSpace(payload.SegmentDefinitionID))
+		if err != nil {
+			return command, err
+		}
+		command.SegmentDefinitionID = parsed
+	}
+	if payload.SegmentValueID != "" {
+		parsed, err := uuid.Parse(strings.TrimSpace(payload.SegmentValueID))
+		if err != nil {
+			return command, err
+		}
+		command.SegmentValueID = parsed
+	}
+	if request.ExpectedVersion.Set {
+		version, err := aggregateversion.FromInt64(int64(request.ExpectedVersion.Value))
+		if err != nil {
+			return command, err
+		}
+		command.ExpectedVersion = &version
+	}
+	if params.IfMatch.Set {
+		headerVersion, err := parseIfMatchVersion(params.IfMatch.Value)
+		if err != nil {
+			return command, err
+		}
+		if command.ExpectedVersion != nil && command.ExpectedVersion.Value() != headerVersion.Value() {
+			return command, errors.New("If-Match and expectedVersion do not agree")
+		}
+		command.ExpectedVersion = &headerVersion
+	}
+	from, err := parseCoaDate(payload.EffectiveDateFrom)
+	if err != nil {
+		return command, err
+	}
+	command.EffectiveDateFrom = from
+	if payload.EffectiveDateTo != nil && strings.TrimSpace(*payload.EffectiveDateTo) != "" {
+		to, err := parseCoaDate(*payload.EffectiveDateTo)
+		if err != nil {
+			return command, err
+		}
+		command.EffectiveDateTo = &to
+	}
+	return command, nil
+}
+
 func parseCoaDate(value string) (time.Time, error) {
 	parsed, err := time.Parse("2006-01-02", strings.TrimSpace(value))
 	if err != nil {
@@ -119,6 +220,13 @@ func parseCoaDate(value string) (time.Time, error) {
 }
 
 func correlationFromCoaParams(params generated.CoaMaintainSegmentDefinitionsParams) uuid.UUID {
+	if params.XCorrelationID.Set {
+		return uuid.UUID(params.XCorrelationID.Value)
+	}
+	return uuid.New()
+}
+
+func correlationFromCoaValueParams(params generated.CoaMaintainSegmentValuesParams) uuid.UUID {
 	if params.XCorrelationID.Set {
 		return uuid.UUID(params.XCorrelationID.Value)
 	}
@@ -143,6 +251,28 @@ func establishedCoaSegmentDefinitionResult(result coa.SegmentDefinitionCommandRe
 		AggregateVersion: int(result.SegmentDefinition.Version.Value()),
 		CorrelationId:    generated.UUID(correlationID),
 		Links:            generated.Links{Self: "/api/v1/coa-segments/configuration/maintain-segment-definitions"},
+		Data:             data,
+	}
+}
+
+func establishedCoaSegmentValueResult(result coa.SegmentValueCommandResult, correlationID uuid.UUID) *generated.EstablishedResult {
+	data := generated.EstablishedResultData{}
+	data["segmentValue"] = mustRaw(result.SegmentValue)
+	data["status"] = mustRaw(result.SegmentValue.Status)
+	data["aggregateVersion"] = mustRaw(result.SegmentValue.Version.Value())
+	data["effectiveDateFrom"] = mustRaw(result.SegmentValue.EffectiveDateFrom)
+	data["effectiveDateTo"] = mustRaw(result.SegmentValue.EffectiveDateTo)
+	data["approvalStatus"] = mustRaw(result.SegmentValue.ApprovalStatus)
+	data["validationOutcome"] = mustRaw(result.ValidationOutcome)
+	data["nextAction"] = mustRaw(result.SegmentValue.NextAction)
+	data["decisionReference"] = mustRaw(result.DecisionReference.String())
+	data["policyReference"] = mustRaw(result.PolicyReference)
+	return &generated.EstablishedResult{
+		Status:           "established",
+		AggregateId:      generated.UUID(result.SegmentValue.SegmentDefinitionID),
+		AggregateVersion: int(result.SegmentValue.Version.Value()),
+		CorrelationId:    generated.UUID(correlationID),
+		Links:            generated.Links{Self: "/api/v1/coa-segments/configuration/maintain-segment-values"},
 		Data:             data,
 	}
 }
@@ -189,6 +319,54 @@ func coaProblem(status int, code, detail string, correlationID uuid.UUID) genera
 		return &value
 	default:
 		value := generated.CoaMaintainSegmentDefinitionsServiceUnavailable(problem)
+		return &value
+	}
+}
+
+func mapCoaSegmentValueError(err error, correlationID uuid.UUID) generated.CoaMaintainSegmentValuesRes {
+	switch {
+	case errors.Is(err, coa.ErrSegmentValueAuthorizationUnavailable):
+		return coaValueProblem(http.StatusServiceUnavailable, "POLICY_UNAVAILABLE", "The authorization policy could not be evaluated. Retry later.", correlationID)
+	case errors.Is(err, coa.ErrSegmentValueAuthorizationStale):
+		return coaValueProblem(http.StatusConflict, "POLICY_STALE", "The authorization policy changed. Refresh and retry.", correlationID)
+	case errors.Is(err, coa.ErrSegmentValueAuthorizationDenied):
+		return coaValueProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The requested segment-value scope is outside the administering actor scope.", correlationID)
+	case errors.Is(err, coa.ErrSegmentValueVersionConflict):
+		return coaValueProblem(http.StatusConflict, "VERSION_CONFLICT", "The segment definition changed after it was loaded. Refresh and retry with the current parent version.", correlationID)
+	case errors.Is(err, coa.ErrSegmentValueIdempotencyConflict):
+		return coaValueProblem(http.StatusConflict, "IDEMPOTENCY_CONFLICT", "The idempotency key was already used for different command data.", correlationID)
+	case errors.Is(err, coa.ErrSegmentValueCommandInProgress):
+		return coaValueProblem(http.StatusConflict, "COMMAND_IN_PROGRESS", "The command is still being finalized. Retry with the same idempotency key.", correlationID)
+	case errors.Is(err, coa.ErrSegmentDefinitionNotFound):
+		return coaValueProblem(http.StatusConflict, "SEGMENT_DEFINITION_NOT_FOUND", "The requested segment definition does not exist.", correlationID)
+	case errors.Is(err, coa.ErrSegmentValueNotFound):
+		return coaValueProblem(http.StatusConflict, "SEGMENT_VALUE_NOT_FOUND", "The requested segment value does not exist.", correlationID)
+	case errors.Is(err, coa.ErrInvalidSegmentValueCommand):
+		return coaValueProblem(http.StatusBadRequest, "INVALID_REQUEST", "The segment-value command is invalid.", correlationID)
+	case errors.Is(err, coa.ErrInvalidSegmentValue), errors.Is(err, coa.ErrSegmentValueDuplicate), errors.Is(err, coa.ErrSegmentValueDurableCommandFailed):
+		return coaValueProblem(http.StatusUnprocessableEntity, "VALIDATION_FAILED", "The segment-value command violates a COA rule.", correlationID)
+	default:
+		return coaValueProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The segment-value operation could not be completed.", correlationID)
+	}
+}
+
+func coaValueProblem(status int, code, detail string, correlationID uuid.UUID) generated.CoaMaintainSegmentValuesRes {
+	problem := generated.ProblemDetails{Type: "https://tally.local/problems/" + code, Title: http.StatusText(status), Status: status, Code: code, Detail: detail, CorrelationId: generated.UUID(correlationID)}
+	switch status {
+	case http.StatusBadRequest:
+		value := generated.CoaMaintainSegmentValuesBadRequest(problem)
+		return &value
+	case http.StatusForbidden:
+		value := generated.CoaMaintainSegmentValuesForbidden(problem)
+		return &value
+	case http.StatusConflict:
+		value := generated.CoaMaintainSegmentValuesConflict(problem)
+		return &value
+	case http.StatusUnprocessableEntity:
+		value := generated.CoaMaintainSegmentValuesUnprocessableEntity(problem)
+		return &value
+	default:
+		value := generated.CoaMaintainSegmentValuesServiceUnavailable(problem)
 		return &value
 	}
 }

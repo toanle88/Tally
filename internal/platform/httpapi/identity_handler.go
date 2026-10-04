@@ -23,6 +23,7 @@ import (
 type IdentityHandler struct {
 	generated.UnimplementedHandler
 	SegmentDefinitionService *coa.SegmentDefinitionService
+	SegmentValueService      *coa.SegmentValueService
 	Service                  *identity.UserService
 	RoleService              *identity.RoleService
 	SegregationRuleService   *identity.SegregationRuleService
