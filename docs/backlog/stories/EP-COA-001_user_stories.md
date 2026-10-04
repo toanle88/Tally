@@ -371,6 +371,47 @@ Required test evidence:
 - [ ] Component and Playwright tests for value maintenance, filtering,
   keyboard use, accessible validation, and responsive/reflow behavior.
 
+#### User Story 2 implementation evidence — 2026-10-04
+
+Implementation is on branch `feat/coa-maintain-segment-values`. The slice keeps
+the approved `coaMaintainSegmentValues` contract and generated clients, adds
+`SegmentValue` as a child entity of the COA-owned `SegmentDefinition`
+aggregate, and stores current child state plus parent revision snapshots in
+the `coa` schema. Mutations require the parent aggregate version, use the
+existing lifecycle, enforce parent interval containment and normalized-value
+range uniqueness, and commit child state, parent revision, audit reference,
+and durable idempotency in one transaction. No assignment-specific rule was
+invented because the approved model does not yet expose an assignment-rule
+representation or validation port; approval remains policy-driven.
+
+The HTTP adapter maps the existing operation to the value service and exact
+permission. COA-WS-01 now filters and links safe value projections, and
+COA-SCR-02 maintains value, description, lifecycle, and effective dates with
+parent-version retry guidance. The local safe adapter remains explicitly
+labelled because no approved COA read endpoint exists.
+
+Verified locally:
+
+- `GOCACHE=/tmp/tally-go-cache go test ./...` — PASS.
+- `GOCACHE=/tmp/tally-go-cache go test -tags integration ./internal/platform/database -run '^$'` — PASS; integration-tagged persistence tests compile.
+- `make db-migrate-validate` and `make db-migrate-check` — PASS.
+- `make sqlc-compile`, `make db-sqlc-generate`, and `GOCACHE=/tmp/tally-go-cache make sqlc-check` — PASS; the generated COA value query/model is present.
+- `GOCACHE=/tmp/tally-go-cache make api-check`, `make api-generate-check`, and `make api-ts-check` — PASS; the existing COA value contract and generated artifacts remain aligned.
+- `pnpm exec vitest run src/app/coa-segment-workspace.test.tsx src/routes/route-registry.test.ts src/routes/router.test.tsx --pool=threads --maxWorkers=1` — PASS, 17 tests.
+- `pnpm build` — PASS.
+- `pnpm exec playwright test --config=playwright.config.ts --grep='COA-'` — PASS, 3 COA accessibility/keyboard tests.
+
+Qualification still open:
+
+- `make persistence-check` was blocked because the Docker daemon was
+  unavailable in the execution environment. The integration-tagged tests
+  compile, but clean PostgreSQL execution is not claimed here.
+- `make db-sqlc-check` remains a post-commit repository guard; the direct
+  `sqlc-check` drift check, SQLC compile, and generation passed.
+- Production Entra authorization, production Audit Integrity, performance,
+  capacity, recovery, and release qualification remain outside this local
+  slice.
+
 ### User Story 3 — Validate segment combinations
 
 **Delivery item:** DLV-FR-COA-003 / FR-COA-003

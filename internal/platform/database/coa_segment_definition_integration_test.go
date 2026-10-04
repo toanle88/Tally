@@ -119,4 +119,66 @@ func TestCoaSegmentDefinitionRepositoryPreservesRevisionsAndRollsBackAuditFailur
 	if count != 0 {
 		t.Fatalf("audit failure left %d segment-definition rows", count)
 	}
+
+	value, err := coa.NewSegmentValue(reloaded, uuid.New(), "1000", "Operations", coa.SegmentStatusActive, from, nil, time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	valueParent := reloaded
+	valueParent.Values = append(valueParent.Values, value)
+	valueParent.Version, err = reloaded.Version.Advance()
+	if err != nil {
+		t.Fatal(err)
+	}
+	valueParent.RevisionNumber++
+	valueParent.UpdatedAt = time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC)
+	valueParent.Revisions = append(valueParent.Revisions, coa.SegmentDefinitionRevision{RevisionNumber: valueParent.RevisionNumber, Version: valueParent.Version, Snapshot: valueParent.Snapshot(), CreatedAt: valueParent.UpdatedAt})
+	valueExpected := reloaded.Version
+	if err := repository.CommitSegmentValueMutation(ctx, coa.SegmentValueMutation{
+		Before: reloaded, After: valueParent, ValueAfter: value, ExpectedVersion: &valueExpected,
+		Audit: coa.AuditRecord{SegmentDefinitionID: reloaded.ID, SegmentValueID: value.ID, ActorUserID: uuid.New(), Action: coa.SegmentValueActionCreate, ScopeID: scopeID, Permission: coa.SegmentValueManagementPermission, DecisionReference: uuid.New(), RevisionNumber: valueParent.RevisionNumber},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	withValue, err := repository.Get(ctx, reloaded.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(withValue.Values) != 1 || withValue.Values[0].Value != "1000" || withValue.Version.Value() != 3 || len(withValue.Revisions) != 3 || len(withValue.Revisions[2].Snapshot.Values) != 1 {
+		t.Fatalf("stored segment value aggregate = %#v", withValue)
+	}
+
+	failingValueRepository, err := coa.NewPostgresSegmentDefinitionRepository(fixture.pool, func(context.Context, pgx.Tx, coa.AuditRecord) (uuid.UUID, error) {
+		return uuid.Nil, errors.New("value audit unavailable")
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	failedValue, err := coa.NewSegmentValue(withValue, uuid.New(), "2000", "Rolled Back", coa.SegmentStatusDraft, from, nil, time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	failedValueParent := withValue
+	failedValueParent.Values = append(failedValueParent.Values, failedValue)
+	failedValueParent.Version, err = withValue.Version.Advance()
+	if err != nil {
+		t.Fatal(err)
+	}
+	failedValueParent.RevisionNumber++
+	failedValueParent.UpdatedAt = time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC)
+	failedValueParent.Revisions = append(failedValueParent.Revisions, coa.SegmentDefinitionRevision{RevisionNumber: failedValueParent.RevisionNumber, Version: failedValueParent.Version, Snapshot: failedValueParent.Snapshot(), CreatedAt: failedValueParent.UpdatedAt})
+	failedValueExpected := withValue.Version
+	if err := failingValueRepository.CommitSegmentValueMutation(ctx, coa.SegmentValueMutation{
+		Before: withValue, After: failedValueParent, ValueAfter: failedValue, ExpectedVersion: &failedValueExpected,
+		Audit: coa.AuditRecord{SegmentDefinitionID: withValue.ID, SegmentValueID: failedValue.ID, ActorUserID: uuid.New(), Action: coa.SegmentValueActionCreate, ScopeID: scopeID, Permission: coa.SegmentValueManagementPermission, DecisionReference: uuid.New(), RevisionNumber: failedValueParent.RevisionNumber},
+	}); err == nil {
+		t.Fatal("value audit failure returned nil")
+	}
+	var valueCount int
+	if err := fixture.pool.QueryRow(ctx, `SELECT count(*) FROM coa.segment_value WHERE segment_value_id = $1`, failedValue.ID).Scan(&valueCount); err != nil {
+		t.Fatal(err)
+	}
+	if valueCount != 0 {
+		t.Fatalf("value audit failure left %d segment-value rows", valueCount)
+	}
 }

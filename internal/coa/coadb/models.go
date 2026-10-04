@@ -33,3 +33,15 @@ type CoaSegmentDefinitionRevision struct {
 	EffectiveTo         pgtype.Date
 	CreatedAt           pgtype.Timestamptz
 }
+
+type CoaSegmentValue struct {
+	SegmentValueID      pgtype.UUID
+	SegmentDefinitionID pgtype.UUID
+	Value               string
+	Description         string
+	Status              string
+	EffectiveFrom       pgtype.Date
+	EffectiveTo         pgtype.Date
+	CreatedAt           pgtype.Timestamptz
+	UpdatedAt           pgtype.Timestamptz
+}

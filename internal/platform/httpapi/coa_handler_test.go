@@ -151,3 +151,75 @@ func TestCoaHandlerMapsDenialAndValidation(t *testing.T) {
 		t.Fatalf("invalid response = %T, want bad request", response)
 	}
 }
+
+func TestCoaHandlerMaintainsSegmentValueWithParentVersion(t *testing.T) {
+	scopeID := uuid.New()
+	repository := coa.NewMemorySegmentDefinitionRepository()
+	definitionService, err := coa.NewSegmentDefinitionService(
+		repository,
+		coa.MemoryAuthorizer{Decision: coa.AuthorizationDecision{Allowed: true, Permission: coa.SegmentDefinitionManagementPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{scopeID}}},
+		&coa.MemoryAuditRecorder{},
+		func() time.Time { return time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC) },
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	valueService, err := coa.NewSegmentValueService(
+		repository,
+		coa.MemoryAuthorizer{Decision: coa.AuthorizationDecision{Allowed: true, Permission: coa.SegmentValueManagementPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{scopeID}}},
+		&coa.MemoryAuditRecorder{},
+		func() time.Time { return time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC) },
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	actor := identity.ApplicationActor{UserID: uuid.New(), Subject: identity.AuthenticationSubject{OID: "oid", TID: "tenant", Sub: "subject"}}
+	ctx, err := identity.WithActor(context.Background(), actor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	handler := IdentityHandler{SegmentDefinitionService: definitionService, SegmentValueService: valueService}
+	definitionRequest := &generated.CommandRequest{
+		CommandId:         generated.UUID(uuid.New()),
+		AccountingScopeId: generated.NewOptUUID(generated.UUID(scopeID)),
+		Data: generated.CommandRequestData{
+			"action":            mustRaw("create"),
+			"segmentType":       mustRaw("department"),
+			"code":              mustRaw("D-001"),
+			"name":              mustRaw("Operations"),
+			"status":            mustRaw("draft"),
+			"effectiveDateFrom": mustRaw("2026-01-01"),
+		},
+	}
+	definitionResponse, err := handler.CoaMaintainSegmentDefinitions(ctx, definitionRequest, generated.CoaMaintainSegmentDefinitionsParams{IdempotencyKey: "definition-create"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	definition, ok := definitionResponse.(*generated.EstablishedResult)
+	if !ok {
+		t.Fatalf("definition response = %T, want established result", definitionResponse)
+	}
+	valueResponse, err := handler.CoaMaintainSegmentValues(ctx, &generated.CommandRequest{
+		CommandId:         generated.UUID(uuid.New()),
+		ExpectedVersion:   generated.NewOptInt(1),
+		AccountingScopeId: generated.NewOptUUID(generated.UUID(scopeID)),
+		Data: generated.CommandRequestData{
+			"action":              mustRaw("create"),
+			"segmentDefinitionId": mustRaw(uuid.UUID(definition.AggregateId).String()),
+			"value":               mustRaw("1000"),
+			"description":         mustRaw("Operations"),
+			"status":              mustRaw("active"),
+			"effectiveDateFrom":   mustRaw("2026-01-01"),
+		},
+	}, generated.CoaMaintainSegmentValuesParams{IdempotencyKey: "value-create", IfMatch: generated.NewOptString(`"1"`)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	value, ok := valueResponse.(*generated.EstablishedResult)
+	if !ok || value.AggregateId != definition.AggregateId || value.AggregateVersion != 2 {
+		t.Fatalf("value response = %#v", valueResponse)
+	}
+	if !strings.Contains(string(value.Data["segmentValue"]), "1000") {
+		t.Fatalf("value safe projection = %#v", value.Data)
+	}
+}

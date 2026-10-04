@@ -43,3 +43,35 @@ test('COA-SCR-01 preserves keyboard order and announces validation safely', asyn
   await expectNoDocumentHorizontalOverflow(page, 'COA-SCR-01 validation')
   await expectNoAccessibilityViolations(page, 'COA-SCR-01 validation')
 })
+
+test('COA-SCR-02 preserves keyboard order and announces parent-boundary validation safely', async ({ page }) => {
+  await page.goto('/coa-segments/coa-scr-02?segmentDefinitionId=segment-department-shared-services&new=true')
+
+  await expect(page.getByRole('heading', { name: 'Segment value', level: 2 })).toBeVisible()
+  await expect(page.getByRole('note')).toContainText('coaMaintainSegmentValues')
+  await expect(page.getByLabel('Parent aggregate version')).toHaveValue('v1')
+
+  const value = page.getByRole('textbox', { name: 'Value' })
+  const description = page.getByRole('textbox', { name: 'Description' })
+  const status = page.getByLabel('Lifecycle status')
+  const from = page.getByLabel('Effective from')
+  const to = page.getByLabel('Effective to')
+  const create = page.getByRole('button', { name: 'Create segment value' })
+
+  await value.focus()
+  await expectVisibleFocus(value)
+  for (const control of [description, status, from]) {
+    await page.keyboard.press('Tab')
+    await expect(control).toBeFocused()
+  }
+  await to.focus()
+  await expectVisibleFocus(to)
+
+  await value.fill('3000')
+  await description.fill('Future services')
+  await create.click()
+
+  await expect(page.getByRole('alert')).toContainText('must be contained within the parent definition interval')
+  await expectNoDocumentHorizontalOverflow(page, 'COA-SCR-02 validation')
+  await expectNoAccessibilityViolations(page, 'COA-SCR-02 validation')
+})

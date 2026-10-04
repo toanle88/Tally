@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom'
 
-import { coaMaintainSegmentDefinitions } from '@/generated/api/sdk.gen'
+import { coaMaintainSegmentDefinitions, coaMaintainSegmentValues } from '@/generated/api/sdk.gen'
 import { Button, DataTable, Field, Panel, Select, StatusBadge, type SemanticState } from '@/components/ui'
 import { useScopeContext } from '@/lib/scope/scope-context'
 
 export type SegmentDefinitionStatus = 'draft' | 'active' | 'suspended' | 'retired'
+export type SegmentValueStatus = SegmentDefinitionStatus
 
 export type SegmentDefinitionRecord = {
   id: string
@@ -14,6 +15,22 @@ export type SegmentDefinitionRecord = {
   code: string
   name: string
   status: SegmentDefinitionStatus
+  effectiveDateFrom: string
+  effectiveDateTo?: string
+  approvalStatus: 'not-required'
+  validationOutcome: 'valid' | 'invalid'
+  nextAction: string
+  version: number
+  revisionNumber: number
+}
+
+export type SegmentValueRecord = {
+  id: string
+  segmentDefinitionId: string
+  scopeId: string
+  value: string
+  description: string
+  status: SegmentValueStatus
   effectiveDateFrom: string
   effectiveDateTo?: string
   approvalStatus: 'not-required'
@@ -69,7 +86,39 @@ const initialSegmentDefinitions: SegmentDefinitionRecord[] = [
   },
 ]
 
+const initialSegmentValues: SegmentValueRecord[] = [
+  {
+    id: 'segment-value-operations-1000',
+    segmentDefinitionId: 'segment-department-operations',
+    scopeId: 'scope-vietnam-statutory',
+    value: '1000',
+    description: 'Operations',
+    status: 'active',
+    effectiveDateFrom: '2026-01-01',
+    approvalStatus: 'not-required',
+    validationOutcome: 'valid',
+    nextAction: 'maintain',
+    version: 3,
+    revisionNumber: 3,
+  },
+  {
+    id: 'segment-value-operations-2000',
+    segmentDefinitionId: 'segment-department-operations',
+    scopeId: 'scope-vietnam-statutory',
+    value: '2000',
+    description: 'Secondary operations',
+    status: 'active',
+    effectiveDateFrom: '2026-01-01',
+    approvalStatus: 'not-required',
+    validationOutcome: 'valid',
+    nextAction: 'maintain',
+    version: 3,
+    revisionNumber: 3,
+  },
+]
+
 const safeReadAdapter = new Map(initialSegmentDefinitions.map((record) => [record.id, record]))
+const safeValueReadAdapter = new Map(initialSegmentValues.map((record) => [record.id, record]))
 
 export function readSafeSegmentDefinitions(scopeId: string): SegmentDefinitionRecord[] {
   return Array.from(safeReadAdapter.values())
@@ -79,6 +128,21 @@ export function readSafeSegmentDefinitions(scopeId: string): SegmentDefinitionRe
 
 function upsertSafeSegmentDefinition(record: SegmentDefinitionRecord) {
   safeReadAdapter.set(record.id, record)
+  safeValueReadAdapter.forEach((value) => {
+    if (value.segmentDefinitionId === record.id) {
+      safeValueReadAdapter.set(value.id, { ...value, scopeId: record.scopeId, version: record.version, revisionNumber: record.revisionNumber })
+    }
+  })
+}
+
+export function readSafeSegmentValues(scopeId: string, segmentDefinitionId?: string): SegmentValueRecord[] {
+  return Array.from(safeValueReadAdapter.values())
+    .filter((record) => record.scopeId === scopeId && (!segmentDefinitionId || record.segmentDefinitionId === segmentDefinitionId))
+    .sort((left, right) => left.value.localeCompare(right.value) || left.effectiveDateFrom.localeCompare(right.effectiveDateFrom))
+}
+
+function upsertSafeSegmentValue(record: SegmentValueRecord) {
+  safeValueReadAdapter.set(record.id, record)
 }
 
 const statusState: Record<SegmentDefinitionStatus, SemanticState> = {
@@ -120,7 +184,7 @@ export function CoaSegmentWorklist() {
   const rows = useMemo(() => {
     const query = search.trim().toLowerCase()
     if (!query) return records
-    return records.filter((record) => [record.segmentType, record.code, record.name, record.status].some((value) => value.toLowerCase().includes(query)))
+    return records.filter((record) => [record.segmentType, record.code, record.name, record.status].some((value) => value.toLowerCase().includes(query)) || readSafeSegmentValues(record.scopeId, record.id).some((value) => [value.value, value.description, value.status].some((field) => field.toLowerCase().includes(query))))
   }, [records, search])
   const columns = useMemo(() => [
     { key: 'definition', header: 'Segment definition', rowHeader: true, render: (record: SegmentDefinitionRecord) => <RouterLink className="link link-primary font-semibold" to={`/coa-segments/coa-scr-01?segmentDefinitionId=${record.id}`}>{record.name}</RouterLink> },
@@ -128,18 +192,19 @@ export function CoaSegmentWorklist() {
     { key: 'code', header: 'Code', render: (record: SegmentDefinitionRecord) => <span className="font-mono">{record.code}</span> },
     { key: 'status', header: 'State', render: (record: SegmentDefinitionRecord) => <StatusBadge state={statusState[record.status]} label={segmentStatusLabel(record.status)} /> },
     { key: 'effective', header: 'Effective interval', render: (record: SegmentDefinitionRecord) => `${record.effectiveDateFrom} — ${record.effectiveDateTo ?? 'open'}` },
+    { key: 'values', header: 'Values', render: (record: SegmentDefinitionRecord) => { const values = readSafeSegmentValues(record.scopeId, record.id); return values.length ? <div className="flex flex-wrap gap-x-3 gap-y-1">{values.map((value) => <RouterLink key={value.id} className="link link-primary font-mono" to={`/coa-segments/coa-scr-02?segmentDefinitionId=${record.id}&segmentValueId=${value.id}`}>{value.value}</RouterLink>)}</div> : <RouterLink className="link link-primary" to={`/coa-segments/coa-scr-02?segmentDefinitionId=${record.id}&new=true`}>Add value</RouterLink> } },
     { key: 'version', header: 'Version', render: (record: SegmentDefinitionRecord) => `v${record.version}` },
     { key: 'nextAction', header: 'Next action', render: (record: SegmentDefinitionRecord) => record.nextAction },
   ] as const, [])
 
   return <section aria-labelledby="coa-worklist-title" className="space-y-6">
     <div className="flex flex-wrap items-start justify-between gap-4">
-      <div><p className="text-sm font-semibold uppercase tracking-wide text-primary">COA-WS-01</p><h2 id="coa-worklist-title" className="mt-1 text-2xl font-semibold">Segment administration worklist</h2><p className="mt-2 max-w-3xl text-base-content/75">Review safe local/read-adapter projections for the selected accounting scope. Authoritative changes are submitted only from the segment-definition record.</p></div>
+      <div><p className="text-sm font-semibold uppercase tracking-wide text-primary">COA-WS-01</p><h2 id="coa-worklist-title" className="mt-1 text-2xl font-semibold">Segment administration worklist</h2><p className="mt-2 max-w-3xl text-base-content/75">Review safe local/read-adapter projections for the selected accounting scope. Open a definition or one of its values to maintain an authoritative record.</p></div>
       <RouterLink className="btn btn-primary min-h-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" to="/coa-segments/coa-scr-01?new=true">Create segment definition</RouterLink>
     </div>
     <p role="note" className="rounded-box border border-warning/40 bg-warning/10 p-4 text-sm">Read source: local safe adapter with synthetic records. No approved COA read endpoint exists yet; successful live mutations update this adapter with the returned safe projection.</p>
-    <Panel title="Definitions in the selected scope" description="Segment type and code must remain unique across overlapping inclusive effective-date ranges.">
-      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end"><Field id="coa-segment-search" label="Search segment definitions" placeholder="Type, code, or name" value={search} onChange={(event) => setSearch(event.target.value)} /><p className="text-sm text-base-content/70" role="status" aria-live="polite">{rows.length} record{rows.length === 1 ? '' : 's'} found.</p></div>
+    <Panel title="Definitions and values in the selected scope" description="Segment type and code must remain unique across overlapping inclusive effective-date ranges. Values are unique within a parent definition across overlapping inclusive ranges.">
+      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end"><Field id="coa-segment-search" label="Search segment definitions" placeholder="Type, code, name, or value" value={search} onChange={(event) => setSearch(event.target.value)} /><p className="text-sm text-base-content/70" role="status" aria-live="polite">{rows.length} record{rows.length === 1 ? '' : 's'} found.</p></div>
       <div className="mt-6"><DataTable caption="Safe COA segment-definition projections" columns={columns} rows={rows} getRowKey={(record) => record.id} emptyMessage="No segment definitions match this scope and search." /></div>
     </Panel>
   </section>
@@ -282,6 +347,153 @@ export function CoaSegmentDefinitionRecord() {
       <div className="mt-5 flex flex-wrap items-center gap-3"><StatusBadge state={statusState[status]} label={segmentStatusLabel(status)} announce /><span className="text-sm text-base-content/70">Version {record?.version ?? 0} · Approval: {record?.approvalStatus ?? 'not-required'} · Revision {record?.revisionNumber ?? 0} · Next action: {record?.nextAction ?? 'create'}</span></div>
       <div className="mt-5 flex flex-wrap gap-3"><Button onClick={() => void save()} loading={saving} disabled={disabled}>{record ? 'Save segment-definition revision' : 'Create segment definition'}</Button>{record ? <Button variant="ghost" onClick={() => navigate('/coa-segments/coa-ws-01')}>Cancel</Button> : null}</div>
     </Panel>
-    <Panel title="History and boundary" description="Established facts retain the COA source version used when they were created."><p className="text-sm text-base-content/75">Current safe projection: version {record?.version ?? 0}, revision {record?.revisionNumber ?? 0}. Segment values, combinations, assignments, approval workflows, and downstream GL effects are outside this story.</p></Panel>
+    <Panel title="History and boundary" description="Established facts retain the COA source version used when they were created."><p className="text-sm text-base-content/75">Current safe projection: version {record?.version ?? 0}, revision {record?.revisionNumber ?? 0}. Values are maintained as children of this segment-definition aggregate.</p>{record ? <RouterLink className="link link-primary mt-3 inline-block" to={`/coa-segments/coa-scr-02?segmentDefinitionId=${record.id}`}>Maintain values for this definition</RouterLink> : null}</Panel>
+  </section>
+}
+
+export function CoaSegmentValueRecord() {
+  const { currentScope, setHasUnsavedChanges } = useScopeContext()
+  const [params, setParams] = useSearchParams()
+  const navigate = useNavigate()
+  const isNew = params.get('new') === 'true'
+  const requestedDefinitionId = params.get('segmentDefinitionId')
+  const selectedValue = currentScope ? readSafeSegmentValues(currentScope.id, requestedDefinitionId || undefined).find((record) => record.id === params.get('segmentValueId')) : undefined
+  const parent = currentScope ? readSafeSegmentDefinitions(currentScope.id).find((record) => record.id === (selectedValue?.segmentDefinitionId ?? requestedDefinitionId)) ?? readSafeSegmentDefinitions(currentScope.id)[0] : undefined
+  const initial = selectedValue ?? (isNew ? undefined : parent ? readSafeSegmentValues(parent.scopeId, parent.id)[0] : undefined)
+  const [record, setRecord] = useState<SegmentValueRecord | undefined>(initial)
+  const [value, setValue] = useState(initial?.value ?? '')
+  const [description, setDescription] = useState(initial?.description ?? '')
+  const [status, setStatus] = useState<SegmentValueStatus>(initial?.status ?? 'draft')
+  const [effectiveDateFrom, setEffectiveDateFrom] = useState(initial?.effectiveDateFrom ?? parent?.effectiveDateFrom ?? '2026-01-01')
+  const [effectiveDateTo, setEffectiveDateTo] = useState(initial?.effectiveDateTo ?? '')
+  const [notice, setNotice] = useState('Review the parent definition and aggregate version before submitting a material value change.')
+  const [validationError, setValidationError] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    setRecord(initial)
+    setValue(initial?.value ?? '')
+    setDescription(initial?.description ?? '')
+    setStatus(initial?.status ?? 'draft')
+    setEffectiveDateFrom(initial?.effectiveDateFrom ?? parent?.effectiveDateFrom ?? '2026-01-01')
+    setEffectiveDateTo(initial?.effectiveDateTo ?? '')
+  }, [initial?.id, initial?.version, parent?.id, currentScope?.id])
+
+  const save = async () => {
+    setValidationError('')
+    if (!currentScope || !parent) {
+      setNotice('Select an accounting scope and parent segment definition before submitting a segment value.')
+      return
+    }
+    const normalizedValue = value.trim()
+    const normalizedDescription = description.trim()
+    if (!normalizedValue || !effectiveDateFrom || effectiveDateTo && effectiveDateTo < effectiveDateFrom) {
+      setValidationError('Enter a value and a valid inclusive effective-date range.')
+      return
+    }
+    if (effectiveDateFrom < parent.effectiveDateFrom || parent.effectiveDateTo && (!effectiveDateTo || effectiveDateTo > parent.effectiveDateTo)) {
+      setValidationError('The value effective interval must be contained within the parent definition interval.')
+      return
+    }
+    if (!statusTransitionIsValid(record?.status, status)) {
+      setValidationError(`The lifecycle transition from ${record?.status} to ${status} is not allowed.`)
+      return
+    }
+    const overlap = readSafeSegmentValues(currentScope.id, parent.id).some((candidate) => candidate.id !== record?.id && candidate.value.trim() === normalizedValue && rangesOverlap(effectiveDateFrom, effectiveDateTo, candidate.effectiveDateFrom, candidate.effectiveDateTo ?? ''))
+    if (overlap) {
+      setValidationError('Another value uses this normalized value in an overlapping effective-date range for the parent definition.')
+      return
+    }
+    setSaving(true)
+    setNotice('Submitting the idempotent COA value command…')
+    try {
+      const response = await coaMaintainSegmentValues({
+        body: {
+          commandId: crypto.randomUUID(),
+          expectedVersion: parent.version,
+          accountingScopeId: currentScope.id,
+          data: {
+            action: record ? 'update' : 'create',
+            segmentDefinitionId: parent.id,
+            segmentValueId: record?.id,
+            value: normalizedValue,
+            description: normalizedDescription,
+            status,
+            effectiveDateFrom,
+            effectiveDateTo: effectiveDateTo || undefined,
+          },
+        },
+        headers: {
+          'Idempotency-Key': crypto.randomUUID(),
+          'If-Match': `"${parent.version}"`,
+        },
+      })
+      if (response.error) {
+        setNotice(errorDetail(response.error))
+        return
+      }
+      const projection = response.data?.data?.segmentValue
+      if (!projection || typeof projection !== 'object') {
+        setNotice('The COA command returned no safe segment-value projection.')
+        return
+      }
+      const safe = projection as Partial<SegmentValueRecord>
+      if (typeof safe.id !== 'string' || typeof safe.segmentDefinitionId !== 'string' || typeof safe.scopeId !== 'string' || typeof safe.version !== 'number' || typeof safe.revisionNumber !== 'number') {
+        setNotice('The COA command returned an invalid safe segment-value projection.')
+        return
+      }
+      const nextRecord: SegmentValueRecord = {
+        id: safe.id,
+        segmentDefinitionId: safe.segmentDefinitionId,
+        scopeId: safe.scopeId,
+        value: typeof safe.value === 'string' ? safe.value : normalizedValue,
+        description: typeof safe.description === 'string' ? safe.description : normalizedDescription,
+        status: safe.status === 'active' || safe.status === 'suspended' || safe.status === 'retired' ? safe.status : 'draft',
+        effectiveDateFrom: typeof safe.effectiveDateFrom === 'string' ? safe.effectiveDateFrom.slice(0, 10) : effectiveDateFrom,
+        effectiveDateTo: typeof safe.effectiveDateTo === 'string' ? safe.effectiveDateTo.slice(0, 10) : effectiveDateTo || undefined,
+        approvalStatus: 'not-required',
+        validationOutcome: 'valid',
+        nextAction: typeof safe.nextAction === 'string' ? safe.nextAction : 'maintain',
+        version: safe.version,
+        revisionNumber: safe.revisionNumber,
+      }
+      upsertSafeSegmentValue(nextRecord)
+      const currentParent = readSafeSegmentDefinitions(currentScope.id).find((candidate) => candidate.id === parent.id)
+      if (currentParent) upsertSafeSegmentDefinition({ ...currentParent, version: nextRecord.version, revisionNumber: nextRecord.revisionNumber })
+      setRecord(nextRecord)
+      setHasUnsavedChanges(false)
+      setNotice(`Accepted segment-value revision v${nextRecord.version}. Safe local/read-adapter state was refreshed from the live mutation response.`)
+      if (!record) {
+        setParams({ segmentDefinitionId: nextRecord.segmentDefinitionId, segmentValueId: nextRecord.id }, { replace: true })
+      }
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'The COA command could not reach the live API.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const disabled = record?.status === 'retired' || parent?.status === 'retired'
+  return <section aria-labelledby="coa-value-record-title" className="space-y-6">
+    <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-sm font-semibold uppercase tracking-wide text-primary">COA-SCR-02</p><h2 id="coa-value-record-title" className="mt-1 text-2xl font-semibold">Segment value</h2><p className="mt-2 max-w-3xl text-base-content/75">Maintain a value and description inside the parent definition’s inclusive effective interval. The parent aggregate version is required for every mutation.</p></div><div className="flex flex-wrap gap-4"><RouterLink className="link link-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" to={parent ? `/coa-segments/coa-scr-01?segmentDefinitionId=${parent.id}` : '/coa-segments/coa-ws-01'}>Parent definition</RouterLink><RouterLink className="link link-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" to="/coa-segments/coa-ws-01">Back to worklist</RouterLink></div></div>
+    <p role="status" aria-live="polite" className="rounded-box border border-info/30 bg-info/5 p-4 text-sm">{notice}</p>
+    <p role="note" className="rounded-box border border-warning/40 bg-warning/10 p-4 text-sm">Read source: local safe adapter. Mutation source: live `coaMaintainSegmentValues` API. The adapter is not an authoritative COA read model.</p>
+    <Panel title="Value identity and lifecycle" description="The live command enforces parent-scope authorization, idempotency, optimistic concurrency, audit evidence, parent interval containment, and scoped value uniqueness.">
+      <div className="grid gap-4 md:grid-cols-2">
+        <Field id="coa-segment-value" label="Value" value={value} onChange={(event) => { setValue(event.target.value); setHasUnsavedChanges(true) }} disabled={disabled} required />
+        <Field id="coa-segment-value-description" label="Description" value={description} onChange={(event) => { setDescription(event.target.value); setHasUnsavedChanges(true) }} disabled={disabled} required />
+        <div className="form-control w-full gap-2"><label className="label cursor-pointer justify-start gap-2" htmlFor="coa-segment-value-status"><span className="font-medium text-base-content">Lifecycle status</span><span aria-hidden="true" className="text-error">*</span></label><Select id="coa-segment-value-status" aria-required="true" value={status} onChange={(event) => { setStatus(event.target.value as SegmentValueStatus); setHasUnsavedChanges(true) }} disabled={disabled}><option value="draft">Draft</option><option value="active">Active</option><option value="suspended">Suspended</option><option value="retired">Retired</option></Select></div>
+        <Field id="coa-segment-value-effective-from" label="Effective from" type="date" value={effectiveDateFrom} onChange={(event) => { setEffectiveDateFrom(event.target.value); setHasUnsavedChanges(true) }} disabled={disabled} required />
+        <Field id="coa-segment-value-effective-to" label="Effective to" type="date" value={effectiveDateTo} onChange={(event) => { setEffectiveDateTo(event.target.value); setHasUnsavedChanges(true) }} disabled={disabled} description="Leave blank only when the parent definition is open-ended." />
+        <Field id="coa-segment-value-id" label="Record identifier" value={record?.id ?? 'New value'} readOnly />
+        <Field id="coa-segment-value-parent" label="Parent definition" value={parent ? `${parent.name} (${parent.code})` : 'Select a parent definition'} readOnly />
+        <Field id="coa-segment-value-scope" label="Accounting scope" value={currentScope?.id ?? 'Select a scope'} readOnly />
+        <Field id="coa-segment-value-parent-version" label="Parent aggregate version" value={`v${parent?.version ?? 0}`} readOnly />
+      </div>
+      {validationError ? <div role="alert" className="mt-4 rounded-box border border-error/40 bg-error/10 p-4 text-sm text-error">{validationError}</div> : null}
+      <div className="mt-5 flex flex-wrap items-center gap-3"><StatusBadge state={statusState[status]} label={segmentStatusLabel(status)} announce /><span className="text-sm text-base-content/70">Version {record?.version ?? parent?.version ?? 0} · Approval: {record?.approvalStatus ?? 'not-required'} · Revision {record?.revisionNumber ?? parent?.revisionNumber ?? 0} · Next action: {record?.nextAction ?? 'create'}</span></div>
+      <div className="mt-5 flex flex-wrap gap-3"><Button onClick={() => void save()} loading={saving} disabled={disabled || !parent}>{record ? 'Save segment-value revision' : 'Create segment value'}</Button>{record ? <Button variant="ghost" onClick={() => navigate(`/coa-segments/coa-scr-01?segmentDefinitionId=${record.segmentDefinitionId}`)}>Cancel</Button> : null}</div>
+    </Panel>
+    <Panel title="History and boundary" description="A value mutation establishes a new revision of the owning segment-definition aggregate."><p className="text-sm text-base-content/75">The parent definition interval is the boundary for this value. Historical non-overlapping ranges are allowed; established value facts are corrected through a new lifecycle or effective-date revision.</p></Panel>
   </section>
 }

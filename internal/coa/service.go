@@ -320,6 +320,7 @@ type MemorySegmentDefinitionRepository struct {
 	mu          sync.RWMutex
 	definitions map[uuid.UUID]SegmentDefinition
 	audit       AuditRecorder
+	valueAudit  SegmentValueAuditRecorder
 }
 
 func NewMemorySegmentDefinitionRepository() *MemorySegmentDefinitionRepository {
@@ -330,6 +331,9 @@ func (repository *MemorySegmentDefinitionRepository) BindAuditRecorder(audit Aud
 	repository.mu.Lock()
 	defer repository.mu.Unlock()
 	repository.audit = audit
+	if valueAudit, ok := audit.(SegmentValueAuditRecorder); ok {
+		repository.valueAudit = valueAudit
+	}
 }
 
 func (repository *MemorySegmentDefinitionRepository) Get(_ context.Context, id uuid.UUID) (SegmentDefinition, error) {
@@ -433,6 +437,11 @@ func (recorder *MemoryAuditRecorder) RecordSegmentDefinitionMutation(_ context.C
 func cloneSegmentDefinition(definition SegmentDefinition) SegmentDefinition {
 	definition.EffectiveDateFrom = dateOnly(definition.EffectiveDateFrom)
 	definition.EffectiveDateTo = cloneDate(definition.EffectiveDateTo)
+	values := definition.Values
+	definition.Values = make([]SegmentValue, len(values))
+	for index, value := range values {
+		definition.Values[index] = cloneSegmentValue(value)
+	}
 	definition.Revisions = cloneRevisions(definition.Revisions)
 	return definition
 }
