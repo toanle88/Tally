@@ -75,3 +75,43 @@ test('COA-SCR-02 preserves keyboard order and announces parent-boundary validati
   await expectNoDocumentHorizontalOverflow(page, 'COA-SCR-02 validation')
   await expectNoAccessibilityViolations(page, 'COA-SCR-02 validation')
 })
+
+test('COA-SCR-03 displays a read-only validation result with source versions', async ({ page }) => {
+  await page.route('**/api/v1/coa-segments/actions/validate-segment-combinations', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'established',
+        aggregateId: '00000000-0000-0000-0000-000000000000',
+        aggregateVersion: 0,
+        processId: null,
+        correlationId: '00000000-0000-0000-0000-000000000001',
+        links: { self: '/api/v1/coa-segments/actions/validate-segment-combinations' },
+        data: {
+          validationStatus: 'valid',
+          effectiveDateResult: 'effective',
+          sourceVersions: [{ segmentDefinitionId: 'segment-department-operations', segmentValueId: 'segment-value-operations-1000', segmentDefinitionVersion: 3, segmentDefinitionRevision: 3 }],
+          invalidValues: [],
+          restrictions: [],
+          rejectionReasons: [],
+          nextAction: 'proceed',
+        },
+      }),
+    })
+  })
+  await page.goto('/coa-segments/coa-scr-03')
+
+  await expect(page.getByRole('heading', { name: 'Segment combination validator', level: 2 })).toBeVisible()
+  await expect(page.getByRole('note')).toContainText('Validation is read-only')
+  const operations = page.getByRole('checkbox', { name: /Operations/ })
+  await operations.focus()
+  await expectVisibleFocus(operations)
+  await page.getByRole('button', { name: 'Validate combination' }).click()
+
+  await expect(page.getByRole('textbox', { name: 'Validation status' })).toHaveValue('valid')
+  await expect(page.getByRole('textbox', { name: 'Effective-date result' })).toHaveValue('effective')
+  await expect(page.getByText(/segment-department-operations \/ segment-value-operations-1000: v3, revision 3/)).toBeVisible()
+  await expectNoDocumentHorizontalOverflow(page, 'COA-SCR-03 result')
+  await expectNoAccessibilityViolations(page, 'COA-SCR-03 result')
+})
