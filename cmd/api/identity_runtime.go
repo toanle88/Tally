@@ -32,6 +32,7 @@ const (
 	publicationOperationID          = "organization.publish-approved-master-data-changes.v1"
 	coaSegmentDefinitionOperationID = "coa.maintain-segment-definitions.v1"
 	coaSegmentValueOperationID      = "coa.maintain-segment-values.v1"
+	coaSegmentValidationOperationID = "coa.validate-segment-combinations.v1"
 )
 
 func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
@@ -260,8 +261,16 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err != nil {
 		return identityUnavailableHandler("coa segment-value service unavailable"), nil
 	}
+	coaValidationService, err := coa.NewSegmentCombinationValidationServiceWithDurableIdempotency(
+		coaRepository,
+		evaluatorCoaAuthorizer{evaluator: policyEvaluator},
+		coa.DurableSegmentCombinationValidationServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, OperationID: coaSegmentValidationOperationID},
+	)
+	if err != nil {
+		return identityUnavailableHandler("coa segment-combination validation service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentCombinationValidationService: coaValidationService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -624,8 +633,15 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err != nil {
 		return identityUnavailableHandler("coa segment-value service unavailable"), nil
 	}
+	coaValidationService, err := coa.NewSegmentCombinationValidationService(
+		coaRepository,
+		permissiveCoaAuthorizer{},
+	)
+	if err != nil {
+		return identityUnavailableHandler("coa segment-combination validation service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentCombinationValidationService: coaValidationService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -696,6 +712,34 @@ func (authorizer evaluatorCoaAuthorizer) AuthorizeSegmentValue(ctx context.Conte
 	}
 	if decision.Outcome == identity.AuthorizationStale {
 		return coa.AuthorizationDecision{}, coa.ErrSegmentValueAuthorizationStale
+	}
+	result := coa.AuthorizationDecision{Allowed: decision.Allowed, Outcome: string(decision.Outcome), Permission: decision.Permission, PolicyReference: decision.PolicyReference, PolicyVersion: decision.PolicyVersion, DecisionReference: decision.DecisionReference}
+	for _, value := range decision.ApprovedScopeIDs {
+		if value == "*" {
+			result.ApprovedScopeIDs = append(result.ApprovedScopeIDs, uuid.Nil)
+			continue
+		}
+		parsed, parseErr := uuid.Parse(value)
+		if parseErr == nil {
+			result.ApprovedScopeIDs = append(result.ApprovedScopeIDs, parsed)
+		}
+	}
+	return result, nil
+}
+
+func (authorizer evaluatorCoaAuthorizer) AuthorizeSegmentCombinationValidation(ctx context.Context, actor coa.Actor, command coa.SegmentCombinationValidationCommand) (coa.AuthorizationDecision, error) {
+	if authorizer.evaluator == nil {
+		return coa.AuthorizationDecision{}, coa.ErrSegmentCombinationValidationAuthorizationUnavailable
+	}
+	decision, err := authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{ActorID: actor.UserID, Permission: coa.SegmentCombinationValidationPermission, RequestedScopeIDs: []string{command.ScopeID.String()}})
+	if err != nil {
+		return coa.AuthorizationDecision{}, coa.ErrSegmentCombinationValidationAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationUnavailable {
+		return coa.AuthorizationDecision{}, coa.ErrSegmentCombinationValidationAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationStale {
+		return coa.AuthorizationDecision{}, coa.ErrSegmentCombinationValidationAuthorizationStale
 	}
 	result := coa.AuthorizationDecision{Allowed: decision.Allowed, Outcome: string(decision.Outcome), Permission: decision.Permission, PolicyReference: decision.PolicyReference, PolicyVersion: decision.PolicyVersion, DecisionReference: decision.DecisionReference}
 	for _, value := range decision.ApprovedScopeIDs {
@@ -924,6 +968,10 @@ func (permissiveCoaAuthorizer) AuthorizeSegmentDefinition(context.Context, coa.A
 
 func (permissiveCoaAuthorizer) AuthorizeSegmentValue(context.Context, coa.Actor, coa.SegmentValueCommand, *coa.SegmentDefinition, *coa.SegmentValue) (coa.AuthorizationDecision, error) {
 	return coa.AuthorizationDecision{Allowed: true, Permission: coa.SegmentValueManagementPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{uuid.Nil}}, nil
+}
+
+func (permissiveCoaAuthorizer) AuthorizeSegmentCombinationValidation(context.Context, coa.Actor, coa.SegmentCombinationValidationCommand) (coa.AuthorizationDecision, error) {
+	return coa.AuthorizationDecision{Allowed: true, Permission: coa.SegmentCombinationValidationPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{uuid.Nil}}, nil
 }
 
 type permissiveOrganizationAuthorizer struct{}

@@ -84,6 +84,13 @@ describe('application router', () => {
     expect(screen.getByRole('note')).toHaveTextContent('local safe adapter')
   })
 
+  it('supports direct entry to the COA combination validator', async () => {
+    renderRoute('/coa-segments/coa-scr-03')
+    expect(await screen.findByRole('heading', { name: 'Segment combination validator' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Validate combination' })).toBeInTheDocument()
+    expect(screen.getByRole('note')).toHaveTextContent('Validation is read-only')
+  })
+
   it('updates active navigation and supports back navigation', async () => {
     const router = renderRoute('/')
     fireEvent.click(screen.getByRole('link', { name: 'Exceptions' }))

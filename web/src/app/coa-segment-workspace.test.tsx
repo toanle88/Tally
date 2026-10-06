@@ -4,13 +4,14 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { developmentScopes } from './app'
-import { CoaSegmentDefinitionRecord, CoaSegmentValueRecord, CoaSegmentWorklist } from './coa-segment-workspace'
-import { coaMaintainSegmentDefinitions, coaMaintainSegmentValues } from '@/generated/api/sdk.gen'
+import { CoaSegmentCombinationValidator, CoaSegmentDefinitionRecord, CoaSegmentValueRecord, CoaSegmentWorklist } from './coa-segment-workspace'
+import { coaMaintainSegmentDefinitions, coaMaintainSegmentValues, coaValidateSegmentCombinations } from '@/generated/api/sdk.gen'
 import { ScopeProvider } from '@/lib/scope/scope-context'
 
 vi.mock('@/generated/api/sdk.gen', () => ({
   coaMaintainSegmentDefinitions: vi.fn(),
   coaMaintainSegmentValues: vi.fn(),
+  coaValidateSegmentCombinations: vi.fn(),
 }))
 
 function renderWithScope(ui: ReactNode, initialEntry: string) {
@@ -27,6 +28,7 @@ describe('COA segment workspace', () => {
   beforeEach(() => {
     vi.mocked(coaMaintainSegmentDefinitions).mockReset()
     vi.mocked(coaMaintainSegmentValues).mockReset()
+    vi.mocked(coaValidateSegmentCombinations).mockReset()
   })
 
   it('shows the selected scope worklist and filters safe adapter records', () => {
@@ -35,6 +37,7 @@ describe('COA segment workspace', () => {
     expect(screen.getByRole('heading', { name: 'Segment administration worklist' })).toBeInTheDocument()
     expect(screen.getByRole('note')).toHaveTextContent('local safe adapter')
     expect(screen.getByRole('link', { name: 'Operations' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Validate combination' })).toHaveAttribute('href', '/coa-segments/coa-scr-03')
     expect(screen.getByText('2 records found.')).toBeInTheDocument()
 
     fireEvent.change(screen.getByRole('textbox', { name: 'Search segment definitions' }), { target: { value: 'shared' } })
@@ -149,5 +152,65 @@ describe('COA segment workspace', () => {
     await waitFor(() => expect(coaMaintainSegmentValues).toHaveBeenCalledTimes(1))
     expect(await screen.findByText(/Accepted segment-value revision v4/)).toBeInTheDocument()
     expect(screen.getByDisplayValue('3000')).toBeInTheDocument()
+  })
+
+  it('validates a proposed combination and displays source versions without a mutation surface', async () => {
+    vi.mocked(coaValidateSegmentCombinations).mockResolvedValue({
+      data: {
+        status: 'established',
+        aggregateId: '00000000-0000-0000-0000-000000000000',
+        aggregateVersion: 0,
+        correlationId: 'correlation-fixture',
+        links: { self: '/api/v1/coa-segments/actions/validate-segment-combinations' },
+        data: {
+          validationStatus: 'valid',
+          effectiveDateResult: 'effective',
+          sourceVersions: [{ segmentDefinitionId: 'segment-department-operations', segmentValueId: 'segment-value-operations-1000', segmentDefinitionVersion: 3, segmentDefinitionRevision: 3 }],
+          invalidValues: [],
+          restrictions: [],
+          rejectionReasons: [],
+          nextAction: 'proceed',
+        },
+      },
+      error: undefined,
+    } as never)
+
+    renderWithScope(<CoaSegmentCombinationValidator />, '/coa-segments/coa-scr-03')
+    expect(screen.getByRole('heading', { name: 'Segment combination validator' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Validate combination' }))
+
+    await waitFor(() => expect(coaValidateSegmentCombinations).toHaveBeenCalledTimes(1))
+    expect(await screen.findByDisplayValue('valid')).toBeInTheDocument()
+    expect(screen.getByText(/segment-department-operations \/ segment-value-operations-1000: v3, revision 3/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /create|update|activate|suspend|approve/i })).not.toBeInTheDocument()
+  })
+
+  it('shows validation rejection reasons and keeps the request read-only', async () => {
+    vi.mocked(coaValidateSegmentCombinations).mockResolvedValue({
+      data: {
+        status: 'established',
+        aggregateId: '00000000-0000-0000-0000-000000000000',
+        aggregateVersion: 0,
+        correlationId: 'correlation-fixture',
+        links: { self: '/api/v1/coa-segments/actions/validate-segment-combinations' },
+        data: {
+          validationStatus: 'invalid',
+          effectiveDateResult: 'not-effective',
+          sourceVersions: [{ segmentDefinitionId: 'segment-department-operations', segmentValueId: 'segment-value-operations-1000', segmentDefinitionVersion: 3, segmentDefinitionRevision: 3 }],
+          invalidValues: [{ segmentDefinitionId: 'segment-department-operations', segmentValueId: 'segment-value-operations-1000', reason: 'the segment value is not active for validation' }],
+          restrictions: ['lifecycle'],
+          rejectionReasons: [{ segmentDefinitionId: 'segment-department-operations', segmentValueId: 'segment-value-operations-1000', reason: 'the segment value is not active for validation' }],
+          nextAction: 'correct-and-revalidate',
+        },
+      },
+      error: undefined,
+    } as never)
+
+    renderWithScope(<CoaSegmentCombinationValidator />, '/coa-segments/coa-scr-03')
+    fireEvent.click(screen.getByRole('button', { name: 'Validate combination' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('the segment value is not active for validation')
+    expect(screen.getByDisplayValue('invalid')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('correct-and-revalidate')).toBeInTheDocument()
   })
 })

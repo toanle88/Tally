@@ -424,24 +424,47 @@ As a Chart-of-Accounts Administrator or authorized finance user, I want to
 validate a proposed segment combination so that I can see whether it is
 allowed and effective before another business action relies on it.
 
+Implementation baseline for the M1 read-only slice:
+
+- The existing generic `CommandRequest` carries `accountingScopeId`,
+  `businessDate`, and `data.segmentValues[]` references containing a
+  `segmentDefinitionId` and `segmentValueId`. The existing generic
+  `EstablishedResult` carries `validationStatus`, `effectiveDateResult`,
+  `sourceVersions`, `invalidValues`, `restrictions`, `rejectionReasons`, and
+  `nextAction` in its action-specific `data` map.
+- Validation reads the COA-owned definition/value aggregate through one
+  consistent source snapshot. A selected value reports its parent definition
+  aggregate version and revision because SegmentValue has no independent
+  aggregate version in the approved M1 model.
+- M1 restrictions are the source-backed scope, lifecycle, missing-value,
+  duplicate-selection, and effective-date checks. A separate rule-catalog
+  identifier/version and persisted SegmentCombination record are deferred
+  until an approved source-backed representation exists.
+- The operation is read-only with no COA mutation, audit revision, outbox
+  event, migration, or generated API contract change. Idempotency remains
+  required for deterministic established results and changed-content conflict.
+
 Acceptance criteria:
 
-- [ ] An authorized request evaluates the proposed combination against the
-  current segment definitions, values, restrictions, applicable rule
-  versions, and requested effective date.
-- [ ] The response identifies validation status, applicable rule/version,
+- [x] An authorized request evaluates the proposed combination against the
+  current segment definitions, values, restrictions, applicable source
+  versions, and requested effective date. The approved M1 model has no
+  separate rule-catalog version to evaluate.
+- [x] The response identifies validation status, applicable source versions,
   effective-date result, invalid values, restrictions, and rejection reasons
-  required by FR-COA-003.
-- [ ] Validation does not create, update, activate, suspend, approve, or
+  required by the available FR-COA-003 contract. A separate rule-catalog
+  version remains deferred until an approved source-backed representation
+  exists.
+- [x] Validation does not create, update, activate, suspend, approve, or
   otherwise change authoritative business state.
-- [ ] The request preserves the approved idempotency, correlation,
+- [x] The request preserves the approved idempotency, correlation,
   authorization, scope, and safe problem-details contract. Repeated
   identical validation requests return a deterministic established result;
   changed content under a reused identity returns a typed conflict.
-- [ ] A concurrent definition/value version change is not hidden: the result
+- [x] A concurrent definition/value version change is not hidden: the result
   either identifies the source version used or returns a typed conflict or
   retryable outcome according to the approved command contract.
-- [ ] COA-SCR-03 displays valid/invalid outcomes, invalid values,
+- [x] COA-SCR-03 displays valid/invalid outcomes, invalid values,
   restrictions, effective-date reasons, source/rule versions, and a clear
   next action without becoming a second mutation surface.
 
@@ -460,15 +483,48 @@ Suggested implementation steps:
 
 Required test evidence:
 
-- [ ] Domain/application tests prove allowed, disallowed, inactive,
+- [x] Domain/application tests prove allowed, disallowed, inactive,
   out-of-range, duplicate, restricted, and mixed-version combinations.
-- [ ] API tests prove the operation is read-only with respect to business
+- [x] API tests prove the operation is read-only with respect to business
   state, is authorized and scoped, returns deterministic results, and
   preserves idempotency/correlation/problem contracts.
-- [ ] Persistence or repository tests prove no combination or definition
+- [x] Persistence or repository tests prove no combination or definition
   mutation occurs during validation and that source versions are consistent.
-- [ ] Component and Playwright tests cover invalid-value summaries,
+- [x] Component and Playwright tests cover invalid-value summaries,
   effective-date reasons, focus behavior, keyboard access, and zoom/reflow.
+
+#### User Story 3 implementation evidence — 2026-10-06
+
+The M1 read-only slice is implemented on branch
+`feat/coa-validate-segment-combinations`. It keeps the existing generic API
+operation and generated contract, adds COA-owned snapshot validation with
+durable idempotency in the PostgreSQL runtime, wires exact IAM permission and
+scope checks, and adds COA-SCR-03 with a read-only result surface. The scope
+boundary also prevents source-version or lifecycle detail from being returned
+for definitions outside the requested accounting scope.
+
+Verified locally:
+
+- `GOCACHE=/tmp/tally-go-cache go test ./...` — PASS.
+- `GOCACHE=/tmp/tally-go-cache go test -race ./internal/coa ./internal/platform/httpapi` — PASS.
+- `make db-migrate-validate` — PASS; no migration was required for this read-only slice.
+- `GOCACHE=/tmp/tally-go-cache OPENAPI_CHECK_TIMEOUT_SECONDS=120 make api-check` — PASS; generated artifacts remain aligned.
+- `pnpm -C web exec vitest run src/app/coa-segment-workspace.test.tsx src/routes/route-registry.test.ts src/routes/router.test.tsx --pool=threads --maxWorkers=1` — PASS, 20 tests.
+- `pnpm -C web exec tsc -p tsconfig.playwright.json --noEmit` — PASS.
+- `pnpm -C web build` — PASS.
+- `pnpm -C web exec playwright test --config=playwright.config.ts --grep='COA-'` — PASS, 4 COA accessibility/keyboard tests.
+
+Qualification still open:
+
+- `make persistence-check` remains blocked because Docker is unavailable in
+  the execution environment; the PostgreSQL snapshot adapter was compiled,
+  but clean PostgreSQL execution is not claimed here.
+- No separate rule catalog/version or persisted `SegmentCombination` record
+  is implemented because the approved M1 sources do not define one.
+- COA-SCR-03 still reads local synthetic safe projections because no approved
+  COA read endpoint exists; only the validation operation is live-wired.
+- Production Entra authorization, Audit Integrity, performance, capacity,
+  recovery, and release qualification remain outside this local slice.
 
 ### User Story 4 — Request segment changes
 

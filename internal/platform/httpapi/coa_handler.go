@@ -37,6 +37,64 @@ type coaSegmentValueCommandData struct {
 	EffectiveDateTo     *string `json:"effectiveDateTo"`
 }
 
+type coaSegmentCombinationValueData struct {
+	SegmentDefinitionID string `json:"segmentDefinitionId"`
+	SegmentValueID      string `json:"segmentValueId"`
+}
+
+type coaSegmentCombinationValidationData struct {
+	SegmentValues []coaSegmentCombinationValueData `json:"segmentValues"`
+}
+
+func (handler IdentityHandler) CoaValidateSegmentCombinations(ctx context.Context, request *generated.CommandRequest, params generated.CoaValidateSegmentCombinationsParams) (generated.CoaValidateSegmentCombinationsRes, error) {
+	correlationID := correlationFromCoaValidationParams(params)
+	if handler.SegmentCombinationValidationService == nil {
+		return coaValidationProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The segment-combination validation service is unavailable.", correlationID), nil
+	}
+	actor, ok := identity.ActorFromContext(ctx)
+	if !ok {
+		return coaValidationProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The validating actor is not authorized.", correlationID), nil
+	}
+	if request == nil || request.CommandId == (generated.UUID{}) {
+		return coaValidationProblem(http.StatusBadRequest, "INVALID_REQUEST", "The segment-combination validation command is invalid.", correlationID), nil
+	}
+	if !request.AccountingScopeId.Set || uuid.UUID(request.AccountingScopeId.Value) == uuid.Nil || !request.BusinessDate.Set {
+		return coaValidationProblem(http.StatusBadRequest, "INVALID_REQUEST", "Accounting scope and business date are required for validation.", correlationID), nil
+	}
+	data, err := json.Marshal(request.Data)
+	if err != nil {
+		return coaValidationProblem(http.StatusBadRequest, "INVALID_REQUEST", "The segment-combination validation data is invalid.", correlationID), nil
+	}
+	var payload coaSegmentCombinationValidationData
+	if err := json.Unmarshal(data, &payload); err != nil {
+		return coaValidationProblem(http.StatusBadRequest, "INVALID_REQUEST", "The segment-combination validation data is invalid.", correlationID), nil
+	}
+	command := coa.SegmentCombinationValidationCommand{
+		ScopeID:        uuid.UUID(request.AccountingScopeId.Value),
+		BusinessDate:   request.BusinessDate.Value,
+		IdempotencyKey: params.IdempotencyKey,
+		CorrelationID:  correlationID.String(),
+		CausationID:    uuid.UUID(request.CommandId).String(),
+		SegmentValues:  make([]coa.SegmentCombinationValueReference, 0, len(payload.SegmentValues)),
+	}
+	for _, item := range payload.SegmentValues {
+		definitionID, parseErr := uuid.Parse(strings.TrimSpace(item.SegmentDefinitionID))
+		if parseErr != nil {
+			return coaValidationProblem(http.StatusBadRequest, "INVALID_REQUEST", "A segment-definition identifier is invalid.", correlationID), nil
+		}
+		valueID, parseErr := uuid.Parse(strings.TrimSpace(item.SegmentValueID))
+		if parseErr != nil {
+			return coaValidationProblem(http.StatusBadRequest, "INVALID_REQUEST", "A segment-value identifier is invalid.", correlationID), nil
+		}
+		command.SegmentValues = append(command.SegmentValues, coa.SegmentCombinationValueReference{SegmentDefinitionID: definitionID, SegmentValueID: valueID})
+	}
+	result, err := handler.SegmentCombinationValidationService.Execute(ctx, coa.Actor{UserID: actor.UserID, SubjectReference: actor.UserID.String()}, command)
+	if err != nil {
+		return mapCoaSegmentCombinationValidationError(err, correlationID), nil
+	}
+	return establishedCoaSegmentCombinationValidationResult(result, correlationID), nil
+}
+
 func (handler IdentityHandler) CoaMaintainSegmentDefinitions(ctx context.Context, request *generated.CommandRequest, params generated.CoaMaintainSegmentDefinitionsParams) (generated.CoaMaintainSegmentDefinitionsRes, error) {
 	correlationID := correlationFromCoaParams(params)
 	if handler.SegmentDefinitionService == nil {
@@ -233,6 +291,13 @@ func correlationFromCoaValueParams(params generated.CoaMaintainSegmentValuesPara
 	return uuid.New()
 }
 
+func correlationFromCoaValidationParams(params generated.CoaValidateSegmentCombinationsParams) uuid.UUID {
+	if params.XCorrelationID.Set {
+		return uuid.UUID(params.XCorrelationID.Value)
+	}
+	return uuid.New()
+}
+
 func establishedCoaSegmentDefinitionResult(result coa.SegmentDefinitionCommandResult, correlationID uuid.UUID) *generated.EstablishedResult {
 	data := generated.EstablishedResultData{}
 	data["segmentDefinition"] = mustRaw(result.SegmentDefinition)
@@ -274,6 +339,69 @@ func establishedCoaSegmentValueResult(result coa.SegmentValueCommandResult, corr
 		CorrelationId:    generated.UUID(correlationID),
 		Links:            generated.Links{Self: "/api/v1/coa-segments/configuration/maintain-segment-values"},
 		Data:             data,
+	}
+}
+
+func establishedCoaSegmentCombinationValidationResult(result coa.SegmentCombinationValidationResult, correlationID uuid.UUID) *generated.EstablishedResult {
+	data := generated.EstablishedResultData{
+		"validationStatus":    mustRaw(result.ValidationStatus),
+		"effectiveDateResult": mustRaw(result.EffectiveDateResult),
+		"sourceVersions":      mustRaw(result.SourceVersions),
+		"invalidValues":       mustRaw(result.InvalidValues),
+		"restrictions":        mustRaw(result.Restrictions),
+		"rejectionReasons":    mustRaw(result.RejectionReasons),
+		"nextAction":          mustRaw(result.NextAction),
+		"replayed":            mustRaw(result.Replayed),
+	}
+	return &generated.EstablishedResult{
+		Status:           "established",
+		AggregateId:      generated.UUID(uuid.Nil),
+		AggregateVersion: 0,
+		CorrelationId:    generated.UUID(correlationID),
+		Links:            generated.Links{Self: "/api/v1/coa-segments/actions/validate-segment-combinations"},
+		Data:             data,
+	}
+}
+
+func mapCoaSegmentCombinationValidationError(err error, correlationID uuid.UUID) generated.CoaValidateSegmentCombinationsRes {
+	switch {
+	case errors.Is(err, coa.ErrSegmentCombinationValidationAuthorizationUnavailable):
+		return coaValidationProblem(http.StatusServiceUnavailable, "POLICY_UNAVAILABLE", "The authorization policy could not be evaluated. Retry later.", correlationID)
+	case errors.Is(err, coa.ErrSegmentCombinationValidationAuthorizationStale):
+		return coaValidationProblem(http.StatusConflict, "POLICY_STALE", "The authorization policy changed. Refresh and retry.", correlationID)
+	case errors.Is(err, coa.ErrSegmentCombinationValidationAuthorizationDenied):
+		return coaValidationProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The requested segment-combination scope is outside the validating actor scope.", correlationID)
+	case errors.Is(err, coa.ErrSegmentCombinationValidationIdempotencyConflict):
+		return coaValidationProblem(http.StatusConflict, "IDEMPOTENCY_CONFLICT", "The idempotency key was already used for different validation data.", correlationID)
+	case errors.Is(err, coa.ErrSegmentCombinationValidationInProgress):
+		return coaValidationProblem(http.StatusConflict, "COMMAND_IN_PROGRESS", "The validation is still being finalized. Retry with the same idempotency key.", correlationID)
+	case errors.Is(err, coa.ErrSegmentCombinationValidationPreviouslyFailed):
+		return coaValidationProblem(http.StatusUnprocessableEntity, "VALIDATION_FAILED", "The previous validation attempt failed. Use a new idempotency key after correcting the request or dependency.", correlationID)
+	case errors.Is(err, coa.ErrInvalidSegmentCombinationValidationCommand):
+		return coaValidationProblem(http.StatusBadRequest, "INVALID_REQUEST", "The segment-combination validation command is invalid.", correlationID)
+	default:
+		return coaValidationProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The segment-combination validation could not be completed.", correlationID)
+	}
+}
+
+func coaValidationProblem(status int, code, detail string, correlationID uuid.UUID) generated.CoaValidateSegmentCombinationsRes {
+	problem := generated.ProblemDetails{Type: "https://tally.local/problems/" + code, Title: http.StatusText(status), Status: status, Code: code, Detail: detail, CorrelationId: generated.UUID(correlationID)}
+	switch status {
+	case http.StatusBadRequest:
+		value := generated.CoaValidateSegmentCombinationsBadRequest(problem)
+		return &value
+	case http.StatusForbidden:
+		value := generated.CoaValidateSegmentCombinationsForbidden(problem)
+		return &value
+	case http.StatusConflict:
+		value := generated.CoaValidateSegmentCombinationsConflict(problem)
+		return &value
+	case http.StatusUnprocessableEntity:
+		value := generated.CoaValidateSegmentCombinationsUnprocessableEntity(problem)
+		return &value
+	default:
+		value := generated.CoaValidateSegmentCombinationsServiceUnavailable(problem)
+		return &value
 	}
 }
 
