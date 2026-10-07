@@ -24,6 +24,7 @@ type IdentityHandler struct {
 	generated.UnimplementedHandler
 	SegmentDefinitionService            *coa.SegmentDefinitionService
 	SegmentValueService                 *coa.SegmentValueService
+	SegmentChangeRequestService         *coa.SegmentChangeRequestService
 	SegmentCombinationValidationService *coa.SegmentCombinationValidationService
 	Service                             *identity.UserService
 	RoleService                         *identity.RoleService

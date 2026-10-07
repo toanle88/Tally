@@ -31,6 +31,7 @@ describe('route registry', () => {
       ['COA-SCR-01', '/coa-segments/coa-scr-01'],
       ['COA-SCR-02', '/coa-segments/coa-scr-02'],
       ['COA-SCR-03', '/coa-segments/coa-scr-03'],
+      ['COA-SCR-04', '/coa-segments/coa-scr-04'],
       ['XCT-WS-01', '/operations/xct-ws-01'],
       ['XCT-SCR-01', '/operations/xct-scr-01'],
       ['CON-SCR-01', '/operations/con-scr-01'],

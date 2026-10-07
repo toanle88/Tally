@@ -8,6 +8,31 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type CoaSegmentChangeRequest struct {
+	SegmentChangeRequestID pgtype.UUID
+	ScopeID                pgtype.UUID
+	ChangeType             string
+	SubjectID              pgtype.UUID
+	SubjectVersion         int64
+	RequestedEffectiveDate pgtype.Date
+	ApprovalRequestID      pgtype.UUID
+	ApprovalStatus         string
+	ApplicationStatus      string
+	ValidationOutcome      string
+	ConflictCode           pgtype.Text
+	RejectionReason        pgtype.Text
+	NextAction             string
+	ProposedChange         []byte
+	SubjectFingerprint     string
+	ProposedFingerprint    string
+	AggregateVersion       int64
+	RevisionNumber         int64
+	CreatedBy              pgtype.UUID
+	CreatedAt              pgtype.Timestamptz
+	UpdatedAt              pgtype.Timestamptz
+	LastAuditReference     pgtype.UUID
+}
+
 type CoaSegmentDefinition struct {
 	SegmentDefinitionID pgtype.UUID
 	ScopeID             pgtype.UUID

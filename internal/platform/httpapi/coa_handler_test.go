@@ -223,3 +223,116 @@ func TestCoaHandlerMaintainsSegmentValueWithParentVersion(t *testing.T) {
 		t.Fatalf("value safe projection = %#v", value.Data)
 	}
 }
+
+func TestCoaHandlerRequestsSegmentChangeWithApprovalReference(t *testing.T) {
+	scopeID := uuid.New()
+	repository := coa.NewMemorySegmentDefinitionRepository()
+	audit := &coa.MemoryAuditRecorder{}
+	definitionService, err := coa.NewSegmentDefinitionService(
+		repository,
+		coa.MemoryAuthorizer{Decision: coa.AuthorizationDecision{Allowed: true, Permission: coa.SegmentDefinitionManagementPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{scopeID}}},
+		audit,
+		func() time.Time { return time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC) },
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	requestService, err := coa.NewSegmentChangeRequestService(
+		coa.NewMemorySegmentChangeRequestRepository(repository),
+		repository,
+		coa.MemoryAuthorizer{Decision: coa.AuthorizationDecision{Allowed: true, Permission: coa.SegmentChangeRequestPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{scopeID}}},
+		audit,
+		time.Now,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	actor := identity.ApplicationActor{UserID: uuid.New(), Subject: identity.AuthenticationSubject{OID: "oid", TID: "tenant", Sub: "subject"}}
+	ctx, err := identity.WithActor(context.Background(), actor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	handler := IdentityHandler{SegmentDefinitionService: definitionService, SegmentChangeRequestService: requestService}
+	createdResponse, err := handler.CoaMaintainSegmentDefinitions(ctx, &generated.CommandRequest{
+		CommandId: generated.UUID(uuid.New()), AccountingScopeId: generated.NewOptUUID(generated.UUID(scopeID)),
+		Data: generated.CommandRequestData{
+			"action": mustRaw("create"), "segmentType": mustRaw("department"), "code": mustRaw("D-901"), "name": mustRaw("Finance"),
+			"status": mustRaw("draft"), "effectiveDateFrom": mustRaw("2026-01-01"), "effectiveDateTo": mustRaw("2026-12-31"),
+		},
+	}, generated.CoaMaintainSegmentDefinitionsParams{IdempotencyKey: "handler-request-definition"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	created, ok := createdResponse.(*generated.EstablishedResult)
+	if !ok {
+		t.Fatalf("created response = %T", createdResponse)
+	}
+	approvalRequestID := uuid.New()
+	correlationID := uuid.New()
+	response, err := handler.CoaRequestSegmentChanges(ctx, &generated.CommandRequest{
+		CommandId: generated.UUID(uuid.New()), AccountingScopeId: generated.NewOptUUID(generated.UUID(scopeID)),
+		Data: generated.CommandRequestData{
+			"changeType": mustRaw("definition"), "subjectId": mustRaw(uuid.UUID(created.AggregateId).String()), "subjectVersion": mustRaw(1),
+			"requestedEffectiveDate": mustRaw("2026-01-01"), "approvalRequestId": mustRaw(approvalRequestID.String()),
+			"proposedChange": mustRaw(map[string]any{
+				"action": "request", "segmentDefinitionId": uuid.UUID(created.AggregateId).String(), "segmentType": "department", "code": "D-901",
+				"name": "Finance and Shared Services", "status": "active", "effectiveDateFrom": "2026-01-01", "effectiveDateTo": "2026-12-31",
+			}),
+		},
+	}, generated.CoaRequestSegmentChangesParams{IdempotencyKey: "handler-request-1", XCorrelationID: generated.NewOptUUID(generated.UUID(correlationID))})
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, ok := response.(*generated.EstablishedResult)
+	if !ok {
+		t.Fatalf("request response = %T", response)
+	}
+	if result.Status != "established" || result.AggregateVersion != 1 || result.CorrelationId != generated.UUID(correlationID) {
+		t.Fatalf("request result = %#v", result)
+	}
+	if string(result.Data["approvalStatus"]) != `"pending"` || string(result.Data["subjectVersion"]) != "1" || string(result.Data["approvalRequestId"]) != `"`+approvalRequestID.String()+`"` {
+		t.Fatalf("request state = %#v", result.Data)
+	}
+	if !strings.Contains(string(result.Data["segmentChangeRequest"]), "Finance and Shared Services") {
+		t.Fatalf("request projection = %#v", result.Data["segmentChangeRequest"])
+	}
+	unchanged, err := repository.Get(context.Background(), uuid.UUID(created.AggregateId))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if unchanged.Version.Value() != 1 || unchanged.Name != "Finance" {
+		t.Fatalf("subject was mutated by request = %#v", unchanged)
+	}
+}
+
+func TestCoaHandlerMapsUnsupportedSegmentChangeSubject(t *testing.T) {
+	scopeID := uuid.New()
+	repository := coa.NewMemorySegmentDefinitionRepository()
+	service, err := coa.NewSegmentChangeRequestService(
+		coa.NewMemorySegmentChangeRequestRepository(repository), repository,
+		coa.MemoryAuthorizer{Decision: coa.AuthorizationDecision{Allowed: true, Permission: coa.SegmentChangeRequestPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{scopeID}}},
+		&coa.MemoryAuditRecorder{}, time.Now,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	actor := identity.ApplicationActor{UserID: uuid.New(), Subject: identity.AuthenticationSubject{OID: "oid", TID: "tenant", Sub: "subject"}}
+	ctx, err := identity.WithActor(context.Background(), actor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err := (IdentityHandler{SegmentChangeRequestService: service}).CoaRequestSegmentChanges(ctx, &generated.CommandRequest{
+		CommandId: generated.UUID(uuid.New()), AccountingScopeId: generated.NewOptUUID(generated.UUID(scopeID)),
+		Data: generated.CommandRequestData{
+			"changeType": mustRaw("combination"), "subjectId": mustRaw(uuid.NewString()), "subjectVersion": mustRaw(1),
+			"requestedEffectiveDate": mustRaw("2026-01-01"), "approvalRequestId": mustRaw(uuid.NewString()),
+			"proposedChange": mustRaw(map[string]any{"action": "request", "status": "active", "effectiveDateFrom": "2026-01-01"}),
+		},
+	}, generated.CoaRequestSegmentChangesParams{IdempotencyKey: "handler-unsupported-1"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := response.(*generated.CoaRequestSegmentChangesUnprocessableEntity); !ok {
+		t.Fatalf("unsupported response = %T, want unprocessable entity", response)
+	}
+}

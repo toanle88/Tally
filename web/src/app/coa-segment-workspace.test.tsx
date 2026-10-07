@@ -4,13 +4,15 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { developmentScopes } from './app'
+import { CoaSegmentChangeRequest } from './coa-segment-change-request'
 import { CoaSegmentCombinationValidator, CoaSegmentDefinitionRecord, CoaSegmentValueRecord, CoaSegmentWorklist } from './coa-segment-workspace'
-import { coaMaintainSegmentDefinitions, coaMaintainSegmentValues, coaValidateSegmentCombinations } from '@/generated/api/sdk.gen'
+import { coaMaintainSegmentDefinitions, coaMaintainSegmentValues, coaRequestSegmentChanges, coaValidateSegmentCombinations } from '@/generated/api/sdk.gen'
 import { ScopeProvider } from '@/lib/scope/scope-context'
 
 vi.mock('@/generated/api/sdk.gen', () => ({
   coaMaintainSegmentDefinitions: vi.fn(),
   coaMaintainSegmentValues: vi.fn(),
+  coaRequestSegmentChanges: vi.fn(),
   coaValidateSegmentCombinations: vi.fn(),
 }))
 
@@ -28,6 +30,7 @@ describe('COA segment workspace', () => {
   beforeEach(() => {
     vi.mocked(coaMaintainSegmentDefinitions).mockReset()
     vi.mocked(coaMaintainSegmentValues).mockReset()
+    vi.mocked(coaRequestSegmentChanges).mockReset()
     vi.mocked(coaValidateSegmentCombinations).mockReset()
   })
 
@@ -212,5 +215,51 @@ describe('COA segment workspace', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('the segment value is not active for validation')
     expect(screen.getByDisplayValue('invalid')).toBeInTheDocument()
     expect(screen.getByDisplayValue('correct-and-revalidate')).toBeInTheDocument()
+  })
+
+  it('requires a Workflow reference and shows the established request without changing the subject adapter', async () => {
+    vi.mocked(coaRequestSegmentChanges).mockResolvedValue({
+      data: {
+        status: 'established',
+        aggregateId: 'request-001',
+        aggregateVersion: 1,
+        correlationId: 'correlation-fixture',
+        links: { self: '/api/v1/coa-segments/actions/request-segment-changes' },
+        data: {
+          segmentChangeRequest: {
+            id: 'request-001',
+            scopeId: 'scope-vietnam-statutory',
+            changeType: 'definition',
+            subjectId: 'segment-department-operations',
+            subjectVersion: 3,
+            requestedEffectiveDate: '2026-01-01',
+            approvalRequestId: '11111111-1111-4111-8111-111111111111',
+            approvalStatus: 'pending',
+            applicationStatus: 'not-applied',
+            validationOutcome: 'valid',
+            nextAction: 'await-approval',
+            proposedChange: { name: 'Operations and Shared Services' },
+            version: 1,
+            revisionNumber: 1,
+          },
+        },
+      },
+      error: undefined,
+    } as never)
+
+    renderWithScope(<CoaSegmentChangeRequest />, '/coa-segments/coa-scr-04?changeType=definition&subjectId=segment-department-operations')
+    fireEvent.click(screen.getByRole('button', { name: 'Request definition change' }))
+    expect(screen.getAllByRole('alert')[0]).toHaveTextContent('valid Workflow approval-request reference')
+    expect(coaRequestSegmentChanges).not.toHaveBeenCalled()
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Workflow approval-request reference' }), { target: { value: '11111111-1111-4111-8111-111111111111' } })
+    fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), { target: { value: 'Operations and Shared Services' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Request definition change' }))
+
+    await waitFor(() => expect(coaRequestSegmentChanges).toHaveBeenCalledTimes(1))
+    expect(await screen.findByDisplayValue('request-001')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('pending')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('not-applied')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('subject remains unchanged')
   })
 })

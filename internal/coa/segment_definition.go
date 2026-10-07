@@ -582,21 +582,23 @@ type SegmentValueAuthorizer interface {
 }
 
 type AuditRecord struct {
-	SegmentDefinitionID   uuid.UUID
-	SegmentValueID        uuid.UUID
-	ActorUserID           uuid.UUID
-	ActorSubjectReference string
-	Action                string
-	ScopeID               uuid.UUID
-	Permission            string
-	PolicyReference       string
-	PolicyVersion         string
-	DecisionReference     uuid.UUID
-	RevisionNumber        int64
-	BeforeFingerprint     string
-	AfterFingerprint      string
-	CorrelationID         string
-	CausationID           string
+	SegmentChangeRequestID uuid.UUID
+	SegmentDefinitionID    uuid.UUID
+	SegmentValueID         uuid.UUID
+	ApprovalRequestID      uuid.UUID
+	ActorUserID            uuid.UUID
+	ActorSubjectReference  string
+	Action                 string
+	ScopeID                uuid.UUID
+	Permission             string
+	PolicyReference        string
+	PolicyVersion          string
+	DecisionReference      uuid.UUID
+	RevisionNumber         int64
+	BeforeFingerprint      string
+	AfterFingerprint       string
+	CorrelationID          string
+	CausationID            string
 }
 
 type AuditRecorder interface {
