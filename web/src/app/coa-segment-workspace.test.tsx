@@ -6,13 +6,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { developmentScopes } from './app'
 import { CoaSegmentChangeRequest } from './coa-segment-change-request'
 import { CoaSegmentCombinationValidator, CoaSegmentDefinitionRecord, CoaSegmentValueRecord, CoaSegmentWorklist } from './coa-segment-workspace'
-import { coaMaintainSegmentDefinitions, coaMaintainSegmentValues, coaRequestSegmentChanges, coaValidateSegmentCombinations } from '@/generated/api/sdk.gen'
+import { coaApplySegmentChangeApprovalDecision, coaMaintainSegmentDefinitions, coaMaintainSegmentValues, coaRequestSegmentChanges, coaValidateSegmentCombinations } from '@/generated/api/sdk.gen'
 import { ScopeProvider } from '@/lib/scope/scope-context'
 
 vi.mock('@/generated/api/sdk.gen', () => ({
   coaMaintainSegmentDefinitions: vi.fn(),
   coaMaintainSegmentValues: vi.fn(),
   coaRequestSegmentChanges: vi.fn(),
+  coaApplySegmentChangeApprovalDecision: vi.fn(),
   coaValidateSegmentCombinations: vi.fn(),
 }))
 
@@ -31,6 +32,7 @@ describe('COA segment workspace', () => {
     vi.mocked(coaMaintainSegmentDefinitions).mockReset()
     vi.mocked(coaMaintainSegmentValues).mockReset()
     vi.mocked(coaRequestSegmentChanges).mockReset()
+    vi.mocked(coaApplySegmentChangeApprovalDecision).mockReset()
     vi.mocked(coaValidateSegmentCombinations).mockReset()
   })
 
@@ -217,7 +219,7 @@ describe('COA segment workspace', () => {
     expect(screen.getByDisplayValue('correct-and-revalidate')).toBeInTheDocument()
   })
 
-  it('requires a Workflow reference and shows the established request without changing the subject adapter', async () => {
+  it('requires a Workflow reference, then applies the returned approval decision through the live command', async () => {
     vi.mocked(coaRequestSegmentChanges).mockResolvedValue({
       data: {
         status: 'established',
@@ -234,6 +236,7 @@ describe('COA segment workspace', () => {
             subjectVersion: 3,
             requestedEffectiveDate: '2026-01-01',
             approvalRequestId: '11111111-1111-4111-8111-111111111111',
+            proposedFingerprint: 'sha256:proposal',
             approvalStatus: 'pending',
             applicationStatus: 'not-applied',
             validationOutcome: 'valid',
@@ -241,6 +244,45 @@ describe('COA segment workspace', () => {
             proposedChange: { name: 'Operations and Shared Services' },
             version: 1,
             revisionNumber: 1,
+          },
+        },
+      },
+      error: undefined,
+    } as never)
+
+    vi.mocked(coaApplySegmentChangeApprovalDecision).mockResolvedValue({
+      data: {
+        status: 'established',
+        aggregateId: 'request-001',
+        aggregateVersion: 2,
+        correlationId: 'correlation-fixture',
+        links: { self: '/api/v1/coa-segments/actions/apply-segment-change-approval-decision' },
+        data: {
+          effectiveDateResult: 'effective',
+          segmentChangeRequest: {
+            id: 'request-001',
+            scopeId: 'scope-vietnam-statutory',
+            changeType: 'definition',
+            subjectId: 'segment-department-operations',
+            subjectVersion: 3,
+            requestedEffectiveDate: '2026-01-01',
+            approvalRequestId: '11111111-1111-4111-8111-111111111111',
+            proposedFingerprint: 'sha256:proposal',
+            approvalDecisionId: '22222222-2222-4222-8222-222222222222',
+            approvalPolicyVersion: 'coa-apply-v1',
+            approvalDecisionVersion: 1,
+            approvalSubjectVersion: 3,
+            approvalCandidateFingerprint: 'sha256:proposal',
+            approvalApproverUserId: '33333333-3333-4333-8333-333333333333',
+            approvalStatus: 'approved',
+            applicationStatus: 'applied',
+            resultingSubjectVersion: 4,
+            appliedSubjectVersion: 4,
+            validationOutcome: 'valid',
+            nextAction: 'completed',
+            proposedChange: { name: 'Operations and Shared Services' },
+            version: 2,
+            revisionNumber: 2,
           },
         },
       },
@@ -261,5 +303,15 @@ describe('COA segment workspace', () => {
     expect(screen.getByDisplayValue('pending')).toBeInTheDocument()
     expect(screen.getByDisplayValue('not-applied')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('subject remains unchanged')
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Workflow decision reference' }), { target: { value: '22222222-2222-4222-8222-222222222222' } })
+    fireEvent.change(screen.getByRole('textbox', { name: 'Approver user reference' }), { target: { value: '33333333-3333-4333-8333-333333333333' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Apply approval decision' }))
+
+    await waitFor(() => expect(coaApplySegmentChangeApprovalDecision).toHaveBeenCalledTimes(1))
+    expect(await screen.findByDisplayValue('applied')).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Resulting subject version' })).toHaveValue('v4')
+    expect(screen.getByRole('textbox', { name: 'Effective-date result' })).toHaveValue('effective')
+    expect(screen.getByRole('status')).toHaveTextContent('Applied the approved decision')
   })
 })

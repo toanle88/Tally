@@ -586,6 +586,8 @@ type AuditRecord struct {
 	SegmentDefinitionID    uuid.UUID
 	SegmentValueID         uuid.UUID
 	ApprovalRequestID      uuid.UUID
+	ApprovalDecisionID     uuid.UUID
+	ApproverUserID         uuid.UUID
 	ActorUserID            uuid.UUID
 	ActorSubjectReference  string
 	Action                 string

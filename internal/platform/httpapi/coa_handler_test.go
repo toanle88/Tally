@@ -237,12 +237,13 @@ func TestCoaHandlerRequestsSegmentChangeWithApprovalReference(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	requestRepository := coa.NewMemorySegmentChangeRequestRepository(repository)
 	requestService, err := coa.NewSegmentChangeRequestService(
-		coa.NewMemorySegmentChangeRequestRepository(repository),
+		requestRepository,
 		repository,
 		coa.MemoryAuthorizer{Decision: coa.AuthorizationDecision{Allowed: true, Permission: coa.SegmentChangeRequestPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{scopeID}}},
 		audit,
-		time.Now,
+		func() time.Time { return time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC) },
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -302,6 +303,50 @@ func TestCoaHandlerRequestsSegmentChangeWithApprovalReference(t *testing.T) {
 	}
 	if unchanged.Version.Value() != 1 || unchanged.Name != "Finance" {
 		t.Fatalf("subject was mutated by request = %#v", unchanged)
+	}
+
+	approvalDecisionID := uuid.New()
+	approverUserID := uuid.New()
+	approvalService, err := coa.NewSegmentChangeApprovalDecisionService(
+		requestRepository,
+		requestRepository,
+		coa.MemoryAuthorizer{Decision: coa.AuthorizationDecision{Allowed: true, Permission: coa.SegmentChangeApprovalDecisionPermission, DecisionReference: uuid.New(), PolicyReference: "coa-apply-v1", ApprovedScopeIDs: []uuid.UUID{scopeID}}},
+		func() time.Time { return time.Date(2026, 1, 1, 1, 0, 0, 0, time.UTC) },
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	handler.SegmentChangeApprovalDecisionService = approvalService
+	storedRequest, err := requestRepository.Get(context.Background(), uuid.UUID(result.AggregateId))
+	if err != nil {
+		t.Fatal(err)
+	}
+	approvalResponse, err := handler.CoaApplySegmentChangeApprovalDecision(ctx, &generated.CommandRequest{
+		CommandId: generated.UUID(uuid.New()), AccountingScopeId: generated.NewOptUUID(generated.UUID(scopeID)),
+		Data: generated.CommandRequestData{
+			"segmentChangeRequestId": mustRaw(uuid.UUID(result.AggregateId).String()), "outcome": mustRaw("approved"),
+			"approvalRequestId": mustRaw(approvalRequestID.String()), "decisionId": mustRaw(approvalDecisionID.String()),
+			"policyVersion": mustRaw("coa-apply-v1"), "decisionVersion": mustRaw(1), "subjectVersion": mustRaw(1),
+			"candidateFingerprint": mustRaw(storedRequest.ProposedFingerprint), "approverUserId": mustRaw(approverUserID.String()),
+			"decidedAt": mustRaw("2026-01-01T01:00:00Z"),
+		},
+	}, generated.CoaApplySegmentChangeApprovalDecisionParams{IdempotencyKey: "handler-approval-1", XCorrelationID: generated.NewOptUUID(generated.UUID(uuid.New()))})
+	if err != nil {
+		t.Fatal(err)
+	}
+	approvalResult, ok := approvalResponse.(*generated.EstablishedResult)
+	if !ok {
+		t.Fatalf("approval response = %T, want established result: %#v", approvalResponse, approvalResponse)
+	}
+	if string(approvalResult.Data["applicationStatus"]) != `"applied"` || string(approvalResult.Data["resultingSubjectVersion"]) != "2" {
+		t.Fatalf("approval state = %#v", approvalResult.Data)
+	}
+	applied, err := repository.Get(context.Background(), uuid.UUID(created.AggregateId))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if applied.Version.Value() != 2 || applied.Name != "Finance and Shared Services" || applied.Status != coa.SegmentStatusActive {
+		t.Fatalf("subject after approval = %#v", applied)
 	}
 }
 

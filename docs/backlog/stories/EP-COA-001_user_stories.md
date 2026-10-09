@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Epic | EP-COA-001 — COA segment configuration |
-| Status | User Stories 1 and 4 implementation in progress; local verification evidence attached; live and release qualification remain open |
+| Status | User Stories 1, 4, and 5 implementation in progress; local verification evidence attached; live and release qualification remain open |
 | Milestone | M1 — Identity and accounting configuration |
 | Dependencies | EP-OMD-001, EP-IAM-001; platform foundation is transitive through those dependencies |
 | Delivery items | DLV-FR-COA-001 through DLV-FR-COA-005 |
@@ -12,9 +12,9 @@
 | Authoritative records | SegmentDefinition, SegmentCombination, SegmentChangeRequest |
 | Exit evidence | Domain, persistence, API, authorization, audit, concurrency, UI, accessibility, and approved-decision application evidence for all five stories; deferred external and full-release qualification is not claimed |
 
-This document remains the epic planning artifact. User Stories 1 and 4 now
-have traceable implementation and local verification records below; epic-wide
-and unverified acceptance/qualification checkboxes remain open.
+This document remains the epic planning artifact. User Stories 1, 4, and 5
+now have traceable implementation and local verification records below;
+epic-wide and unverified acceptance/qualification checkboxes remain open.
 
 ## 1. Outcome
 
@@ -646,11 +646,65 @@ Qualification still open:
   clean PostgreSQL execution and the integration test runtime are not claimed.
 - `make db-sqlc-check` intentionally rejects the uncommitted generated COA
   artifacts in this working tree; the deterministic `make sqlc-check` passed.
-- COA-WS-01 is not an authoritative request worklist yet, and impact analysis,
-  Workflow decision handling, and approved application remain outside this
-  story and belong to the approved follow-on contract/Story 5.
+- COA-WS-01 is not an authoritative request worklist yet, and impact analysis
+  and the Story 5 application result are still shown through
+  the local safe adapter until an approved COA request-read endpoint exists.
 
 ### User Story 5 — Apply segment-change approval decision
+
+#### Implementation status
+
+User Story 5 is implemented for the approved M1 application slice. The
+Workflow-owned decision is accepted through the existing generic command
+boundary with approval-request/decision references, policy and decision
+versions, candidate fingerprint, approver, and decision timestamp. COA
+revalidates the stored request, current subject version/fingerprint, scope,
+effective-date and lifecycle rules, and definition/value uniqueness before
+recording an atomic applied, unchanged, rejected, or conflict result.
+
+Implemented:
+
+- `internal/coa/segment_change_approval.go` owns the application state machine,
+  typed conflict/rejection results, authorization, replay/idempotency handling,
+  audit evidence, and memory behavior for definitions and values.
+- `internal/coa/postgres_segment_change_approval_repository.go` applies the
+  definition/value change, revision, request terminal state, audit reference,
+  and durable idempotency result in one COA transaction with subject locking.
+- `db/migrations/coa/00004_apply_segment_change_approval_decision.sql` and the
+  regenerated SQLC artifacts persist approval/application metadata and terminal
+  lifecycle constraints.
+- The existing
+  `coaApplySegmentChangeApprovalDecision` HTTP operation is wired to the exact
+  COA permission and typed problem results. `COA-SCR-04` captures the generic
+  Workflow decision evidence and presents applied, rejected, unchanged, and
+  conflict outcomes; `COA-WS-01` links safe request projections to the screen.
+
+Verified locally:
+
+- Domain/application coverage includes approved definition application and
+  replay, rejected no-mutation, unchanged approved, stale conflict, invalid
+  candidate reference, and changed-content idempotency conflict.
+- HTTP coverage exercises request creation followed by approval application,
+  resulting subject version, and subject mutation only at the application
+  boundary. Frontend component and focused accessibility coverage exercise
+  decision capture and applied-result presentation.
+- Migration, SQLC, OpenAPI/TypeScript contract, Go, frontend, and focused
+  Playwright checks are recorded in the delivery handoff for this change.
+
+Qualification and deferred scope:
+
+- PostgreSQL runtime/integration execution remains unclaimed because the local
+  Docker daemon is unavailable. The persistence implementation and migration
+  checks passed; clean-database atomicity, rollback, and concurrent runtime
+  evidence require the integration environment.
+- No COA event/outbox publication was added because the current approved
+  technical event inventory does not define a COA segment-application
+  publication contract. Any future publication must use the transactional
+  outbox and an approved versioned event contract.
+- Combination and assignment application remain explicitly unsupported until
+  their owning aggregate/contract is approved. Authoritative request reads,
+  impact analysis, and a full external Workflow delivery/recovery harness also
+  remain outside this slice.
 
 **Delivery item:** DLV-FR-COA-005 / FR-COA-005
 **Existing API operation:** coaApplySegmentChangeApprovalDecision

@@ -13,7 +13,10 @@ import (
 
 const getSegmentChangeRequest = `-- name: GetSegmentChangeRequest :one
 SELECT segment_change_request_id, scope_id, change_type, subject_id, subject_version,
-       requested_effective_date, approval_request_id, approval_status, application_status,
+       requested_effective_date, approval_request_id, approval_decision_id, approval_policy_version,
+       approval_decision_version, approval_subject_version, approval_candidate_fingerprint,
+       approval_approver_user_id, approval_decided_at, approval_applied_at, applied_subject_version,
+       resulting_subject_version, decision_fingerprint, approval_status, application_status,
        validation_outcome, conflict_code, rejection_reason, next_action, proposed_change,
        subject_fingerprint, proposed_fingerprint, aggregate_version, revision_number,
        created_by, created_at, updated_at, last_audit_reference
@@ -21,9 +24,45 @@ FROM coa.segment_change_request
 WHERE segment_change_request_id = $1
 `
 
-func (q *Queries) GetSegmentChangeRequest(ctx context.Context, segmentChangeRequestID pgtype.UUID) (CoaSegmentChangeRequest, error) {
+type GetSegmentChangeRequestRow struct {
+	SegmentChangeRequestID       pgtype.UUID
+	ScopeID                      pgtype.UUID
+	ChangeType                   string
+	SubjectID                    pgtype.UUID
+	SubjectVersion               int64
+	RequestedEffectiveDate       pgtype.Date
+	ApprovalRequestID            pgtype.UUID
+	ApprovalDecisionID           pgtype.UUID
+	ApprovalPolicyVersion        pgtype.Text
+	ApprovalDecisionVersion      pgtype.Int8
+	ApprovalSubjectVersion       pgtype.Int8
+	ApprovalCandidateFingerprint pgtype.Text
+	ApprovalApproverUserID       pgtype.UUID
+	ApprovalDecidedAt            pgtype.Timestamptz
+	ApprovalAppliedAt            pgtype.Timestamptz
+	AppliedSubjectVersion        pgtype.Int8
+	ResultingSubjectVersion      pgtype.Int8
+	DecisionFingerprint          pgtype.Text
+	ApprovalStatus               string
+	ApplicationStatus            string
+	ValidationOutcome            string
+	ConflictCode                 pgtype.Text
+	RejectionReason              pgtype.Text
+	NextAction                   string
+	ProposedChange               []byte
+	SubjectFingerprint           string
+	ProposedFingerprint          string
+	AggregateVersion             int64
+	RevisionNumber               int64
+	CreatedBy                    pgtype.UUID
+	CreatedAt                    pgtype.Timestamptz
+	UpdatedAt                    pgtype.Timestamptz
+	LastAuditReference           pgtype.UUID
+}
+
+func (q *Queries) GetSegmentChangeRequest(ctx context.Context, segmentChangeRequestID pgtype.UUID) (GetSegmentChangeRequestRow, error) {
 	row := q.db.QueryRow(ctx, getSegmentChangeRequest, segmentChangeRequestID)
-	var i CoaSegmentChangeRequest
+	var i GetSegmentChangeRequestRow
 	err := row.Scan(
 		&i.SegmentChangeRequestID,
 		&i.ScopeID,
@@ -32,6 +71,17 @@ func (q *Queries) GetSegmentChangeRequest(ctx context.Context, segmentChangeRequ
 		&i.SubjectVersion,
 		&i.RequestedEffectiveDate,
 		&i.ApprovalRequestID,
+		&i.ApprovalDecisionID,
+		&i.ApprovalPolicyVersion,
+		&i.ApprovalDecisionVersion,
+		&i.ApprovalSubjectVersion,
+		&i.ApprovalCandidateFingerprint,
+		&i.ApprovalApproverUserID,
+		&i.ApprovalDecidedAt,
+		&i.ApprovalAppliedAt,
+		&i.AppliedSubjectVersion,
+		&i.ResultingSubjectVersion,
+		&i.DecisionFingerprint,
 		&i.ApprovalStatus,
 		&i.ApplicationStatus,
 		&i.ValidationOutcome,
@@ -53,7 +103,10 @@ func (q *Queries) GetSegmentChangeRequest(ctx context.Context, segmentChangeRequ
 
 const listSegmentChangeRequests = `-- name: ListSegmentChangeRequests :many
 SELECT segment_change_request_id, scope_id, change_type, subject_id, subject_version,
-       requested_effective_date, approval_request_id, approval_status, application_status,
+       requested_effective_date, approval_request_id, approval_decision_id, approval_policy_version,
+       approval_decision_version, approval_subject_version, approval_candidate_fingerprint,
+       approval_approver_user_id, approval_decided_at, approval_applied_at, applied_subject_version,
+       resulting_subject_version, decision_fingerprint, approval_status, application_status,
        validation_outcome, conflict_code, rejection_reason, next_action, proposed_change,
        subject_fingerprint, proposed_fingerprint, aggregate_version, revision_number,
        created_by, created_at, updated_at, last_audit_reference
@@ -62,15 +115,51 @@ WHERE ($1::uuid IS NULL OR scope_id = $1::uuid)
 ORDER BY requested_effective_date, segment_change_request_id
 `
 
-func (q *Queries) ListSegmentChangeRequests(ctx context.Context, scopeID pgtype.UUID) ([]CoaSegmentChangeRequest, error) {
+type ListSegmentChangeRequestsRow struct {
+	SegmentChangeRequestID       pgtype.UUID
+	ScopeID                      pgtype.UUID
+	ChangeType                   string
+	SubjectID                    pgtype.UUID
+	SubjectVersion               int64
+	RequestedEffectiveDate       pgtype.Date
+	ApprovalRequestID            pgtype.UUID
+	ApprovalDecisionID           pgtype.UUID
+	ApprovalPolicyVersion        pgtype.Text
+	ApprovalDecisionVersion      pgtype.Int8
+	ApprovalSubjectVersion       pgtype.Int8
+	ApprovalCandidateFingerprint pgtype.Text
+	ApprovalApproverUserID       pgtype.UUID
+	ApprovalDecidedAt            pgtype.Timestamptz
+	ApprovalAppliedAt            pgtype.Timestamptz
+	AppliedSubjectVersion        pgtype.Int8
+	ResultingSubjectVersion      pgtype.Int8
+	DecisionFingerprint          pgtype.Text
+	ApprovalStatus               string
+	ApplicationStatus            string
+	ValidationOutcome            string
+	ConflictCode                 pgtype.Text
+	RejectionReason              pgtype.Text
+	NextAction                   string
+	ProposedChange               []byte
+	SubjectFingerprint           string
+	ProposedFingerprint          string
+	AggregateVersion             int64
+	RevisionNumber               int64
+	CreatedBy                    pgtype.UUID
+	CreatedAt                    pgtype.Timestamptz
+	UpdatedAt                    pgtype.Timestamptz
+	LastAuditReference           pgtype.UUID
+}
+
+func (q *Queries) ListSegmentChangeRequests(ctx context.Context, scopeID pgtype.UUID) ([]ListSegmentChangeRequestsRow, error) {
 	rows, err := q.db.Query(ctx, listSegmentChangeRequests, scopeID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []CoaSegmentChangeRequest
+	var items []ListSegmentChangeRequestsRow
 	for rows.Next() {
-		var i CoaSegmentChangeRequest
+		var i ListSegmentChangeRequestsRow
 		if err := rows.Scan(
 			&i.SegmentChangeRequestID,
 			&i.ScopeID,
@@ -79,6 +168,17 @@ func (q *Queries) ListSegmentChangeRequests(ctx context.Context, scopeID pgtype.
 			&i.SubjectVersion,
 			&i.RequestedEffectiveDate,
 			&i.ApprovalRequestID,
+			&i.ApprovalDecisionID,
+			&i.ApprovalPolicyVersion,
+			&i.ApprovalDecisionVersion,
+			&i.ApprovalSubjectVersion,
+			&i.ApprovalCandidateFingerprint,
+			&i.ApprovalApproverUserID,
+			&i.ApprovalDecidedAt,
+			&i.ApprovalAppliedAt,
+			&i.AppliedSubjectVersion,
+			&i.ResultingSubjectVersion,
+			&i.DecisionFingerprint,
 			&i.ApprovalStatus,
 			&i.ApplicationStatus,
 			&i.ValidationOutcome,

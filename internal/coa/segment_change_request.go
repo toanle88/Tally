@@ -25,26 +25,45 @@ const (
 
 	SegmentChangeRequestAction = "request"
 
-	SegmentChangeRequestApprovalPending = "pending"
-	SegmentChangeRequestApplicationOpen = "not-applied"
-	SegmentChangeRequestNextAction      = "await-approval"
+	SegmentChangeRequestApprovalPending           = "pending"
+	SegmentChangeRequestApprovalApproved          = "approved"
+	SegmentChangeRequestApprovalRejected          = "rejected"
+	SegmentChangeRequestApplicationOpen           = "not-applied"
+	SegmentChangeRequestApplicationApplied        = "applied"
+	SegmentChangeRequestApplicationUnchanged      = "unchanged"
+	SegmentChangeRequestApplicationConflict       = "conflict"
+	SegmentChangeRequestNextAction                = "await-approval"
+	SegmentChangeRequestNextActionCompleted       = "completed"
+	SegmentChangeRequestNextActionResolveConflict = "resolve-conflict"
 )
 
 var (
-	ErrInvalidSegmentChangeRequest                  = errors.New("invalid segment change request")
-	ErrInvalidSegmentChangeRequestCommand           = errors.New("invalid segment change request command")
-	ErrInvalidSegmentChangeRequestService           = errors.New("invalid segment change request service")
-	ErrSegmentChangeRequestSubjectNotFound          = errors.New("segment change request subject not found")
-	ErrSegmentChangeRequestUnsupportedSubject       = errors.New("unsupported segment change request subject")
-	ErrSegmentChangeRequestVersionConflict          = errors.New("segment change request subject version conflict")
-	ErrSegmentChangeRequestAuthorizationDenied      = errors.New("segment change request authorization denied")
-	ErrSegmentChangeRequestAuthorizationUnavailable = errors.New("segment change request authorization unavailable")
-	ErrSegmentChangeRequestAuthorizationStale       = errors.New("segment change request authorization stale")
-	ErrSegmentChangeRequestIdempotencyConflict      = errors.New("segment change request idempotency conflict")
-	ErrSegmentChangeRequestCommandInProgress        = errors.New("segment change request command is already in progress")
-	ErrSegmentChangeRequestAuditUnavailable         = errors.New("segment change request audit unavailable")
-	ErrSegmentChangeRequestDurableCommandFailed     = errors.New("segment change request command previously failed")
-	ErrSegmentChangeRequestDuplicate                = errors.New("duplicate segment change request")
+	ErrInvalidSegmentChangeRequest                           = errors.New("invalid segment change request")
+	ErrInvalidSegmentChangeRequestCommand                    = errors.New("invalid segment change request command")
+	ErrInvalidSegmentChangeRequestService                    = errors.New("invalid segment change request service")
+	ErrSegmentChangeRequestSubjectNotFound                   = errors.New("segment change request subject not found")
+	ErrSegmentChangeRequestUnsupportedSubject                = errors.New("unsupported segment change request subject")
+	ErrSegmentChangeRequestVersionConflict                   = errors.New("segment change request subject version conflict")
+	ErrSegmentChangeRequestAuthorizationDenied               = errors.New("segment change request authorization denied")
+	ErrSegmentChangeRequestAuthorizationUnavailable          = errors.New("segment change request authorization unavailable")
+	ErrSegmentChangeRequestAuthorizationStale                = errors.New("segment change request authorization stale")
+	ErrSegmentChangeRequestIdempotencyConflict               = errors.New("segment change request idempotency conflict")
+	ErrSegmentChangeRequestCommandInProgress                 = errors.New("segment change request command is already in progress")
+	ErrSegmentChangeRequestAuditUnavailable                  = errors.New("segment change request audit unavailable")
+	ErrSegmentChangeRequestDurableCommandFailed              = errors.New("segment change request command previously failed")
+	ErrSegmentChangeRequestDuplicate                         = errors.New("duplicate segment change request")
+	ErrSegmentChangeApprovalDecisionNotFound                 = errors.New("segment change approval decision request not found")
+	ErrSegmentChangeApprovalDecisionInvalid                  = errors.New("invalid segment change approval decision")
+	ErrSegmentChangeApprovalDecisionAuthorizationDenied      = errors.New("segment change approval decision authorization denied")
+	ErrSegmentChangeApprovalDecisionAuthorizationUnavailable = errors.New("segment change approval decision authorization unavailable")
+	ErrSegmentChangeApprovalDecisionAuthorizationStale       = errors.New("segment change approval decision authorization stale")
+	ErrSegmentChangeApprovalDecisionIdempotencyConflict      = errors.New("segment change approval decision idempotency conflict")
+	ErrSegmentChangeApprovalDecisionCommandInProgress        = errors.New("segment change approval decision command is already in progress")
+	ErrSegmentChangeApprovalDecisionAuditUnavailable         = errors.New("segment change approval decision audit unavailable")
+	ErrSegmentChangeApprovalDecisionDurableCommandFailed     = errors.New("segment change approval decision command previously failed")
+	ErrSegmentChangeApprovalDecisionDuplicate                = errors.New("duplicate segment change approval decision")
+	ErrSegmentChangeApprovalDecisionReferenceInvalid         = errors.New("invalid segment change approval decision reference")
+	ErrSegmentChangeApprovalDecisionSubjectConflict          = errors.New("segment change approval decision subject conflict")
 )
 
 // SegmentChangeProposal reuses the maintenance fields owned by the existing
@@ -171,27 +190,38 @@ type SegmentChangeRequestAuditRecorder interface {
 }
 
 type SegmentChangeRequest struct {
-	ID                     uuid.UUID
-	ScopeID                uuid.UUID
-	ChangeType             string
-	SubjectID              uuid.UUID
-	SubjectVersion         aggregateversion.AggregateVersion
-	RequestedEffectiveDate time.Time
-	ApprovalRequestID      uuid.UUID
-	ApprovalStatus         string
-	ApplicationStatus      string
-	ValidationOutcome      string
-	ConflictCode           string
-	RejectionReason        string
-	NextAction             string
-	ProposedChange         SegmentChangeProposal
-	SubjectFingerprint     string
-	ProposedFingerprint    string
-	Version                aggregateversion.AggregateVersion
-	RevisionNumber         int64
-	CreatedBy              uuid.UUID
-	CreatedAt              time.Time
-	UpdatedAt              time.Time
+	ID                           uuid.UUID
+	ScopeID                      uuid.UUID
+	ChangeType                   string
+	SubjectID                    uuid.UUID
+	SubjectVersion               aggregateversion.AggregateVersion
+	RequestedEffectiveDate       time.Time
+	ApprovalRequestID            uuid.UUID
+	ApprovalDecisionID           uuid.UUID
+	ApprovalPolicyVersion        string
+	ApprovalDecisionVersion      int64
+	ApprovalSubjectVersion       aggregateversion.AggregateVersion
+	ApprovalCandidateFingerprint string
+	ApprovalApproverUserID       uuid.UUID
+	ApprovalDecidedAt            time.Time
+	ApprovalAppliedAt            time.Time
+	AppliedSubjectVersion        aggregateversion.AggregateVersion
+	ResultingSubjectVersion      aggregateversion.AggregateVersion
+	DecisionFingerprint          string
+	ApprovalStatus               string
+	ApplicationStatus            string
+	ValidationOutcome            string
+	ConflictCode                 string
+	RejectionReason              string
+	NextAction                   string
+	ProposedChange               SegmentChangeProposal
+	SubjectFingerprint           string
+	ProposedFingerprint          string
+	Version                      aggregateversion.AggregateVersion
+	RevisionNumber               int64
+	CreatedBy                    uuid.UUID
+	CreatedAt                    time.Time
+	UpdatedAt                    time.Time
 }
 
 func (request SegmentChangeRequest) Validate() error {
@@ -204,11 +234,33 @@ func (request SegmentChangeRequest) Validate() error {
 	if request.RequestedEffectiveDate.IsZero() || request.Version.Value() < 1 || request.RevisionNumber < 1 {
 		return fmt.Errorf("%w: lifecycle and version state are invalid", ErrInvalidSegmentChangeRequest)
 	}
-	if request.ApprovalStatus != SegmentChangeRequestApprovalPending || request.ApplicationStatus != SegmentChangeRequestApplicationOpen {
-		return fmt.Errorf("%w: initial request lifecycle state is invalid", ErrInvalidSegmentChangeRequest)
-	}
-	if request.ValidationOutcome != "valid" || request.NextAction != SegmentChangeRequestNextAction {
+	if request.ValidationOutcome != "valid" {
 		return fmt.Errorf("%w: validation and next-action state are invalid", ErrInvalidSegmentChangeRequest)
+	}
+	switch {
+	case request.ApprovalStatus == SegmentChangeRequestApprovalPending && request.ApplicationStatus == SegmentChangeRequestApplicationOpen && request.NextAction == SegmentChangeRequestNextAction:
+	case (request.ApprovalStatus == SegmentChangeRequestApprovalApproved || request.ApprovalStatus == SegmentChangeRequestApprovalRejected) &&
+		(request.ApplicationStatus == SegmentChangeRequestApplicationApplied || request.ApplicationStatus == SegmentChangeRequestApplicationUnchanged || request.ApplicationStatus == SegmentChangeRequestApplicationConflict) &&
+		(request.NextAction == SegmentChangeRequestNextActionCompleted || request.NextAction == SegmentChangeRequestNextActionResolveConflict):
+		if request.ApprovalDecisionID == uuid.Nil || strings.TrimSpace(request.ApprovalPolicyVersion) == "" || request.ApprovalDecisionVersion < 1 || request.ApprovalSubjectVersion.Value() < 1 || strings.TrimSpace(request.ApprovalCandidateFingerprint) == "" || request.ApprovalApproverUserID == uuid.Nil || request.ApprovalDecidedAt.IsZero() || request.ApprovalAppliedAt.IsZero() || request.AppliedSubjectVersion.Value() < 1 || request.ResultingSubjectVersion.Value() < 1 || strings.TrimSpace(request.DecisionFingerprint) == "" {
+			return fmt.Errorf("%w: terminal approval reference is incomplete", ErrInvalidSegmentChangeRequest)
+		}
+		if request.ApprovalStatus == SegmentChangeRequestApprovalRejected {
+			if request.ApplicationStatus != SegmentChangeRequestApplicationUnchanged || strings.TrimSpace(request.RejectionReason) == "" {
+				return fmt.Errorf("%w: rejected decisions must leave the subject unchanged", ErrInvalidSegmentChangeRequest)
+			}
+		} else if strings.TrimSpace(request.RejectionReason) != "" {
+			return fmt.Errorf("%w: approved decisions cannot have a rejection reason", ErrInvalidSegmentChangeRequest)
+		}
+		if request.ApplicationStatus == SegmentChangeRequestApplicationConflict {
+			if request.NextAction != SegmentChangeRequestNextActionResolveConflict || strings.TrimSpace(request.ConflictCode) == "" {
+				return fmt.Errorf("%w: conflict requests require a conflict code and resolution next action", ErrInvalidSegmentChangeRequest)
+			}
+		} else if request.NextAction != SegmentChangeRequestNextActionCompleted {
+			return fmt.Errorf("%w: completed requests require a completed next action", ErrInvalidSegmentChangeRequest)
+		}
+	default:
+		return fmt.Errorf("%w: request lifecycle state is invalid", ErrInvalidSegmentChangeRequest)
 	}
 	if strings.TrimSpace(request.SubjectFingerprint) == "" || strings.TrimSpace(request.ProposedFingerprint) == "" || request.CreatedBy == uuid.Nil || request.CreatedAt.IsZero() || request.UpdatedAt.Before(request.CreatedAt) {
 		return fmt.Errorf("%w: provenance is required", ErrInvalidSegmentChangeRequest)
@@ -239,28 +291,57 @@ func (proposal SegmentChangeProposal) validateFor(changeType string, subjectID u
 }
 
 type SafeSegmentChangeRequest struct {
-	ID                     uuid.UUID                         `json:"id"`
-	ScopeID                uuid.UUID                         `json:"scopeId"`
-	ChangeType             string                            `json:"changeType"`
-	SubjectID              uuid.UUID                         `json:"subjectId"`
-	SubjectVersion         int64                             `json:"subjectVersion"`
-	RequestedEffectiveDate time.Time                         `json:"requestedEffectiveDate"`
-	ApprovalRequestID      uuid.UUID                         `json:"approvalRequestId"`
-	ApprovalStatus         string                            `json:"approvalStatus"`
-	ApplicationStatus      string                            `json:"applicationStatus"`
-	ValidationOutcome      string                            `json:"validationOutcome"`
-	ConflictCode           string                            `json:"conflictCode,omitempty"`
-	RejectionReason        string                            `json:"rejectionReason,omitempty"`
-	NextAction             string                            `json:"nextAction"`
-	ProposedChange         SegmentChangeProposal             `json:"proposedChange"`
-	Version                aggregateversion.AggregateVersion `json:"version"`
-	RevisionNumber         int64                             `json:"revisionNumber"`
+	ID                           uuid.UUID                         `json:"id"`
+	ScopeID                      uuid.UUID                         `json:"scopeId"`
+	ChangeType                   string                            `json:"changeType"`
+	SubjectID                    uuid.UUID                         `json:"subjectId"`
+	SubjectVersion               int64                             `json:"subjectVersion"`
+	RequestedEffectiveDate       time.Time                         `json:"requestedEffectiveDate"`
+	ApprovalRequestID            uuid.UUID                         `json:"approvalRequestId"`
+	ProposedFingerprint          string                            `json:"proposedFingerprint,omitempty"`
+	ApprovalDecisionID           *uuid.UUID                        `json:"approvalDecisionId,omitempty"`
+	ApprovalPolicyVersion        string                            `json:"approvalPolicyVersion,omitempty"`
+	ApprovalDecisionVersion      int64                             `json:"approvalDecisionVersion,omitempty"`
+	ApprovalSubjectVersion       int64                             `json:"approvalSubjectVersion,omitempty"`
+	ApprovalCandidateFingerprint string                            `json:"approvalCandidateFingerprint,omitempty"`
+	ApprovalApproverUserID       *uuid.UUID                        `json:"approvalApproverUserId,omitempty"`
+	ApprovalDecidedAt            *time.Time                        `json:"approvalDecidedAt,omitempty"`
+	ApprovalAppliedAt            *time.Time                        `json:"approvalAppliedAt,omitempty"`
+	AppliedSubjectVersion        int64                             `json:"appliedSubjectVersion,omitempty"`
+	ResultingSubjectVersion      int64                             `json:"resultingSubjectVersion,omitempty"`
+	ApprovalStatus               string                            `json:"approvalStatus"`
+	ApplicationStatus            string                            `json:"applicationStatus"`
+	ValidationOutcome            string                            `json:"validationOutcome"`
+	ConflictCode                 string                            `json:"conflictCode,omitempty"`
+	RejectionReason              string                            `json:"rejectionReason,omitempty"`
+	NextAction                   string                            `json:"nextAction"`
+	ProposedChange               SegmentChangeProposal             `json:"proposedChange"`
+	Version                      aggregateversion.AggregateVersion `json:"version"`
+	RevisionNumber               int64                             `json:"revisionNumber"`
 }
 
 func (request SegmentChangeRequest) SafeProjection() SafeSegmentChangeRequest {
+	var approvalDecisionID, approvalApproverUserID *uuid.UUID
+	var approvalDecidedAt, approvalAppliedAt *time.Time
+	if request.ApprovalDecisionID != uuid.Nil {
+		approvalDecisionID = &request.ApprovalDecisionID
+	}
+	if request.ApprovalApproverUserID != uuid.Nil {
+		approvalApproverUserID = &request.ApprovalApproverUserID
+	}
+	if !request.ApprovalDecidedAt.IsZero() {
+		approvalDecidedAt = &request.ApprovalDecidedAt
+	}
+	if !request.ApprovalAppliedAt.IsZero() {
+		approvalAppliedAt = &request.ApprovalAppliedAt
+	}
 	return SafeSegmentChangeRequest{
 		ID: request.ID, ScopeID: request.ScopeID, ChangeType: request.ChangeType, SubjectID: request.SubjectID,
 		SubjectVersion: request.SubjectVersion.Value(), RequestedEffectiveDate: dateOnly(request.RequestedEffectiveDate), ApprovalRequestID: request.ApprovalRequestID,
+		ProposedFingerprint: request.ProposedFingerprint,
+		ApprovalDecisionID:  approvalDecisionID, ApprovalPolicyVersion: request.ApprovalPolicyVersion, ApprovalDecisionVersion: request.ApprovalDecisionVersion,
+		ApprovalSubjectVersion: request.ApprovalSubjectVersion.Value(), ApprovalCandidateFingerprint: request.ApprovalCandidateFingerprint, ApprovalApproverUserID: approvalApproverUserID,
+		ApprovalDecidedAt: approvalDecidedAt, ApprovalAppliedAt: approvalAppliedAt, AppliedSubjectVersion: request.AppliedSubjectVersion.Value(), ResultingSubjectVersion: request.ResultingSubjectVersion.Value(),
 		ApprovalStatus: request.ApprovalStatus, ApplicationStatus: request.ApplicationStatus, ValidationOutcome: request.ValidationOutcome,
 		ConflictCode: request.ConflictCode, RejectionReason: request.RejectionReason, NextAction: request.NextAction,
 		ProposedChange: request.ProposedChange.Canonical(request.ChangeType), Version: request.Version, RevisionNumber: request.RevisionNumber,
@@ -282,6 +363,7 @@ type SegmentChangeRequestMutation struct {
 }
 
 type SegmentChangeRequestRepository interface {
+	Get(context.Context, uuid.UUID) (SegmentChangeRequest, error)
 	CommitSegmentChangeRequest(context.Context, SegmentChangeRequestMutation) error
 }
 

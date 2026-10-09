@@ -59,6 +59,9 @@ func TestSegmentChangeRequestCapturesDefinitionWithoutMutatingSubject(t *testing
 	if result.SegmentChangeRequest.ApprovalStatus != SegmentChangeRequestApprovalPending || result.SegmentChangeRequest.ApplicationStatus != SegmentChangeRequestApplicationOpen || result.SegmentChangeRequest.NextAction != SegmentChangeRequestNextAction {
 		t.Fatalf("request lifecycle = %#v", result.SegmentChangeRequest)
 	}
+	if result.SegmentChangeRequest.ApprovalDecisionID != nil || result.SegmentChangeRequest.ApprovalApproverUserID != nil || result.SegmentChangeRequest.ApprovalDecidedAt != nil || result.SegmentChangeRequest.ApprovalAppliedAt != nil {
+		t.Fatalf("pending request exposed unset approval evidence = %#v", result.SegmentChangeRequest)
+	}
 	unchanged, err := definitions.Get(context.Background(), definition.ID)
 	if err != nil {
 		t.Fatal(err)

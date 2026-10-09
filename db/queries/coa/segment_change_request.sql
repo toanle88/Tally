@@ -1,6 +1,9 @@
 -- name: GetSegmentChangeRequest :one
 SELECT segment_change_request_id, scope_id, change_type, subject_id, subject_version,
-       requested_effective_date, approval_request_id, approval_status, application_status,
+       requested_effective_date, approval_request_id, approval_decision_id, approval_policy_version,
+       approval_decision_version, approval_subject_version, approval_candidate_fingerprint,
+       approval_approver_user_id, approval_decided_at, approval_applied_at, applied_subject_version,
+       resulting_subject_version, decision_fingerprint, approval_status, application_status,
        validation_outcome, conflict_code, rejection_reason, next_action, proposed_change,
        subject_fingerprint, proposed_fingerprint, aggregate_version, revision_number,
        created_by, created_at, updated_at, last_audit_reference
@@ -9,7 +12,10 @@ WHERE segment_change_request_id = sqlc.arg(segment_change_request_id);
 
 -- name: ListSegmentChangeRequests :many
 SELECT segment_change_request_id, scope_id, change_type, subject_id, subject_version,
-       requested_effective_date, approval_request_id, approval_status, application_status,
+       requested_effective_date, approval_request_id, approval_decision_id, approval_policy_version,
+       approval_decision_version, approval_subject_version, approval_candidate_fingerprint,
+       approval_approver_user_id, approval_decided_at, approval_applied_at, applied_subject_version,
+       resulting_subject_version, decision_fingerprint, approval_status, application_status,
        validation_outcome, conflict_code, rejection_reason, next_action, proposed_change,
        subject_fingerprint, proposed_fingerprint, aggregate_version, revision_number,
        created_by, created_at, updated_at, last_audit_reference

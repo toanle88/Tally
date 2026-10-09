@@ -22,21 +22,22 @@ import (
 
 type IdentityHandler struct {
 	generated.UnimplementedHandler
-	SegmentDefinitionService            *coa.SegmentDefinitionService
-	SegmentValueService                 *coa.SegmentValueService
-	SegmentChangeRequestService         *coa.SegmentChangeRequestService
-	SegmentCombinationValidationService *coa.SegmentCombinationValidationService
-	Service                             *identity.UserService
-	RoleService                         *identity.RoleService
-	SegregationRuleService              *identity.SegregationRuleService
-	EmergencyAccessService              *identity.EmergencyAccessService
-	OrganizationService                 *organization.LegalEntityService
-	PartyService                        *organization.PartyService
-	CustomerProfileService              *organization.CustomerProfileService
-	VendorProfileService                *organization.VendorProfileService
-	FiscalCalendarService               *organization.FiscalCalendarService
-	PublicationService                  *organization.MasterDataPublicationService
-	Instrumentation                     *telemetry.Instrumentation
+	SegmentDefinitionService             *coa.SegmentDefinitionService
+	SegmentValueService                  *coa.SegmentValueService
+	SegmentChangeRequestService          *coa.SegmentChangeRequestService
+	SegmentChangeApprovalDecisionService *coa.SegmentChangeApprovalDecisionService
+	SegmentCombinationValidationService  *coa.SegmentCombinationValidationService
+	Service                              *identity.UserService
+	RoleService                          *identity.RoleService
+	SegregationRuleService               *identity.SegregationRuleService
+	EmergencyAccessService               *identity.EmergencyAccessService
+	OrganizationService                  *organization.LegalEntityService
+	PartyService                         *organization.PartyService
+	CustomerProfileService               *organization.CustomerProfileService
+	VendorProfileService                 *organization.VendorProfileService
+	FiscalCalendarService                *organization.FiscalCalendarService
+	PublicationService                   *organization.MasterDataPublicationService
+	Instrumentation                      *telemetry.Instrumentation
 }
 
 func (handler IdentityHandler) IamManageUsers(ctx context.Context, request *generated.IamManageUsersCommandRequest, params generated.IamManageUsersParams) (generated.IamManageUsersRes, error) {

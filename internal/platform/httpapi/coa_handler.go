@@ -46,6 +46,19 @@ type coaSegmentChangeRequestCommandData struct {
 	ProposedChange         json.RawMessage `json:"proposedChange"`
 }
 
+type coaSegmentChangeApprovalDecisionCommandData struct {
+	SegmentChangeRequestID string `json:"segmentChangeRequestId"`
+	Outcome                string `json:"outcome"`
+	ApprovalRequestID      string `json:"approvalRequestId"`
+	DecisionID             string `json:"decisionId"`
+	PolicyVersion          string `json:"policyVersion"`
+	DecisionVersion        int64  `json:"decisionVersion"`
+	SubjectVersion         int64  `json:"subjectVersion"`
+	CandidateFingerprint   string `json:"candidateFingerprint"`
+	ApproverUserID         string `json:"approverUserId"`
+	DecidedAt              string `json:"decidedAt"`
+}
+
 type coaSegmentChangeProposalData struct {
 	Action              string  `json:"action"`
 	SegmentDefinitionID string  `json:"segmentDefinitionId"`
@@ -209,6 +222,37 @@ func (handler IdentityHandler) CoaRequestSegmentChanges(ctx context.Context, req
 		return mapCoaSegmentChangeRequestError(err, correlationID), nil
 	}
 	return establishedCoaSegmentChangeRequestResult(result, correlationID), nil
+}
+
+func (handler IdentityHandler) CoaApplySegmentChangeApprovalDecision(ctx context.Context, request *generated.CommandRequest, params generated.CoaApplySegmentChangeApprovalDecisionParams) (generated.CoaApplySegmentChangeApprovalDecisionRes, error) {
+	correlationID := correlationFromCoaApprovalParams(params)
+	if handler.SegmentChangeApprovalDecisionService == nil {
+		return coaApprovalDecisionProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The segment-change approval application service is unavailable.", correlationID), nil
+	}
+	actor, ok := identity.ActorFromContext(ctx)
+	if !ok {
+		return coaApprovalDecisionProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The applying actor is not authorized.", correlationID), nil
+	}
+	if request == nil || request.CommandId == (generated.UUID{}) || !request.AccountingScopeId.Set || uuid.UUID(request.AccountingScopeId.Value) == uuid.Nil {
+		return coaApprovalDecisionProblem(http.StatusBadRequest, "INVALID_REQUEST", "The approval decision command is invalid and requires an accounting scope.", correlationID), nil
+	}
+	data, err := json.Marshal(request.Data)
+	if err != nil {
+		return coaApprovalDecisionProblem(http.StatusBadRequest, "INVALID_REQUEST", "The approval decision data is invalid.", correlationID), nil
+	}
+	var payload coaSegmentChangeApprovalDecisionCommandData
+	if err := json.Unmarshal(data, &payload); err != nil {
+		return coaApprovalDecisionProblem(http.StatusBadRequest, "INVALID_REQUEST", "The approval decision data is invalid.", correlationID), nil
+	}
+	command, err := coaSegmentChangeApprovalDecisionCommandFromTransport(request, params, payload, correlationID)
+	if err != nil {
+		return coaApprovalDecisionProblem(http.StatusBadRequest, "INVALID_REQUEST", "The approval decision data is invalid.", correlationID), nil
+	}
+	result, err := handler.SegmentChangeApprovalDecisionService.Execute(ctx, coa.Actor{UserID: actor.UserID, SubjectReference: actor.UserID.String()}, command)
+	if err != nil {
+		return mapCoaSegmentChangeApprovalDecisionError(err, correlationID), nil
+	}
+	return establishedCoaSegmentChangeApprovalDecisionResult(result, correlationID), nil
 }
 
 func coaSegmentDefinitionCommandFromTransport(request *generated.CommandRequest, params generated.CoaMaintainSegmentDefinitionsParams, payload coaSegmentDefinitionCommandData, correlationID uuid.UUID) (coa.SegmentDefinitionCommand, error) {
@@ -386,6 +430,40 @@ func coaSegmentChangeRequestCommandFromTransport(request *generated.CommandReque
 	return command, nil
 }
 
+func coaSegmentChangeApprovalDecisionCommandFromTransport(request *generated.CommandRequest, params generated.CoaApplySegmentChangeApprovalDecisionParams, payload coaSegmentChangeApprovalDecisionCommandData, correlationID uuid.UUID) (coa.SegmentChangeApprovalDecisionCommand, error) {
+	command := coa.SegmentChangeApprovalDecisionCommand{
+		ScopeID: uuid.UUID(request.AccountingScopeId.Value), Outcome: payload.Outcome,
+		IdempotencyKey: params.IdempotencyKey, CorrelationID: correlationID.String(), CausationID: uuid.UUID(request.CommandId).String(),
+		Approval: coa.SegmentChangeApprovalDecisionReference{PolicyVersion: payload.PolicyVersion, DecisionVersion: payload.DecisionVersion, CandidateFingerprint: payload.CandidateFingerprint},
+	}
+	var err error
+	command.SegmentChangeRequestID, err = uuid.Parse(strings.TrimSpace(payload.SegmentChangeRequestID))
+	if err != nil {
+		return command, err
+	}
+	command.Approval.ApprovalRequestID, err = uuid.Parse(strings.TrimSpace(payload.ApprovalRequestID))
+	if err != nil {
+		return command, err
+	}
+	command.Approval.DecisionID, err = uuid.Parse(strings.TrimSpace(payload.DecisionID))
+	if err != nil {
+		return command, err
+	}
+	command.Approval.SubjectVersion, err = aggregateversion.FromInt64(payload.SubjectVersion)
+	if err != nil {
+		return command, err
+	}
+	command.Approval.ApproverUserID, err = uuid.Parse(strings.TrimSpace(payload.ApproverUserID))
+	if err != nil {
+		return command, err
+	}
+	command.Approval.DecidedAt, err = time.Parse(time.RFC3339, strings.TrimSpace(payload.DecidedAt))
+	if err != nil {
+		return command, err
+	}
+	return command, nil
+}
+
 func parseCoaDate(value string) (time.Time, error) {
 	parsed, err := time.Parse("2006-01-02", strings.TrimSpace(value))
 	if err != nil {
@@ -416,6 +494,13 @@ func correlationFromCoaValidationParams(params generated.CoaValidateSegmentCombi
 }
 
 func correlationFromCoaChangeRequestParams(params generated.CoaRequestSegmentChangesParams) uuid.UUID {
+	if params.XCorrelationID.Set {
+		return uuid.UUID(params.XCorrelationID.Value)
+	}
+	return uuid.New()
+}
+
+func correlationFromCoaApprovalParams(params generated.CoaApplySegmentChangeApprovalDecisionParams) uuid.UUID {
 	if params.XCorrelationID.Set {
 		return uuid.UUID(params.XCorrelationID.Value)
 	}
@@ -505,6 +590,29 @@ func establishedCoaSegmentChangeRequestResult(result coa.SegmentChangeRequestCom
 	return &generated.EstablishedResult{
 		Status: "established", AggregateId: generated.UUID(result.SegmentChangeRequest.ID), AggregateVersion: int(result.SegmentChangeRequest.Version.Value()),
 		CorrelationId: generated.UUID(correlationID), Links: generated.Links{Self: "/api/v1/coa-segments/actions/request-segment-changes"}, Data: data,
+	}
+}
+
+func establishedCoaSegmentChangeApprovalDecisionResult(result coa.SegmentChangeApprovalDecisionResult, correlationID uuid.UUID) *generated.EstablishedResult {
+	data := generated.EstablishedResultData{}
+	data["segmentChangeRequest"] = mustRaw(result.SegmentChangeRequest)
+	data["outcome"] = mustRaw(result.Outcome)
+	data["applicationStatus"] = mustRaw(result.ApplicationStatus)
+	data["resultingSubjectVersion"] = mustRaw(result.ResultingSubjectVersion)
+	data["appliedSubjectVersion"] = mustRaw(result.AppliedSubjectVersion)
+	data["effectiveDateResult"] = mustRaw(result.EffectiveDateResult)
+	data["conflictCode"] = mustRaw(result.ConflictCode)
+	data["rejectionReason"] = mustRaw(result.RejectionReason)
+	data["approval"] = mustRaw(result.Approval)
+	data["approvalRequestId"] = mustRaw(result.Approval.ApprovalRequestID.String())
+	data["approvalDecisionId"] = mustRaw(result.Approval.DecisionID.String())
+	data["decisionReference"] = mustRaw(result.DecisionReference.String())
+	data["policyReference"] = mustRaw(result.PolicyReference)
+	data["validationOutcome"] = mustRaw(result.ValidationOutcome)
+	data["replayed"] = mustRaw(result.Replayed)
+	return &generated.EstablishedResult{
+		Status: "established", AggregateId: generated.UUID(result.SegmentChangeRequest.ID), AggregateVersion: int(result.SegmentChangeRequest.Version.Value()),
+		CorrelationId: generated.UUID(correlationID), Links: generated.Links{Self: "/api/v1/coa-segments/actions/apply-segment-change-approval-decision"}, Data: data,
 	}
 }
 
@@ -688,6 +796,60 @@ func coaChangeRequestProblem(status int, code, detail string, correlationID uuid
 		return &value
 	default:
 		value := generated.CoaRequestSegmentChangesServiceUnavailable(problem)
+		return &value
+	}
+}
+
+func mapCoaSegmentChangeApprovalDecisionError(err error, correlationID uuid.UUID) generated.CoaApplySegmentChangeApprovalDecisionRes {
+	switch {
+	case errors.Is(err, coa.ErrSegmentChangeApprovalDecisionAuthorizationUnavailable):
+		return coaApprovalDecisionProblem(http.StatusServiceUnavailable, "POLICY_UNAVAILABLE", "The authorization policy could not be evaluated. Retry later.", correlationID)
+	case errors.Is(err, coa.ErrSegmentChangeApprovalDecisionAuthorizationStale):
+		return coaApprovalDecisionProblem(http.StatusConflict, "POLICY_STALE", "The authorization policy changed. Refresh and retry.", correlationID)
+	case errors.Is(err, coa.ErrSegmentChangeApprovalDecisionAuthorizationDenied):
+		return coaApprovalDecisionProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The applying actor is outside the approved COA scope.", correlationID)
+	case errors.Is(err, coa.ErrSegmentChangeApprovalDecisionIdempotencyConflict):
+		return coaApprovalDecisionProblem(http.StatusConflict, "IDEMPOTENCY_CONFLICT", "The idempotency key was already used for different approval-decision data.", correlationID)
+	case errors.Is(err, coa.ErrSegmentChangeApprovalDecisionCommandInProgress):
+		return coaApprovalDecisionProblem(http.StatusConflict, "COMMAND_IN_PROGRESS", "The approval decision is still being finalized. Retry with the same idempotency key.", correlationID)
+	case errors.Is(err, coa.ErrSegmentChangeApprovalDecisionNotFound):
+		return coaApprovalDecisionProblem(http.StatusConflict, "REQUEST_NOT_FOUND", "The segment-change request does not exist.", correlationID)
+	case errors.Is(err, coa.ErrSegmentChangeApprovalDecisionDuplicate):
+		return coaApprovalDecisionProblem(http.StatusConflict, "DUPLICATE_DECISION", "The segment-change request already has a different terminal approval decision.", correlationID)
+	case errors.Is(err, coa.ErrSegmentChangeApprovalDecisionReferenceInvalid):
+		return coaApprovalDecisionProblem(http.StatusUnprocessableEntity, "INVALID_APPROVAL_REFERENCE", "The Workflow approval decision does not match the stored segment-change proposal.", correlationID)
+	case errors.Is(err, coa.ErrSegmentChangeApprovalDecisionSubjectConflict):
+		return coaApprovalDecisionProblem(http.StatusConflict, "SUBJECT_CONFLICT", "The current COA subject changed while the approval decision was being applied.", correlationID)
+	case errors.Is(err, coa.ErrSegmentDefinitionDuplicate), errors.Is(err, coa.ErrSegmentValueDuplicate):
+		return coaApprovalDecisionProblem(http.StatusConflict, "POLICY_CONFLICT", "The approved change conflicts with another effective COA definition or value.", correlationID)
+	case errors.Is(err, coa.ErrSegmentChangeRequestUnsupportedSubject):
+		return coaApprovalDecisionProblem(http.StatusUnprocessableEntity, "UNSUPPORTED_SUBJECT", "This COA application slice supports only existing segment definitions and values.", correlationID)
+	case errors.Is(err, coa.ErrSegmentChangeApprovalDecisionInvalid):
+		return coaApprovalDecisionProblem(http.StatusBadRequest, "INVALID_REQUEST", "The approval decision command is invalid.", correlationID)
+	case errors.Is(err, coa.ErrInvalidSegmentChangeRequest), errors.Is(err, coa.ErrSegmentChangeApprovalDecisionDurableCommandFailed):
+		return coaApprovalDecisionProblem(http.StatusUnprocessableEntity, "VALIDATION_FAILED", "The approval decision violates a COA rule.", correlationID)
+	default:
+		return coaApprovalDecisionProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The segment-change approval decision could not be completed.", correlationID)
+	}
+}
+
+func coaApprovalDecisionProblem(status int, code, detail string, correlationID uuid.UUID) generated.CoaApplySegmentChangeApprovalDecisionRes {
+	problem := generated.ProblemDetails{Type: "https://tally.local/problems/" + code, Title: http.StatusText(status), Status: status, Code: code, Detail: detail, CorrelationId: generated.UUID(correlationID)}
+	switch status {
+	case http.StatusBadRequest:
+		value := generated.CoaApplySegmentChangeApprovalDecisionBadRequest(problem)
+		return &value
+	case http.StatusForbidden:
+		value := generated.CoaApplySegmentChangeApprovalDecisionForbidden(problem)
+		return &value
+	case http.StatusConflict:
+		value := generated.CoaApplySegmentChangeApprovalDecisionConflict(problem)
+		return &value
+	case http.StatusUnprocessableEntity:
+		value := generated.CoaApplySegmentChangeApprovalDecisionUnprocessableEntity(problem)
+		return &value
+	default:
+		value := generated.CoaApplySegmentChangeApprovalDecisionServiceUnavailable(problem)
 		return &value
 	}
 }

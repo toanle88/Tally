@@ -9,28 +9,39 @@ import (
 )
 
 type CoaSegmentChangeRequest struct {
-	SegmentChangeRequestID pgtype.UUID
-	ScopeID                pgtype.UUID
-	ChangeType             string
-	SubjectID              pgtype.UUID
-	SubjectVersion         int64
-	RequestedEffectiveDate pgtype.Date
-	ApprovalRequestID      pgtype.UUID
-	ApprovalStatus         string
-	ApplicationStatus      string
-	ValidationOutcome      string
-	ConflictCode           pgtype.Text
-	RejectionReason        pgtype.Text
-	NextAction             string
-	ProposedChange         []byte
-	SubjectFingerprint     string
-	ProposedFingerprint    string
-	AggregateVersion       int64
-	RevisionNumber         int64
-	CreatedBy              pgtype.UUID
-	CreatedAt              pgtype.Timestamptz
-	UpdatedAt              pgtype.Timestamptz
-	LastAuditReference     pgtype.UUID
+	SegmentChangeRequestID       pgtype.UUID
+	ScopeID                      pgtype.UUID
+	ChangeType                   string
+	SubjectID                    pgtype.UUID
+	SubjectVersion               int64
+	RequestedEffectiveDate       pgtype.Date
+	ApprovalRequestID            pgtype.UUID
+	ApprovalStatus               string
+	ApplicationStatus            string
+	ValidationOutcome            string
+	ConflictCode                 pgtype.Text
+	RejectionReason              pgtype.Text
+	NextAction                   string
+	ProposedChange               []byte
+	SubjectFingerprint           string
+	ProposedFingerprint          string
+	AggregateVersion             int64
+	RevisionNumber               int64
+	CreatedBy                    pgtype.UUID
+	CreatedAt                    pgtype.Timestamptz
+	UpdatedAt                    pgtype.Timestamptz
+	LastAuditReference           pgtype.UUID
+	ApprovalDecisionID           pgtype.UUID
+	ApprovalPolicyVersion        pgtype.Text
+	ApprovalDecisionVersion      pgtype.Int8
+	ApprovalSubjectVersion       pgtype.Int8
+	ApprovalCandidateFingerprint pgtype.Text
+	ApprovalApproverUserID       pgtype.UUID
+	ApprovalDecidedAt            pgtype.Timestamptz
+	ApprovalAppliedAt            pgtype.Timestamptz
+	AppliedSubjectVersion        pgtype.Int8
+	ResultingSubjectVersion      pgtype.Int8
+	DecisionFingerprint          pgtype.Text
 }
 
 type CoaSegmentDefinition struct {

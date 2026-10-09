@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { coaMaintainSegmentDefinitions, coaMaintainSegmentValues, coaValidateSegmentCombinations } from '@/generated/api/sdk.gen'
@@ -50,6 +50,18 @@ export type SegmentChangeRequestRecord = {
   subjectVersion: number
   requestedEffectiveDate: string
   approvalRequestId: string
+  proposedFingerprint?: string
+  approvalDecisionId?: string
+  approvalPolicyVersion?: string
+  approvalDecisionVersion?: number
+  approvalSubjectVersion?: number
+  approvalCandidateFingerprint?: string
+  approvalApproverUserId?: string
+  approvalDecidedAt?: string
+  approvalAppliedAt?: string
+  resultingSubjectVersion?: number
+  appliedSubjectVersion?: number
+  effectiveDateResult?: string
   approvalStatus: string
   applicationStatus: string
   validationOutcome: string
@@ -140,6 +152,7 @@ const initialSegmentValues: SegmentValueRecord[] = [
 
 const safeReadAdapter = new Map(initialSegmentDefinitions.map((record) => [record.id, record]))
 const safeValueReadAdapter = new Map(initialSegmentValues.map((record) => [record.id, record]))
+const safeChangeRequestReadAdapter = new Map<string, SegmentChangeRequestRecord>()
 
 export function readSafeSegmentDefinitions(scopeId: string): SegmentDefinitionRecord[] {
   return Array.from(safeReadAdapter.values())
@@ -160,6 +173,14 @@ export function readSafeSegmentValues(scopeId: string, segmentDefinitionId?: str
   return Array.from(safeValueReadAdapter.values())
     .filter((record) => record.scopeId === scopeId && (!segmentDefinitionId || record.segmentDefinitionId === segmentDefinitionId))
     .sort((left, right) => left.value.localeCompare(right.value) || left.effectiveDateFrom.localeCompare(right.effectiveDateFrom))
+}
+
+export function readSafeSegmentChangeRequests(scopeId: string): SegmentChangeRequestRecord[] {
+  return Array.from(safeChangeRequestReadAdapter.values()).filter((record) => record.scopeId === scopeId).sort((left, right) => right.requestedEffectiveDate.localeCompare(left.requestedEffectiveDate) || left.id.localeCompare(right.id))
+}
+
+export function upsertSafeSegmentChangeRequest(record: SegmentChangeRequestRecord) {
+  safeChangeRequestReadAdapter.set(record.id, { ...record, proposedChange: { ...record.proposedChange } })
 }
 
 function upsertSafeSegmentValue(record: SegmentValueRecord) {
@@ -202,6 +223,7 @@ export function CoaSegmentWorklist() {
   const { currentScope } = useScopeContext()
   const [search, setSearch] = useState('')
   const records = useMemo(() => currentScope ? readSafeSegmentDefinitions(currentScope.id) : [], [currentScope?.id])
+  const changeRequests = useMemo(() => currentScope ? readSafeSegmentChangeRequests(currentScope.id) : [], [currentScope?.id])
   const rows = useMemo(() => {
     const query = search.trim().toLowerCase()
     if (!query) return records
@@ -228,16 +250,38 @@ export function CoaSegmentWorklist() {
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end"><Field id="coa-segment-search" label="Search segment definitions" placeholder="Type, code, name, or value" value={search} onChange={(event) => setSearch(event.target.value)} /><p className="text-sm text-base-content/70" role="status" aria-live="polite">{rows.length} record{rows.length === 1 ? '' : 's'} found.</p></div>
       <div className="mt-6"><DataTable caption="Safe COA segment-definition projections" columns={columns} rows={rows} getRowKey={(record) => record.id} emptyMessage="No segment definitions match this scope and search." /></div>
     </Panel>
+    <Panel title="Governed segment-change decisions" description="Safe local/read-adapter projections returned by the request and approval-application commands. No restricted Workflow values are shown.">
+      {changeRequests.length ? <ul className="divide-y divide-base-300" aria-label="Governed segment-change decisions">{changeRequests.map((request) => <li key={request.id} className="flex flex-wrap items-center justify-between gap-4 py-4"><div><RouterLink className="link link-primary font-semibold" to={`/coa-segments/coa-scr-04?requestId=${request.id}&changeType=${request.changeType}&subjectId=${request.subjectId}`}>{request.id}</RouterLink><p className="text-sm text-base-content/70">{request.changeType} · subject v{request.subjectVersion} · requested {request.requestedEffectiveDate}</p></div><div className="text-right text-sm"><p>{request.approvalStatus} · {request.applicationStatus}</p><p className="text-base-content/70">Effective-date result: {request.effectiveDateResult ?? 'awaiting decision'}</p><p className="text-base-content/70">Next action: {request.nextAction}</p></div></li>)}</ul> : <p className="text-sm text-base-content/70">No governed segment-change decisions are present in this local safe adapter.</p>}
+    </Panel>
   </section>
 }
 
 export function CoaSegmentDefinitionRecord() {
-  const { currentScope, setHasUnsavedChanges } = useScopeContext()
-  const [params, setParams] = useSearchParams()
-  const navigate = useNavigate()
+  const { currentScope } = useScopeContext()
+  const [params] = useSearchParams()
   const isNew = params.get('new') === 'true'
   const selected = currentScope ? readSafeSegmentDefinitions(currentScope.id).find((record) => record.id === params.get('segmentDefinitionId')) : undefined
   const initial = selected ?? (isNew ? undefined : currentScope ? readSafeSegmentDefinitions(currentScope.id)[0] : undefined)
+  const [notice, setNotice] = useState('Review the current safe projection and aggregate version before submitting a material change.')
+
+  return <CoaSegmentDefinitionRecordForm
+    key={`${currentScope?.id ?? 'none'}:${initial?.id ?? 'new'}:${initial?.version ?? 0}`}
+    initial={initial}
+    notice={notice}
+    setNotice={setNotice}
+  />
+}
+
+type CoaSegmentDefinitionRecordFormProps = {
+  initial?: SegmentDefinitionRecord
+  notice: string
+  setNotice: (notice: string) => void
+}
+
+function CoaSegmentDefinitionRecordForm({ initial, notice, setNotice }: CoaSegmentDefinitionRecordFormProps) {
+  const { currentScope, setHasUnsavedChanges } = useScopeContext()
+  const [, setParams] = useSearchParams()
+  const navigate = useNavigate()
   const [record, setRecord] = useState<SegmentDefinitionRecord | undefined>(initial)
   const [segmentType, setSegmentType] = useState(initial?.segmentType ?? 'department')
   const [code, setCode] = useState(initial?.code ?? '')
@@ -245,19 +289,8 @@ export function CoaSegmentDefinitionRecord() {
   const [status, setStatus] = useState<SegmentDefinitionStatus>(initial?.status ?? 'draft')
   const [effectiveDateFrom, setEffectiveDateFrom] = useState(initial?.effectiveDateFrom ?? '2026-01-01')
   const [effectiveDateTo, setEffectiveDateTo] = useState(initial?.effectiveDateTo ?? '')
-  const [notice, setNotice] = useState('Review the current safe projection and aggregate version before submitting a material change.')
   const [validationError, setValidationError] = useState('')
   const [saving, setSaving] = useState(false)
-
-  useEffect(() => {
-    setRecord(initial)
-    setSegmentType(initial?.segmentType ?? 'department')
-    setCode(initial?.code ?? '')
-    setName(initial?.name ?? '')
-    setStatus(initial?.status ?? 'draft')
-    setEffectiveDateFrom(initial?.effectiveDateFrom ?? '2026-01-01')
-    setEffectiveDateTo(initial?.effectiveDateTo ?? '')
-  }, [initial?.id, initial?.version, currentScope?.id])
 
   const save = async () => {
     setValidationError('')
@@ -373,32 +406,43 @@ export function CoaSegmentDefinitionRecord() {
 }
 
 export function CoaSegmentValueRecord() {
-  const { currentScope, setHasUnsavedChanges } = useScopeContext()
-  const [params, setParams] = useSearchParams()
-  const navigate = useNavigate()
+  const { currentScope } = useScopeContext()
+  const [params] = useSearchParams()
   const isNew = params.get('new') === 'true'
   const requestedDefinitionId = params.get('segmentDefinitionId')
   const selectedValue = currentScope ? readSafeSegmentValues(currentScope.id, requestedDefinitionId || undefined).find((record) => record.id === params.get('segmentValueId')) : undefined
   const parent = currentScope ? readSafeSegmentDefinitions(currentScope.id).find((record) => record.id === (selectedValue?.segmentDefinitionId ?? requestedDefinitionId)) ?? readSafeSegmentDefinitions(currentScope.id)[0] : undefined
   const initial = selectedValue ?? (isNew ? undefined : parent ? readSafeSegmentValues(parent.scopeId, parent.id)[0] : undefined)
+  const [notice, setNotice] = useState('Review the parent definition and aggregate version before submitting a material value change.')
+
+  return <CoaSegmentValueRecordForm
+    key={`${currentScope?.id ?? 'none'}:${parent?.id ?? 'none'}:${initial?.id ?? 'new'}:${initial?.version ?? 0}`}
+    initial={initial}
+    parent={parent}
+    notice={notice}
+    setNotice={setNotice}
+  />
+}
+
+type CoaSegmentValueRecordFormProps = {
+  initial?: SegmentValueRecord
+  parent?: SegmentDefinitionRecord
+  notice: string
+  setNotice: (notice: string) => void
+}
+
+function CoaSegmentValueRecordForm({ initial, parent, notice, setNotice }: CoaSegmentValueRecordFormProps) {
+  const { currentScope, setHasUnsavedChanges } = useScopeContext()
+  const [, setParams] = useSearchParams()
+  const navigate = useNavigate()
   const [record, setRecord] = useState<SegmentValueRecord | undefined>(initial)
   const [value, setValue] = useState(initial?.value ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
   const [status, setStatus] = useState<SegmentValueStatus>(initial?.status ?? 'draft')
   const [effectiveDateFrom, setEffectiveDateFrom] = useState(initial?.effectiveDateFrom ?? parent?.effectiveDateFrom ?? '2026-01-01')
   const [effectiveDateTo, setEffectiveDateTo] = useState(initial?.effectiveDateTo ?? '')
-  const [notice, setNotice] = useState('Review the parent definition and aggregate version before submitting a material value change.')
   const [validationError, setValidationError] = useState('')
   const [saving, setSaving] = useState(false)
-
-  useEffect(() => {
-    setRecord(initial)
-    setValue(initial?.value ?? '')
-    setDescription(initial?.description ?? '')
-    setStatus(initial?.status ?? 'draft')
-    setEffectiveDateFrom(initial?.effectiveDateFrom ?? parent?.effectiveDateFrom ?? '2026-01-01')
-    setEffectiveDateTo(initial?.effectiveDateTo ?? '')
-  }, [initial?.id, initial?.version, parent?.id, currentScope?.id])
 
   const save = async () => {
     setValidationError('')
@@ -571,30 +615,41 @@ function combinationErrorIssue(message: string, category: ValidationIssue['categ
   return { id: 'combination-request', category, code: 'validation-request', message, targetId: 'coa-combination-date', targetLabel: 'Validation request', nextAction: 'Review the current source state and retry with the same or a new idempotency identity.' }
 }
 
+function initialCombinationSelections(definitions: SegmentDefinitionRecord[]) {
+  const selectedDefinitions: Record<string, boolean> = {}
+  const selectedValues: Record<string, string> = {}
+  definitions.forEach((definition) => {
+    const values = readSafeSegmentValues(definition.scopeId, definition.id)
+    selectedDefinitions[definition.id] = values.length > 0
+    if (values[0]) selectedValues[definition.id] = values[0].id
+  })
+  return { selectedDefinitions, selectedValues }
+}
+
 export function CoaSegmentCombinationValidator() {
   const { currentScope } = useScopeContext()
   const definitions = useMemo(() => currentScope ? readSafeSegmentDefinitions(currentScope.id) : [], [currentScope?.id])
-  const [selectedDefinitions, setSelectedDefinitions] = useState<Record<string, boolean>>({})
-  const [selectedValues, setSelectedValues] = useState<Record<string, string>>({})
+  return <CoaSegmentCombinationValidatorForm
+    key={currentScope?.id ?? 'none'}
+    scopeId={currentScope?.id}
+    definitions={definitions}
+  />
+}
+
+type CoaSegmentCombinationValidatorFormProps = {
+  scopeId?: string
+  definitions: SegmentDefinitionRecord[]
+}
+
+function CoaSegmentCombinationValidatorForm({ scopeId, definitions }: CoaSegmentCombinationValidatorFormProps) {
+  const initialSelections = initialCombinationSelections(definitions)
+  const [selectedDefinitions, setSelectedDefinitions] = useState<Record<string, boolean>>(initialSelections.selectedDefinitions)
+  const [selectedValues, setSelectedValues] = useState<Record<string, string>>(initialSelections.selectedValues)
   const [businessDate, setBusinessDate] = useState('2026-01-01')
   const [result, setResult] = useState<CombinationValidationView | undefined>()
   const [localIssues, setLocalIssues] = useState<ValidationIssue[]>([])
   const [notice, setNotice] = useState('Select the proposed segment values and requested effective date before validating.')
   const [validating, setValidating] = useState(false)
-
-  useEffect(() => {
-    const nextDefinitions: Record<string, boolean> = {}
-    const nextValues: Record<string, string> = {}
-    definitions.forEach((definition) => {
-      const values = readSafeSegmentValues(definition.scopeId, definition.id)
-      nextDefinitions[definition.id] = values.length > 0
-      if (values[0]) nextValues[definition.id] = values[0].id
-    })
-    setSelectedDefinitions(nextDefinitions)
-    setSelectedValues(nextValues)
-    setResult(undefined)
-    setLocalIssues([])
-  }, [currentScope?.id])
 
   const selected = useMemo(() => definitions.filter((definition) => selectedDefinitions[definition.id]), [definitions, selectedDefinitions])
   const resultIssues = useMemo<ValidationIssue[]>(() => {
@@ -622,7 +677,7 @@ export function CoaSegmentCombinationValidator() {
   const validate = async () => {
     setLocalIssues([])
     setResult(undefined)
-    if (!currentScope) {
+    if (!scopeId) {
       setLocalIssues([combinationErrorIssue('Select an accounting scope before validating a segment combination.', 'authorization')])
       return
     }
@@ -644,7 +699,7 @@ export function CoaSegmentCombinationValidator() {
       const response = await coaValidateSegmentCombinations({
         body: {
           commandId: crypto.randomUUID(),
-          accountingScopeId: currentScope.id,
+          accountingScopeId: scopeId,
           businessDate,
           data: {
             segmentValues: chosen.map(({ definition, valueId }) => ({ segmentDefinitionId: definition.id, segmentValueId: valueId })),
