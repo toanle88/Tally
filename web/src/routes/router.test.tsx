@@ -91,6 +91,13 @@ describe('application router', () => {
     expect(screen.getByRole('note')).toHaveTextContent('Validation is read-only')
   })
 
+  it('supports direct entry to the COA segment change request screen', async () => {
+    renderRoute('/coa-segments/coa-scr-04')
+    expect(await screen.findByRole('heading', { name: 'Segment change request' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Request definition change' })).toBeInTheDocument()
+    expect(screen.getByRole('note')).toHaveTextContent('does not mutate the subject')
+  })
+
   it('updates active navigation and supports back navigation', async () => {
     const router = renderRoute('/')
     fireEvent.click(screen.getByRole('link', { name: 'Exceptions' }))

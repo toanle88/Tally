@@ -115,3 +115,58 @@ test('COA-SCR-03 displays a read-only validation result with source versions', a
   await expectNoDocumentHorizontalOverflow(page, 'COA-SCR-03 result')
   await expectNoAccessibilityViolations(page, 'COA-SCR-03 result')
 })
+
+test('COA-SCR-04 captures the Workflow reference and exposes a pending safe request', async ({ page }) => {
+  await page.route('**/api/v1/coa-segments/actions/request-segment-changes', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'established',
+        aggregateId: 'request-001',
+        aggregateVersion: 1,
+        processId: null,
+        correlationId: '00000000-0000-0000-0000-000000000001',
+        links: { self: '/api/v1/coa-segments/actions/request-segment-changes' },
+        data: {
+          segmentChangeRequest: {
+            id: 'request-001',
+            scopeId: 'scope-vietnam-statutory',
+            changeType: 'definition',
+            subjectId: 'segment-department-operations',
+            subjectVersion: 3,
+            requestedEffectiveDate: '2026-01-01',
+            approvalRequestId: '11111111-1111-4111-8111-111111111111',
+            approvalStatus: 'pending',
+            applicationStatus: 'not-applied',
+            validationOutcome: 'valid',
+            nextAction: 'await-approval',
+            proposedChange: { name: 'Operations and Shared Services' },
+            version: 1,
+            revisionNumber: 1,
+          },
+        },
+      }),
+    })
+  })
+  await page.goto('/coa-segments/coa-scr-04?changeType=definition&subjectId=segment-department-operations')
+
+  await expect(page.getByRole('heading', { name: 'Segment change request', level: 2 })).toBeVisible()
+  await expect(page.getByRole('note')).toContainText('does not mutate the subject')
+  await page.getByRole('button', { name: 'Request definition change' }).click()
+  await expect(page.getByRole('alert').filter({ hasText: 'valid Workflow approval-request reference' }).first()).toBeVisible()
+
+  const approvalReference = page.getByRole('textbox', { name: 'Workflow approval-request reference' })
+  await approvalReference.focus()
+  await expectVisibleFocus(approvalReference)
+  await approvalReference.fill('11111111-1111-4111-8111-111111111111')
+  await page.getByRole('textbox', { name: 'Name' }).fill('Operations and Shared Services')
+  await page.getByRole('button', { name: 'Request definition change' }).click()
+
+  await expect(page.getByRole('textbox', { name: 'Segment-change request reference' })).toHaveValue('request-001')
+  await expect(page.getByRole('textbox', { name: 'Approval status' })).toHaveValue('pending')
+  await expect(page.getByRole('textbox', { name: 'Application status' })).toHaveValue('not-applied')
+  await expect(page.locator('p[role="status"]')).toContainText('subject remains unchanged')
+  await expectNoDocumentHorizontalOverflow(page, 'COA-SCR-04 request')
+  await expectNoAccessibilityViolations(page, 'COA-SCR-04 request')
+})

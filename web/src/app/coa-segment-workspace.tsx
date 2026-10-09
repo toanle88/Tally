@@ -42,6 +42,25 @@ export type SegmentValueRecord = {
   revisionNumber: number
 }
 
+export type SegmentChangeRequestRecord = {
+  id: string
+  scopeId: string
+  changeType: 'definition' | 'value'
+  subjectId: string
+  subjectVersion: number
+  requestedEffectiveDate: string
+  approvalRequestId: string
+  approvalStatus: string
+  applicationStatus: string
+  validationOutcome: string
+  conflictCode?: string
+  rejectionReason?: string
+  nextAction: string
+  proposedChange: Record<string, unknown>
+  version: number
+  revisionNumber: number
+}
+
 const initialSegmentDefinitions: SegmentDefinitionRecord[] = [
   {
     id: 'segment-department-operations',
@@ -202,7 +221,7 @@ export function CoaSegmentWorklist() {
   return <section aria-labelledby="coa-worklist-title" className="space-y-6">
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div><p className="text-sm font-semibold uppercase tracking-wide text-primary">COA-WS-01</p><h2 id="coa-worklist-title" className="mt-1 text-2xl font-semibold">Segment administration worklist</h2><p className="mt-2 max-w-3xl text-base-content/75">Review safe local/read-adapter projections for the selected accounting scope. Open a definition or one of its values to maintain an authoritative record.</p></div>
-      <div className="flex flex-wrap gap-3"><RouterLink className="btn btn-outline min-h-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" to="/coa-segments/coa-scr-03">Validate combination</RouterLink><RouterLink className="btn btn-primary min-h-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" to="/coa-segments/coa-scr-01?new=true">Create segment definition</RouterLink></div>
+      <div className="flex flex-wrap gap-3"><RouterLink className="btn btn-outline min-h-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" to="/coa-segments/coa-scr-03">Validate combination</RouterLink><RouterLink className="btn btn-outline min-h-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" to="/coa-segments/coa-scr-04">Request segment change</RouterLink><RouterLink className="btn btn-primary min-h-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" to="/coa-segments/coa-scr-01?new=true">Create segment definition</RouterLink></div>
     </div>
     <p role="note" className="rounded-box border border-warning/40 bg-warning/10 p-4 text-sm">Read source: local safe adapter with synthetic records. No approved COA read endpoint exists yet; successful live mutations update this adapter with the returned safe projection.</p>
     <Panel title="Definitions and values in the selected scope" description="Segment type and code must remain unique across overlapping inclusive effective-date ranges. Values are unique within a parent definition across overlapping inclusive ranges.">
@@ -349,7 +368,7 @@ export function CoaSegmentDefinitionRecord() {
       <div className="mt-5 flex flex-wrap items-center gap-3"><StatusBadge state={statusState[status]} label={segmentStatusLabel(status)} announce /><span className="text-sm text-base-content/70">Version {record?.version ?? 0} · Approval: {record?.approvalStatus ?? 'not-required'} · Revision {record?.revisionNumber ?? 0} · Next action: {record?.nextAction ?? 'create'}</span></div>
       <div className="mt-5 flex flex-wrap gap-3"><Button onClick={() => void save()} loading={saving} disabled={disabled}>{record ? 'Save segment-definition revision' : 'Create segment definition'}</Button>{record ? <Button variant="ghost" onClick={() => navigate('/coa-segments/coa-ws-01')}>Cancel</Button> : null}</div>
     </Panel>
-    <Panel title="History and boundary" description="Established facts retain the COA source version used when they were created."><p className="text-sm text-base-content/75">Current safe projection: version {record?.version ?? 0}, revision {record?.revisionNumber ?? 0}. Values are maintained as children of this segment-definition aggregate.</p>{record ? <RouterLink className="link link-primary mt-3 inline-block" to={`/coa-segments/coa-scr-02?segmentDefinitionId=${record.id}`}>Maintain values for this definition</RouterLink> : null}</Panel>
+    <Panel title="History and boundary" description="Established facts retain the COA source version used when they were created."><p className="text-sm text-base-content/75">Current safe projection: version {record?.version ?? 0}, revision {record?.revisionNumber ?? 0}. Values are maintained as children of this segment-definition aggregate.</p>{record ? <div className="mt-3 flex flex-wrap gap-4"><RouterLink className="link link-primary" to={`/coa-segments/coa-scr-02?segmentDefinitionId=${record.id}`}>Maintain values for this definition</RouterLink><RouterLink className="link link-primary" to={`/coa-segments/coa-scr-04?changeType=definition&subjectId=${record.id}`}>Request a governed change</RouterLink></div> : null}</Panel>
   </section>
 }
 
@@ -496,7 +515,7 @@ export function CoaSegmentValueRecord() {
       <div className="mt-5 flex flex-wrap items-center gap-3"><StatusBadge state={statusState[status]} label={segmentStatusLabel(status)} announce /><span className="text-sm text-base-content/70">Version {record?.version ?? parent?.version ?? 0} · Approval: {record?.approvalStatus ?? 'not-required'} · Revision {record?.revisionNumber ?? parent?.revisionNumber ?? 0} · Next action: {record?.nextAction ?? 'create'}</span></div>
       <div className="mt-5 flex flex-wrap gap-3"><Button onClick={() => void save()} loading={saving} disabled={disabled || !parent}>{record ? 'Save segment-value revision' : 'Create segment value'}</Button>{record ? <Button variant="ghost" onClick={() => navigate(`/coa-segments/coa-scr-01?segmentDefinitionId=${record.segmentDefinitionId}`)}>Cancel</Button> : null}</div>
     </Panel>
-    <Panel title="History and boundary" description="A value mutation establishes a new revision of the owning segment-definition aggregate."><p className="text-sm text-base-content/75">The parent definition interval is the boundary for this value. Historical non-overlapping ranges are allowed; established value facts are corrected through a new lifecycle or effective-date revision.</p></Panel>
+    <Panel title="History and boundary" description="A value mutation establishes a new revision of the owning segment-definition aggregate."><p className="text-sm text-base-content/75">The parent definition interval is the boundary for this value. Historical non-overlapping ranges are allowed; established value facts are corrected through a new lifecycle or effective-date revision.</p>{record ? <RouterLink className="link link-primary mt-3 inline-block" to={`/coa-segments/coa-scr-04?changeType=value&subjectId=${record.id}`}>Request a governed change</RouterLink> : null}</Panel>
   </section>
 }
 

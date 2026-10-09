@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Epic | EP-COA-001 — COA segment configuration |
-| Status | User Story 1 implementation in progress; local verification evidence attached; live and release qualification remain open |
+| Status | User Stories 1 and 4 implementation in progress; local verification evidence attached; live and release qualification remain open |
 | Milestone | M1 — Identity and accounting configuration |
 | Dependencies | EP-OMD-001, EP-IAM-001; platform foundation is transitive through those dependencies |
 | Delivery items | DLV-FR-COA-001 through DLV-FR-COA-005 |
@@ -12,9 +12,9 @@
 | Authoritative records | SegmentDefinition, SegmentCombination, SegmentChangeRequest |
 | Exit evidence | Domain, persistence, API, authorization, audit, concurrency, UI, accessibility, and approved-decision application evidence for all five stories; deferred external and full-release qualification is not claimed |
 
-This document remains the epic planning artifact. User Story 1 now has a
-traceable implementation and local verification record below; epic-wide and
-unverified acceptance/qualification checkboxes remain open.
+This document remains the epic planning artifact. User Stories 1 and 4 now
+have traceable implementation and local verification records below; epic-wide
+and unverified acceptance/qualification checkboxes remain open.
 
 ## 1. Outcome
 
@@ -541,19 +541,19 @@ version.
 
 Acceptance criteria:
 
-- [ ] An authorized command creates a SegmentChangeRequest for the supported
+- [x] An authorized command creates a SegmentChangeRequest for the supported
   change type and subject, including the requested effective date and
   subject version required by FR-COA-004.
-- [ ] The request exposes its own reference, subject identity/version,
+- [x] The request exposes its own reference, subject identity/version,
   requested effective date, approval status, and any validation conflict or
   rejection without mutating the subject configuration prematurely.
-- [ ] A missing, unauthorized, stale, invalid, or unsupported subject is
+- [x] A missing, unauthorized, stale, invalid, or unsupported subject is
   rejected atomically with a typed result and no partial request or subject
   change.
-- [ ] Idempotency, correlation, explicit scope, authorization, and material
+- [x] Idempotency, correlation, explicit scope, authorization, and material
   action audit are enforced. A repeated command returns the established
   request; changed content under a reused identity returns a conflict.
-- [ ] Workflow remains the owner of the approval decision. COA records the
+- [x] Workflow remains the owner of the approval decision. COA records the
   approval request reference and exposes the current decision/application
   state without inventing a new approval policy.
 - [ ] COA-WS-01 and COA-SCR-04 show the requested change, subject version,
@@ -575,14 +575,80 @@ Suggested implementation steps:
 
 Required test evidence:
 
-- [ ] Domain tests for change types, subject/version capture, requested
+- [x] Domain tests for change types, subject/version capture, requested
   effective dates, lifecycle states, and conflict behavior.
 - [ ] Persistence tests for atomic request creation, uniqueness/fingerprint
   constraints, coa schema ownership, and rollback on audit/dependency failure.
-- [ ] API tests for authorization, scope, idempotency, typed conflicts,
+- [x] API tests for authorization, scope, idempotency, typed conflicts,
   correlation, audit evidence, and no premature subject mutation.
-- [ ] Component and Playwright tests for request review, approval status,
+- [x] Component and Playwright tests for request review, approval status,
   impact/exception presentation, keyboard behavior, and safe announcements.
+
+#### User Story 4 implementation evidence — 2026-10-07
+
+Implementation is on branch `feat/coa-request-segment-changes`.
+
+Approved implementation decisions recorded during delivery:
+
+- This slice supports governed requests for existing `SegmentDefinition` and
+  `SegmentValue` subjects. Combination and assignment requests return a typed
+  unsupported-subject result because their authoritative models and Workflow
+  contract are not defined in the approved M1 sources.
+- The command requires a Workflow-created `approvalRequestId`. COA validates
+  and records the opaque reference; it does not create approval policy,
+  decide the request, or implement Workflow.
+- `proposedChange` reuses the existing definition/value maintenance fields.
+  The request stores a canonical proposal snapshot and never mutates the
+  source subject. A value request captures the owning definition aggregate
+  version as its subject version.
+
+Implemented:
+
+- `internal/coa/segment_change_request.go` owns command validation, subject
+  version/fingerprint checks, lifecycle projection, authorization, idempotent
+  request creation, and audit evidence.
+- `internal/coa/postgres_segment_change_request_repository.go` persists the
+  request in the COA transaction, locks and re-reads the subject, writes the
+  audit reference, and coordinates durable idempotency. The memory repository
+  mirrors duplicate and rollback behavior for local/UI runtime use.
+- `db/migrations/coa/00003_create_segment_change_request_table.sql` adds the
+  COA-owned request table, status constraints, subject index, and pending
+  subject/proposal fingerprint uniqueness constraint. SQLC query source and
+  generated COA artifacts are present.
+- `internal/platform/httpapi/coa_handler.go` wires the existing
+  `CoaRequestSegmentChanges` operation and common command/result/problem
+  contracts. Runtime wiring uses the exact COA permission and the existing
+  audit boundary.
+- `COA-SCR-04` is registered and provides definition/value request entry,
+  Workflow reference capture, safe pending/not-applied projection, and an
+  explicit no-premature-mutation boundary. The screen still uses the existing
+  local safe adapter for reads because no approved COA request-read endpoint
+  exists.
+
+Verified locally:
+
+- `GOCACHE=/tmp/tally-go-cache go test ./...` — PASS.
+- `GOCACHE=/tmp/tally-go-cache go test -race ./internal/coa ./internal/platform/httpapi` — PASS.
+- `make db-migrate-validate`, `make db-migrate-check`, `make sqlc-compile`,
+  and `make sqlc-check` — PASS.
+- `GOCACHE=/tmp/tally-go-cache make api-generate-check`, `make api-ts-check`,
+  and `GOCACHE=/tmp/tally-go-cache OPENAPI_CHECK_TIMEOUT_SECONDS=180 make api-check` — PASS.
+- `pnpm exec tsc -p tsconfig.json --noEmit`, Playwright TypeScript checking,
+  `pnpm build`, focused Vitest (22 tests), and focused Playwright COA tests
+  (5 tests) — PASS.
+- The integration test source compiles with
+  `go test -tags=integration ./internal/platform/database -run '^$'` and
+  covers PostgreSQL atomicity, duplicate replay, and audit rollback.
+
+Qualification still open:
+
+- `make persistence-check` is blocked because the Docker daemon is unavailable;
+  clean PostgreSQL execution and the integration test runtime are not claimed.
+- `make db-sqlc-check` intentionally rejects the uncommitted generated COA
+  artifacts in this working tree; the deterministic `make sqlc-check` passed.
+- COA-WS-01 is not an authoritative request worklist yet, and impact analysis,
+  Workflow decision handling, and approved application remain outside this
+  story and belong to the approved follow-on contract/Story 5.
 
 ### User Story 5 — Apply segment-change approval decision
 
