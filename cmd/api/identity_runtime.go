@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/toanle88/Tally/internal/coa"
+	"github.com/toanle88/Tally/internal/gl"
 	"github.com/toanle88/Tally/internal/identity"
 	"github.com/toanle88/Tally/internal/organization"
 	"github.com/toanle88/Tally/internal/platform/httpapi"
@@ -35,6 +36,8 @@ const (
 	coaSegmentChangeRequestOperationID  = "coa.request-segment-changes.v1"
 	coaSegmentChangeApprovalOperationID = "coa.apply-segment-change-approval-decision.v1"
 	coaSegmentValidationOperationID     = "coa.validate-segment-combinations.v1"
+	glLedgerOperationID                 = "gl.maintain-ledgers.v1"
+	glAccountingBookOperationID         = "gl.maintain-accounting-books.v1"
 )
 
 func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
@@ -296,8 +299,36 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err != nil {
 		return identityUnavailableHandler("coa segment-combination validation service unavailable"), nil
 	}
+	glRepository, err := gl.NewPostgresConfigurationRepository(pool, postgresGLLedgerAuditWriter(auditWriter), postgresGLAccountingBookAuditWriter(auditWriter))
+	if err != nil {
+		return identityUnavailableHandler("general-ledger configuration persistence unavailable"), nil
+	}
+	glLedgerService, err := gl.NewLedgerServiceWithDurableIdempotency(
+		glRepository,
+		evaluatorGLLedgerAuthorizer{evaluator: policyEvaluator},
+		omdGLReferenceValidator{legalEntities: organizationService, fiscalCalendars: fiscalCalendarService},
+		gl.UnavailableApprovalValidator{},
+		&gl.MemoryLedgerAuditRecorder{},
+		time.Now,
+		gl.DurableLedgerServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, OperationID: glLedgerOperationID},
+	)
+	if err != nil {
+		return identityUnavailableHandler("general-ledger service unavailable"), nil
+	}
+	glAccountingBookService, err := gl.NewAccountingBookServiceWithDurableIdempotency(
+		glRepository,
+		evaluatorGLAccountingBookAuthorizer{evaluator: policyEvaluator},
+		omdGLReferenceValidator{legalEntities: organizationService, fiscalCalendars: fiscalCalendarService},
+		gl.UnavailableApprovalValidator{},
+		&gl.MemoryAccountingBookAuditRecorder{},
+		time.Now,
+		gl.DurableAccountingBookServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, OperationID: glAccountingBookOperationID},
+	)
+	if err != nil {
+		return identityUnavailableHandler("accounting-book service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -333,6 +364,60 @@ func postgresCoaAuditWriter(auditWriter identity.PostgresAuditWriter) coa.Postgr
 			ActorAuthenticationSubjectRef: record.ActorSubjectReference,
 			Action:                        record.Action,
 			ScopeIDs:                      []string{record.ScopeID.String()},
+			Permission:                    record.Permission,
+			PolicyReference:               record.PolicyReference,
+			PolicyVersion:                 record.PolicyVersion,
+			DecisionReference:             record.DecisionReference,
+			ApprovalRequestID:             record.ApprovalRequestID,
+			ApprovalDecisionID:            record.ApprovalDecisionID,
+			ApproverUserID:                record.ApproverUserID,
+			RevisionVersion:               record.RevisionNumber,
+			BeforeFingerprint:             record.BeforeFingerprint,
+			AfterFingerprint:              record.AfterFingerprint,
+			CorrelationID:                 record.CorrelationID,
+			CausationID:                   record.CausationID,
+		})
+	}
+}
+
+func postgresGLLedgerAuditWriter(auditWriter identity.PostgresAuditWriter) gl.PostgresLedgerAuditWriter {
+	return func(ctx context.Context, tx pgx.Tx, record gl.LedgerAuditRecord) (uuid.UUID, error) {
+		if auditWriter == nil {
+			return uuid.Nil, gl.ErrLedgerAuditUnavailable
+		}
+		return auditWriter(ctx, tx, identity.AuditRecord{
+			UserID:                        record.LedgerID,
+			ActorUserID:                   record.ActorUserID,
+			ActorAuthenticationSubjectRef: record.ActorSubjectReference,
+			Action:                        record.Action,
+			ScopeIDs:                      []string{record.AccountingScopeID.String()},
+			Permission:                    record.Permission,
+			PolicyReference:               record.PolicyReference,
+			PolicyVersion:                 record.PolicyVersion,
+			DecisionReference:             record.DecisionReference,
+			ApprovalRequestID:             record.ApprovalRequestID,
+			ApprovalDecisionID:            record.ApprovalDecisionID,
+			ApproverUserID:                record.ApproverUserID,
+			RevisionVersion:               record.RevisionNumber,
+			BeforeFingerprint:             record.BeforeFingerprint,
+			AfterFingerprint:              record.AfterFingerprint,
+			CorrelationID:                 record.CorrelationID,
+			CausationID:                   record.CausationID,
+		})
+	}
+}
+
+func postgresGLAccountingBookAuditWriter(auditWriter identity.PostgresAuditWriter) gl.PostgresAccountingBookAuditWriter {
+	return func(ctx context.Context, tx pgx.Tx, record gl.AccountingBookAuditRecord) (uuid.UUID, error) {
+		if auditWriter == nil {
+			return uuid.Nil, gl.ErrAccountingBookAuditUnavailable
+		}
+		return auditWriter(ctx, tx, identity.AuditRecord{
+			UserID:                        record.AccountingBookID,
+			ActorUserID:                   record.ActorUserID,
+			ActorAuthenticationSubjectRef: record.ActorSubjectReference,
+			Action:                        record.Action,
+			ScopeIDs:                      []string{record.AccountingScopeID.String()},
 			Permission:                    record.Permission,
 			PolicyReference:               record.PolicyReference,
 			PolicyVersion:                 record.PolicyVersion,
@@ -699,8 +784,32 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err != nil {
 		return identityUnavailableHandler("coa segment-combination validation service unavailable"), nil
 	}
+	glLedgerRepository := gl.NewMemoryLedgerRepository()
+	glLedgerService, err := gl.NewLedgerService(
+		glLedgerRepository,
+		permissiveGLLedgerAuthorizer{},
+		gl.AllowAllReferenceValidator{},
+		gl.AllowAllApprovalValidator{},
+		&gl.MemoryLedgerAuditRecorder{},
+		time.Now,
+	)
+	if err != nil {
+		return identityUnavailableHandler("general-ledger service unavailable"), nil
+	}
+	glAccountingBookRepository := gl.NewMemoryAccountingBookRepository(glLedgerRepository)
+	glAccountingBookService, err := gl.NewAccountingBookService(
+		glAccountingBookRepository,
+		permissiveGLAccountingBookAuthorizer{},
+		gl.AllowAllReferenceValidator{},
+		gl.AllowAllApprovalValidator{},
+		&gl.MemoryAccountingBookAuditRecorder{},
+		time.Now,
+	)
+	if err != nil {
+		return identityUnavailableHandler("accounting-book service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -728,6 +837,63 @@ type evaluatorOrganizationAuthorizer struct {
 
 type evaluatorCoaAuthorizer struct {
 	evaluator identity.AuthorizationEvaluator
+}
+
+type evaluatorGLLedgerAuthorizer struct {
+	evaluator identity.AuthorizationEvaluator
+}
+
+type evaluatorGLAccountingBookAuthorizer struct {
+	evaluator identity.AuthorizationEvaluator
+}
+
+func (authorizer evaluatorGLLedgerAuthorizer) AuthorizeLedger(ctx context.Context, actor gl.Actor, command gl.LedgerCommand, _ *gl.Ledger) (gl.AuthorizationDecision, error) {
+	if authorizer.evaluator == nil {
+		return gl.AuthorizationDecision{}, gl.ErrLedgerAuthorizationUnavailable
+	}
+	decision, err := authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{ActorID: actor.UserID, Permission: gl.LedgerManagementPermission, RequestedScopeIDs: []string{command.AccountingScopeID.String()}})
+	if err != nil {
+		return gl.AuthorizationDecision{}, gl.ErrLedgerAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationUnavailable {
+		return gl.AuthorizationDecision{}, gl.ErrLedgerAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationStale {
+		return gl.AuthorizationDecision{}, gl.ErrLedgerAuthorizationStale
+	}
+	return glAuthorizationDecision(decision), nil
+}
+
+func (authorizer evaluatorGLAccountingBookAuthorizer) AuthorizeAccountingBook(ctx context.Context, actor gl.Actor, command gl.AccountingBookCommand, _ *gl.AccountingBook) (gl.AuthorizationDecision, error) {
+	if authorizer.evaluator == nil {
+		return gl.AuthorizationDecision{}, gl.ErrAccountingBookAuthorizationUnavailable
+	}
+	decision, err := authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{ActorID: actor.UserID, Permission: gl.AccountingBookManagementPermission, RequestedScopeIDs: []string{command.AccountingScopeID.String()}})
+	if err != nil {
+		return gl.AuthorizationDecision{}, gl.ErrAccountingBookAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationUnavailable {
+		return gl.AuthorizationDecision{}, gl.ErrAccountingBookAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationStale {
+		return gl.AuthorizationDecision{}, gl.ErrAccountingBookAuthorizationStale
+	}
+	return glAuthorizationDecision(decision), nil
+}
+
+func glAuthorizationDecision(decision identity.AuthorizationDecision) gl.AuthorizationDecision {
+	result := gl.AuthorizationDecision{Allowed: decision.Allowed, Outcome: string(decision.Outcome), Permission: decision.Permission, PolicyReference: decision.PolicyReference, PolicyVersion: decision.PolicyVersion, DecisionReference: decision.DecisionReference, Reason: decision.Reason}
+	for _, value := range decision.ApprovedScopeIDs {
+		if value == "*" {
+			result.ApprovedScopeIDs = append(result.ApprovedScopeIDs, uuid.Nil)
+			continue
+		}
+		parsed, err := uuid.Parse(value)
+		if err == nil {
+			result.ApprovedScopeIDs = append(result.ApprovedScopeIDs, parsed)
+		}
+	}
+	return result
 }
 
 func (authorizer evaluatorCoaAuthorizer) AuthorizeSegmentDefinition(ctx context.Context, actor coa.Actor, command coa.SegmentDefinitionCommand, _ *coa.SegmentDefinition) (coa.AuthorizationDecision, error) {
@@ -1079,6 +1245,18 @@ func (authorizer evaluatorOrganizationAuthorizer) evaluateFiscalCalendar(ctx con
 }
 
 type permissiveCoaAuthorizer struct{}
+
+type permissiveGLLedgerAuthorizer struct{}
+
+func (permissiveGLLedgerAuthorizer) AuthorizeLedger(context.Context, gl.Actor, gl.LedgerCommand, *gl.Ledger) (gl.AuthorizationDecision, error) {
+	return gl.AuthorizationDecision{Allowed: true, Permission: gl.LedgerManagementPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{uuid.Nil}}, nil
+}
+
+type permissiveGLAccountingBookAuthorizer struct{}
+
+func (permissiveGLAccountingBookAuthorizer) AuthorizeAccountingBook(context.Context, gl.Actor, gl.AccountingBookCommand, *gl.AccountingBook) (gl.AuthorizationDecision, error) {
+	return gl.AuthorizationDecision{Allowed: true, Permission: gl.AccountingBookManagementPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{uuid.Nil}}, nil
+}
 
 func (permissiveCoaAuthorizer) AuthorizeSegmentDefinition(context.Context, coa.Actor, coa.SegmentDefinitionCommand, *coa.SegmentDefinition) (coa.AuthorizationDecision, error) {
 	return coa.AuthorizationDecision{Allowed: true, Permission: coa.SegmentDefinitionManagementPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{uuid.Nil}}, nil

@@ -124,6 +124,11 @@ verify_migration_set \
 	"db/migrations/coa" \
 	"coa.goose_db_version"
 
+verify_migration_set \
+	"gl" \
+	"db/migrations/gl" \
+	"gl.goose_db_version"
+
 verify_seed_manifest
 
 echo "Database migration and seed verification passed."

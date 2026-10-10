@@ -53,6 +53,13 @@ func TestFiscalCalendarServiceIsIdempotentAndPreservesHistory(t *testing.T) {
 	if len(audit.Records) != 1 {
 		t.Fatalf("audit records after replay = %d, want 1", len(audit.Records))
 	}
+	reference, err := service.GetReference(context.Background(), first.FiscalCalendar.ID, scopeID)
+	if err != nil || reference.ID != first.FiscalCalendar.ID || reference.ScopeID != scopeID {
+		t.Fatalf("fiscal-calendar reference = %#v, err = %v", reference, err)
+	}
+	if _, err := service.GetReference(context.Background(), first.FiscalCalendar.ID, uuid.New()); !errors.Is(err, ErrFiscalCalendarNotFound) {
+		t.Fatalf("cross-scope reference error = %v, want not found", err)
+	}
 
 	maintain := fiscalCalendarTestCommand(scopeID, FiscalCalendarActionMaintain)
 	maintain.FiscalCalendarID = first.FiscalCalendar.ID

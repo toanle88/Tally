@@ -49,3 +49,15 @@ sql:
         package: coadb
         out: internal/coa/coadb
         sql_package: pgx/v5
+  - name: gl
+    engine: postgresql
+    schema:
+      - db/migrations/bootstrap
+      - db/migrations/gl
+    queries:
+      - db/queries/gl
+    gen:
+      go:
+        package: gldb
+        out: internal/gl/gldb
+        sql_package: pgx/v5

@@ -13,6 +13,7 @@ import (
 
 var regexMap = map[string]ogenregex.Regexp{
 	"^-?[0-9]+(\\.[0-9]+)?$": ogenregex.MustCompile("^-?[0-9]+(\\.[0-9]+)?$"),
+	"^[A-Z]{3}$":             ogenregex.MustCompile("^[A-Z]{3}$"),
 }
 
 type (

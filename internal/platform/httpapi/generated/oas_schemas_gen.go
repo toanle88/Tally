@@ -1182,6 +1182,8 @@ func (s *CommandRequestData) init() CommandRequestData {
 	return m
 }
 
+type CurrencyCode string
+
 // Ref: #/components/schemas/EstablishedResult
 type EstablishedResult struct {
 	Status           string                `json:"status"`
@@ -1353,10 +1355,8 @@ func (*EstablishedResult) glEnterSoftCloseGateRes()                             
 func (*EstablishedResult) glExitSoftCloseGateRes()                              {}
 func (*EstablishedResult) glFinalizePostingGateRes()                            {}
 func (*EstablishedResult) glGetPostingGateStatusRes()                           {}
-func (*EstablishedResult) glMaintainAccountingBooksRes()                        {}
 func (*EstablishedResult) glMaintainAccountsAndReportingMappingsRes()           {}
 func (*EstablishedResult) glMaintainChartsOfAccountsRes()                       {}
-func (*EstablishedResult) glMaintainLedgersRes()                                {}
 func (*EstablishedResult) glOpenOperationalReopenGateRes()                      {}
 func (*EstablishedResult) glOpenScopedReopenGateRes()                           {}
 func (*EstablishedResult) glReleasePostingBarrierRes()                          {}
@@ -2271,6 +2271,164 @@ type FxRunTranslationUnprocessableEntity ProblemDetails
 
 func (*FxRunTranslationUnprocessableEntity) fxRunTranslationRes() {}
 
+// Ref: #/components/schemas/GlAccountingBookProjection
+type GlAccountingBookProjection struct {
+	ID                   UUID       `json:"id"`
+	AccountingScopeId    UUID       `json:"accountingScopeId"`
+	LedgerId             UUID       `json:"ledgerId"`
+	BookType             string     `json:"bookType"`
+	AccountingBasis      string     `json:"accountingBasis"`
+	PostingPolicyVersion string     `json:"postingPolicyVersion"`
+	LifecycleStatus      string     `json:"lifecycleStatus"`
+	EffectiveDateFrom    time.Time  `json:"effectiveDateFrom"`
+	EffectiveDateTo      OptNilDate `json:"effectiveDateTo"`
+	ApprovalStatus       string     `json:"approvalStatus"`
+	ValidationOutcome    string     `json:"validationOutcome"`
+	NextAction           string     `json:"nextAction"`
+	Version              int        `json:"version"`
+	RevisionNumber       int        `json:"revisionNumber"`
+}
+
+// GetID returns the value of ID.
+func (s *GlAccountingBookProjection) GetID() UUID {
+	return s.ID
+}
+
+// GetAccountingScopeId returns the value of AccountingScopeId.
+func (s *GlAccountingBookProjection) GetAccountingScopeId() UUID {
+	return s.AccountingScopeId
+}
+
+// GetLedgerId returns the value of LedgerId.
+func (s *GlAccountingBookProjection) GetLedgerId() UUID {
+	return s.LedgerId
+}
+
+// GetBookType returns the value of BookType.
+func (s *GlAccountingBookProjection) GetBookType() string {
+	return s.BookType
+}
+
+// GetAccountingBasis returns the value of AccountingBasis.
+func (s *GlAccountingBookProjection) GetAccountingBasis() string {
+	return s.AccountingBasis
+}
+
+// GetPostingPolicyVersion returns the value of PostingPolicyVersion.
+func (s *GlAccountingBookProjection) GetPostingPolicyVersion() string {
+	return s.PostingPolicyVersion
+}
+
+// GetLifecycleStatus returns the value of LifecycleStatus.
+func (s *GlAccountingBookProjection) GetLifecycleStatus() string {
+	return s.LifecycleStatus
+}
+
+// GetEffectiveDateFrom returns the value of EffectiveDateFrom.
+func (s *GlAccountingBookProjection) GetEffectiveDateFrom() time.Time {
+	return s.EffectiveDateFrom
+}
+
+// GetEffectiveDateTo returns the value of EffectiveDateTo.
+func (s *GlAccountingBookProjection) GetEffectiveDateTo() OptNilDate {
+	return s.EffectiveDateTo
+}
+
+// GetApprovalStatus returns the value of ApprovalStatus.
+func (s *GlAccountingBookProjection) GetApprovalStatus() string {
+	return s.ApprovalStatus
+}
+
+// GetValidationOutcome returns the value of ValidationOutcome.
+func (s *GlAccountingBookProjection) GetValidationOutcome() string {
+	return s.ValidationOutcome
+}
+
+// GetNextAction returns the value of NextAction.
+func (s *GlAccountingBookProjection) GetNextAction() string {
+	return s.NextAction
+}
+
+// GetVersion returns the value of Version.
+func (s *GlAccountingBookProjection) GetVersion() int {
+	return s.Version
+}
+
+// GetRevisionNumber returns the value of RevisionNumber.
+func (s *GlAccountingBookProjection) GetRevisionNumber() int {
+	return s.RevisionNumber
+}
+
+// SetID sets the value of ID.
+func (s *GlAccountingBookProjection) SetID(val UUID) {
+	s.ID = val
+}
+
+// SetAccountingScopeId sets the value of AccountingScopeId.
+func (s *GlAccountingBookProjection) SetAccountingScopeId(val UUID) {
+	s.AccountingScopeId = val
+}
+
+// SetLedgerId sets the value of LedgerId.
+func (s *GlAccountingBookProjection) SetLedgerId(val UUID) {
+	s.LedgerId = val
+}
+
+// SetBookType sets the value of BookType.
+func (s *GlAccountingBookProjection) SetBookType(val string) {
+	s.BookType = val
+}
+
+// SetAccountingBasis sets the value of AccountingBasis.
+func (s *GlAccountingBookProjection) SetAccountingBasis(val string) {
+	s.AccountingBasis = val
+}
+
+// SetPostingPolicyVersion sets the value of PostingPolicyVersion.
+func (s *GlAccountingBookProjection) SetPostingPolicyVersion(val string) {
+	s.PostingPolicyVersion = val
+}
+
+// SetLifecycleStatus sets the value of LifecycleStatus.
+func (s *GlAccountingBookProjection) SetLifecycleStatus(val string) {
+	s.LifecycleStatus = val
+}
+
+// SetEffectiveDateFrom sets the value of EffectiveDateFrom.
+func (s *GlAccountingBookProjection) SetEffectiveDateFrom(val time.Time) {
+	s.EffectiveDateFrom = val
+}
+
+// SetEffectiveDateTo sets the value of EffectiveDateTo.
+func (s *GlAccountingBookProjection) SetEffectiveDateTo(val OptNilDate) {
+	s.EffectiveDateTo = val
+}
+
+// SetApprovalStatus sets the value of ApprovalStatus.
+func (s *GlAccountingBookProjection) SetApprovalStatus(val string) {
+	s.ApprovalStatus = val
+}
+
+// SetValidationOutcome sets the value of ValidationOutcome.
+func (s *GlAccountingBookProjection) SetValidationOutcome(val string) {
+	s.ValidationOutcome = val
+}
+
+// SetNextAction sets the value of NextAction.
+func (s *GlAccountingBookProjection) SetNextAction(val string) {
+	s.NextAction = val
+}
+
+// SetVersion sets the value of Version.
+func (s *GlAccountingBookProjection) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetRevisionNumber sets the value of RevisionNumber.
+func (s *GlAccountingBookProjection) SetRevisionNumber(val int) {
+	s.RevisionNumber = val
+}
+
 type GlAcquirePostingBarrierBadRequest ProblemDetails
 
 func (*GlAcquirePostingBarrierBadRequest) glAcquirePostingBarrierRes() {}
@@ -2451,17 +2609,586 @@ type GlGetPostingGateStatusUnprocessableEntity ProblemDetails
 
 func (*GlGetPostingGateStatusUnprocessableEntity) glGetPostingGateStatusRes() {}
 
+// Ref: #/components/schemas/GlLedgerProjection
+type GlLedgerProjection struct {
+	ID                 UUID         `json:"id"`
+	AccountingScopeId  UUID         `json:"accountingScopeId"`
+	LegalEntityId      UUID         `json:"legalEntityId"`
+	LedgerType         string       `json:"ledgerType"`
+	FunctionalCurrency CurrencyCode `json:"functionalCurrency"`
+	FiscalCalendarId   UUID         `json:"fiscalCalendarId"`
+	LifecycleStatus    string       `json:"lifecycleStatus"`
+	EffectiveDateFrom  time.Time    `json:"effectiveDateFrom"`
+	EffectiveDateTo    OptNilDate   `json:"effectiveDateTo"`
+	ApprovalStatus     string       `json:"approvalStatus"`
+	ValidationOutcome  string       `json:"validationOutcome"`
+	NextAction         string       `json:"nextAction"`
+	Version            int          `json:"version"`
+	RevisionNumber     int          `json:"revisionNumber"`
+}
+
+// GetID returns the value of ID.
+func (s *GlLedgerProjection) GetID() UUID {
+	return s.ID
+}
+
+// GetAccountingScopeId returns the value of AccountingScopeId.
+func (s *GlLedgerProjection) GetAccountingScopeId() UUID {
+	return s.AccountingScopeId
+}
+
+// GetLegalEntityId returns the value of LegalEntityId.
+func (s *GlLedgerProjection) GetLegalEntityId() UUID {
+	return s.LegalEntityId
+}
+
+// GetLedgerType returns the value of LedgerType.
+func (s *GlLedgerProjection) GetLedgerType() string {
+	return s.LedgerType
+}
+
+// GetFunctionalCurrency returns the value of FunctionalCurrency.
+func (s *GlLedgerProjection) GetFunctionalCurrency() CurrencyCode {
+	return s.FunctionalCurrency
+}
+
+// GetFiscalCalendarId returns the value of FiscalCalendarId.
+func (s *GlLedgerProjection) GetFiscalCalendarId() UUID {
+	return s.FiscalCalendarId
+}
+
+// GetLifecycleStatus returns the value of LifecycleStatus.
+func (s *GlLedgerProjection) GetLifecycleStatus() string {
+	return s.LifecycleStatus
+}
+
+// GetEffectiveDateFrom returns the value of EffectiveDateFrom.
+func (s *GlLedgerProjection) GetEffectiveDateFrom() time.Time {
+	return s.EffectiveDateFrom
+}
+
+// GetEffectiveDateTo returns the value of EffectiveDateTo.
+func (s *GlLedgerProjection) GetEffectiveDateTo() OptNilDate {
+	return s.EffectiveDateTo
+}
+
+// GetApprovalStatus returns the value of ApprovalStatus.
+func (s *GlLedgerProjection) GetApprovalStatus() string {
+	return s.ApprovalStatus
+}
+
+// GetValidationOutcome returns the value of ValidationOutcome.
+func (s *GlLedgerProjection) GetValidationOutcome() string {
+	return s.ValidationOutcome
+}
+
+// GetNextAction returns the value of NextAction.
+func (s *GlLedgerProjection) GetNextAction() string {
+	return s.NextAction
+}
+
+// GetVersion returns the value of Version.
+func (s *GlLedgerProjection) GetVersion() int {
+	return s.Version
+}
+
+// GetRevisionNumber returns the value of RevisionNumber.
+func (s *GlLedgerProjection) GetRevisionNumber() int {
+	return s.RevisionNumber
+}
+
+// SetID sets the value of ID.
+func (s *GlLedgerProjection) SetID(val UUID) {
+	s.ID = val
+}
+
+// SetAccountingScopeId sets the value of AccountingScopeId.
+func (s *GlLedgerProjection) SetAccountingScopeId(val UUID) {
+	s.AccountingScopeId = val
+}
+
+// SetLegalEntityId sets the value of LegalEntityId.
+func (s *GlLedgerProjection) SetLegalEntityId(val UUID) {
+	s.LegalEntityId = val
+}
+
+// SetLedgerType sets the value of LedgerType.
+func (s *GlLedgerProjection) SetLedgerType(val string) {
+	s.LedgerType = val
+}
+
+// SetFunctionalCurrency sets the value of FunctionalCurrency.
+func (s *GlLedgerProjection) SetFunctionalCurrency(val CurrencyCode) {
+	s.FunctionalCurrency = val
+}
+
+// SetFiscalCalendarId sets the value of FiscalCalendarId.
+func (s *GlLedgerProjection) SetFiscalCalendarId(val UUID) {
+	s.FiscalCalendarId = val
+}
+
+// SetLifecycleStatus sets the value of LifecycleStatus.
+func (s *GlLedgerProjection) SetLifecycleStatus(val string) {
+	s.LifecycleStatus = val
+}
+
+// SetEffectiveDateFrom sets the value of EffectiveDateFrom.
+func (s *GlLedgerProjection) SetEffectiveDateFrom(val time.Time) {
+	s.EffectiveDateFrom = val
+}
+
+// SetEffectiveDateTo sets the value of EffectiveDateTo.
+func (s *GlLedgerProjection) SetEffectiveDateTo(val OptNilDate) {
+	s.EffectiveDateTo = val
+}
+
+// SetApprovalStatus sets the value of ApprovalStatus.
+func (s *GlLedgerProjection) SetApprovalStatus(val string) {
+	s.ApprovalStatus = val
+}
+
+// SetValidationOutcome sets the value of ValidationOutcome.
+func (s *GlLedgerProjection) SetValidationOutcome(val string) {
+	s.ValidationOutcome = val
+}
+
+// SetNextAction sets the value of NextAction.
+func (s *GlLedgerProjection) SetNextAction(val string) {
+	s.NextAction = val
+}
+
+// SetVersion sets the value of Version.
+func (s *GlLedgerProjection) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetRevisionNumber sets the value of RevisionNumber.
+func (s *GlLedgerProjection) SetRevisionNumber(val int) {
+	s.RevisionNumber = val
+}
+
 type GlMaintainAccountingBooksBadRequest ProblemDetails
 
 func (*GlMaintainAccountingBooksBadRequest) glMaintainAccountingBooksRes() {}
+
+// Ref: #/components/schemas/GlMaintainAccountingBooksCommandData
+type GlMaintainAccountingBooksCommandData struct {
+	Action               GlMaintainAccountingBooksCommandDataAction          `json:"action"`
+	AccountingBookId     OptUUID                                             `json:"accountingBookId"`
+	LedgerId             UUID                                                `json:"ledgerId"`
+	BookType             string                                              `json:"bookType"`
+	AccountingBasis      string                                              `json:"accountingBasis"`
+	PostingPolicyVersion string                                              `json:"postingPolicyVersion"`
+	LifecycleStatus      GlMaintainAccountingBooksCommandDataLifecycleStatus `json:"lifecycleStatus"`
+	EffectiveDateFrom    time.Time                                           `json:"effectiveDateFrom"`
+	EffectiveDateTo      OptNilDate                                          `json:"effectiveDateTo"`
+	Approval             OptIamApprovalDecisionReference                     `json:"approval"`
+}
+
+// GetAction returns the value of Action.
+func (s *GlMaintainAccountingBooksCommandData) GetAction() GlMaintainAccountingBooksCommandDataAction {
+	return s.Action
+}
+
+// GetAccountingBookId returns the value of AccountingBookId.
+func (s *GlMaintainAccountingBooksCommandData) GetAccountingBookId() OptUUID {
+	return s.AccountingBookId
+}
+
+// GetLedgerId returns the value of LedgerId.
+func (s *GlMaintainAccountingBooksCommandData) GetLedgerId() UUID {
+	return s.LedgerId
+}
+
+// GetBookType returns the value of BookType.
+func (s *GlMaintainAccountingBooksCommandData) GetBookType() string {
+	return s.BookType
+}
+
+// GetAccountingBasis returns the value of AccountingBasis.
+func (s *GlMaintainAccountingBooksCommandData) GetAccountingBasis() string {
+	return s.AccountingBasis
+}
+
+// GetPostingPolicyVersion returns the value of PostingPolicyVersion.
+func (s *GlMaintainAccountingBooksCommandData) GetPostingPolicyVersion() string {
+	return s.PostingPolicyVersion
+}
+
+// GetLifecycleStatus returns the value of LifecycleStatus.
+func (s *GlMaintainAccountingBooksCommandData) GetLifecycleStatus() GlMaintainAccountingBooksCommandDataLifecycleStatus {
+	return s.LifecycleStatus
+}
+
+// GetEffectiveDateFrom returns the value of EffectiveDateFrom.
+func (s *GlMaintainAccountingBooksCommandData) GetEffectiveDateFrom() time.Time {
+	return s.EffectiveDateFrom
+}
+
+// GetEffectiveDateTo returns the value of EffectiveDateTo.
+func (s *GlMaintainAccountingBooksCommandData) GetEffectiveDateTo() OptNilDate {
+	return s.EffectiveDateTo
+}
+
+// GetApproval returns the value of Approval.
+func (s *GlMaintainAccountingBooksCommandData) GetApproval() OptIamApprovalDecisionReference {
+	return s.Approval
+}
+
+// SetAction sets the value of Action.
+func (s *GlMaintainAccountingBooksCommandData) SetAction(val GlMaintainAccountingBooksCommandDataAction) {
+	s.Action = val
+}
+
+// SetAccountingBookId sets the value of AccountingBookId.
+func (s *GlMaintainAccountingBooksCommandData) SetAccountingBookId(val OptUUID) {
+	s.AccountingBookId = val
+}
+
+// SetLedgerId sets the value of LedgerId.
+func (s *GlMaintainAccountingBooksCommandData) SetLedgerId(val UUID) {
+	s.LedgerId = val
+}
+
+// SetBookType sets the value of BookType.
+func (s *GlMaintainAccountingBooksCommandData) SetBookType(val string) {
+	s.BookType = val
+}
+
+// SetAccountingBasis sets the value of AccountingBasis.
+func (s *GlMaintainAccountingBooksCommandData) SetAccountingBasis(val string) {
+	s.AccountingBasis = val
+}
+
+// SetPostingPolicyVersion sets the value of PostingPolicyVersion.
+func (s *GlMaintainAccountingBooksCommandData) SetPostingPolicyVersion(val string) {
+	s.PostingPolicyVersion = val
+}
+
+// SetLifecycleStatus sets the value of LifecycleStatus.
+func (s *GlMaintainAccountingBooksCommandData) SetLifecycleStatus(val GlMaintainAccountingBooksCommandDataLifecycleStatus) {
+	s.LifecycleStatus = val
+}
+
+// SetEffectiveDateFrom sets the value of EffectiveDateFrom.
+func (s *GlMaintainAccountingBooksCommandData) SetEffectiveDateFrom(val time.Time) {
+	s.EffectiveDateFrom = val
+}
+
+// SetEffectiveDateTo sets the value of EffectiveDateTo.
+func (s *GlMaintainAccountingBooksCommandData) SetEffectiveDateTo(val OptNilDate) {
+	s.EffectiveDateTo = val
+}
+
+// SetApproval sets the value of Approval.
+func (s *GlMaintainAccountingBooksCommandData) SetApproval(val OptIamApprovalDecisionReference) {
+	s.Approval = val
+}
+
+type GlMaintainAccountingBooksCommandDataAction string
+
+const (
+	GlMaintainAccountingBooksCommandDataActionCreate GlMaintainAccountingBooksCommandDataAction = "create"
+	GlMaintainAccountingBooksCommandDataActionUpdate GlMaintainAccountingBooksCommandDataAction = "update"
+)
+
+// AllValues returns all GlMaintainAccountingBooksCommandDataAction values.
+func (GlMaintainAccountingBooksCommandDataAction) AllValues() []GlMaintainAccountingBooksCommandDataAction {
+	return []GlMaintainAccountingBooksCommandDataAction{
+		GlMaintainAccountingBooksCommandDataActionCreate,
+		GlMaintainAccountingBooksCommandDataActionUpdate,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GlMaintainAccountingBooksCommandDataAction) MarshalText() ([]byte, error) {
+	switch s {
+	case GlMaintainAccountingBooksCommandDataActionCreate:
+		return []byte(s), nil
+	case GlMaintainAccountingBooksCommandDataActionUpdate:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GlMaintainAccountingBooksCommandDataAction) UnmarshalText(data []byte) error {
+	switch GlMaintainAccountingBooksCommandDataAction(data) {
+	case GlMaintainAccountingBooksCommandDataActionCreate:
+		*s = GlMaintainAccountingBooksCommandDataActionCreate
+		return nil
+	case GlMaintainAccountingBooksCommandDataActionUpdate:
+		*s = GlMaintainAccountingBooksCommandDataActionUpdate
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type GlMaintainAccountingBooksCommandDataLifecycleStatus string
+
+const (
+	GlMaintainAccountingBooksCommandDataLifecycleStatusDraft     GlMaintainAccountingBooksCommandDataLifecycleStatus = "draft"
+	GlMaintainAccountingBooksCommandDataLifecycleStatusActive    GlMaintainAccountingBooksCommandDataLifecycleStatus = "active"
+	GlMaintainAccountingBooksCommandDataLifecycleStatusSuspended GlMaintainAccountingBooksCommandDataLifecycleStatus = "suspended"
+	GlMaintainAccountingBooksCommandDataLifecycleStatusRetired   GlMaintainAccountingBooksCommandDataLifecycleStatus = "retired"
+)
+
+// AllValues returns all GlMaintainAccountingBooksCommandDataLifecycleStatus values.
+func (GlMaintainAccountingBooksCommandDataLifecycleStatus) AllValues() []GlMaintainAccountingBooksCommandDataLifecycleStatus {
+	return []GlMaintainAccountingBooksCommandDataLifecycleStatus{
+		GlMaintainAccountingBooksCommandDataLifecycleStatusDraft,
+		GlMaintainAccountingBooksCommandDataLifecycleStatusActive,
+		GlMaintainAccountingBooksCommandDataLifecycleStatusSuspended,
+		GlMaintainAccountingBooksCommandDataLifecycleStatusRetired,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GlMaintainAccountingBooksCommandDataLifecycleStatus) MarshalText() ([]byte, error) {
+	switch s {
+	case GlMaintainAccountingBooksCommandDataLifecycleStatusDraft:
+		return []byte(s), nil
+	case GlMaintainAccountingBooksCommandDataLifecycleStatusActive:
+		return []byte(s), nil
+	case GlMaintainAccountingBooksCommandDataLifecycleStatusSuspended:
+		return []byte(s), nil
+	case GlMaintainAccountingBooksCommandDataLifecycleStatusRetired:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GlMaintainAccountingBooksCommandDataLifecycleStatus) UnmarshalText(data []byte) error {
+	switch GlMaintainAccountingBooksCommandDataLifecycleStatus(data) {
+	case GlMaintainAccountingBooksCommandDataLifecycleStatusDraft:
+		*s = GlMaintainAccountingBooksCommandDataLifecycleStatusDraft
+		return nil
+	case GlMaintainAccountingBooksCommandDataLifecycleStatusActive:
+		*s = GlMaintainAccountingBooksCommandDataLifecycleStatusActive
+		return nil
+	case GlMaintainAccountingBooksCommandDataLifecycleStatusSuspended:
+		*s = GlMaintainAccountingBooksCommandDataLifecycleStatusSuspended
+		return nil
+	case GlMaintainAccountingBooksCommandDataLifecycleStatusRetired:
+		*s = GlMaintainAccountingBooksCommandDataLifecycleStatusRetired
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/GlMaintainAccountingBooksCommandRequest
+type GlMaintainAccountingBooksCommandRequest struct {
+	CommandId         UUID                                 `json:"commandId"`
+	ExpectedVersion   OptInt                               `json:"expectedVersion"`
+	AccountingScopeId UUID                                 `json:"accountingScopeId"`
+	Data              GlMaintainAccountingBooksCommandData `json:"data"`
+}
+
+// GetCommandId returns the value of CommandId.
+func (s *GlMaintainAccountingBooksCommandRequest) GetCommandId() UUID {
+	return s.CommandId
+}
+
+// GetExpectedVersion returns the value of ExpectedVersion.
+func (s *GlMaintainAccountingBooksCommandRequest) GetExpectedVersion() OptInt {
+	return s.ExpectedVersion
+}
+
+// GetAccountingScopeId returns the value of AccountingScopeId.
+func (s *GlMaintainAccountingBooksCommandRequest) GetAccountingScopeId() UUID {
+	return s.AccountingScopeId
+}
+
+// GetData returns the value of Data.
+func (s *GlMaintainAccountingBooksCommandRequest) GetData() GlMaintainAccountingBooksCommandData {
+	return s.Data
+}
+
+// SetCommandId sets the value of CommandId.
+func (s *GlMaintainAccountingBooksCommandRequest) SetCommandId(val UUID) {
+	s.CommandId = val
+}
+
+// SetExpectedVersion sets the value of ExpectedVersion.
+func (s *GlMaintainAccountingBooksCommandRequest) SetExpectedVersion(val OptInt) {
+	s.ExpectedVersion = val
+}
+
+// SetAccountingScopeId sets the value of AccountingScopeId.
+func (s *GlMaintainAccountingBooksCommandRequest) SetAccountingScopeId(val UUID) {
+	s.AccountingScopeId = val
+}
+
+// SetData sets the value of Data.
+func (s *GlMaintainAccountingBooksCommandRequest) SetData(val GlMaintainAccountingBooksCommandData) {
+	s.Data = val
+}
 
 type GlMaintainAccountingBooksConflict ProblemDetails
 
 func (*GlMaintainAccountingBooksConflict) glMaintainAccountingBooksRes() {}
 
+// Ref: #/components/schemas/GlMaintainAccountingBooksEstablishedResult
+type GlMaintainAccountingBooksEstablishedResult struct {
+	Status           string                              `json:"status"`
+	AggregateId      UUID                                `json:"aggregateId"`
+	AggregateVersion int                                 `json:"aggregateVersion"`
+	ProcessId        OptNilUUID                          `json:"processId"`
+	CorrelationId    UUID                                `json:"correlationId"`
+	Links            Links                               `json:"links"`
+	Data             GlMaintainAccountingBooksResultData `json:"data"`
+}
+
+// GetStatus returns the value of Status.
+func (s *GlMaintainAccountingBooksEstablishedResult) GetStatus() string {
+	return s.Status
+}
+
+// GetAggregateId returns the value of AggregateId.
+func (s *GlMaintainAccountingBooksEstablishedResult) GetAggregateId() UUID {
+	return s.AggregateId
+}
+
+// GetAggregateVersion returns the value of AggregateVersion.
+func (s *GlMaintainAccountingBooksEstablishedResult) GetAggregateVersion() int {
+	return s.AggregateVersion
+}
+
+// GetProcessId returns the value of ProcessId.
+func (s *GlMaintainAccountingBooksEstablishedResult) GetProcessId() OptNilUUID {
+	return s.ProcessId
+}
+
+// GetCorrelationId returns the value of CorrelationId.
+func (s *GlMaintainAccountingBooksEstablishedResult) GetCorrelationId() UUID {
+	return s.CorrelationId
+}
+
+// GetLinks returns the value of Links.
+func (s *GlMaintainAccountingBooksEstablishedResult) GetLinks() Links {
+	return s.Links
+}
+
+// GetData returns the value of Data.
+func (s *GlMaintainAccountingBooksEstablishedResult) GetData() GlMaintainAccountingBooksResultData {
+	return s.Data
+}
+
+// SetStatus sets the value of Status.
+func (s *GlMaintainAccountingBooksEstablishedResult) SetStatus(val string) {
+	s.Status = val
+}
+
+// SetAggregateId sets the value of AggregateId.
+func (s *GlMaintainAccountingBooksEstablishedResult) SetAggregateId(val UUID) {
+	s.AggregateId = val
+}
+
+// SetAggregateVersion sets the value of AggregateVersion.
+func (s *GlMaintainAccountingBooksEstablishedResult) SetAggregateVersion(val int) {
+	s.AggregateVersion = val
+}
+
+// SetProcessId sets the value of ProcessId.
+func (s *GlMaintainAccountingBooksEstablishedResult) SetProcessId(val OptNilUUID) {
+	s.ProcessId = val
+}
+
+// SetCorrelationId sets the value of CorrelationId.
+func (s *GlMaintainAccountingBooksEstablishedResult) SetCorrelationId(val UUID) {
+	s.CorrelationId = val
+}
+
+// SetLinks sets the value of Links.
+func (s *GlMaintainAccountingBooksEstablishedResult) SetLinks(val Links) {
+	s.Links = val
+}
+
+// SetData sets the value of Data.
+func (s *GlMaintainAccountingBooksEstablishedResult) SetData(val GlMaintainAccountingBooksResultData) {
+	s.Data = val
+}
+
+func (*GlMaintainAccountingBooksEstablishedResult) glMaintainAccountingBooksRes() {}
+
 type GlMaintainAccountingBooksForbidden ProblemDetails
 
 func (*GlMaintainAccountingBooksForbidden) glMaintainAccountingBooksRes() {}
+
+// Ref: #/components/schemas/GlMaintainAccountingBooksResultData
+type GlMaintainAccountingBooksResultData struct {
+	AccountingBook    GlAccountingBookProjection `json:"accountingBook"`
+	DecisionReference OptUUID                    `json:"decisionReference"`
+	PolicyReference   OptString                  `json:"policyReference"`
+	ValidationOutcome string                     `json:"validationOutcome"`
+	ApprovalStatus    string                     `json:"approvalStatus"`
+	Replayed          OptBool                    `json:"replayed"`
+}
+
+// GetAccountingBook returns the value of AccountingBook.
+func (s *GlMaintainAccountingBooksResultData) GetAccountingBook() GlAccountingBookProjection {
+	return s.AccountingBook
+}
+
+// GetDecisionReference returns the value of DecisionReference.
+func (s *GlMaintainAccountingBooksResultData) GetDecisionReference() OptUUID {
+	return s.DecisionReference
+}
+
+// GetPolicyReference returns the value of PolicyReference.
+func (s *GlMaintainAccountingBooksResultData) GetPolicyReference() OptString {
+	return s.PolicyReference
+}
+
+// GetValidationOutcome returns the value of ValidationOutcome.
+func (s *GlMaintainAccountingBooksResultData) GetValidationOutcome() string {
+	return s.ValidationOutcome
+}
+
+// GetApprovalStatus returns the value of ApprovalStatus.
+func (s *GlMaintainAccountingBooksResultData) GetApprovalStatus() string {
+	return s.ApprovalStatus
+}
+
+// GetReplayed returns the value of Replayed.
+func (s *GlMaintainAccountingBooksResultData) GetReplayed() OptBool {
+	return s.Replayed
+}
+
+// SetAccountingBook sets the value of AccountingBook.
+func (s *GlMaintainAccountingBooksResultData) SetAccountingBook(val GlAccountingBookProjection) {
+	s.AccountingBook = val
+}
+
+// SetDecisionReference sets the value of DecisionReference.
+func (s *GlMaintainAccountingBooksResultData) SetDecisionReference(val OptUUID) {
+	s.DecisionReference = val
+}
+
+// SetPolicyReference sets the value of PolicyReference.
+func (s *GlMaintainAccountingBooksResultData) SetPolicyReference(val OptString) {
+	s.PolicyReference = val
+}
+
+// SetValidationOutcome sets the value of ValidationOutcome.
+func (s *GlMaintainAccountingBooksResultData) SetValidationOutcome(val string) {
+	s.ValidationOutcome = val
+}
+
+// SetApprovalStatus sets the value of ApprovalStatus.
+func (s *GlMaintainAccountingBooksResultData) SetApprovalStatus(val string) {
+	s.ApprovalStatus = val
+}
+
+// SetReplayed sets the value of Replayed.
+func (s *GlMaintainAccountingBooksResultData) SetReplayed(val OptBool) {
+	s.Replayed = val
+}
 
 type GlMaintainAccountingBooksServiceUnavailable ProblemDetails
 
@@ -2518,13 +3245,424 @@ type GlMaintainLedgersBadRequest ProblemDetails
 
 func (*GlMaintainLedgersBadRequest) glMaintainLedgersRes() {}
 
+// Ref: #/components/schemas/GlMaintainLedgersCommandData
+type GlMaintainLedgersCommandData struct {
+	Action             GlMaintainLedgersCommandDataAction          `json:"action"`
+	LedgerId           OptUUID                                     `json:"ledgerId"`
+	LegalEntityId      UUID                                        `json:"legalEntityId"`
+	LedgerType         string                                      `json:"ledgerType"`
+	FunctionalCurrency CurrencyCode                                `json:"functionalCurrency"`
+	FiscalCalendarId   UUID                                        `json:"fiscalCalendarId"`
+	LifecycleStatus    GlMaintainLedgersCommandDataLifecycleStatus `json:"lifecycleStatus"`
+	EffectiveDateFrom  time.Time                                   `json:"effectiveDateFrom"`
+	EffectiveDateTo    OptNilDate                                  `json:"effectiveDateTo"`
+	Approval           OptIamApprovalDecisionReference             `json:"approval"`
+}
+
+// GetAction returns the value of Action.
+func (s *GlMaintainLedgersCommandData) GetAction() GlMaintainLedgersCommandDataAction {
+	return s.Action
+}
+
+// GetLedgerId returns the value of LedgerId.
+func (s *GlMaintainLedgersCommandData) GetLedgerId() OptUUID {
+	return s.LedgerId
+}
+
+// GetLegalEntityId returns the value of LegalEntityId.
+func (s *GlMaintainLedgersCommandData) GetLegalEntityId() UUID {
+	return s.LegalEntityId
+}
+
+// GetLedgerType returns the value of LedgerType.
+func (s *GlMaintainLedgersCommandData) GetLedgerType() string {
+	return s.LedgerType
+}
+
+// GetFunctionalCurrency returns the value of FunctionalCurrency.
+func (s *GlMaintainLedgersCommandData) GetFunctionalCurrency() CurrencyCode {
+	return s.FunctionalCurrency
+}
+
+// GetFiscalCalendarId returns the value of FiscalCalendarId.
+func (s *GlMaintainLedgersCommandData) GetFiscalCalendarId() UUID {
+	return s.FiscalCalendarId
+}
+
+// GetLifecycleStatus returns the value of LifecycleStatus.
+func (s *GlMaintainLedgersCommandData) GetLifecycleStatus() GlMaintainLedgersCommandDataLifecycleStatus {
+	return s.LifecycleStatus
+}
+
+// GetEffectiveDateFrom returns the value of EffectiveDateFrom.
+func (s *GlMaintainLedgersCommandData) GetEffectiveDateFrom() time.Time {
+	return s.EffectiveDateFrom
+}
+
+// GetEffectiveDateTo returns the value of EffectiveDateTo.
+func (s *GlMaintainLedgersCommandData) GetEffectiveDateTo() OptNilDate {
+	return s.EffectiveDateTo
+}
+
+// GetApproval returns the value of Approval.
+func (s *GlMaintainLedgersCommandData) GetApproval() OptIamApprovalDecisionReference {
+	return s.Approval
+}
+
+// SetAction sets the value of Action.
+func (s *GlMaintainLedgersCommandData) SetAction(val GlMaintainLedgersCommandDataAction) {
+	s.Action = val
+}
+
+// SetLedgerId sets the value of LedgerId.
+func (s *GlMaintainLedgersCommandData) SetLedgerId(val OptUUID) {
+	s.LedgerId = val
+}
+
+// SetLegalEntityId sets the value of LegalEntityId.
+func (s *GlMaintainLedgersCommandData) SetLegalEntityId(val UUID) {
+	s.LegalEntityId = val
+}
+
+// SetLedgerType sets the value of LedgerType.
+func (s *GlMaintainLedgersCommandData) SetLedgerType(val string) {
+	s.LedgerType = val
+}
+
+// SetFunctionalCurrency sets the value of FunctionalCurrency.
+func (s *GlMaintainLedgersCommandData) SetFunctionalCurrency(val CurrencyCode) {
+	s.FunctionalCurrency = val
+}
+
+// SetFiscalCalendarId sets the value of FiscalCalendarId.
+func (s *GlMaintainLedgersCommandData) SetFiscalCalendarId(val UUID) {
+	s.FiscalCalendarId = val
+}
+
+// SetLifecycleStatus sets the value of LifecycleStatus.
+func (s *GlMaintainLedgersCommandData) SetLifecycleStatus(val GlMaintainLedgersCommandDataLifecycleStatus) {
+	s.LifecycleStatus = val
+}
+
+// SetEffectiveDateFrom sets the value of EffectiveDateFrom.
+func (s *GlMaintainLedgersCommandData) SetEffectiveDateFrom(val time.Time) {
+	s.EffectiveDateFrom = val
+}
+
+// SetEffectiveDateTo sets the value of EffectiveDateTo.
+func (s *GlMaintainLedgersCommandData) SetEffectiveDateTo(val OptNilDate) {
+	s.EffectiveDateTo = val
+}
+
+// SetApproval sets the value of Approval.
+func (s *GlMaintainLedgersCommandData) SetApproval(val OptIamApprovalDecisionReference) {
+	s.Approval = val
+}
+
+type GlMaintainLedgersCommandDataAction string
+
+const (
+	GlMaintainLedgersCommandDataActionCreate GlMaintainLedgersCommandDataAction = "create"
+	GlMaintainLedgersCommandDataActionUpdate GlMaintainLedgersCommandDataAction = "update"
+)
+
+// AllValues returns all GlMaintainLedgersCommandDataAction values.
+func (GlMaintainLedgersCommandDataAction) AllValues() []GlMaintainLedgersCommandDataAction {
+	return []GlMaintainLedgersCommandDataAction{
+		GlMaintainLedgersCommandDataActionCreate,
+		GlMaintainLedgersCommandDataActionUpdate,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GlMaintainLedgersCommandDataAction) MarshalText() ([]byte, error) {
+	switch s {
+	case GlMaintainLedgersCommandDataActionCreate:
+		return []byte(s), nil
+	case GlMaintainLedgersCommandDataActionUpdate:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GlMaintainLedgersCommandDataAction) UnmarshalText(data []byte) error {
+	switch GlMaintainLedgersCommandDataAction(data) {
+	case GlMaintainLedgersCommandDataActionCreate:
+		*s = GlMaintainLedgersCommandDataActionCreate
+		return nil
+	case GlMaintainLedgersCommandDataActionUpdate:
+		*s = GlMaintainLedgersCommandDataActionUpdate
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type GlMaintainLedgersCommandDataLifecycleStatus string
+
+const (
+	GlMaintainLedgersCommandDataLifecycleStatusDraft     GlMaintainLedgersCommandDataLifecycleStatus = "draft"
+	GlMaintainLedgersCommandDataLifecycleStatusActive    GlMaintainLedgersCommandDataLifecycleStatus = "active"
+	GlMaintainLedgersCommandDataLifecycleStatusSuspended GlMaintainLedgersCommandDataLifecycleStatus = "suspended"
+	GlMaintainLedgersCommandDataLifecycleStatusRetired   GlMaintainLedgersCommandDataLifecycleStatus = "retired"
+)
+
+// AllValues returns all GlMaintainLedgersCommandDataLifecycleStatus values.
+func (GlMaintainLedgersCommandDataLifecycleStatus) AllValues() []GlMaintainLedgersCommandDataLifecycleStatus {
+	return []GlMaintainLedgersCommandDataLifecycleStatus{
+		GlMaintainLedgersCommandDataLifecycleStatusDraft,
+		GlMaintainLedgersCommandDataLifecycleStatusActive,
+		GlMaintainLedgersCommandDataLifecycleStatusSuspended,
+		GlMaintainLedgersCommandDataLifecycleStatusRetired,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GlMaintainLedgersCommandDataLifecycleStatus) MarshalText() ([]byte, error) {
+	switch s {
+	case GlMaintainLedgersCommandDataLifecycleStatusDraft:
+		return []byte(s), nil
+	case GlMaintainLedgersCommandDataLifecycleStatusActive:
+		return []byte(s), nil
+	case GlMaintainLedgersCommandDataLifecycleStatusSuspended:
+		return []byte(s), nil
+	case GlMaintainLedgersCommandDataLifecycleStatusRetired:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GlMaintainLedgersCommandDataLifecycleStatus) UnmarshalText(data []byte) error {
+	switch GlMaintainLedgersCommandDataLifecycleStatus(data) {
+	case GlMaintainLedgersCommandDataLifecycleStatusDraft:
+		*s = GlMaintainLedgersCommandDataLifecycleStatusDraft
+		return nil
+	case GlMaintainLedgersCommandDataLifecycleStatusActive:
+		*s = GlMaintainLedgersCommandDataLifecycleStatusActive
+		return nil
+	case GlMaintainLedgersCommandDataLifecycleStatusSuspended:
+		*s = GlMaintainLedgersCommandDataLifecycleStatusSuspended
+		return nil
+	case GlMaintainLedgersCommandDataLifecycleStatusRetired:
+		*s = GlMaintainLedgersCommandDataLifecycleStatusRetired
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/GlMaintainLedgersCommandRequest
+type GlMaintainLedgersCommandRequest struct {
+	CommandId         UUID                         `json:"commandId"`
+	ExpectedVersion   OptInt                       `json:"expectedVersion"`
+	AccountingScopeId UUID                         `json:"accountingScopeId"`
+	Data              GlMaintainLedgersCommandData `json:"data"`
+}
+
+// GetCommandId returns the value of CommandId.
+func (s *GlMaintainLedgersCommandRequest) GetCommandId() UUID {
+	return s.CommandId
+}
+
+// GetExpectedVersion returns the value of ExpectedVersion.
+func (s *GlMaintainLedgersCommandRequest) GetExpectedVersion() OptInt {
+	return s.ExpectedVersion
+}
+
+// GetAccountingScopeId returns the value of AccountingScopeId.
+func (s *GlMaintainLedgersCommandRequest) GetAccountingScopeId() UUID {
+	return s.AccountingScopeId
+}
+
+// GetData returns the value of Data.
+func (s *GlMaintainLedgersCommandRequest) GetData() GlMaintainLedgersCommandData {
+	return s.Data
+}
+
+// SetCommandId sets the value of CommandId.
+func (s *GlMaintainLedgersCommandRequest) SetCommandId(val UUID) {
+	s.CommandId = val
+}
+
+// SetExpectedVersion sets the value of ExpectedVersion.
+func (s *GlMaintainLedgersCommandRequest) SetExpectedVersion(val OptInt) {
+	s.ExpectedVersion = val
+}
+
+// SetAccountingScopeId sets the value of AccountingScopeId.
+func (s *GlMaintainLedgersCommandRequest) SetAccountingScopeId(val UUID) {
+	s.AccountingScopeId = val
+}
+
+// SetData sets the value of Data.
+func (s *GlMaintainLedgersCommandRequest) SetData(val GlMaintainLedgersCommandData) {
+	s.Data = val
+}
+
 type GlMaintainLedgersConflict ProblemDetails
 
 func (*GlMaintainLedgersConflict) glMaintainLedgersRes() {}
 
+// Ref: #/components/schemas/GlMaintainLedgersEstablishedResult
+type GlMaintainLedgersEstablishedResult struct {
+	Status           string                      `json:"status"`
+	AggregateId      UUID                        `json:"aggregateId"`
+	AggregateVersion int                         `json:"aggregateVersion"`
+	ProcessId        OptNilUUID                  `json:"processId"`
+	CorrelationId    UUID                        `json:"correlationId"`
+	Links            Links                       `json:"links"`
+	Data             GlMaintainLedgersResultData `json:"data"`
+}
+
+// GetStatus returns the value of Status.
+func (s *GlMaintainLedgersEstablishedResult) GetStatus() string {
+	return s.Status
+}
+
+// GetAggregateId returns the value of AggregateId.
+func (s *GlMaintainLedgersEstablishedResult) GetAggregateId() UUID {
+	return s.AggregateId
+}
+
+// GetAggregateVersion returns the value of AggregateVersion.
+func (s *GlMaintainLedgersEstablishedResult) GetAggregateVersion() int {
+	return s.AggregateVersion
+}
+
+// GetProcessId returns the value of ProcessId.
+func (s *GlMaintainLedgersEstablishedResult) GetProcessId() OptNilUUID {
+	return s.ProcessId
+}
+
+// GetCorrelationId returns the value of CorrelationId.
+func (s *GlMaintainLedgersEstablishedResult) GetCorrelationId() UUID {
+	return s.CorrelationId
+}
+
+// GetLinks returns the value of Links.
+func (s *GlMaintainLedgersEstablishedResult) GetLinks() Links {
+	return s.Links
+}
+
+// GetData returns the value of Data.
+func (s *GlMaintainLedgersEstablishedResult) GetData() GlMaintainLedgersResultData {
+	return s.Data
+}
+
+// SetStatus sets the value of Status.
+func (s *GlMaintainLedgersEstablishedResult) SetStatus(val string) {
+	s.Status = val
+}
+
+// SetAggregateId sets the value of AggregateId.
+func (s *GlMaintainLedgersEstablishedResult) SetAggregateId(val UUID) {
+	s.AggregateId = val
+}
+
+// SetAggregateVersion sets the value of AggregateVersion.
+func (s *GlMaintainLedgersEstablishedResult) SetAggregateVersion(val int) {
+	s.AggregateVersion = val
+}
+
+// SetProcessId sets the value of ProcessId.
+func (s *GlMaintainLedgersEstablishedResult) SetProcessId(val OptNilUUID) {
+	s.ProcessId = val
+}
+
+// SetCorrelationId sets the value of CorrelationId.
+func (s *GlMaintainLedgersEstablishedResult) SetCorrelationId(val UUID) {
+	s.CorrelationId = val
+}
+
+// SetLinks sets the value of Links.
+func (s *GlMaintainLedgersEstablishedResult) SetLinks(val Links) {
+	s.Links = val
+}
+
+// SetData sets the value of Data.
+func (s *GlMaintainLedgersEstablishedResult) SetData(val GlMaintainLedgersResultData) {
+	s.Data = val
+}
+
+func (*GlMaintainLedgersEstablishedResult) glMaintainLedgersRes() {}
+
 type GlMaintainLedgersForbidden ProblemDetails
 
 func (*GlMaintainLedgersForbidden) glMaintainLedgersRes() {}
+
+// Ref: #/components/schemas/GlMaintainLedgersResultData
+type GlMaintainLedgersResultData struct {
+	Ledger            GlLedgerProjection `json:"ledger"`
+	DecisionReference OptUUID            `json:"decisionReference"`
+	PolicyReference   OptString          `json:"policyReference"`
+	ValidationOutcome string             `json:"validationOutcome"`
+	ApprovalStatus    string             `json:"approvalStatus"`
+	Replayed          OptBool            `json:"replayed"`
+}
+
+// GetLedger returns the value of Ledger.
+func (s *GlMaintainLedgersResultData) GetLedger() GlLedgerProjection {
+	return s.Ledger
+}
+
+// GetDecisionReference returns the value of DecisionReference.
+func (s *GlMaintainLedgersResultData) GetDecisionReference() OptUUID {
+	return s.DecisionReference
+}
+
+// GetPolicyReference returns the value of PolicyReference.
+func (s *GlMaintainLedgersResultData) GetPolicyReference() OptString {
+	return s.PolicyReference
+}
+
+// GetValidationOutcome returns the value of ValidationOutcome.
+func (s *GlMaintainLedgersResultData) GetValidationOutcome() string {
+	return s.ValidationOutcome
+}
+
+// GetApprovalStatus returns the value of ApprovalStatus.
+func (s *GlMaintainLedgersResultData) GetApprovalStatus() string {
+	return s.ApprovalStatus
+}
+
+// GetReplayed returns the value of Replayed.
+func (s *GlMaintainLedgersResultData) GetReplayed() OptBool {
+	return s.Replayed
+}
+
+// SetLedger sets the value of Ledger.
+func (s *GlMaintainLedgersResultData) SetLedger(val GlLedgerProjection) {
+	s.Ledger = val
+}
+
+// SetDecisionReference sets the value of DecisionReference.
+func (s *GlMaintainLedgersResultData) SetDecisionReference(val OptUUID) {
+	s.DecisionReference = val
+}
+
+// SetPolicyReference sets the value of PolicyReference.
+func (s *GlMaintainLedgersResultData) SetPolicyReference(val OptString) {
+	s.PolicyReference = val
+}
+
+// SetValidationOutcome sets the value of ValidationOutcome.
+func (s *GlMaintainLedgersResultData) SetValidationOutcome(val string) {
+	s.ValidationOutcome = val
+}
+
+// SetApprovalStatus sets the value of ApprovalStatus.
+func (s *GlMaintainLedgersResultData) SetApprovalStatus(val string) {
+	s.ApprovalStatus = val
+}
+
+// SetReplayed sets the value of Replayed.
+func (s *GlMaintainLedgersResultData) SetReplayed(val OptBool) {
+	s.Replayed = val
+}
 
 type GlMaintainLedgersServiceUnavailable ProblemDetails
 
@@ -4265,6 +5403,52 @@ type OmdPublishApprovedMasterDataChangesUnprocessableEntity ProblemDetails
 func (*OmdPublishApprovedMasterDataChangesUnprocessableEntity) omdPublishApprovedMasterDataChangesRes() {
 }
 
+// NewOptBool returns new OptBool with value set to v.
+func NewOptBool(v bool) OptBool {
+	return OptBool{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptBool is optional bool.
+type OptBool struct {
+	Value bool
+	Set   bool
+}
+
+// IsSet returns true if OptBool was set.
+func (o OptBool) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptBool) Reset() {
+	var v bool
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptBool) SetTo(v bool) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptBool) Get() (v bool, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptBool) Or(d bool) bool {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptDate returns new OptDate with value set to v.
 func NewOptDate(v time.Time) OptDate {
 	return OptDate{
@@ -4351,6 +5535,52 @@ func (o OptDateTime) Get() (v time.Time, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptDateTime) Or(d time.Time) time.Time {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptIamApprovalDecisionReference returns new OptIamApprovalDecisionReference with value set to v.
+func NewOptIamApprovalDecisionReference(v IamApprovalDecisionReference) OptIamApprovalDecisionReference {
+	return OptIamApprovalDecisionReference{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptIamApprovalDecisionReference is optional IamApprovalDecisionReference.
+type OptIamApprovalDecisionReference struct {
+	Value IamApprovalDecisionReference
+	Set   bool
+}
+
+// IsSet returns true if OptIamApprovalDecisionReference was set.
+func (o OptIamApprovalDecisionReference) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptIamApprovalDecisionReference) Reset() {
+	var v IamApprovalDecisionReference
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptIamApprovalDecisionReference) SetTo(v IamApprovalDecisionReference) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptIamApprovalDecisionReference) Get() (v IamApprovalDecisionReference, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptIamApprovalDecisionReference) Or(d IamApprovalDecisionReference) IamApprovalDecisionReference {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -4535,6 +5765,74 @@ func (o OptMoney) Get() (v Money, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptMoney) Or(d Money) Money {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilDate returns new OptNilDate with value set to v.
+func NewOptNilDate(v time.Time) OptNilDate {
+	return OptNilDate{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilDate is optional nullable time.Time.
+type OptNilDate struct {
+	Value time.Time
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilDate was set.
+func (o OptNilDate) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilDate) Reset() {
+	var v time.Time
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilDate) SetTo(v time.Time) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilDate) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilDate) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v time.Time
+	o.Value = v
+}
+
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilDate) IsEmpty() bool {
+	return !o.Set && !o.Null
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilDate) Get() (v time.Time, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilDate) Or(d time.Time) time.Time {
 	if v, ok := o.Get(); ok {
 		return v
 	}

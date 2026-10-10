@@ -31,6 +31,13 @@ func TestLegalEntityServiceIsIdempotentAndChecksVersion(t *testing.T) {
 	if len(audit.Records) != 1 {
 		t.Fatalf("audit records = %d, want 1", len(audit.Records))
 	}
+	reference, err := service.GetReference(context.Background(), first.LegalEntity.ID, scopeID)
+	if err != nil || reference.ID != first.LegalEntity.ID || reference.ScopeID != scopeID {
+		t.Fatalf("legal-entity reference = %#v, err = %v", reference, err)
+	}
+	if _, err := service.GetReference(context.Background(), first.LegalEntity.ID, uuid.New()); !errors.Is(err, ErrLegalEntityNotFound) {
+		t.Fatalf("cross-scope reference error = %v, want not found", err)
+	}
 
 	maintain := legalEntityTestCommand(scopeID, LegalEntityActionMaintain)
 	maintain.LegalEntityID = first.LegalEntity.ID

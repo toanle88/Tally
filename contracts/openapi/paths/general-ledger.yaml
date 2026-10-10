@@ -383,12 +383,26 @@
       required: true
       content:
         application/json:
-          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          schema: { $ref: ../components/common.yaml#/schemas/GlMaintainLedgersCommandRequest }
           examples:
             deterministic:
-              $ref: ../examples/command-request.yaml
+              value:
+                commandId: 0195a91b-20ab-7c15-8aa8-4e111a8bd618
+                accountingScopeId: 0195a91b-20ab-7c15-8aa8-4e111a8bd619
+                data:
+                  action: create
+                  legalEntityId: 0195a91b-20ab-7c15-8aa8-4e111a8bd620
+                  ledgerType: statutory
+                  functionalCurrency: USD
+                  fiscalCalendarId: 0195a91b-20ab-7c15-8aa8-4e111a8bd621
+                  lifecycleStatus: active
+                  effectiveDateFrom: '2026-01-01'
     responses:
-      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '200':
+        description: Established ledger result
+        content:
+          application/json:
+            schema: { $ref: ../components/common.yaml#/schemas/GlMaintainLedgersEstablishedResult }
       '400': { $ref: ../components/common.yaml#/responses/Problem }
       '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
       '403': { $ref: ../components/common.yaml#/responses/Problem }
@@ -411,12 +425,26 @@
       required: true
       content:
         application/json:
-          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          schema: { $ref: ../components/common.yaml#/schemas/GlMaintainAccountingBooksCommandRequest }
           examples:
             deterministic:
-              $ref: ../examples/command-request.yaml
+              value:
+                commandId: 0195a91b-20ab-7c15-8aa8-4e111a8bd618
+                accountingScopeId: 0195a91b-20ab-7c15-8aa8-4e111a8bd619
+                data:
+                  action: create
+                  ledgerId: 0195a91b-20ab-7c15-8aa8-4e111a8bd620
+                  bookType: statutory
+                  accountingBasis: IFRS
+                  postingPolicyVersion: gl-posting-v1
+                  lifecycleStatus: active
+                  effectiveDateFrom: '2026-01-01'
     responses:
-      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '200':
+        description: Established accounting-book result
+        content:
+          application/json:
+            schema: { $ref: ../components/common.yaml#/schemas/GlMaintainAccountingBooksEstablishedResult }
       '400': { $ref: ../components/common.yaml#/responses/Problem }
       '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
       '403': { $ref: ../components/common.yaml#/responses/Problem }

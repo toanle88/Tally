@@ -98,6 +98,14 @@ describe('application router', () => {
     expect(screen.getByRole('note')).toHaveTextContent('does not mutate the subject')
   })
 
+  it('supports direct entry to the GL ledger and accounting-book configuration screen', async () => {
+    renderRoute('/general-ledger/gl-scr-04')
+    expect(await screen.findByRole('heading', { name: 'Ledger and accounting-book configuration' })).toBeInTheDocument()
+    expect(screen.getByRole('note')).toHaveTextContent('local safe adapter')
+    expect(screen.getByRole('button', { name: 'Save ledger revision' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Save accounting-book revision' })).toBeInTheDocument()
+  })
+
   it('updates active navigation and supports back navigation', async () => {
     const router = renderRoute('/')
     fireEvent.click(screen.getByRole('link', { name: 'Exceptions' }))

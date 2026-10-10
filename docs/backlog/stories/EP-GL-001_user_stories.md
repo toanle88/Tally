@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Epic | EP-GL-001 — General Ledger |
-| Status | Planned story decomposition; no implementation or completion is claimed |
+| Status | User Story 1 implementation is present on `feat/gl-us1-ledger-book-maintenance`; see the scoped verification record for open boundaries and unrun qualification checks |
 | Milestone | M2 — General ledger and posting control |
 | Delivery items | DLV-GFR-005, DLV-GFR-011, DLV-FR-GL-001 through DLV-FR-GL-018, DLV-WF-6.6 |
 | Owning bounded context | General Ledger — `internal/gl`, `gl` schema |
@@ -236,16 +236,18 @@ established.
 
 Acceptance criteria:
 
-- [ ] An authorized command can create or maintain a ledger with explicit
+- [x] An authorized command can create or maintain a ledger with explicit
   legal-entity ownership, ledger type, functional currency, fiscal calendar,
   lifecycle status, and effective-date range.
-- [ ] An authorized command can create or maintain an accounting book for an
+- [x] An authorized command can create or maintain an accounting book for an
   existing ledger with accounting basis, book type, posting-policy version,
   lifecycle status, and effective dates.
 - [ ] Missing or invalid legal entities, calendars, ledger relationships,
   currencies, effective-date intervals, or scoped identities are rejected
-  atomically with typed reasons.
-- [ ] Accepted results identify the authoritative aggregate identity, version,
+  atomically with typed reasons; PostgreSQL runtime OMD references use the
+  owning application boundary and live cross-context qualification remains
+  tracked in the verification record.
+- [x] Accepted results identify the authoritative aggregate identity, version,
   ownership, currency/calendar or book relationship, effective dates, lifecycle
   state, approval evidence where applicable, and validation outcome.
 - [ ] `If-Match`, explicit accounting scope, idempotency, correlation,
@@ -255,7 +257,7 @@ Acceptance criteria:
 - [ ] A policy-version or effective-date change preserves the configuration
   version referenced by established journals and does not rewrite financial
   history.
-- [ ] `GL-SCR-04` shows current state, effective dates, version, owner,
+- [x] `GL-SCR-04` shows current state, effective dates, version, owner,
   approval/validation status, blocked action, blocking reason, and recovery or
   next-action guidance.
 
@@ -275,15 +277,22 @@ Suggested implementation steps:
 
 Required test evidence:
 
-- [ ] Domain tests for field/value validation, relationship rules,
+- [x] Domain tests for field/value validation, relationship rules,
   effective-date boundaries, lifecycle transitions, and expected-version
   conflicts.
-- [ ] Persistence tests for GL schema ownership, constraints, rollback, and
+- [x] Persistence tests for GL schema ownership, constraints, rollback, and
   historical configuration-version retention.
-- [ ] API tests for scope/permission enforcement, idempotency, `If-Match`, typed
-  problems, correlation, audit failure, and dependency failure.
-- [ ] Component and Playwright tests for configuration forms, validation
-  summaries, keyboard/focus behavior, zoom/reflow, and safe status updates.
+- [x] API handler tests cover scope/permission enforcement, idempotency,
+  `If-Match`, typed problems, correlation, audit failure, and dependency
+  failure; live runtime and Workflow/SOD qualification remains tracked in the
+  verification record.
+- [x] Component tests for configuration forms, validation summaries, and safe
+  status updates.
+- [ ] Playwright tests for configuration forms, keyboard/focus behavior,
+  zoom/reflow, and safe status updates.
+
+Implementation evidence and remaining boundaries are recorded in
+[`docs/verification/DLV-FR-GL-015-016-us1-ledger-book-maintenance.md`](../../verification/DLV-FR-GL-015-016-us1-ledger-book-maintenance.md).
 
 ### User Story 2 — Maintain charts of accounts and account/reporting mappings
 

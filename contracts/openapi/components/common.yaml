@@ -88,6 +88,164 @@ schemas:
       accountingScopeId: { $ref: '#/schemas/Uuid' }
       businessDate: { type: string, format: date }
       data: { type: object, additionalProperties: true }
+  GlMaintainLedgersCommandRequest:
+    type: object
+    additionalProperties: false
+    required: [commandId, accountingScopeId, data]
+    properties:
+      commandId: { $ref: '#/schemas/Uuid' }
+      expectedVersion: { type: integer, minimum: 1 }
+      accountingScopeId: { $ref: '#/schemas/Uuid' }
+      data: { $ref: '#/schemas/GlMaintainLedgersCommandData' }
+  GlMaintainLedgersCommandData:
+    type: object
+    additionalProperties: false
+    required: [action, legalEntityId, ledgerType, functionalCurrency, fiscalCalendarId, lifecycleStatus, effectiveDateFrom]
+    properties:
+      action:
+        type: string
+        enum: [create, update]
+      ledgerId: { $ref: '#/schemas/Uuid' }
+      legalEntityId: { $ref: '#/schemas/Uuid' }
+      ledgerType: { type: string, minLength: 1, maxLength: 80 }
+      functionalCurrency: { $ref: '#/schemas/CurrencyCode' }
+      fiscalCalendarId: { $ref: '#/schemas/Uuid' }
+      lifecycleStatus:
+        type: string
+        enum: [draft, active, suspended, retired]
+      effectiveDateFrom: { type: string, format: date }
+      effectiveDateTo:
+        oneOf:
+          - { type: string, format: date }
+          - { type: 'null' }
+      approval: { $ref: '#/schemas/IamApprovalDecisionReference' }
+  GlMaintainAccountingBooksCommandRequest:
+    type: object
+    additionalProperties: false
+    required: [commandId, accountingScopeId, data]
+    properties:
+      commandId: { $ref: '#/schemas/Uuid' }
+      expectedVersion: { type: integer, minimum: 1 }
+      accountingScopeId: { $ref: '#/schemas/Uuid' }
+      data: { $ref: '#/schemas/GlMaintainAccountingBooksCommandData' }
+  GlMaintainAccountingBooksCommandData:
+    type: object
+    additionalProperties: false
+    required: [action, ledgerId, bookType, accountingBasis, postingPolicyVersion, lifecycleStatus, effectiveDateFrom]
+    properties:
+      action:
+        type: string
+        enum: [create, update]
+      accountingBookId: { $ref: '#/schemas/Uuid' }
+      ledgerId: { $ref: '#/schemas/Uuid' }
+      bookType: { type: string, minLength: 1, maxLength: 80 }
+      accountingBasis: { type: string, minLength: 1, maxLength: 80 }
+      postingPolicyVersion: { type: string, minLength: 1, maxLength: 120 }
+      lifecycleStatus:
+        type: string
+        enum: [draft, active, suspended, retired]
+      effectiveDateFrom: { type: string, format: date }
+      effectiveDateTo:
+        oneOf:
+          - { type: string, format: date }
+          - { type: 'null' }
+      approval: { $ref: '#/schemas/IamApprovalDecisionReference' }
+  GlLedgerProjection:
+    type: object
+    additionalProperties: false
+    required: [id, accountingScopeId, legalEntityId, ledgerType, functionalCurrency, fiscalCalendarId, lifecycleStatus, effectiveDateFrom, approvalStatus, validationOutcome, nextAction, version, revisionNumber]
+    properties:
+      id: { $ref: '#/schemas/Uuid' }
+      accountingScopeId: { $ref: '#/schemas/Uuid' }
+      legalEntityId: { $ref: '#/schemas/Uuid' }
+      ledgerType: { type: string }
+      functionalCurrency: { $ref: '#/schemas/CurrencyCode' }
+      fiscalCalendarId: { $ref: '#/schemas/Uuid' }
+      lifecycleStatus: { type: string }
+      effectiveDateFrom: { type: string, format: date }
+      effectiveDateTo:
+        oneOf:
+          - { type: string, format: date }
+          - { type: 'null' }
+      approvalStatus: { type: string }
+      validationOutcome: { type: string }
+      nextAction: { type: string }
+      version: { type: integer, minimum: 1 }
+      revisionNumber: { type: integer, minimum: 1 }
+  GlAccountingBookProjection:
+    type: object
+    additionalProperties: false
+    required: [id, accountingScopeId, ledgerId, bookType, accountingBasis, postingPolicyVersion, lifecycleStatus, effectiveDateFrom, approvalStatus, validationOutcome, nextAction, version, revisionNumber]
+    properties:
+      id: { $ref: '#/schemas/Uuid' }
+      accountingScopeId: { $ref: '#/schemas/Uuid' }
+      ledgerId: { $ref: '#/schemas/Uuid' }
+      bookType: { type: string }
+      accountingBasis: { type: string }
+      postingPolicyVersion: { type: string }
+      lifecycleStatus: { type: string }
+      effectiveDateFrom: { type: string, format: date }
+      effectiveDateTo:
+        oneOf:
+          - { type: string, format: date }
+          - { type: 'null' }
+      approvalStatus: { type: string }
+      validationOutcome: { type: string }
+      nextAction: { type: string }
+      version: { type: integer, minimum: 1 }
+      revisionNumber: { type: integer, minimum: 1 }
+  GlMaintainLedgersResultData:
+    type: object
+    additionalProperties: false
+    required: [ledger, validationOutcome, approvalStatus]
+    properties:
+      ledger: { $ref: '#/schemas/GlLedgerProjection' }
+      decisionReference: { $ref: '#/schemas/Uuid' }
+      policyReference: { type: string }
+      validationOutcome: { type: string }
+      approvalStatus: { type: string }
+      replayed: { type: boolean }
+  GlMaintainAccountingBooksResultData:
+    type: object
+    additionalProperties: false
+    required: [accountingBook, validationOutcome, approvalStatus]
+    properties:
+      accountingBook: { $ref: '#/schemas/GlAccountingBookProjection' }
+      decisionReference: { $ref: '#/schemas/Uuid' }
+      policyReference: { type: string }
+      validationOutcome: { type: string }
+      approvalStatus: { type: string }
+      replayed: { type: boolean }
+  GlMaintainLedgersEstablishedResult:
+    type: object
+    additionalProperties: false
+    required: [status, aggregateId, aggregateVersion, correlationId, links, data]
+    properties:
+      status: { type: string, const: established }
+      aggregateId: { $ref: '#/schemas/Uuid' }
+      aggregateVersion: { type: integer, minimum: 1 }
+      processId:
+        oneOf:
+          - { $ref: '#/schemas/Uuid' }
+          - { type: 'null' }
+      correlationId: { $ref: '#/schemas/Uuid' }
+      links: { $ref: '#/schemas/Links' }
+      data: { $ref: '#/schemas/GlMaintainLedgersResultData' }
+  GlMaintainAccountingBooksEstablishedResult:
+    type: object
+    additionalProperties: false
+    required: [status, aggregateId, aggregateVersion, correlationId, links, data]
+    properties:
+      status: { type: string, const: established }
+      aggregateId: { $ref: '#/schemas/Uuid' }
+      aggregateVersion: { type: integer, minimum: 1 }
+      processId:
+        oneOf:
+          - { $ref: '#/schemas/Uuid' }
+          - { type: 'null' }
+      correlationId: { $ref: '#/schemas/Uuid' }
+      links: { $ref: '#/schemas/Links' }
+      data: { $ref: '#/schemas/GlMaintainAccountingBooksResultData' }
   IamManageUsersCommandRequest:
     type: object
     additionalProperties: false

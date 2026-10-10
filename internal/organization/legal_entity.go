@@ -279,6 +279,14 @@ type SafeLegalEntity struct {
 	NextAction           string                            `json:"nextAction"`
 }
 
+// LegalEntityReference is the minimal OMD-owned identity contract used by
+// downstream contexts for authoritative scope validation. It deliberately
+// excludes the safe projection's restricted and effective-dated attributes.
+type LegalEntityReference struct {
+	ID      uuid.UUID `json:"id"`
+	ScopeID uuid.UUID `json:"scopeId"`
+}
+
 type SafeRegistration struct {
 	Type             string     `json:"type"`
 	Jurisdiction     string     `json:"jurisdiction"`

@@ -108,6 +108,13 @@ type SafeFiscalCalendar struct {
 	NextAction     string                            `json:"nextAction"`
 }
 
+// FiscalCalendarReference is the minimal OMD-owned identity contract used by
+// downstream contexts for authoritative scope validation.
+type FiscalCalendarReference struct {
+	ID      uuid.UUID `json:"id"`
+	ScopeID uuid.UUID `json:"scopeId"`
+}
+
 type FiscalCalendarImpactReference struct {
 	Context   string `json:"context"`
 	Reference string `json:"reference"`

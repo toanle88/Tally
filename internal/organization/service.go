@@ -400,6 +400,27 @@ func (service *LegalEntityService) GetSafe(ctx context.Context, actor Actor, id 
 	return entity.SafeProjection(), nil
 }
 
+// GetReference is the OMD application boundary for downstream authoritative
+// identity checks. The downstream command must establish actor authorization;
+// this method only returns the scoped identity and never exposes the full
+// LegalEntity aggregate or reads the OMD schema outside its owning module.
+func (service *LegalEntityService) GetReference(ctx context.Context, id, scopeID uuid.UUID) (LegalEntityReference, error) {
+	if service == nil {
+		return LegalEntityReference{}, ErrInvalidLegalEntityService
+	}
+	if id == uuid.Nil || scopeID == uuid.Nil {
+		return LegalEntityReference{}, ErrLegalEntityNotFound
+	}
+	entity, err := service.repository.Get(ctx, id)
+	if err != nil {
+		return LegalEntityReference{}, err
+	}
+	if entity.ScopeID != scopeID {
+		return LegalEntityReference{}, ErrLegalEntityNotFound
+	}
+	return LegalEntityReference{ID: entity.ID, ScopeID: entity.ScopeID}, nil
+}
+
 func authorizeLegalEntityDecision(decision AuthorizationDecision, scope uuid.UUID) error {
 	if !decision.Allowed || decision.Permission != LegalEntityManagementPermission {
 		return ErrLegalEntityAuthorizationDenied

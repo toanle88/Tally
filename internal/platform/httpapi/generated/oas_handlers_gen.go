@@ -13570,7 +13570,7 @@ func (s *Server) handleGlMaintainAccountingBooksRequest(args [0]string, argsEsca
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *GlMaintainAccountingBooksCommandRequest
 			Params   = GlMaintainAccountingBooksParams
 			Response = GlMaintainAccountingBooksRes
 		)
@@ -14041,7 +14041,7 @@ func (s *Server) handleGlMaintainLedgersRequest(args [0]string, argsEscaped bool
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *GlMaintainLedgersCommandRequest
 			Params   = GlMaintainLedgersParams
 			Response = GlMaintainLedgersRes
 		)

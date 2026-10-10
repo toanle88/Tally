@@ -13,6 +13,7 @@ import (
 	"github.com/go-faster/jx"
 	"github.com/google/uuid"
 	"github.com/toanle88/Tally/internal/coa"
+	"github.com/toanle88/Tally/internal/gl"
 	"github.com/toanle88/Tally/internal/identity"
 	"github.com/toanle88/Tally/internal/organization"
 	"github.com/toanle88/Tally/internal/platform/aggregateversion"
@@ -37,6 +38,8 @@ type IdentityHandler struct {
 	VendorProfileService                 *organization.VendorProfileService
 	FiscalCalendarService                *organization.FiscalCalendarService
 	PublicationService                   *organization.MasterDataPublicationService
+	LedgerService                        *gl.LedgerService
+	AccountingBookService                *gl.AccountingBookService
 	Instrumentation                      *telemetry.Instrumentation
 }
 
