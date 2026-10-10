@@ -1,0 +1,11 @@
+title = "Tally secret scanning configuration"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Historical deterministic GL idempotency fixtures"
+condition = "AND"
+paths = ['''^internal/gl/configuration_test\.go$''']
+regexTarget = "line"
+regexes = ['''IdempotencyKey:\s*"ledger-duplicate-[12]"''']
