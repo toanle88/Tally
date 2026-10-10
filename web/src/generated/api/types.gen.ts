@@ -90,6 +90,103 @@ export type ProblemDetails = {
     fieldErrors?: Array<ProblemFieldError>;
 };
 
+export type GlPostingConversionEvidence = {
+    rateSetId: Uuid;
+    rateType: string;
+    conversionDate: string;
+    conversionTimestamp: string;
+};
+
+export type GlPostingRequestLine = {
+    accountId: Uuid;
+    debitOrCredit: 'debit' | 'credit';
+    lineCurrencyMode: 'TransactionAndFunctional' | 'FunctionalOnlyAdjustment';
+    transactionAmount: Money;
+    functionalAmount: Money;
+    segmentCombinationId: Uuid;
+    lineReference?: string;
+};
+
+export type GlSubmitPostingRequestCommandData = {
+    contractVersion: 2;
+    requestId: Uuid;
+    sourceContext: string;
+    sourceAggregateType: string;
+    sourceAggregateId: Uuid;
+    sourceVersion: number;
+    tenantId: Uuid;
+    legalEntityId: Uuid;
+    ledgerId: Uuid;
+    accountingBookId: Uuid;
+    functionalCurrency: CurrencyCode;
+    postingDate: string;
+    fiscalPeriodId: Uuid;
+    periodStateVersion: number;
+    postingGateVersion: number;
+    postingPurpose: 'Ordinary' | 'Close' | 'ReopenCorrection' | 'OperationalReopen' | 'PolicyAdjustment';
+    adjustmentPeriodIndicator?: boolean;
+    postingAuthorizationId?: Uuid;
+    closeRunId?: Uuid;
+    reopenRequestId?: Uuid;
+    operationalReopenRequestId?: Uuid;
+    controlAuthorityEpoch?: number;
+    transactionCurrency: CurrencyCode;
+    conversionEvidence?: GlPostingConversionEvidence;
+    description?: string;
+    lines: Array<GlPostingRequestLine>;
+    reversalOfJournalEntryId?: Uuid;
+    automaticReversalDate?: string;
+};
+
+export type GlSubmitPostingRequestCommandRequest = {
+    commandId: Uuid;
+    expectedVersion?: number;
+    accountingScopeId: Uuid;
+    businessDate?: string;
+    data: GlSubmitPostingRequestCommandData;
+};
+
+export type GlPostingGateEvidence = {
+    fiscalPeriodId: Uuid;
+    periodStateVersion: number;
+    postingGateVersion: number;
+    gateMode: string;
+};
+
+export type GlPostingValidationIssue = {
+    code: string;
+    field: string;
+    message: string;
+};
+
+export type GlSubmitPostingRequestResultData = {
+    outcome: 'JournalEntryPosted' | 'PostingPendingApproval';
+    lifecycleStatus: 'PendingApproval' | 'Posted';
+    journalId?: Uuid;
+    journalNumber?: string;
+    journalVersion?: number;
+    ledgerPosition?: number;
+    approvalRequestId?: Uuid;
+    nextAction?: string;
+    validationOutcome: string;
+    approvalStatus: string;
+    sourceReference: string;
+    gateEvidence: GlPostingGateEvidence;
+    auditReference?: Uuid;
+    replayed: boolean;
+    issues?: Array<GlPostingValidationIssue>;
+};
+
+export type GlSubmitPostingRequestEstablishedResult = {
+    status: 'established';
+    aggregateId: Uuid;
+    aggregateVersion: number;
+    processId?: Uuid | null;
+    correlationId: Uuid;
+    links: Links;
+    data: GlSubmitPostingRequestResultData;
+};
+
 export type IamApprovalDecisionReference = {
     approvalRequestId: Uuid;
     decisionId: Uuid;
@@ -833,7 +930,7 @@ export type OmdGetLegalEntityResponses = {
 export type OmdGetLegalEntityResponse = OmdGetLegalEntityResponses[keyof OmdGetLegalEntityResponses];
 
 export type GlSubmitPostingRequestData = {
-    body: CommandRequest;
+    body: GlSubmitPostingRequestCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
@@ -876,9 +973,9 @@ export type GlSubmitPostingRequestError = GlSubmitPostingRequestErrors[keyof GlS
 
 export type GlSubmitPostingRequestResponses = {
     /**
-     * Established result
+     * Established posting result
      */
-    200: EstablishedResult;
+    200: GlSubmitPostingRequestEstablishedResult;
 };
 
 export type GlSubmitPostingRequestResponse = GlSubmitPostingRequestResponses[keyof GlSubmitPostingRequestResponses];

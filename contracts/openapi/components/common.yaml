@@ -88,6 +88,151 @@ schemas:
       accountingScopeId: { $ref: '#/schemas/Uuid' }
       businessDate: { type: string, format: date }
       data: { type: object, additionalProperties: true }
+  GlSubmitPostingRequestCommandRequest:
+    type: object
+    additionalProperties: false
+    required: [commandId, accountingScopeId, data]
+    properties:
+      commandId: { $ref: '#/schemas/Uuid' }
+      expectedVersion: { type: integer, minimum: 1 }
+      accountingScopeId: { $ref: '#/schemas/Uuid' }
+      businessDate: { type: string, format: date }
+      data: { $ref: '#/schemas/GlSubmitPostingRequestCommandData' }
+  GlSubmitPostingRequestCommandData:
+    type: object
+    additionalProperties: false
+    required:
+      - contractVersion
+      - requestId
+      - sourceContext
+      - sourceAggregateType
+      - sourceAggregateId
+      - sourceVersion
+      - tenantId
+      - legalEntityId
+      - ledgerId
+      - accountingBookId
+      - functionalCurrency
+      - postingDate
+      - fiscalPeriodId
+      - periodStateVersion
+      - postingGateVersion
+      - postingPurpose
+      - transactionCurrency
+      - lines
+    properties:
+      contractVersion: { type: integer, const: 2 }
+      requestId: { $ref: '#/schemas/Uuid' }
+      sourceContext: { type: string, minLength: 1, maxLength: 120 }
+      sourceAggregateType: { type: string, minLength: 1, maxLength: 120 }
+      sourceAggregateId: { $ref: '#/schemas/Uuid' }
+      sourceVersion: { type: integer, minimum: 1 }
+      tenantId: { $ref: '#/schemas/Uuid' }
+      legalEntityId: { $ref: '#/schemas/Uuid' }
+      ledgerId: { $ref: '#/schemas/Uuid' }
+      accountingBookId: { $ref: '#/schemas/Uuid' }
+      functionalCurrency: { $ref: '#/schemas/CurrencyCode' }
+      postingDate: { type: string, format: date }
+      fiscalPeriodId: { $ref: '#/schemas/Uuid' }
+      periodStateVersion: { type: integer, minimum: 1 }
+      postingGateVersion: { type: integer, minimum: 1 }
+      postingPurpose:
+        type: string
+        enum: [Ordinary, Close, ReopenCorrection, OperationalReopen, PolicyAdjustment]
+      adjustmentPeriodIndicator: { type: boolean }
+      postingAuthorizationId: { $ref: '#/schemas/Uuid' }
+      closeRunId: { $ref: '#/schemas/Uuid' }
+      reopenRequestId: { $ref: '#/schemas/Uuid' }
+      operationalReopenRequestId: { $ref: '#/schemas/Uuid' }
+      controlAuthorityEpoch: { type: integer, minimum: 1 }
+      transactionCurrency: { $ref: '#/schemas/CurrencyCode' }
+      conversionEvidence: { $ref: '#/schemas/GlPostingConversionEvidence' }
+      description: { type: string, maxLength: 500 }
+      lines:
+        type: array
+        minItems: 2
+        items: { $ref: '#/schemas/GlPostingRequestLine' }
+      reversalOfJournalEntryId: { $ref: '#/schemas/Uuid' }
+      automaticReversalDate: { type: string, format: date }
+  GlPostingConversionEvidence:
+    type: object
+    additionalProperties: false
+    required: [rateSetId, rateType, conversionDate, conversionTimestamp]
+    properties:
+      rateSetId: { $ref: '#/schemas/Uuid' }
+      rateType: { type: string, minLength: 1, maxLength: 80 }
+      conversionDate: { type: string, format: date }
+      conversionTimestamp: { type: string, format: date-time }
+  GlPostingRequestLine:
+    type: object
+    additionalProperties: false
+    required: [accountId, debitOrCredit, lineCurrencyMode, transactionAmount, functionalAmount, segmentCombinationId]
+    properties:
+      accountId: { $ref: '#/schemas/Uuid' }
+      debitOrCredit:
+        type: string
+        enum: [debit, credit]
+      lineCurrencyMode:
+        type: string
+        enum: [TransactionAndFunctional, FunctionalOnlyAdjustment]
+      transactionAmount: { $ref: '#/schemas/Money' }
+      functionalAmount: { $ref: '#/schemas/Money' }
+      segmentCombinationId: { $ref: '#/schemas/Uuid' }
+      lineReference: { type: string, maxLength: 240 }
+  GlPostingGateEvidence:
+    type: object
+    additionalProperties: false
+    required: [fiscalPeriodId, periodStateVersion, postingGateVersion, gateMode]
+    properties:
+      fiscalPeriodId: { $ref: '#/schemas/Uuid' }
+      periodStateVersion: { type: integer, minimum: 1 }
+      postingGateVersion: { type: integer, minimum: 1 }
+      gateMode: { type: string }
+  GlPostingValidationIssue:
+    type: object
+    additionalProperties: false
+    required: [code, field, message]
+    properties:
+      code: { type: string }
+      field: { type: string }
+      message: { type: string }
+  GlSubmitPostingRequestResultData:
+    type: object
+    additionalProperties: false
+    required: [outcome, lifecycleStatus, validationOutcome, approvalStatus, sourceReference, gateEvidence, replayed]
+    properties:
+      outcome: { type: string, enum: [JournalEntryPosted, PostingPendingApproval] }
+      lifecycleStatus: { type: string, enum: [PendingApproval, Posted] }
+      journalId: { $ref: '#/schemas/Uuid' }
+      journalNumber: { type: string }
+      journalVersion: { type: integer, minimum: 1 }
+      ledgerPosition: { type: integer, minimum: 1 }
+      approvalRequestId: { $ref: '#/schemas/Uuid' }
+      nextAction: { type: string }
+      validationOutcome: { type: string }
+      approvalStatus: { type: string }
+      sourceReference: { type: string }
+      gateEvidence: { $ref: '#/schemas/GlPostingGateEvidence' }
+      auditReference: { $ref: '#/schemas/Uuid' }
+      replayed: { type: boolean }
+      issues:
+        type: array
+        items: { $ref: '#/schemas/GlPostingValidationIssue' }
+  GlSubmitPostingRequestEstablishedResult:
+    type: object
+    additionalProperties: false
+    required: [status, aggregateId, aggregateVersion, correlationId, links, data]
+    properties:
+      status: { type: string, const: established }
+      aggregateId: { $ref: '#/schemas/Uuid' }
+      aggregateVersion: { type: integer, minimum: 1 }
+      processId:
+        oneOf:
+          - { $ref: '#/schemas/Uuid' }
+          - { type: 'null' }
+      correlationId: { $ref: '#/schemas/Uuid' }
+      links: { $ref: '#/schemas/Links' }
+      data: { $ref: '#/schemas/GlSubmitPostingRequestResultData' }
   GlMaintainLedgersCommandRequest:
     type: object
     additionalProperties: false

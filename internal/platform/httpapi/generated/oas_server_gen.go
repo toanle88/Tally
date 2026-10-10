@@ -403,7 +403,7 @@ type Handler interface {
 	// GlSubmitPostingRequest implements glSubmitPostingRequest operation.
 	//
 	// POST /general-ledger/actions/submit-posting-request
-	GlSubmitPostingRequest(ctx context.Context, req *CommandRequest, params GlSubmitPostingRequestParams) (GlSubmitPostingRequestRes, error)
+	GlSubmitPostingRequest(ctx context.Context, req *GlSubmitPostingRequestCommandRequest, params GlSubmitPostingRequestParams) (GlSubmitPostingRequestRes, error)
 	// IamGrantEmergencyAccess implements iamGrantEmergencyAccess operation.
 	//
 	// POST /identity-access/actions/grant-emergency-access

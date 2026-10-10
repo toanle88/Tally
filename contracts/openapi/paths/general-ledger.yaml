@@ -13,12 +13,49 @@
       required: true
       content:
         application/json:
-          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          schema: { $ref: ../components/common.yaml#/schemas/GlSubmitPostingRequestCommandRequest }
           examples:
             deterministic:
-              $ref: ../examples/command-request.yaml
+              value:
+                commandId: 00000000-0000-0000-0000-000000000001
+                accountingScopeId: 00000000-0000-0000-0000-000000000002
+                data:
+                  contractVersion: 2
+                  requestId: 00000000-0000-0000-0000-000000000003
+                  sourceContext: accounts-payable
+                  sourceAggregateType: vendor-invoice
+                  sourceAggregateId: 00000000-0000-0000-0000-000000000004
+                  sourceVersion: 3
+                  tenantId: 00000000-0000-0000-0000-000000000005
+                  legalEntityId: 00000000-0000-0000-0000-000000000006
+                  ledgerId: 00000000-0000-0000-0000-000000000007
+                  accountingBookId: 00000000-0000-0000-0000-000000000008
+                  functionalCurrency: USD
+                  postingDate: '2026-01-15'
+                  fiscalPeriodId: 00000000-0000-0000-0000-000000000009
+                  periodStateVersion: 2
+                  postingGateVersion: 4
+                  postingPurpose: Ordinary
+                  transactionCurrency: USD
+                  lines:
+                    - accountId: 00000000-0000-0000-0000-000000000010
+                      debitOrCredit: debit
+                      lineCurrencyMode: TransactionAndFunctional
+                      transactionAmount: '100.00'
+                      functionalAmount: '100.00'
+                      segmentCombinationId: 00000000-0000-0000-0000-000000000011
+                    - accountId: 00000000-0000-0000-0000-000000000012
+                      debitOrCredit: credit
+                      lineCurrencyMode: TransactionAndFunctional
+                      transactionAmount: '100.00'
+                      functionalAmount: '100.00'
+                      segmentCombinationId: 00000000-0000-0000-0000-000000000013
     responses:
-      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '200':
+        description: Established posting result
+        content:
+          application/json:
+            schema: { $ref: ../components/common.yaml#/schemas/GlSubmitPostingRequestEstablishedResult }
       '400': { $ref: ../components/common.yaml#/responses/Problem }
       '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
       '403': { $ref: ../components/common.yaml#/responses/Problem }

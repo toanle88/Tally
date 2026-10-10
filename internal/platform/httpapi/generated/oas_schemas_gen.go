@@ -1359,7 +1359,6 @@ func (*EstablishedResult) glOpenOperationalReopenGateRes()                      
 func (*EstablishedResult) glOpenScopedReopenGateRes()                           {}
 func (*EstablishedResult) glReleasePostingBarrierRes()                          {}
 func (*EstablishedResult) glReverseJournalEntryRes()                            {}
-func (*EstablishedResult) glSubmitPostingRequestRes()                           {}
 func (*EstablishedResult) iamGrantEmergencyAccessRes()                          {}
 func (*EstablishedResult) iamManageAccessPoliciesRes()                          {}
 func (*EstablishedResult) iamManageRolesRes()                                   {}
@@ -5060,6 +5059,302 @@ type GlOpenScopedReopenGateUnprocessableEntity ProblemDetails
 
 func (*GlOpenScopedReopenGateUnprocessableEntity) glOpenScopedReopenGateRes() {}
 
+// Ref: #/components/schemas/GlPostingConversionEvidence
+type GlPostingConversionEvidence struct {
+	RateSetId           UUID      `json:"rateSetId"`
+	RateType            string    `json:"rateType"`
+	ConversionDate      time.Time `json:"conversionDate"`
+	ConversionTimestamp time.Time `json:"conversionTimestamp"`
+}
+
+// GetRateSetId returns the value of RateSetId.
+func (s *GlPostingConversionEvidence) GetRateSetId() UUID {
+	return s.RateSetId
+}
+
+// GetRateType returns the value of RateType.
+func (s *GlPostingConversionEvidence) GetRateType() string {
+	return s.RateType
+}
+
+// GetConversionDate returns the value of ConversionDate.
+func (s *GlPostingConversionEvidence) GetConversionDate() time.Time {
+	return s.ConversionDate
+}
+
+// GetConversionTimestamp returns the value of ConversionTimestamp.
+func (s *GlPostingConversionEvidence) GetConversionTimestamp() time.Time {
+	return s.ConversionTimestamp
+}
+
+// SetRateSetId sets the value of RateSetId.
+func (s *GlPostingConversionEvidence) SetRateSetId(val UUID) {
+	s.RateSetId = val
+}
+
+// SetRateType sets the value of RateType.
+func (s *GlPostingConversionEvidence) SetRateType(val string) {
+	s.RateType = val
+}
+
+// SetConversionDate sets the value of ConversionDate.
+func (s *GlPostingConversionEvidence) SetConversionDate(val time.Time) {
+	s.ConversionDate = val
+}
+
+// SetConversionTimestamp sets the value of ConversionTimestamp.
+func (s *GlPostingConversionEvidence) SetConversionTimestamp(val time.Time) {
+	s.ConversionTimestamp = val
+}
+
+// Ref: #/components/schemas/GlPostingGateEvidence
+type GlPostingGateEvidence struct {
+	FiscalPeriodId     UUID   `json:"fiscalPeriodId"`
+	PeriodStateVersion int    `json:"periodStateVersion"`
+	PostingGateVersion int    `json:"postingGateVersion"`
+	GateMode           string `json:"gateMode"`
+}
+
+// GetFiscalPeriodId returns the value of FiscalPeriodId.
+func (s *GlPostingGateEvidence) GetFiscalPeriodId() UUID {
+	return s.FiscalPeriodId
+}
+
+// GetPeriodStateVersion returns the value of PeriodStateVersion.
+func (s *GlPostingGateEvidence) GetPeriodStateVersion() int {
+	return s.PeriodStateVersion
+}
+
+// GetPostingGateVersion returns the value of PostingGateVersion.
+func (s *GlPostingGateEvidence) GetPostingGateVersion() int {
+	return s.PostingGateVersion
+}
+
+// GetGateMode returns the value of GateMode.
+func (s *GlPostingGateEvidence) GetGateMode() string {
+	return s.GateMode
+}
+
+// SetFiscalPeriodId sets the value of FiscalPeriodId.
+func (s *GlPostingGateEvidence) SetFiscalPeriodId(val UUID) {
+	s.FiscalPeriodId = val
+}
+
+// SetPeriodStateVersion sets the value of PeriodStateVersion.
+func (s *GlPostingGateEvidence) SetPeriodStateVersion(val int) {
+	s.PeriodStateVersion = val
+}
+
+// SetPostingGateVersion sets the value of PostingGateVersion.
+func (s *GlPostingGateEvidence) SetPostingGateVersion(val int) {
+	s.PostingGateVersion = val
+}
+
+// SetGateMode sets the value of GateMode.
+func (s *GlPostingGateEvidence) SetGateMode(val string) {
+	s.GateMode = val
+}
+
+// Ref: #/components/schemas/GlPostingRequestLine
+type GlPostingRequestLine struct {
+	AccountId            UUID                                 `json:"accountId"`
+	DebitOrCredit        GlPostingRequestLineDebitOrCredit    `json:"debitOrCredit"`
+	LineCurrencyMode     GlPostingRequestLineLineCurrencyMode `json:"lineCurrencyMode"`
+	TransactionAmount    Money                                `json:"transactionAmount"`
+	FunctionalAmount     Money                                `json:"functionalAmount"`
+	SegmentCombinationId UUID                                 `json:"segmentCombinationId"`
+	LineReference        OptString                            `json:"lineReference"`
+}
+
+// GetAccountId returns the value of AccountId.
+func (s *GlPostingRequestLine) GetAccountId() UUID {
+	return s.AccountId
+}
+
+// GetDebitOrCredit returns the value of DebitOrCredit.
+func (s *GlPostingRequestLine) GetDebitOrCredit() GlPostingRequestLineDebitOrCredit {
+	return s.DebitOrCredit
+}
+
+// GetLineCurrencyMode returns the value of LineCurrencyMode.
+func (s *GlPostingRequestLine) GetLineCurrencyMode() GlPostingRequestLineLineCurrencyMode {
+	return s.LineCurrencyMode
+}
+
+// GetTransactionAmount returns the value of TransactionAmount.
+func (s *GlPostingRequestLine) GetTransactionAmount() Money {
+	return s.TransactionAmount
+}
+
+// GetFunctionalAmount returns the value of FunctionalAmount.
+func (s *GlPostingRequestLine) GetFunctionalAmount() Money {
+	return s.FunctionalAmount
+}
+
+// GetSegmentCombinationId returns the value of SegmentCombinationId.
+func (s *GlPostingRequestLine) GetSegmentCombinationId() UUID {
+	return s.SegmentCombinationId
+}
+
+// GetLineReference returns the value of LineReference.
+func (s *GlPostingRequestLine) GetLineReference() OptString {
+	return s.LineReference
+}
+
+// SetAccountId sets the value of AccountId.
+func (s *GlPostingRequestLine) SetAccountId(val UUID) {
+	s.AccountId = val
+}
+
+// SetDebitOrCredit sets the value of DebitOrCredit.
+func (s *GlPostingRequestLine) SetDebitOrCredit(val GlPostingRequestLineDebitOrCredit) {
+	s.DebitOrCredit = val
+}
+
+// SetLineCurrencyMode sets the value of LineCurrencyMode.
+func (s *GlPostingRequestLine) SetLineCurrencyMode(val GlPostingRequestLineLineCurrencyMode) {
+	s.LineCurrencyMode = val
+}
+
+// SetTransactionAmount sets the value of TransactionAmount.
+func (s *GlPostingRequestLine) SetTransactionAmount(val Money) {
+	s.TransactionAmount = val
+}
+
+// SetFunctionalAmount sets the value of FunctionalAmount.
+func (s *GlPostingRequestLine) SetFunctionalAmount(val Money) {
+	s.FunctionalAmount = val
+}
+
+// SetSegmentCombinationId sets the value of SegmentCombinationId.
+func (s *GlPostingRequestLine) SetSegmentCombinationId(val UUID) {
+	s.SegmentCombinationId = val
+}
+
+// SetLineReference sets the value of LineReference.
+func (s *GlPostingRequestLine) SetLineReference(val OptString) {
+	s.LineReference = val
+}
+
+type GlPostingRequestLineDebitOrCredit string
+
+const (
+	GlPostingRequestLineDebitOrCreditDebit  GlPostingRequestLineDebitOrCredit = "debit"
+	GlPostingRequestLineDebitOrCreditCredit GlPostingRequestLineDebitOrCredit = "credit"
+)
+
+// AllValues returns all GlPostingRequestLineDebitOrCredit values.
+func (GlPostingRequestLineDebitOrCredit) AllValues() []GlPostingRequestLineDebitOrCredit {
+	return []GlPostingRequestLineDebitOrCredit{
+		GlPostingRequestLineDebitOrCreditDebit,
+		GlPostingRequestLineDebitOrCreditCredit,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GlPostingRequestLineDebitOrCredit) MarshalText() ([]byte, error) {
+	switch s {
+	case GlPostingRequestLineDebitOrCreditDebit:
+		return []byte(s), nil
+	case GlPostingRequestLineDebitOrCreditCredit:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GlPostingRequestLineDebitOrCredit) UnmarshalText(data []byte) error {
+	switch GlPostingRequestLineDebitOrCredit(data) {
+	case GlPostingRequestLineDebitOrCreditDebit:
+		*s = GlPostingRequestLineDebitOrCreditDebit
+		return nil
+	case GlPostingRequestLineDebitOrCreditCredit:
+		*s = GlPostingRequestLineDebitOrCreditCredit
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type GlPostingRequestLineLineCurrencyMode string
+
+const (
+	GlPostingRequestLineLineCurrencyModeTransactionAndFunctional GlPostingRequestLineLineCurrencyMode = "TransactionAndFunctional"
+	GlPostingRequestLineLineCurrencyModeFunctionalOnlyAdjustment GlPostingRequestLineLineCurrencyMode = "FunctionalOnlyAdjustment"
+)
+
+// AllValues returns all GlPostingRequestLineLineCurrencyMode values.
+func (GlPostingRequestLineLineCurrencyMode) AllValues() []GlPostingRequestLineLineCurrencyMode {
+	return []GlPostingRequestLineLineCurrencyMode{
+		GlPostingRequestLineLineCurrencyModeTransactionAndFunctional,
+		GlPostingRequestLineLineCurrencyModeFunctionalOnlyAdjustment,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GlPostingRequestLineLineCurrencyMode) MarshalText() ([]byte, error) {
+	switch s {
+	case GlPostingRequestLineLineCurrencyModeTransactionAndFunctional:
+		return []byte(s), nil
+	case GlPostingRequestLineLineCurrencyModeFunctionalOnlyAdjustment:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GlPostingRequestLineLineCurrencyMode) UnmarshalText(data []byte) error {
+	switch GlPostingRequestLineLineCurrencyMode(data) {
+	case GlPostingRequestLineLineCurrencyModeTransactionAndFunctional:
+		*s = GlPostingRequestLineLineCurrencyModeTransactionAndFunctional
+		return nil
+	case GlPostingRequestLineLineCurrencyModeFunctionalOnlyAdjustment:
+		*s = GlPostingRequestLineLineCurrencyModeFunctionalOnlyAdjustment
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/GlPostingValidationIssue
+type GlPostingValidationIssue struct {
+	Code    string `json:"code"`
+	Field   string `json:"field"`
+	Message string `json:"message"`
+}
+
+// GetCode returns the value of Code.
+func (s *GlPostingValidationIssue) GetCode() string {
+	return s.Code
+}
+
+// GetField returns the value of Field.
+func (s *GlPostingValidationIssue) GetField() string {
+	return s.Field
+}
+
+// GetMessage returns the value of Message.
+func (s *GlPostingValidationIssue) GetMessage() string {
+	return s.Message
+}
+
+// SetCode sets the value of Code.
+func (s *GlPostingValidationIssue) SetCode(val string) {
+	s.Code = val
+}
+
+// SetField sets the value of Field.
+func (s *GlPostingValidationIssue) SetField(val string) {
+	s.Field = val
+}
+
+// SetMessage sets the value of Message.
+func (s *GlPostingValidationIssue) SetMessage(val string) {
+	s.Message = val
+}
+
 type GlReleasePostingBarrierBadRequest ProblemDetails
 
 func (*GlReleasePostingBarrierBadRequest) glReleasePostingBarrierRes() {}
@@ -5104,13 +5399,780 @@ type GlSubmitPostingRequestBadRequest ProblemDetails
 
 func (*GlSubmitPostingRequestBadRequest) glSubmitPostingRequestRes() {}
 
+// Ref: #/components/schemas/GlSubmitPostingRequestCommandData
+type GlSubmitPostingRequestCommandData struct {
+	ContractVersion            int                                             `json:"contractVersion"`
+	RequestId                  UUID                                            `json:"requestId"`
+	SourceContext              string                                          `json:"sourceContext"`
+	SourceAggregateType        string                                          `json:"sourceAggregateType"`
+	SourceAggregateId          UUID                                            `json:"sourceAggregateId"`
+	SourceVersion              int                                             `json:"sourceVersion"`
+	TenantId                   UUID                                            `json:"tenantId"`
+	LegalEntityId              UUID                                            `json:"legalEntityId"`
+	LedgerId                   UUID                                            `json:"ledgerId"`
+	AccountingBookId           UUID                                            `json:"accountingBookId"`
+	FunctionalCurrency         CurrencyCode                                    `json:"functionalCurrency"`
+	PostingDate                time.Time                                       `json:"postingDate"`
+	FiscalPeriodId             UUID                                            `json:"fiscalPeriodId"`
+	PeriodStateVersion         int                                             `json:"periodStateVersion"`
+	PostingGateVersion         int                                             `json:"postingGateVersion"`
+	PostingPurpose             GlSubmitPostingRequestCommandDataPostingPurpose `json:"postingPurpose"`
+	AdjustmentPeriodIndicator  OptBool                                         `json:"adjustmentPeriodIndicator"`
+	PostingAuthorizationId     OptUUID                                         `json:"postingAuthorizationId"`
+	CloseRunId                 OptUUID                                         `json:"closeRunId"`
+	ReopenRequestId            OptUUID                                         `json:"reopenRequestId"`
+	OperationalReopenRequestId OptUUID                                         `json:"operationalReopenRequestId"`
+	ControlAuthorityEpoch      OptInt                                          `json:"controlAuthorityEpoch"`
+	TransactionCurrency        CurrencyCode                                    `json:"transactionCurrency"`
+	ConversionEvidence         OptGlPostingConversionEvidence                  `json:"conversionEvidence"`
+	Description                OptString                                       `json:"description"`
+	Lines                      []GlPostingRequestLine                          `json:"lines"`
+	ReversalOfJournalEntryId   OptUUID                                         `json:"reversalOfJournalEntryId"`
+	AutomaticReversalDate      OptDate                                         `json:"automaticReversalDate"`
+}
+
+// GetContractVersion returns the value of ContractVersion.
+func (s *GlSubmitPostingRequestCommandData) GetContractVersion() int {
+	return s.ContractVersion
+}
+
+// GetRequestId returns the value of RequestId.
+func (s *GlSubmitPostingRequestCommandData) GetRequestId() UUID {
+	return s.RequestId
+}
+
+// GetSourceContext returns the value of SourceContext.
+func (s *GlSubmitPostingRequestCommandData) GetSourceContext() string {
+	return s.SourceContext
+}
+
+// GetSourceAggregateType returns the value of SourceAggregateType.
+func (s *GlSubmitPostingRequestCommandData) GetSourceAggregateType() string {
+	return s.SourceAggregateType
+}
+
+// GetSourceAggregateId returns the value of SourceAggregateId.
+func (s *GlSubmitPostingRequestCommandData) GetSourceAggregateId() UUID {
+	return s.SourceAggregateId
+}
+
+// GetSourceVersion returns the value of SourceVersion.
+func (s *GlSubmitPostingRequestCommandData) GetSourceVersion() int {
+	return s.SourceVersion
+}
+
+// GetTenantId returns the value of TenantId.
+func (s *GlSubmitPostingRequestCommandData) GetTenantId() UUID {
+	return s.TenantId
+}
+
+// GetLegalEntityId returns the value of LegalEntityId.
+func (s *GlSubmitPostingRequestCommandData) GetLegalEntityId() UUID {
+	return s.LegalEntityId
+}
+
+// GetLedgerId returns the value of LedgerId.
+func (s *GlSubmitPostingRequestCommandData) GetLedgerId() UUID {
+	return s.LedgerId
+}
+
+// GetAccountingBookId returns the value of AccountingBookId.
+func (s *GlSubmitPostingRequestCommandData) GetAccountingBookId() UUID {
+	return s.AccountingBookId
+}
+
+// GetFunctionalCurrency returns the value of FunctionalCurrency.
+func (s *GlSubmitPostingRequestCommandData) GetFunctionalCurrency() CurrencyCode {
+	return s.FunctionalCurrency
+}
+
+// GetPostingDate returns the value of PostingDate.
+func (s *GlSubmitPostingRequestCommandData) GetPostingDate() time.Time {
+	return s.PostingDate
+}
+
+// GetFiscalPeriodId returns the value of FiscalPeriodId.
+func (s *GlSubmitPostingRequestCommandData) GetFiscalPeriodId() UUID {
+	return s.FiscalPeriodId
+}
+
+// GetPeriodStateVersion returns the value of PeriodStateVersion.
+func (s *GlSubmitPostingRequestCommandData) GetPeriodStateVersion() int {
+	return s.PeriodStateVersion
+}
+
+// GetPostingGateVersion returns the value of PostingGateVersion.
+func (s *GlSubmitPostingRequestCommandData) GetPostingGateVersion() int {
+	return s.PostingGateVersion
+}
+
+// GetPostingPurpose returns the value of PostingPurpose.
+func (s *GlSubmitPostingRequestCommandData) GetPostingPurpose() GlSubmitPostingRequestCommandDataPostingPurpose {
+	return s.PostingPurpose
+}
+
+// GetAdjustmentPeriodIndicator returns the value of AdjustmentPeriodIndicator.
+func (s *GlSubmitPostingRequestCommandData) GetAdjustmentPeriodIndicator() OptBool {
+	return s.AdjustmentPeriodIndicator
+}
+
+// GetPostingAuthorizationId returns the value of PostingAuthorizationId.
+func (s *GlSubmitPostingRequestCommandData) GetPostingAuthorizationId() OptUUID {
+	return s.PostingAuthorizationId
+}
+
+// GetCloseRunId returns the value of CloseRunId.
+func (s *GlSubmitPostingRequestCommandData) GetCloseRunId() OptUUID {
+	return s.CloseRunId
+}
+
+// GetReopenRequestId returns the value of ReopenRequestId.
+func (s *GlSubmitPostingRequestCommandData) GetReopenRequestId() OptUUID {
+	return s.ReopenRequestId
+}
+
+// GetOperationalReopenRequestId returns the value of OperationalReopenRequestId.
+func (s *GlSubmitPostingRequestCommandData) GetOperationalReopenRequestId() OptUUID {
+	return s.OperationalReopenRequestId
+}
+
+// GetControlAuthorityEpoch returns the value of ControlAuthorityEpoch.
+func (s *GlSubmitPostingRequestCommandData) GetControlAuthorityEpoch() OptInt {
+	return s.ControlAuthorityEpoch
+}
+
+// GetTransactionCurrency returns the value of TransactionCurrency.
+func (s *GlSubmitPostingRequestCommandData) GetTransactionCurrency() CurrencyCode {
+	return s.TransactionCurrency
+}
+
+// GetConversionEvidence returns the value of ConversionEvidence.
+func (s *GlSubmitPostingRequestCommandData) GetConversionEvidence() OptGlPostingConversionEvidence {
+	return s.ConversionEvidence
+}
+
+// GetDescription returns the value of Description.
+func (s *GlSubmitPostingRequestCommandData) GetDescription() OptString {
+	return s.Description
+}
+
+// GetLines returns the value of Lines.
+func (s *GlSubmitPostingRequestCommandData) GetLines() []GlPostingRequestLine {
+	return s.Lines
+}
+
+// GetReversalOfJournalEntryId returns the value of ReversalOfJournalEntryId.
+func (s *GlSubmitPostingRequestCommandData) GetReversalOfJournalEntryId() OptUUID {
+	return s.ReversalOfJournalEntryId
+}
+
+// GetAutomaticReversalDate returns the value of AutomaticReversalDate.
+func (s *GlSubmitPostingRequestCommandData) GetAutomaticReversalDate() OptDate {
+	return s.AutomaticReversalDate
+}
+
+// SetContractVersion sets the value of ContractVersion.
+func (s *GlSubmitPostingRequestCommandData) SetContractVersion(val int) {
+	s.ContractVersion = val
+}
+
+// SetRequestId sets the value of RequestId.
+func (s *GlSubmitPostingRequestCommandData) SetRequestId(val UUID) {
+	s.RequestId = val
+}
+
+// SetSourceContext sets the value of SourceContext.
+func (s *GlSubmitPostingRequestCommandData) SetSourceContext(val string) {
+	s.SourceContext = val
+}
+
+// SetSourceAggregateType sets the value of SourceAggregateType.
+func (s *GlSubmitPostingRequestCommandData) SetSourceAggregateType(val string) {
+	s.SourceAggregateType = val
+}
+
+// SetSourceAggregateId sets the value of SourceAggregateId.
+func (s *GlSubmitPostingRequestCommandData) SetSourceAggregateId(val UUID) {
+	s.SourceAggregateId = val
+}
+
+// SetSourceVersion sets the value of SourceVersion.
+func (s *GlSubmitPostingRequestCommandData) SetSourceVersion(val int) {
+	s.SourceVersion = val
+}
+
+// SetTenantId sets the value of TenantId.
+func (s *GlSubmitPostingRequestCommandData) SetTenantId(val UUID) {
+	s.TenantId = val
+}
+
+// SetLegalEntityId sets the value of LegalEntityId.
+func (s *GlSubmitPostingRequestCommandData) SetLegalEntityId(val UUID) {
+	s.LegalEntityId = val
+}
+
+// SetLedgerId sets the value of LedgerId.
+func (s *GlSubmitPostingRequestCommandData) SetLedgerId(val UUID) {
+	s.LedgerId = val
+}
+
+// SetAccountingBookId sets the value of AccountingBookId.
+func (s *GlSubmitPostingRequestCommandData) SetAccountingBookId(val UUID) {
+	s.AccountingBookId = val
+}
+
+// SetFunctionalCurrency sets the value of FunctionalCurrency.
+func (s *GlSubmitPostingRequestCommandData) SetFunctionalCurrency(val CurrencyCode) {
+	s.FunctionalCurrency = val
+}
+
+// SetPostingDate sets the value of PostingDate.
+func (s *GlSubmitPostingRequestCommandData) SetPostingDate(val time.Time) {
+	s.PostingDate = val
+}
+
+// SetFiscalPeriodId sets the value of FiscalPeriodId.
+func (s *GlSubmitPostingRequestCommandData) SetFiscalPeriodId(val UUID) {
+	s.FiscalPeriodId = val
+}
+
+// SetPeriodStateVersion sets the value of PeriodStateVersion.
+func (s *GlSubmitPostingRequestCommandData) SetPeriodStateVersion(val int) {
+	s.PeriodStateVersion = val
+}
+
+// SetPostingGateVersion sets the value of PostingGateVersion.
+func (s *GlSubmitPostingRequestCommandData) SetPostingGateVersion(val int) {
+	s.PostingGateVersion = val
+}
+
+// SetPostingPurpose sets the value of PostingPurpose.
+func (s *GlSubmitPostingRequestCommandData) SetPostingPurpose(val GlSubmitPostingRequestCommandDataPostingPurpose) {
+	s.PostingPurpose = val
+}
+
+// SetAdjustmentPeriodIndicator sets the value of AdjustmentPeriodIndicator.
+func (s *GlSubmitPostingRequestCommandData) SetAdjustmentPeriodIndicator(val OptBool) {
+	s.AdjustmentPeriodIndicator = val
+}
+
+// SetPostingAuthorizationId sets the value of PostingAuthorizationId.
+func (s *GlSubmitPostingRequestCommandData) SetPostingAuthorizationId(val OptUUID) {
+	s.PostingAuthorizationId = val
+}
+
+// SetCloseRunId sets the value of CloseRunId.
+func (s *GlSubmitPostingRequestCommandData) SetCloseRunId(val OptUUID) {
+	s.CloseRunId = val
+}
+
+// SetReopenRequestId sets the value of ReopenRequestId.
+func (s *GlSubmitPostingRequestCommandData) SetReopenRequestId(val OptUUID) {
+	s.ReopenRequestId = val
+}
+
+// SetOperationalReopenRequestId sets the value of OperationalReopenRequestId.
+func (s *GlSubmitPostingRequestCommandData) SetOperationalReopenRequestId(val OptUUID) {
+	s.OperationalReopenRequestId = val
+}
+
+// SetControlAuthorityEpoch sets the value of ControlAuthorityEpoch.
+func (s *GlSubmitPostingRequestCommandData) SetControlAuthorityEpoch(val OptInt) {
+	s.ControlAuthorityEpoch = val
+}
+
+// SetTransactionCurrency sets the value of TransactionCurrency.
+func (s *GlSubmitPostingRequestCommandData) SetTransactionCurrency(val CurrencyCode) {
+	s.TransactionCurrency = val
+}
+
+// SetConversionEvidence sets the value of ConversionEvidence.
+func (s *GlSubmitPostingRequestCommandData) SetConversionEvidence(val OptGlPostingConversionEvidence) {
+	s.ConversionEvidence = val
+}
+
+// SetDescription sets the value of Description.
+func (s *GlSubmitPostingRequestCommandData) SetDescription(val OptString) {
+	s.Description = val
+}
+
+// SetLines sets the value of Lines.
+func (s *GlSubmitPostingRequestCommandData) SetLines(val []GlPostingRequestLine) {
+	s.Lines = val
+}
+
+// SetReversalOfJournalEntryId sets the value of ReversalOfJournalEntryId.
+func (s *GlSubmitPostingRequestCommandData) SetReversalOfJournalEntryId(val OptUUID) {
+	s.ReversalOfJournalEntryId = val
+}
+
+// SetAutomaticReversalDate sets the value of AutomaticReversalDate.
+func (s *GlSubmitPostingRequestCommandData) SetAutomaticReversalDate(val OptDate) {
+	s.AutomaticReversalDate = val
+}
+
+type GlSubmitPostingRequestCommandDataPostingPurpose string
+
+const (
+	GlSubmitPostingRequestCommandDataPostingPurposeOrdinary          GlSubmitPostingRequestCommandDataPostingPurpose = "Ordinary"
+	GlSubmitPostingRequestCommandDataPostingPurposeClose             GlSubmitPostingRequestCommandDataPostingPurpose = "Close"
+	GlSubmitPostingRequestCommandDataPostingPurposeReopenCorrection  GlSubmitPostingRequestCommandDataPostingPurpose = "ReopenCorrection"
+	GlSubmitPostingRequestCommandDataPostingPurposeOperationalReopen GlSubmitPostingRequestCommandDataPostingPurpose = "OperationalReopen"
+	GlSubmitPostingRequestCommandDataPostingPurposePolicyAdjustment  GlSubmitPostingRequestCommandDataPostingPurpose = "PolicyAdjustment"
+)
+
+// AllValues returns all GlSubmitPostingRequestCommandDataPostingPurpose values.
+func (GlSubmitPostingRequestCommandDataPostingPurpose) AllValues() []GlSubmitPostingRequestCommandDataPostingPurpose {
+	return []GlSubmitPostingRequestCommandDataPostingPurpose{
+		GlSubmitPostingRequestCommandDataPostingPurposeOrdinary,
+		GlSubmitPostingRequestCommandDataPostingPurposeClose,
+		GlSubmitPostingRequestCommandDataPostingPurposeReopenCorrection,
+		GlSubmitPostingRequestCommandDataPostingPurposeOperationalReopen,
+		GlSubmitPostingRequestCommandDataPostingPurposePolicyAdjustment,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GlSubmitPostingRequestCommandDataPostingPurpose) MarshalText() ([]byte, error) {
+	switch s {
+	case GlSubmitPostingRequestCommandDataPostingPurposeOrdinary:
+		return []byte(s), nil
+	case GlSubmitPostingRequestCommandDataPostingPurposeClose:
+		return []byte(s), nil
+	case GlSubmitPostingRequestCommandDataPostingPurposeReopenCorrection:
+		return []byte(s), nil
+	case GlSubmitPostingRequestCommandDataPostingPurposeOperationalReopen:
+		return []byte(s), nil
+	case GlSubmitPostingRequestCommandDataPostingPurposePolicyAdjustment:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GlSubmitPostingRequestCommandDataPostingPurpose) UnmarshalText(data []byte) error {
+	switch GlSubmitPostingRequestCommandDataPostingPurpose(data) {
+	case GlSubmitPostingRequestCommandDataPostingPurposeOrdinary:
+		*s = GlSubmitPostingRequestCommandDataPostingPurposeOrdinary
+		return nil
+	case GlSubmitPostingRequestCommandDataPostingPurposeClose:
+		*s = GlSubmitPostingRequestCommandDataPostingPurposeClose
+		return nil
+	case GlSubmitPostingRequestCommandDataPostingPurposeReopenCorrection:
+		*s = GlSubmitPostingRequestCommandDataPostingPurposeReopenCorrection
+		return nil
+	case GlSubmitPostingRequestCommandDataPostingPurposeOperationalReopen:
+		*s = GlSubmitPostingRequestCommandDataPostingPurposeOperationalReopen
+		return nil
+	case GlSubmitPostingRequestCommandDataPostingPurposePolicyAdjustment:
+		*s = GlSubmitPostingRequestCommandDataPostingPurposePolicyAdjustment
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/GlSubmitPostingRequestCommandRequest
+type GlSubmitPostingRequestCommandRequest struct {
+	CommandId         UUID                              `json:"commandId"`
+	ExpectedVersion   OptInt                            `json:"expectedVersion"`
+	AccountingScopeId UUID                              `json:"accountingScopeId"`
+	BusinessDate      OptDate                           `json:"businessDate"`
+	Data              GlSubmitPostingRequestCommandData `json:"data"`
+}
+
+// GetCommandId returns the value of CommandId.
+func (s *GlSubmitPostingRequestCommandRequest) GetCommandId() UUID {
+	return s.CommandId
+}
+
+// GetExpectedVersion returns the value of ExpectedVersion.
+func (s *GlSubmitPostingRequestCommandRequest) GetExpectedVersion() OptInt {
+	return s.ExpectedVersion
+}
+
+// GetAccountingScopeId returns the value of AccountingScopeId.
+func (s *GlSubmitPostingRequestCommandRequest) GetAccountingScopeId() UUID {
+	return s.AccountingScopeId
+}
+
+// GetBusinessDate returns the value of BusinessDate.
+func (s *GlSubmitPostingRequestCommandRequest) GetBusinessDate() OptDate {
+	return s.BusinessDate
+}
+
+// GetData returns the value of Data.
+func (s *GlSubmitPostingRequestCommandRequest) GetData() GlSubmitPostingRequestCommandData {
+	return s.Data
+}
+
+// SetCommandId sets the value of CommandId.
+func (s *GlSubmitPostingRequestCommandRequest) SetCommandId(val UUID) {
+	s.CommandId = val
+}
+
+// SetExpectedVersion sets the value of ExpectedVersion.
+func (s *GlSubmitPostingRequestCommandRequest) SetExpectedVersion(val OptInt) {
+	s.ExpectedVersion = val
+}
+
+// SetAccountingScopeId sets the value of AccountingScopeId.
+func (s *GlSubmitPostingRequestCommandRequest) SetAccountingScopeId(val UUID) {
+	s.AccountingScopeId = val
+}
+
+// SetBusinessDate sets the value of BusinessDate.
+func (s *GlSubmitPostingRequestCommandRequest) SetBusinessDate(val OptDate) {
+	s.BusinessDate = val
+}
+
+// SetData sets the value of Data.
+func (s *GlSubmitPostingRequestCommandRequest) SetData(val GlSubmitPostingRequestCommandData) {
+	s.Data = val
+}
+
 type GlSubmitPostingRequestConflict ProblemDetails
 
 func (*GlSubmitPostingRequestConflict) glSubmitPostingRequestRes() {}
 
+// Ref: #/components/schemas/GlSubmitPostingRequestEstablishedResult
+type GlSubmitPostingRequestEstablishedResult struct {
+	Status           string                           `json:"status"`
+	AggregateId      UUID                             `json:"aggregateId"`
+	AggregateVersion int                              `json:"aggregateVersion"`
+	ProcessId        OptNilUUID                       `json:"processId"`
+	CorrelationId    UUID                             `json:"correlationId"`
+	Links            Links                            `json:"links"`
+	Data             GlSubmitPostingRequestResultData `json:"data"`
+}
+
+// GetStatus returns the value of Status.
+func (s *GlSubmitPostingRequestEstablishedResult) GetStatus() string {
+	return s.Status
+}
+
+// GetAggregateId returns the value of AggregateId.
+func (s *GlSubmitPostingRequestEstablishedResult) GetAggregateId() UUID {
+	return s.AggregateId
+}
+
+// GetAggregateVersion returns the value of AggregateVersion.
+func (s *GlSubmitPostingRequestEstablishedResult) GetAggregateVersion() int {
+	return s.AggregateVersion
+}
+
+// GetProcessId returns the value of ProcessId.
+func (s *GlSubmitPostingRequestEstablishedResult) GetProcessId() OptNilUUID {
+	return s.ProcessId
+}
+
+// GetCorrelationId returns the value of CorrelationId.
+func (s *GlSubmitPostingRequestEstablishedResult) GetCorrelationId() UUID {
+	return s.CorrelationId
+}
+
+// GetLinks returns the value of Links.
+func (s *GlSubmitPostingRequestEstablishedResult) GetLinks() Links {
+	return s.Links
+}
+
+// GetData returns the value of Data.
+func (s *GlSubmitPostingRequestEstablishedResult) GetData() GlSubmitPostingRequestResultData {
+	return s.Data
+}
+
+// SetStatus sets the value of Status.
+func (s *GlSubmitPostingRequestEstablishedResult) SetStatus(val string) {
+	s.Status = val
+}
+
+// SetAggregateId sets the value of AggregateId.
+func (s *GlSubmitPostingRequestEstablishedResult) SetAggregateId(val UUID) {
+	s.AggregateId = val
+}
+
+// SetAggregateVersion sets the value of AggregateVersion.
+func (s *GlSubmitPostingRequestEstablishedResult) SetAggregateVersion(val int) {
+	s.AggregateVersion = val
+}
+
+// SetProcessId sets the value of ProcessId.
+func (s *GlSubmitPostingRequestEstablishedResult) SetProcessId(val OptNilUUID) {
+	s.ProcessId = val
+}
+
+// SetCorrelationId sets the value of CorrelationId.
+func (s *GlSubmitPostingRequestEstablishedResult) SetCorrelationId(val UUID) {
+	s.CorrelationId = val
+}
+
+// SetLinks sets the value of Links.
+func (s *GlSubmitPostingRequestEstablishedResult) SetLinks(val Links) {
+	s.Links = val
+}
+
+// SetData sets the value of Data.
+func (s *GlSubmitPostingRequestEstablishedResult) SetData(val GlSubmitPostingRequestResultData) {
+	s.Data = val
+}
+
+func (*GlSubmitPostingRequestEstablishedResult) glSubmitPostingRequestRes() {}
+
 type GlSubmitPostingRequestForbidden ProblemDetails
 
 func (*GlSubmitPostingRequestForbidden) glSubmitPostingRequestRes() {}
+
+// Ref: #/components/schemas/GlSubmitPostingRequestResultData
+type GlSubmitPostingRequestResultData struct {
+	Outcome           GlSubmitPostingRequestResultDataOutcome         `json:"outcome"`
+	LifecycleStatus   GlSubmitPostingRequestResultDataLifecycleStatus `json:"lifecycleStatus"`
+	JournalId         OptUUID                                         `json:"journalId"`
+	JournalNumber     OptString                                       `json:"journalNumber"`
+	JournalVersion    OptInt                                          `json:"journalVersion"`
+	LedgerPosition    OptInt                                          `json:"ledgerPosition"`
+	ApprovalRequestId OptUUID                                         `json:"approvalRequestId"`
+	NextAction        OptString                                       `json:"nextAction"`
+	ValidationOutcome string                                          `json:"validationOutcome"`
+	ApprovalStatus    string                                          `json:"approvalStatus"`
+	SourceReference   string                                          `json:"sourceReference"`
+	GateEvidence      GlPostingGateEvidence                           `json:"gateEvidence"`
+	AuditReference    OptUUID                                         `json:"auditReference"`
+	Replayed          bool                                            `json:"replayed"`
+	Issues            []GlPostingValidationIssue                      `json:"issues"`
+}
+
+// GetOutcome returns the value of Outcome.
+func (s *GlSubmitPostingRequestResultData) GetOutcome() GlSubmitPostingRequestResultDataOutcome {
+	return s.Outcome
+}
+
+// GetLifecycleStatus returns the value of LifecycleStatus.
+func (s *GlSubmitPostingRequestResultData) GetLifecycleStatus() GlSubmitPostingRequestResultDataLifecycleStatus {
+	return s.LifecycleStatus
+}
+
+// GetJournalId returns the value of JournalId.
+func (s *GlSubmitPostingRequestResultData) GetJournalId() OptUUID {
+	return s.JournalId
+}
+
+// GetJournalNumber returns the value of JournalNumber.
+func (s *GlSubmitPostingRequestResultData) GetJournalNumber() OptString {
+	return s.JournalNumber
+}
+
+// GetJournalVersion returns the value of JournalVersion.
+func (s *GlSubmitPostingRequestResultData) GetJournalVersion() OptInt {
+	return s.JournalVersion
+}
+
+// GetLedgerPosition returns the value of LedgerPosition.
+func (s *GlSubmitPostingRequestResultData) GetLedgerPosition() OptInt {
+	return s.LedgerPosition
+}
+
+// GetApprovalRequestId returns the value of ApprovalRequestId.
+func (s *GlSubmitPostingRequestResultData) GetApprovalRequestId() OptUUID {
+	return s.ApprovalRequestId
+}
+
+// GetNextAction returns the value of NextAction.
+func (s *GlSubmitPostingRequestResultData) GetNextAction() OptString {
+	return s.NextAction
+}
+
+// GetValidationOutcome returns the value of ValidationOutcome.
+func (s *GlSubmitPostingRequestResultData) GetValidationOutcome() string {
+	return s.ValidationOutcome
+}
+
+// GetApprovalStatus returns the value of ApprovalStatus.
+func (s *GlSubmitPostingRequestResultData) GetApprovalStatus() string {
+	return s.ApprovalStatus
+}
+
+// GetSourceReference returns the value of SourceReference.
+func (s *GlSubmitPostingRequestResultData) GetSourceReference() string {
+	return s.SourceReference
+}
+
+// GetGateEvidence returns the value of GateEvidence.
+func (s *GlSubmitPostingRequestResultData) GetGateEvidence() GlPostingGateEvidence {
+	return s.GateEvidence
+}
+
+// GetAuditReference returns the value of AuditReference.
+func (s *GlSubmitPostingRequestResultData) GetAuditReference() OptUUID {
+	return s.AuditReference
+}
+
+// GetReplayed returns the value of Replayed.
+func (s *GlSubmitPostingRequestResultData) GetReplayed() bool {
+	return s.Replayed
+}
+
+// GetIssues returns the value of Issues.
+func (s *GlSubmitPostingRequestResultData) GetIssues() []GlPostingValidationIssue {
+	return s.Issues
+}
+
+// SetOutcome sets the value of Outcome.
+func (s *GlSubmitPostingRequestResultData) SetOutcome(val GlSubmitPostingRequestResultDataOutcome) {
+	s.Outcome = val
+}
+
+// SetLifecycleStatus sets the value of LifecycleStatus.
+func (s *GlSubmitPostingRequestResultData) SetLifecycleStatus(val GlSubmitPostingRequestResultDataLifecycleStatus) {
+	s.LifecycleStatus = val
+}
+
+// SetJournalId sets the value of JournalId.
+func (s *GlSubmitPostingRequestResultData) SetJournalId(val OptUUID) {
+	s.JournalId = val
+}
+
+// SetJournalNumber sets the value of JournalNumber.
+func (s *GlSubmitPostingRequestResultData) SetJournalNumber(val OptString) {
+	s.JournalNumber = val
+}
+
+// SetJournalVersion sets the value of JournalVersion.
+func (s *GlSubmitPostingRequestResultData) SetJournalVersion(val OptInt) {
+	s.JournalVersion = val
+}
+
+// SetLedgerPosition sets the value of LedgerPosition.
+func (s *GlSubmitPostingRequestResultData) SetLedgerPosition(val OptInt) {
+	s.LedgerPosition = val
+}
+
+// SetApprovalRequestId sets the value of ApprovalRequestId.
+func (s *GlSubmitPostingRequestResultData) SetApprovalRequestId(val OptUUID) {
+	s.ApprovalRequestId = val
+}
+
+// SetNextAction sets the value of NextAction.
+func (s *GlSubmitPostingRequestResultData) SetNextAction(val OptString) {
+	s.NextAction = val
+}
+
+// SetValidationOutcome sets the value of ValidationOutcome.
+func (s *GlSubmitPostingRequestResultData) SetValidationOutcome(val string) {
+	s.ValidationOutcome = val
+}
+
+// SetApprovalStatus sets the value of ApprovalStatus.
+func (s *GlSubmitPostingRequestResultData) SetApprovalStatus(val string) {
+	s.ApprovalStatus = val
+}
+
+// SetSourceReference sets the value of SourceReference.
+func (s *GlSubmitPostingRequestResultData) SetSourceReference(val string) {
+	s.SourceReference = val
+}
+
+// SetGateEvidence sets the value of GateEvidence.
+func (s *GlSubmitPostingRequestResultData) SetGateEvidence(val GlPostingGateEvidence) {
+	s.GateEvidence = val
+}
+
+// SetAuditReference sets the value of AuditReference.
+func (s *GlSubmitPostingRequestResultData) SetAuditReference(val OptUUID) {
+	s.AuditReference = val
+}
+
+// SetReplayed sets the value of Replayed.
+func (s *GlSubmitPostingRequestResultData) SetReplayed(val bool) {
+	s.Replayed = val
+}
+
+// SetIssues sets the value of Issues.
+func (s *GlSubmitPostingRequestResultData) SetIssues(val []GlPostingValidationIssue) {
+	s.Issues = val
+}
+
+type GlSubmitPostingRequestResultDataLifecycleStatus string
+
+const (
+	GlSubmitPostingRequestResultDataLifecycleStatusPendingApproval GlSubmitPostingRequestResultDataLifecycleStatus = "PendingApproval"
+	GlSubmitPostingRequestResultDataLifecycleStatusPosted          GlSubmitPostingRequestResultDataLifecycleStatus = "Posted"
+)
+
+// AllValues returns all GlSubmitPostingRequestResultDataLifecycleStatus values.
+func (GlSubmitPostingRequestResultDataLifecycleStatus) AllValues() []GlSubmitPostingRequestResultDataLifecycleStatus {
+	return []GlSubmitPostingRequestResultDataLifecycleStatus{
+		GlSubmitPostingRequestResultDataLifecycleStatusPendingApproval,
+		GlSubmitPostingRequestResultDataLifecycleStatusPosted,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GlSubmitPostingRequestResultDataLifecycleStatus) MarshalText() ([]byte, error) {
+	switch s {
+	case GlSubmitPostingRequestResultDataLifecycleStatusPendingApproval:
+		return []byte(s), nil
+	case GlSubmitPostingRequestResultDataLifecycleStatusPosted:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GlSubmitPostingRequestResultDataLifecycleStatus) UnmarshalText(data []byte) error {
+	switch GlSubmitPostingRequestResultDataLifecycleStatus(data) {
+	case GlSubmitPostingRequestResultDataLifecycleStatusPendingApproval:
+		*s = GlSubmitPostingRequestResultDataLifecycleStatusPendingApproval
+		return nil
+	case GlSubmitPostingRequestResultDataLifecycleStatusPosted:
+		*s = GlSubmitPostingRequestResultDataLifecycleStatusPosted
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type GlSubmitPostingRequestResultDataOutcome string
+
+const (
+	GlSubmitPostingRequestResultDataOutcomeJournalEntryPosted     GlSubmitPostingRequestResultDataOutcome = "JournalEntryPosted"
+	GlSubmitPostingRequestResultDataOutcomePostingPendingApproval GlSubmitPostingRequestResultDataOutcome = "PostingPendingApproval"
+)
+
+// AllValues returns all GlSubmitPostingRequestResultDataOutcome values.
+func (GlSubmitPostingRequestResultDataOutcome) AllValues() []GlSubmitPostingRequestResultDataOutcome {
+	return []GlSubmitPostingRequestResultDataOutcome{
+		GlSubmitPostingRequestResultDataOutcomeJournalEntryPosted,
+		GlSubmitPostingRequestResultDataOutcomePostingPendingApproval,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GlSubmitPostingRequestResultDataOutcome) MarshalText() ([]byte, error) {
+	switch s {
+	case GlSubmitPostingRequestResultDataOutcomeJournalEntryPosted:
+		return []byte(s), nil
+	case GlSubmitPostingRequestResultDataOutcomePostingPendingApproval:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GlSubmitPostingRequestResultDataOutcome) UnmarshalText(data []byte) error {
+	switch GlSubmitPostingRequestResultDataOutcome(data) {
+	case GlSubmitPostingRequestResultDataOutcomeJournalEntryPosted:
+		*s = GlSubmitPostingRequestResultDataOutcomeJournalEntryPosted
+		return nil
+	case GlSubmitPostingRequestResultDataOutcomePostingPendingApproval:
+		*s = GlSubmitPostingRequestResultDataOutcomePostingPendingApproval
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
 
 type GlSubmitPostingRequestServiceUnavailable ProblemDetails
 
@@ -6883,6 +7945,52 @@ func (o OptDateTime) Get() (v time.Time, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptDateTime) Or(d time.Time) time.Time {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptGlPostingConversionEvidence returns new OptGlPostingConversionEvidence with value set to v.
+func NewOptGlPostingConversionEvidence(v GlPostingConversionEvidence) OptGlPostingConversionEvidence {
+	return OptGlPostingConversionEvidence{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptGlPostingConversionEvidence is optional GlPostingConversionEvidence.
+type OptGlPostingConversionEvidence struct {
+	Value GlPostingConversionEvidence
+	Set   bool
+}
+
+// IsSet returns true if OptGlPostingConversionEvidence was set.
+func (o OptGlPostingConversionEvidence) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptGlPostingConversionEvidence) Reset() {
+	var v GlPostingConversionEvidence
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptGlPostingConversionEvidence) SetTo(v GlPostingConversionEvidence) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptGlPostingConversionEvidence) Get() (v GlPostingConversionEvidence, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptGlPostingConversionEvidence) Or(d GlPostingConversionEvidence) GlPostingConversionEvidence {
 	if v, ok := o.Get(); ok {
 		return v
 	}

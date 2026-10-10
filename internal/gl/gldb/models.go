@@ -94,6 +94,59 @@ type GlChartOfAccountsRevision struct {
 	CreatedAt         pgtype.Timestamptz
 }
 
+type GlJournalEntry struct {
+	JournalEntryID             pgtype.UUID
+	JournalNumber              string
+	AccountingScopeID          pgtype.UUID
+	TenantID                   pgtype.UUID
+	LegalEntityID              pgtype.UUID
+	LedgerID                   pgtype.UUID
+	AccountingBookID           pgtype.UUID
+	FunctionalCurrency         string
+	SourceContext              string
+	SourceAggregateType        string
+	SourceAggregateID          pgtype.UUID
+	SourceVersion              int64
+	RequestID                  pgtype.UUID
+	IdempotencyKey             string
+	RequestFingerprint         string
+	PostingDate                pgtype.Date
+	FiscalPeriodID             pgtype.UUID
+	PeriodStateVersion         int64
+	PostingGateVersion         int64
+	PostingPurpose             string
+	AdjustmentPeriodIndicator  bool
+	PostingAuthorizationID     pgtype.UUID
+	CloseRunID                 pgtype.UUID
+	ReopenRequestID            pgtype.UUID
+	OperationalReopenRequestID pgtype.UUID
+	ControlAuthorityEpoch      pgtype.Int8
+	TransactionCurrency        string
+	ConversionEvidence         []byte
+	Description                string
+	LifecycleStatus            string
+	ApprovalReference          []byte
+	AggregateVersion           int64
+	LedgerPosition             pgtype.Int8
+	AuditReference             pgtype.UUID
+	CorrelationID              pgtype.UUID
+	CausationID                pgtype.UUID
+	CreatedAt                  pgtype.Timestamptz
+}
+
+type GlJournalEntryLine struct {
+	JournalEntryID       pgtype.UUID
+	AccountingScopeID    pgtype.UUID
+	LineNumber           int32
+	AccountID            pgtype.UUID
+	DebitOrCredit        string
+	LineCurrencyMode     string
+	TransactionAmount    pgtype.Numeric
+	FunctionalAmount     pgtype.Numeric
+	SegmentCombinationID pgtype.UUID
+	LineReference        string
+}
+
 type GlLedger struct {
 	LedgerID           pgtype.UUID
 	AccountingScopeID  pgtype.UUID
@@ -120,4 +173,35 @@ type GlLedgerRevision struct {
 	EffectiveFrom    pgtype.Date
 	EffectiveTo      pgtype.Date
 	CreatedAt        pgtype.Timestamptz
+}
+
+type GlPeriodPostingGate struct {
+	AccountingScopeID  pgtype.UUID
+	FiscalPeriodID     pgtype.UUID
+	GateMode           string
+	PeriodStateVersion int64
+	GateVersion        int64
+	NextLedgerPosition int64
+	CreatedAt          pgtype.Timestamptz
+	UpdatedAt          pgtype.Timestamptz
+}
+
+type GlPostingAttempt struct {
+	PostingAttemptID      pgtype.UUID
+	RequestID             pgtype.UUID
+	JournalEntryID        pgtype.UUID
+	AccountingScopeID     pgtype.UUID
+	SourceContext         string
+	SourceAggregateType   string
+	SourceAggregateID     pgtype.UUID
+	SourceVersion         int64
+	IdempotencyKey        string
+	RequestFingerprint    pgtype.Text
+	Outcome               string
+	Issues                []byte
+	ActorUserID           pgtype.UUID
+	ActorSubjectReference string
+	CorrelationID         pgtype.UUID
+	CausationID           pgtype.UUID
+	CreatedAt             pgtype.Timestamptz
 }

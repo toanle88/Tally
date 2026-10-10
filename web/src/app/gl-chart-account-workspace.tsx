@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { glMaintainAccountsAndReportingMappings, glMaintainChartsOfAccounts } from '@/generated/api/sdk.gen'
 import { Button, DataTable, Field, Panel, Select, StatusBadge, type SemanticState } from '@/components/ui'
@@ -96,17 +96,26 @@ function errorDetail(error: unknown) {
   return 'The general-ledger configuration command could not be completed. Review the current version and retry safely.'
 }
 
+type SelectionState = { scopeId: string | null; id: string | null }
+
+function resolveSelectionId<T extends { id: string }>(selection: SelectionState, scopeId: string | null, records: T[]) {
+  if (selection.scopeId !== scopeId) return records[0]?.id ?? null
+  if (selection.id === null) return null
+  return records.some((record) => record.id === selection.id) ? selection.id : records[0]?.id ?? null
+}
+
 export function GlChartAccountWorkspace() {
   const { currentScope } = useScopeContext()
   const [adapterRevision, setAdapterRevision] = useState(0)
   const charts = useMemo(() => currentScope ? readSafeCharts(currentScope.id) : [], [currentScope?.id, adapterRevision])
   const accounts = useMemo(() => currentScope ? readSafeAccounts(currentScope.id) : [], [currentScope?.id, adapterRevision])
-  const [selectedChartId, setSelectedChartId] = useState<string | null>(charts[0]?.id ?? null)
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(accounts[0]?.id ?? null)
-  useEffect(() => {
-    setSelectedChartId((selected) => selected && charts.some((record) => record.id === selected) ? selected : charts[0]?.id ?? null)
-    setSelectedAccountId((selected) => selected && accounts.some((record) => record.id === selected) ? selected : accounts[0]?.id ?? null)
-  }, [accounts, charts])
+  const scopeId = currentScope?.id ?? null
+  const [chartSelection, setChartSelection] = useState<SelectionState>({ scopeId: null, id: null })
+  const [accountSelection, setAccountSelection] = useState<SelectionState>({ scopeId: null, id: null })
+  const selectedChartId = resolveSelectionId(chartSelection, scopeId, charts)
+  const selectedAccountId = resolveSelectionId(accountSelection, scopeId, accounts)
+  const selectChart = (id: string | null) => setChartSelection({ scopeId, id })
+  const selectAccount = (id: string | null) => setAccountSelection({ scopeId, id })
   const selectedChart = charts.find((record) => record.id === selectedChartId)
   const selectedAccount = accounts.find((record) => record.id === selectedAccountId)
 
@@ -115,14 +124,14 @@ export function GlChartAccountWorkspace() {
   }
 
   const chartColumns = [
-    { key: 'policy', header: 'Chart / code policy', rowHeader: true, render: (record: GlChartRecord) => <button type="button" className="link link-primary font-semibold" onClick={() => setSelectedChartId(record.id)}>{record.id} · {record.accountCodePolicy}</button> },
+    { key: 'policy', header: 'Chart / code policy', rowHeader: true, render: (record: GlChartRecord) => <button type="button" className="link link-primary font-semibold" onClick={() => selectChart(record.id)}>{record.id} · {record.accountCodePolicy}</button> },
     { key: 'ledger', header: 'Ledger', render: (record: GlChartRecord) => record.ledgerId },
     { key: 'status', header: 'State', render: (record: GlChartRecord) => <StatusBadge state={statusState[record.lifecycleStatus]} label={record.lifecycleStatus} /> },
     { key: 'effective', header: 'Effective interval', render: (record: GlChartRecord) => `${record.effectiveDateFrom} — ${record.effectiveDateTo ?? 'open'}` },
     { key: 'version', header: 'Version', render: (record: GlChartRecord) => `v${record.version}` },
   ] as const
   const accountColumns = [
-    { key: 'code', header: 'Account', rowHeader: true, render: (record: GlAccountRecord) => <button type="button" className="link link-primary font-semibold" onClick={() => setSelectedAccountId(record.id)}>{record.accountCode} · {record.accountName}</button> },
+    { key: 'code', header: 'Account', rowHeader: true, render: (record: GlAccountRecord) => <button type="button" className="link link-primary font-semibold" onClick={() => selectAccount(record.id)}>{record.accountCode} · {record.accountName}</button> },
     { key: 'type', header: 'Type / normal', render: (record: GlAccountRecord) => `${record.accountType} / ${record.normalBalance}` },
     { key: 'controls', header: 'Restrictions / mappings', render: (record: GlAccountRecord) => `${record.restrictions.length} / ${record.approvedReportingMappingCount} approved` },
     { key: 'status', header: 'State', render: (record: GlAccountRecord) => <StatusBadge state={statusState[record.lifecycleStatus]} label={record.lifecycleStatus} /> },
@@ -135,14 +144,14 @@ export function GlChartAccountWorkspace() {
     <p role="note" className="rounded-box border border-warning/40 bg-warning/10 p-4 text-sm">Read source: local safe adapter for the selected scope. There is no approved GL read endpoint yet; accepted mutation results refresh these safe projections. Reporting mapping references are submitted only when their approval evidence is available.</p>
     <Panel title="Charts of accounts in the selected scope" description="Chart identity is unique for the owning ledger, code policy, and overlapping inclusive effective dates. Every accepted change retains its prior revision.">
       <DataTable caption="Safe chart-of-accounts projections" columns={chartColumns} rows={charts} getRowKey={(record) => record.id} emptyMessage="No charts of accounts are available in this scope." />
-      <div className="mt-4 flex flex-wrap gap-3"><Button variant="secondary" onClick={() => setSelectedChartId(null)}>New chart</Button><span className="self-center text-sm text-base-content/70">Selected revision: {selectedChart ? `v${selectedChart.version}` : 'new'}</span></div>
+      <div className="mt-4 flex flex-wrap gap-3"><Button variant="secondary" onClick={() => selectChart(null)}>New chart</Button><span className="self-center text-sm text-base-content/70">Selected revision: {selectedChart ? `v${selectedChart.version}` : 'new'}</span></div>
     </Panel>
-    <ChartEditor key={`${currentScope.id}:${selectedChart?.id ?? 'new'}`} scopeId={currentScope.id} initial={selectedChart} charts={charts} onAccepted={(record) => { chartReadAdapter.set(record.id, record); refresh(); setSelectedChartId(record.id) }} />
+    <ChartEditor key={`${currentScope.id}:${selectedChart?.id ?? 'new'}`} scopeId={currentScope.id} initial={selectedChart} charts={charts} onAccepted={(record) => { chartReadAdapter.set(record.id, record); refresh(); selectChart(record.id) }} />
     <Panel title="Accounts and reporting mappings" description="Accounts preserve code, name, type, normal balance, restrictions, currency policy, approved reporting mappings, dates, and revision evidence.">
       <DataTable caption="Safe account projections" columns={accountColumns} rows={accounts} getRowKey={(record) => record.id} emptyMessage="No accounts are available in this scope." />
-      <div className="mt-4 flex flex-wrap gap-3"><Button variant="secondary" onClick={() => setSelectedAccountId(null)}>New account</Button><span className="self-center text-sm text-base-content/70">Selected revision: {selectedAccount ? `v${selectedAccount.version}` : 'new'}</span></div>
+      <div className="mt-4 flex flex-wrap gap-3"><Button variant="secondary" onClick={() => selectAccount(null)}>New account</Button><span className="self-center text-sm text-base-content/70">Selected revision: {selectedAccount ? `v${selectedAccount.version}` : 'new'}</span></div>
     </Panel>
-    <AccountEditor key={`${currentScope.id}:${selectedAccount?.id ?? 'new'}`} scopeId={currentScope.id} charts={charts} initial={selectedAccount} onAccepted={(record) => { accountReadAdapter.set(record.id, record); refresh(); setSelectedAccountId(record.id) }} />
+    <AccountEditor key={`${currentScope.id}:${selectedAccount?.id ?? 'new'}`} scopeId={currentScope.id} charts={charts} initial={selectedAccount} onAccepted={(record) => { accountReadAdapter.set(record.id, record); refresh(); selectAccount(record.id) }} />
     <Panel title="Configuration control status" description="Current state, dependent impact, approval, validation, blocked actions, and safe recovery remain visible before the next material change.">
       <div className="grid gap-4 lg:grid-cols-2">
         {selectedChart ? <ControlStatus title={`Chart · ${selectedChart.id}`} ownerLabel="Owning ledger" owner={selectedChart.ledgerId} status={selectedChart.lifecycleStatus} from={selectedChart.effectiveDateFrom} to={selectedChart.effectiveDateTo} approval={selectedChart.approvalStatus} validation={selectedChart.validationOutcome} version={selectedChart.version} revision={selectedChart.revisionNumber} nextAction={selectedChart.nextAction} /> : <p className="text-sm text-base-content/70">Select a chart to review its control status.</p>}
