@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Epic | EP-COA-001 — COA segment configuration |
-| Status | User Stories 1, 4, and 5 implementation in progress; local verification evidence attached; live and release qualification remain open |
+| Status | Locally complete and intentionally closed on 2026-10-10; implementation and focused local verification evidence are recorded for User Stories 1–5; runtime and release qualification remain deferred |
 | Milestone | M1 — Identity and accounting configuration |
 | Dependencies | EP-OMD-001, EP-IAM-001; platform foundation is transitive through those dependencies |
 | Delivery items | DLV-FR-COA-001 through DLV-FR-COA-005 |
@@ -12,9 +12,15 @@
 | Authoritative records | SegmentDefinition, SegmentCombination, SegmentChangeRequest |
 | Exit evidence | Domain, persistence, API, authorization, audit, concurrency, UI, accessibility, and approved-decision application evidence for all five stories; deferred external and full-release qualification is not claimed |
 
-This document remains the epic planning artifact. User Stories 1, 4, and 5
-now have traceable implementation and local verification records below;
-epic-wide and unverified acceptance/qualification checkboxes remain open.
+This document remains the epic planning artifact. All five user stories now
+have traceable implementation and local verification records below. Runtime,
+external, and release qualification obligations remain explicitly deferred.
+
+**Current closure status (2026-10-10):** The local implementation scope for
+`EP-COA-001` is complete and intentionally closed. The separate PostgreSQL
+runtime, downstream cross-context, production, live Entra, full audit-chain,
+performance/capacity, and release qualification obligations remain open and
+are not claimed by this closure.
 
 ## 1. Outcome
 
@@ -884,8 +890,9 @@ contract requires an idempotency key.
   representation before persistence constraints are designed. Do not infer
   cross-context rules from the generated OpenAPI contract.
 - The generated OpenAPI COA adapters and client types remain the contract
-  baseline. User Story 1 now has an owning module, persistence implementation,
-  and capability UI; the remaining COA stories remain unimplemented.
+  baseline. User Stories 1–5 now have owning-module implementations and
+  capability UI; deferred runtime and external qualification remain separate
+  obligations.
 - M1 requires QG-01, QG-02, QG-03, QG-04, QG-05, QG-06, QG-08, and QG-10.
   Later QG-07 concurrency/financial-integrity and QG-09
   performance/capacity/recovery qualification must not be silently claimed
@@ -925,19 +932,21 @@ contract requires an idempotency key.
 
 ## 12. Definition of done
 
-The local EP-COA-001 delivery scope is complete only when all five child
-stories have reviewable implementation and acceptance evidence; the coa schema
-and internal/coa module preserve bounded-context ownership; approved API and
-generated artifacts remain synchronized; effective dates, versions, approval
-references, idempotency, concurrency, failure behavior, privacy,
+The local EP-COA-001 delivery scope is complete: all five child stories have
+reviewable implementation and focused local verification evidence; the coa
+schema and internal/coa module preserve bounded-context ownership; approved
+API and generated artifacts remain synchronized; effective dates, versions,
+approval references, idempotency, concurrency, failure behavior, privacy,
 authorization, audit, accessibility, and safe downstream handoff evidence are
-recorded.
+recorded in the story sections above.
 
-The roadmap must not mark EP-COA-001 or its delivery items complete from this
-planning document alone. Production data, live identity-provider behavior,
-full audit-chain qualification, downstream GL runtime qualification,
-performance/capacity qualification, and release qualification remain
-separate evidence obligations.
+EP-COA-001 is marked locally complete and intentionally closed in the
+roadmap. This closure does not claim PostgreSQL runtime execution where the
+Docker environment was unavailable, downstream cross-context qualification,
+production data, live Entra behavior, full audit-chain qualification,
+performance/capacity qualification, or release qualification. Any remaining
+unchecked evidence item is a deferred qualification or environment-dependent
+follow-up, not a claim of production readiness.
 
 ## 13. Source references
 

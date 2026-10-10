@@ -4,7 +4,7 @@
 > `[x]` means complete or intentionally closed; `[ ]` means open, planned, or awaiting qualification evidence.
 > Workflow and NFR delivery tables do not define an Epic column, so those items are grouped under their primary roadmap epic for navigation.
 
-**Last updated:** 2026-09-30
+**Last updated:** 2026-10-10
 
 ## [x] EP-PLAT-001 — Engineering foundation (M0)
 
@@ -100,17 +100,22 @@ qualification remain deferred.
 - [x] `DLV-FR-OMD-005` — FR-OMD-005 — `Maintain fiscal calendars`
 - [x] `DLV-FR-OMD-006` — FR-OMD-006 — `Publish approved master-data changes`
 
-## [ ] EP-COA-001 — COA segment configuration (M1)
+## [x] EP-COA-001 — COA segment configuration (M1)
 
 Segment definitions, segment values, account combinations, and approved segment changes.
 
+Locally complete and intentionally closed on 2026-10-10. The five COA
+delivery slices have local implementation and focused verification evidence.
+PostgreSQL runtime, downstream cross-context, production, live Entra, full
+audit-chain, performance/capacity, and release qualification remain deferred.
+
 User-story plan: [EP-COA-001 user stories](docs/backlog/stories/EP-COA-001_user_stories.md)
 
-- [ ] `DLV-FR-COA-001` — FR-COA-001 — `Maintain segment definitions`
-- [ ] `DLV-FR-COA-002` — FR-COA-002 — `Maintain segment values`
-- [ ] `DLV-FR-COA-003` — FR-COA-003 — `Validate segment combinations`
-- [ ] `DLV-FR-COA-004` — FR-COA-004 — `Request segment changes`
-- [ ] `DLV-FR-COA-005` — FR-COA-005 — `ApplySegmentChangeApprovalDecision`
+- [x] `DLV-FR-COA-001` — FR-COA-001 — `Maintain segment definitions`
+- [x] `DLV-FR-COA-002` — FR-COA-002 — `Maintain segment values`
+- [x] `DLV-FR-COA-003` — FR-COA-003 — `Validate segment combinations`
+- [x] `DLV-FR-COA-004` — FR-COA-004 — `Request segment changes`
+- [x] `DLV-FR-COA-005` — FR-COA-005 — `ApplySegmentChangeApprovalDecision`
 
 ## [ ] EP-GL-001 — General Ledger (M2)
 

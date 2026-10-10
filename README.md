@@ -1,6 +1,50 @@
 # Tally
 
-A modern double-entry accounting application — currently in early engineering foundation phase.
+A modern double-entry accounting application built as a Go modular monolith
+with a React frontend. The repository currently contains verified platform,
+identity/access, organization/master-data, and COA segment-accounting slices;
+General Ledger and the later finance capabilities remain planned.
+
+## Current Status
+
+Implemented repository slices include:
+
+- Shared exact-decimal money, currency, accounting-scope, aggregate-version,
+  authentication, idempotency, event-envelope, telemetry, database, and worker
+  primitives under `internal/platform/`.
+- Identity and access services for users, roles, access policies,
+  segregation rules, emergency access, authorization evidence, and durable
+  PostgreSQL repositories under `internal/identity/`.
+- Organization and master-data services for legal entities, parties, customer
+  profiles, vendor profiles, fiscal calendars, and approved master-data
+  publication under `internal/organization/`.
+- COA segment definitions, values, combination validation, governed segment
+  changes, and approval-decision application under `internal/coa/`.
+- A generated, authenticated API boundary under `/api/v1` for the implemented
+  identity, organization, and COA operations, plus anonymous `GET /health/live`.
+- A React/Vite frontend with shared finance interaction components and
+  fixture-backed identity/access, master-data, and COA workspaces.
+
+General Ledger is not implemented in the current source tree: `EP-GL-001`
+and its FR-GL delivery items remain open in [`ROADMAP.md`](./ROADMAP.md).
+
+## Verification Snapshot
+
+The following commands were run locally on 2026-10-10:
+
+- `GOCACHE=/tmp/tally-go-cache go test ./...` — passed.
+- `pnpm -C web run build` — passed.
+- `pnpm docs:build` — passed.
+- `make db-migrate-validate` — passed.
+- `pnpm -C web run test` — not fully passing: 13 of 14 files and 79 of 80
+  tests passed; one emergency-access workspace test timed out and Vitest also
+  reported a worker-start timeout in `authenticated-fetch.test.ts`.
+- `make api-check` — did not complete within its repository timeout; OpenAPI
+  drift qualification is not claimed here.
+
+These results are local evidence only. They do not claim hosted CI, live
+Entra, production audit, PostgreSQL runtime, performance/capacity,
+disaster-recovery, or release qualification.
 
 ---
 
@@ -439,19 +483,23 @@ The technology baseline (from the approved solution architecture):
 
 | Area | Current | Planned |
 |---|---|---|
-| Backend | Go 1.26.3 + chi/v5 5.3.1 | — |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, daisyUI 5, shared semantic UI primitives, routed shell, fixture-backed scope context, operational route seams, record-context/lifecycle/money/evidence/privacy wrappers, TanStack Table-backed operational worklist/process fixtures, and the initial COA segment-definition workspace | Further capability screens |
+| Backend | Go 1.26.3 + chi/v5 5.3.1; generated API boundary, liveness endpoint, and runtime wiring for identity, organization, and COA services | Remaining bounded-context modules and finance capability handlers |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, daisyUI 5, shared semantic UI primitives, routed shell, fixture-backed scope context, operational route seams, record-context/lifecycle/money/evidence/privacy wrappers, TanStack Table-backed operational worklist/process fixtures, and identity/access, master-data, and COA workspaces | General Ledger and later capability screens |
 | Package manager | pnpm 11.9.0 | — |
-| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform, identity, organization, and COA queries, seed/verify scripts, migration checksum inventory, focused persistence drift command and aggregate PR quality workflow | — |
+| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform, identity, organization, and COA queries, synthetic seed/verify scripts, migration checksum inventory, focused persistence drift command and aggregate PR quality workflow | GL and later bounded-context schemas |
 | Styling | Tailwind CSS 4 as the primary styling/layout system with daisyUI 5 theme and wrapper support | — |
 | Client state | — | TanStack Query |
-| API contract | OpenAPI 3.1 source with generated Go and TypeScript artifacts; runtime currently exposes GET /health/live; focused contract/generated-artifact drift CI | — |
+| API contract | OpenAPI 3.1 source with generated Go and TypeScript artifacts; runtime exposes `GET /health/live` and authenticated `/api/v1` operations for implemented identity, organization, and COA slices | Future capability operations, including General Ledger |
 | Infrastructure | Terraform provider contract, per-root lockfiles, protected Blob remote-state bootstrap, isolated state keys and identities, reusable low-cost module contracts, dev/demo/prod-reference profile composition, and optional dev/demo deployment wrapper | Deferred: live Azure apply evidence and production qualification |
 | CI/CD | Aggregate pull-request quality workflow with focused push/manual verification workflows | Protected deployment and release qualification |
 
 ---
 
 ## Current Repository Structure
+
+The tree below shows the maintained source boundaries and representative
+artifacts. Generated files are committed where the repository contract requires
+them; the complete inventory is available through `git ls-files`.
 
 ```
 .
@@ -460,27 +508,21 @@ The technology baseline (from the approved solution architecture):
 │   │   └── main.go                    # Go API entry point, graceful shutdown
 │   └── worker/
 │       └── main.go                    # Safe worker composition scaffold
+├── contracts/
+│   └── openapi/                       # OpenAPI 3.1 source and generated-contract inputs
 ├── db/
 │   ├── migrations/
-│   │   ├── bootstrap/
-│   │   │   └── 00001_create_platform_schema.sql
-│   │   ├── platform/
-│   │   │   ├── 00001_create_local_seed_manifest.sql
-│   │   │   ├── 00002_create_idempotency_record.sql
-│   │   │   ├── 00003_create_integration_outbox_inbox.sql
-│   │   │   ├── 00004_add_outbox_envelope_metadata.sql
-│   │   │   ├── 00005_add_outbox_managed_exception.sql
-│   │   │   └── 00006_protect_outbox_event_facts.sql
-│   │   ├── coa/
-│   │   │   └── 00001_create_segment_definition_schema.sql
-│   │   └── checksums.sha256              # Migration integrity checksums
+│   │   ├── bootstrap/                 # platform, identity, organization, COA schemas
+│   │   ├── platform/                  # idempotency, outbox/inbox, seed manifest
+│   │   ├── identity/                  # identity/access persistence
+│   │   ├── organization/              # OMD persistence
+│   │   └── coa/                       # segment and change-request persistence
+│   ├── checksums.sha256               # Migration integrity checksums
 │   ├── queries/
-│   │   ├── coa/
-│   │   │   └── segment_definition.sql  # COA segment-definition query source
-│   │   └── platform/
-│   │       ├── integration_inbox.sql      # sqlc inbox queries
-│   │       ├── integration_outbox.sql     # sqlc outbox queries
-│   │       └── local_seed_manifest.sql    # sqlc source query
+│   │   ├── platform/                  # outbox/inbox and seed queries
+│   │   ├── identity/                  # identity/access queries
+│   │   ├── organization/              # organization queries
+│   │   └── coa/                       # COA queries
 │   └── seeds/
 │       └── local/
 │           └── v1.sql                 # Synthetic seed data
@@ -494,47 +536,26 @@ The technology baseline (from the approved solution architecture):
 │           └── prod-reference/         # Production topology reference root
 ├── internal/
 │   ├── coa/
-│   │   ├── segment_definition.go       # SegmentDefinition domain and service boundary
+│   │   ├── segment_definition.go       # Segment definition domain/service
+│   │   ├── segment_value_service.go   # Segment value maintenance
+│   │   ├── segment_change_request.go  # Governed change requests
+│   │   ├── segment_change_approval.go # Approval decision application
 │   │   └── coadb/                      # sqlc-generated COA query package
-│   ├── .gitkeep
+│   ├── identity/                       # Identity, access, segregation, emergency access
+│   ├── organization/                   # Legal entities, parties, profiles, calendars, publication
 │   └── platform/
-│       ├── money/
-│       │   ├── money.go             # Exact-decimal currency and money primitives
-│       │   └── money_test.go        # Money, currency, precision, and boundary tests
-│       ├── accountingscope/
-│       │   ├── accounting_scope.go      # Explicit five-component accounting scope
-│       │   └── accounting_scope_test.go # Scope validation, equality, and JSON tests
-│       ├── database/
-│       │   ├── pool.go                 # pgx connection pool with config validation
-│       │   ├── pool_test.go            # Pool validation and security unit tests
-│       │   ├── integration_fixture_test.go    # testcontainers fixture setup
-│       │   ├── integration_test.go     # PostgreSQL 18 integration tests
-│       │   ├── outbox_inbox_integration_test.go # Outbox/inbox persistence tests
-│       │   ├── migration_integration_test.go  # migration apply/verify helpers
-│       │   ├── transaction_integration_test.go # generated query commit/rollback proof
-│       │   ├── transactional_coordination_integration_test.go # Atomic publication/effect tests
-│       │   ├── outbox_dispatch_integration_test.go # Dispatch lease/fencing tests
-│       │   └── platformdb/             # sqlc-generated platform query package
-│       │       ├── db.go
-│       │       ├── integration_inbox.sql.go
-│       │       ├── integration_outbox.sql.go
-│       │       ├── local_seed_manifest.sql.go
-│       │       └── models.go
-│       ├── httpapi/
-│       │   ├── boundary.go            # Compile-only generated API boundary reference
-│       │   └── generated/             # ogen-generated server/types artifacts
-│       ├── httpx/
-│       │   ├── health.go              # GET /health/live handler
-│       │   └── health_test.go         # Liveness test
-│       ├── integration/
-│           ├── coordination.go        # Transactional outbox/inbox coordination
-│           ├── dispatcher.go           # Lease-safe outbox dispatcher and typed retries
-│           ├── dispatcher_test.go      # Dispatcher retry and fencing tests
-│           ├── replay.go               # Generation-scoped replay runner
-│           └── replay_test.go          # Replay contract tests
-│       └── worker/
-│           ├── host.go                 # Worker lifecycle and admission host
-│           └── host_test.go             # Lifecycle, cancellation, and timeout tests
+│       ├── aggregateversion/         # Optimistic-concurrency primitive
+│       ├── authentication/           # OIDC/JWT authentication middleware
+│       ├── events/                    # Event envelope and versioning
+│       ├── idempotency/               # Request fingerprint and durable idempotency
+│       ├── money/                     # Exact-decimal money and currency primitives
+│       ├── accountingscope/           # Explicit accounting scope
+│       ├── database/                  # pgx pool, migrations, sqlc, integration tests
+│       ├── httpapi/                   # Generated API boundary and handlers
+│       ├── httpx/                     # Health endpoint
+│       ├── integration/               # Transactional outbox/inbox coordination
+│       ├── telemetry/                 # Logs, traces, and bounded metrics
+│       └── worker/                    # Worker lifecycle and admission host
 ├── scripts/
 │   ├── README.md                    # Script documentation
 │   ├── openapi/
@@ -626,11 +647,7 @@ The technology baseline (from the approved solution architecture):
 │   │   ├── epic-template.md
 │   │   ├── milestone-template.md
 │   │   ├── story-template.md
-│   │   └── stories/
-│   │       ├── EP-PLAT-001_user_stories.md
-│   │       ├── EP-UX-001_user_stories.md
-│   │       ├── EP-IAC-001_user_stories.md
-│   │       └── EP-OPS-001_user_stories.md
+│   │   └── stories/                   # Platform, UX, IAC, OPS, IAM, OMD, COA, GL plans
 │   ├── specs/                         # PRD, domain model, UX, NFR,
 │   │                                  # system design, technical specs
 │   └── verification/                  # Clean-clone and reproducibility evidence
@@ -694,9 +711,15 @@ The planned modules are: `organization`, `gl`, `ap`, `ar`, `payroll`,
 `fixedassets`, `multicurrency`, `fiscalperiod`, `coa`, `bankfeeds`, `tax`,
 `workflow`, `identity`, `audit`. Capability delivery remains incremental.
 
-The initial `coa` segment-definition slice is now implemented under
-`internal/coa` and does not imply that the remaining COA stories or other
-planned modules are delivered.
+The current repository contains implementation slices under `internal/identity`,
+`internal/organization`, and `internal/coa`. The COA slice covers segment
+definitions, values, combination validation, governed changes, and approval
+decision application. These slices do not imply that the remaining planned
+modules, General Ledger, or full capability-level qualification are delivered.
+
+The target module layout above remains planned. Current slices use the
+repository's existing package boundaries and adapters; they are not evidence
+that every future module has already been created in the target layout.
 
 Cross-module rules (from the approved design):
 - Domain packages import only the Go standard library.
@@ -732,11 +755,16 @@ See [ROADMAP.md](./ROADMAP.md) for the full delivery plan spanning M0
 platform backlog has completed `DLV-PLAT-001` through `DLV-PLAT-007`; `DLV-PLAT-007`
 has its envelope, persistence, transactional-coordination, dispatch, worker
 lifecycle, crash recovery, ordering, and replay foundations implemented.
-Semantic payload safety is tracked as a separate deferred follow-up. Focused gates include
+Semantic payload safety is tracked as a separate deferred follow-up. The
+roadmap also records local/owner-closed foundation slices for `EP-OPS-001`,
+`EP-IAM-001`, `EP-OMD-001`, and `EP-COA-001`; each closure retains explicit
+deferred qualification boundaries.
+
+`EP-GL-001` is the next open finance capability epic. Its General Ledger
+implementation is not present in the current source tree. Focused gates include
 `make shared-primitives-check`, `make outbox-dispatch-check`,
-`make outbox-worker-check`, and
-`make api-check`; focused contract/generated-artifact drift is also enforced by
-`.github/workflows/openapi.yml`.
+`make outbox-worker-check`, and `make api-check`; the verification snapshot
+above records the commands actually run for this README update.
 The optional Terraform and Azure learning-environment epic, `EP-IAC-001`, is
 closed by owner decision; remaining live Azure qualification and optional
 external exercises are explicitly deferred for this project.
