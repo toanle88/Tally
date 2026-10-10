@@ -90,13 +90,6 @@ export type ProblemDetails = {
     fieldErrors?: Array<ProblemFieldError>;
 };
 
-export type IamPermissionGrant = {
-    permission: string;
-    scopeIds: Array<string>;
-    effectiveFrom: string;
-    effectiveTo?: string;
-};
-
 export type IamApprovalDecisionReference = {
     approvalRequestId: Uuid;
     decisionId: Uuid;
@@ -105,6 +98,125 @@ export type IamApprovalDecisionReference = {
     subjectVersion: number;
     candidateFingerprint: string;
     approverUserId: Uuid;
+};
+
+export type GlMaintainLedgersCommandData = {
+    action: 'create' | 'update';
+    ledgerId?: Uuid;
+    legalEntityId: Uuid;
+    ledgerType: string;
+    functionalCurrency: CurrencyCode;
+    fiscalCalendarId: Uuid;
+    lifecycleStatus: 'draft' | 'active' | 'suspended' | 'retired';
+    effectiveDateFrom: string;
+    effectiveDateTo?: string | null;
+    approval?: IamApprovalDecisionReference;
+};
+
+export type GlMaintainLedgersCommandRequest = {
+    commandId: Uuid;
+    expectedVersion?: number;
+    accountingScopeId: Uuid;
+    data: GlMaintainLedgersCommandData;
+};
+
+export type GlLedgerProjection = {
+    id: Uuid;
+    accountingScopeId: Uuid;
+    legalEntityId: Uuid;
+    ledgerType: string;
+    functionalCurrency: CurrencyCode;
+    fiscalCalendarId: Uuid;
+    lifecycleStatus: string;
+    effectiveDateFrom: string;
+    effectiveDateTo?: string | null;
+    approvalStatus: string;
+    validationOutcome: string;
+    nextAction: string;
+    version: number;
+    revisionNumber: number;
+};
+
+export type GlMaintainLedgersResultData = {
+    ledger: GlLedgerProjection;
+    decisionReference?: Uuid;
+    policyReference?: string;
+    validationOutcome: string;
+    approvalStatus: string;
+    replayed?: boolean;
+};
+
+export type GlMaintainLedgersEstablishedResult = {
+    status: 'established';
+    aggregateId: Uuid;
+    aggregateVersion: number;
+    processId?: Uuid | null;
+    correlationId: Uuid;
+    links: Links;
+    data: GlMaintainLedgersResultData;
+};
+
+export type GlMaintainAccountingBooksCommandData = {
+    action: 'create' | 'update';
+    accountingBookId?: Uuid;
+    ledgerId: Uuid;
+    bookType: string;
+    accountingBasis: string;
+    postingPolicyVersion: string;
+    lifecycleStatus: 'draft' | 'active' | 'suspended' | 'retired';
+    effectiveDateFrom: string;
+    effectiveDateTo?: string | null;
+    approval?: IamApprovalDecisionReference;
+};
+
+export type GlMaintainAccountingBooksCommandRequest = {
+    commandId: Uuid;
+    expectedVersion?: number;
+    accountingScopeId: Uuid;
+    data: GlMaintainAccountingBooksCommandData;
+};
+
+export type GlAccountingBookProjection = {
+    id: Uuid;
+    accountingScopeId: Uuid;
+    ledgerId: Uuid;
+    bookType: string;
+    accountingBasis: string;
+    postingPolicyVersion: string;
+    lifecycleStatus: string;
+    effectiveDateFrom: string;
+    effectiveDateTo?: string | null;
+    approvalStatus: string;
+    validationOutcome: string;
+    nextAction: string;
+    version: number;
+    revisionNumber: number;
+};
+
+export type GlMaintainAccountingBooksResultData = {
+    accountingBook: GlAccountingBookProjection;
+    decisionReference?: Uuid;
+    policyReference?: string;
+    validationOutcome: string;
+    approvalStatus: string;
+    replayed?: boolean;
+};
+
+export type GlMaintainAccountingBooksEstablishedResult = {
+    status: 'established';
+    aggregateId: Uuid;
+    aggregateVersion: number;
+    processId?: Uuid | null;
+    correlationId: Uuid;
+    links: Links;
+    data: GlMaintainAccountingBooksResultData;
+};
+
+export type IamPermissionGrant = {
+    permission: string;
+    scopeIds: Array<string>;
+    effectiveFrom: string;
+    effectiveTo?: string;
 };
 
 export type IamManageRolesCommandData = {
@@ -1305,7 +1417,7 @@ export type GlGetPostingGateStatusResponses = {
 export type GlGetPostingGateStatusResponse = GlGetPostingGateStatusResponses[keyof GlGetPostingGateStatusResponses];
 
 export type GlMaintainLedgersData = {
-    body: CommandRequest;
+    body: GlMaintainLedgersCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
@@ -1349,15 +1461,15 @@ export type GlMaintainLedgersError = GlMaintainLedgersErrors[keyof GlMaintainLed
 
 export type GlMaintainLedgersResponses = {
     /**
-     * Established result
+     * Established ledger result
      */
-    200: EstablishedResult;
+    200: GlMaintainLedgersEstablishedResult;
 };
 
 export type GlMaintainLedgersResponse = GlMaintainLedgersResponses[keyof GlMaintainLedgersResponses];
 
 export type GlMaintainAccountingBooksData = {
-    body: CommandRequest;
+    body: GlMaintainAccountingBooksCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
@@ -1401,9 +1513,9 @@ export type GlMaintainAccountingBooksError = GlMaintainAccountingBooksErrors[key
 
 export type GlMaintainAccountingBooksResponses = {
     /**
-     * Established result
+     * Established accounting-book result
      */
-    200: EstablishedResult;
+    200: GlMaintainAccountingBooksEstablishedResult;
 };
 
 export type GlMaintainAccountingBooksResponse = GlMaintainAccountingBooksResponses[keyof GlMaintainAccountingBooksResponses];

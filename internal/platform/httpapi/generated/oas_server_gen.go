@@ -371,7 +371,7 @@ type Handler interface {
 	// GlMaintainAccountingBooks implements glMaintainAccountingBooks operation.
 	//
 	// PUT /general-ledger/configuration/maintain-accounting-books
-	GlMaintainAccountingBooks(ctx context.Context, req *CommandRequest, params GlMaintainAccountingBooksParams) (GlMaintainAccountingBooksRes, error)
+	GlMaintainAccountingBooks(ctx context.Context, req *GlMaintainAccountingBooksCommandRequest, params GlMaintainAccountingBooksParams) (GlMaintainAccountingBooksRes, error)
 	// GlMaintainAccountsAndReportingMappings implements glMaintainAccountsAndReportingMappings operation.
 	//
 	// PUT /general-ledger/configuration/maintain-accounts-and-reporting-mappings
@@ -383,7 +383,7 @@ type Handler interface {
 	// GlMaintainLedgers implements glMaintainLedgers operation.
 	//
 	// PUT /general-ledger/configuration/maintain-ledgers
-	GlMaintainLedgers(ctx context.Context, req *CommandRequest, params GlMaintainLedgersParams) (GlMaintainLedgersRes, error)
+	GlMaintainLedgers(ctx context.Context, req *GlMaintainLedgersCommandRequest, params GlMaintainLedgersParams) (GlMaintainLedgersRes, error)
 	// GlOpenOperationalReopenGate implements glOpenOperationalReopenGate operation.
 	//
 	// POST /general-ledger/actions/open-operational-reopen-gate

@@ -646,7 +646,7 @@ func (UnimplementedHandler) GlGetPostingGateStatus(ctx context.Context, params G
 // GlMaintainAccountingBooks implements glMaintainAccountingBooks operation.
 //
 // PUT /general-ledger/configuration/maintain-accounting-books
-func (UnimplementedHandler) GlMaintainAccountingBooks(ctx context.Context, req *CommandRequest, params GlMaintainAccountingBooksParams) (r GlMaintainAccountingBooksRes, _ error) {
+func (UnimplementedHandler) GlMaintainAccountingBooks(ctx context.Context, req *GlMaintainAccountingBooksCommandRequest, params GlMaintainAccountingBooksParams) (r GlMaintainAccountingBooksRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -667,7 +667,7 @@ func (UnimplementedHandler) GlMaintainChartsOfAccounts(ctx context.Context, req 
 // GlMaintainLedgers implements glMaintainLedgers operation.
 //
 // PUT /general-ledger/configuration/maintain-ledgers
-func (UnimplementedHandler) GlMaintainLedgers(ctx context.Context, req *CommandRequest, params GlMaintainLedgersParams) (r GlMaintainLedgersRes, _ error) {
+func (UnimplementedHandler) GlMaintainLedgers(ctx context.Context, req *GlMaintainLedgersCommandRequest, params GlMaintainLedgersParams) (r GlMaintainLedgersRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

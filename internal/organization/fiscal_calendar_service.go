@@ -366,6 +366,26 @@ func (service *FiscalCalendarService) Execute(ctx context.Context, actor Actor, 
 	return result, nil
 }
 
+// GetReference is the OMD application boundary for downstream authoritative
+// identity checks. The downstream command owns actor authorization; this
+// method returns only the scoped fiscal-calendar identity.
+func (service *FiscalCalendarService) GetReference(ctx context.Context, id, scopeID uuid.UUID) (FiscalCalendarReference, error) {
+	if service == nil {
+		return FiscalCalendarReference{}, ErrInvalidFiscalCalendarService
+	}
+	if id == uuid.Nil || scopeID == uuid.Nil {
+		return FiscalCalendarReference{}, ErrFiscalCalendarNotFound
+	}
+	calendar, err := service.repository.Get(ctx, id)
+	if err != nil {
+		return FiscalCalendarReference{}, err
+	}
+	if calendar.ScopeID != scopeID {
+		return FiscalCalendarReference{}, ErrFiscalCalendarNotFound
+	}
+	return FiscalCalendarReference{ID: calendar.ID, ScopeID: calendar.ScopeID}, nil
+}
+
 func authorizeFiscalCalendarDecision(decision AuthorizationDecision, scope uuid.UUID) error {
 	switch strings.ToLower(strings.TrimSpace(decision.Outcome)) {
 	case "stale":

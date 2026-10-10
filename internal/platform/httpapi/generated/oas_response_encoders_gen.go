@@ -10003,7 +10003,7 @@ func encodeGlGetPostingGateStatusResponse(response GlGetPostingGateStatusRes, w 
 
 func encodeGlMaintainAccountingBooksResponse(response GlMaintainAccountingBooksRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
-	case *EstablishedResult:
+	case *GlMaintainAccountingBooksEstablishedResult:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
@@ -10336,7 +10336,7 @@ func encodeGlMaintainChartsOfAccountsResponse(response GlMaintainChartsOfAccount
 
 func encodeGlMaintainLedgersResponse(response GlMaintainLedgersRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
-	case *EstablishedResult:
+	case *GlMaintainLedgersEstablishedResult:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
