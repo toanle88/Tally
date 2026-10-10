@@ -1355,8 +1355,6 @@ func (*EstablishedResult) glEnterSoftCloseGateRes()                             
 func (*EstablishedResult) glExitSoftCloseGateRes()                              {}
 func (*EstablishedResult) glFinalizePostingGateRes()                            {}
 func (*EstablishedResult) glGetPostingGateStatusRes()                           {}
-func (*EstablishedResult) glMaintainAccountsAndReportingMappingsRes()           {}
-func (*EstablishedResult) glMaintainChartsOfAccountsRes()                       {}
 func (*EstablishedResult) glOpenOperationalReopenGateRes()                      {}
 func (*EstablishedResult) glOpenScopedReopenGateRes()                           {}
 func (*EstablishedResult) glReleasePostingBarrierRes()                          {}
@@ -2271,6 +2269,334 @@ type FxRunTranslationUnprocessableEntity ProblemDetails
 
 func (*FxRunTranslationUnprocessableEntity) fxRunTranslationRes() {}
 
+// Ref: #/components/schemas/GlAccountProjection
+type GlAccountProjection struct {
+	ID                UUID                             `json:"id"`
+	AccountingScopeId UUID                             `json:"accountingScopeId"`
+	ChartOfAccountsId UUID                             `json:"chartOfAccountsId"`
+	AccountCode       string                           `json:"accountCode"`
+	AccountName       string                           `json:"accountName"`
+	AccountType       string                           `json:"accountType"`
+	NormalBalance     GlAccountProjectionNormalBalance `json:"normalBalance"`
+	LifecycleStatus   string                           `json:"lifecycleStatus"`
+	Restrictions      []GlAccountRestriction           `json:"restrictions"`
+	CurrencyPolicy    string                           `json:"currencyPolicy"`
+	ReportingMappings []GlAccountReportingMapping      `json:"reportingMappings"`
+	EffectiveDateFrom time.Time                        `json:"effectiveDateFrom"`
+	EffectiveDateTo   OptNilDate                       `json:"effectiveDateTo"`
+	ApprovalStatus    string                           `json:"approvalStatus"`
+	ValidationOutcome string                           `json:"validationOutcome"`
+	NextAction        string                           `json:"nextAction"`
+	Version           int                              `json:"version"`
+	RevisionNumber    int                              `json:"revisionNumber"`
+}
+
+// GetID returns the value of ID.
+func (s *GlAccountProjection) GetID() UUID {
+	return s.ID
+}
+
+// GetAccountingScopeId returns the value of AccountingScopeId.
+func (s *GlAccountProjection) GetAccountingScopeId() UUID {
+	return s.AccountingScopeId
+}
+
+// GetChartOfAccountsId returns the value of ChartOfAccountsId.
+func (s *GlAccountProjection) GetChartOfAccountsId() UUID {
+	return s.ChartOfAccountsId
+}
+
+// GetAccountCode returns the value of AccountCode.
+func (s *GlAccountProjection) GetAccountCode() string {
+	return s.AccountCode
+}
+
+// GetAccountName returns the value of AccountName.
+func (s *GlAccountProjection) GetAccountName() string {
+	return s.AccountName
+}
+
+// GetAccountType returns the value of AccountType.
+func (s *GlAccountProjection) GetAccountType() string {
+	return s.AccountType
+}
+
+// GetNormalBalance returns the value of NormalBalance.
+func (s *GlAccountProjection) GetNormalBalance() GlAccountProjectionNormalBalance {
+	return s.NormalBalance
+}
+
+// GetLifecycleStatus returns the value of LifecycleStatus.
+func (s *GlAccountProjection) GetLifecycleStatus() string {
+	return s.LifecycleStatus
+}
+
+// GetRestrictions returns the value of Restrictions.
+func (s *GlAccountProjection) GetRestrictions() []GlAccountRestriction {
+	return s.Restrictions
+}
+
+// GetCurrencyPolicy returns the value of CurrencyPolicy.
+func (s *GlAccountProjection) GetCurrencyPolicy() string {
+	return s.CurrencyPolicy
+}
+
+// GetReportingMappings returns the value of ReportingMappings.
+func (s *GlAccountProjection) GetReportingMappings() []GlAccountReportingMapping {
+	return s.ReportingMappings
+}
+
+// GetEffectiveDateFrom returns the value of EffectiveDateFrom.
+func (s *GlAccountProjection) GetEffectiveDateFrom() time.Time {
+	return s.EffectiveDateFrom
+}
+
+// GetEffectiveDateTo returns the value of EffectiveDateTo.
+func (s *GlAccountProjection) GetEffectiveDateTo() OptNilDate {
+	return s.EffectiveDateTo
+}
+
+// GetApprovalStatus returns the value of ApprovalStatus.
+func (s *GlAccountProjection) GetApprovalStatus() string {
+	return s.ApprovalStatus
+}
+
+// GetValidationOutcome returns the value of ValidationOutcome.
+func (s *GlAccountProjection) GetValidationOutcome() string {
+	return s.ValidationOutcome
+}
+
+// GetNextAction returns the value of NextAction.
+func (s *GlAccountProjection) GetNextAction() string {
+	return s.NextAction
+}
+
+// GetVersion returns the value of Version.
+func (s *GlAccountProjection) GetVersion() int {
+	return s.Version
+}
+
+// GetRevisionNumber returns the value of RevisionNumber.
+func (s *GlAccountProjection) GetRevisionNumber() int {
+	return s.RevisionNumber
+}
+
+// SetID sets the value of ID.
+func (s *GlAccountProjection) SetID(val UUID) {
+	s.ID = val
+}
+
+// SetAccountingScopeId sets the value of AccountingScopeId.
+func (s *GlAccountProjection) SetAccountingScopeId(val UUID) {
+	s.AccountingScopeId = val
+}
+
+// SetChartOfAccountsId sets the value of ChartOfAccountsId.
+func (s *GlAccountProjection) SetChartOfAccountsId(val UUID) {
+	s.ChartOfAccountsId = val
+}
+
+// SetAccountCode sets the value of AccountCode.
+func (s *GlAccountProjection) SetAccountCode(val string) {
+	s.AccountCode = val
+}
+
+// SetAccountName sets the value of AccountName.
+func (s *GlAccountProjection) SetAccountName(val string) {
+	s.AccountName = val
+}
+
+// SetAccountType sets the value of AccountType.
+func (s *GlAccountProjection) SetAccountType(val string) {
+	s.AccountType = val
+}
+
+// SetNormalBalance sets the value of NormalBalance.
+func (s *GlAccountProjection) SetNormalBalance(val GlAccountProjectionNormalBalance) {
+	s.NormalBalance = val
+}
+
+// SetLifecycleStatus sets the value of LifecycleStatus.
+func (s *GlAccountProjection) SetLifecycleStatus(val string) {
+	s.LifecycleStatus = val
+}
+
+// SetRestrictions sets the value of Restrictions.
+func (s *GlAccountProjection) SetRestrictions(val []GlAccountRestriction) {
+	s.Restrictions = val
+}
+
+// SetCurrencyPolicy sets the value of CurrencyPolicy.
+func (s *GlAccountProjection) SetCurrencyPolicy(val string) {
+	s.CurrencyPolicy = val
+}
+
+// SetReportingMappings sets the value of ReportingMappings.
+func (s *GlAccountProjection) SetReportingMappings(val []GlAccountReportingMapping) {
+	s.ReportingMappings = val
+}
+
+// SetEffectiveDateFrom sets the value of EffectiveDateFrom.
+func (s *GlAccountProjection) SetEffectiveDateFrom(val time.Time) {
+	s.EffectiveDateFrom = val
+}
+
+// SetEffectiveDateTo sets the value of EffectiveDateTo.
+func (s *GlAccountProjection) SetEffectiveDateTo(val OptNilDate) {
+	s.EffectiveDateTo = val
+}
+
+// SetApprovalStatus sets the value of ApprovalStatus.
+func (s *GlAccountProjection) SetApprovalStatus(val string) {
+	s.ApprovalStatus = val
+}
+
+// SetValidationOutcome sets the value of ValidationOutcome.
+func (s *GlAccountProjection) SetValidationOutcome(val string) {
+	s.ValidationOutcome = val
+}
+
+// SetNextAction sets the value of NextAction.
+func (s *GlAccountProjection) SetNextAction(val string) {
+	s.NextAction = val
+}
+
+// SetVersion sets the value of Version.
+func (s *GlAccountProjection) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetRevisionNumber sets the value of RevisionNumber.
+func (s *GlAccountProjection) SetRevisionNumber(val int) {
+	s.RevisionNumber = val
+}
+
+type GlAccountProjectionNormalBalance string
+
+const (
+	GlAccountProjectionNormalBalanceDebit  GlAccountProjectionNormalBalance = "debit"
+	GlAccountProjectionNormalBalanceCredit GlAccountProjectionNormalBalance = "credit"
+)
+
+// AllValues returns all GlAccountProjectionNormalBalance values.
+func (GlAccountProjectionNormalBalance) AllValues() []GlAccountProjectionNormalBalance {
+	return []GlAccountProjectionNormalBalance{
+		GlAccountProjectionNormalBalanceDebit,
+		GlAccountProjectionNormalBalanceCredit,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GlAccountProjectionNormalBalance) MarshalText() ([]byte, error) {
+	switch s {
+	case GlAccountProjectionNormalBalanceDebit:
+		return []byte(s), nil
+	case GlAccountProjectionNormalBalanceCredit:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GlAccountProjectionNormalBalance) UnmarshalText(data []byte) error {
+	switch GlAccountProjectionNormalBalance(data) {
+	case GlAccountProjectionNormalBalanceDebit:
+		*s = GlAccountProjectionNormalBalanceDebit
+		return nil
+	case GlAccountProjectionNormalBalanceCredit:
+		*s = GlAccountProjectionNormalBalanceCredit
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/GlAccountReportingMapping
+type GlAccountReportingMapping struct {
+	ReportingDefinitionId UUID       `json:"reportingDefinitionId"`
+	ReportingLineCode     string     `json:"reportingLineCode"`
+	Approved              bool       `json:"approved"`
+	EffectiveDateFrom     OptDate    `json:"effectiveDateFrom"`
+	EffectiveDateTo       OptNilDate `json:"effectiveDateTo"`
+}
+
+// GetReportingDefinitionId returns the value of ReportingDefinitionId.
+func (s *GlAccountReportingMapping) GetReportingDefinitionId() UUID {
+	return s.ReportingDefinitionId
+}
+
+// GetReportingLineCode returns the value of ReportingLineCode.
+func (s *GlAccountReportingMapping) GetReportingLineCode() string {
+	return s.ReportingLineCode
+}
+
+// GetApproved returns the value of Approved.
+func (s *GlAccountReportingMapping) GetApproved() bool {
+	return s.Approved
+}
+
+// GetEffectiveDateFrom returns the value of EffectiveDateFrom.
+func (s *GlAccountReportingMapping) GetEffectiveDateFrom() OptDate {
+	return s.EffectiveDateFrom
+}
+
+// GetEffectiveDateTo returns the value of EffectiveDateTo.
+func (s *GlAccountReportingMapping) GetEffectiveDateTo() OptNilDate {
+	return s.EffectiveDateTo
+}
+
+// SetReportingDefinitionId sets the value of ReportingDefinitionId.
+func (s *GlAccountReportingMapping) SetReportingDefinitionId(val UUID) {
+	s.ReportingDefinitionId = val
+}
+
+// SetReportingLineCode sets the value of ReportingLineCode.
+func (s *GlAccountReportingMapping) SetReportingLineCode(val string) {
+	s.ReportingLineCode = val
+}
+
+// SetApproved sets the value of Approved.
+func (s *GlAccountReportingMapping) SetApproved(val bool) {
+	s.Approved = val
+}
+
+// SetEffectiveDateFrom sets the value of EffectiveDateFrom.
+func (s *GlAccountReportingMapping) SetEffectiveDateFrom(val OptDate) {
+	s.EffectiveDateFrom = val
+}
+
+// SetEffectiveDateTo sets the value of EffectiveDateTo.
+func (s *GlAccountReportingMapping) SetEffectiveDateTo(val OptNilDate) {
+	s.EffectiveDateTo = val
+}
+
+// Ref: #/components/schemas/GlAccountRestriction
+type GlAccountRestriction struct {
+	RestrictionCode string    `json:"restrictionCode"`
+	Description     OptString `json:"description"`
+}
+
+// GetRestrictionCode returns the value of RestrictionCode.
+func (s *GlAccountRestriction) GetRestrictionCode() string {
+	return s.RestrictionCode
+}
+
+// GetDescription returns the value of Description.
+func (s *GlAccountRestriction) GetDescription() OptString {
+	return s.Description
+}
+
+// SetRestrictionCode sets the value of RestrictionCode.
+func (s *GlAccountRestriction) SetRestrictionCode(val string) {
+	s.RestrictionCode = val
+}
+
+// SetDescription sets the value of Description.
+func (s *GlAccountRestriction) SetDescription(val OptString) {
+	s.Description = val
+}
+
 // Ref: #/components/schemas/GlAccountingBookProjection
 type GlAccountingBookProjection struct {
 	ID                   UUID       `json:"id"`
@@ -2488,6 +2814,142 @@ func (*GlBeginRecloseGateServiceUnavailable) glBeginRecloseGateRes() {}
 type GlBeginRecloseGateUnprocessableEntity ProblemDetails
 
 func (*GlBeginRecloseGateUnprocessableEntity) glBeginRecloseGateRes() {}
+
+// Ref: #/components/schemas/GlChartOfAccountsProjection
+type GlChartOfAccountsProjection struct {
+	ID                UUID       `json:"id"`
+	AccountingScopeId UUID       `json:"accountingScopeId"`
+	LedgerId          UUID       `json:"ledgerId"`
+	AccountCodePolicy string     `json:"accountCodePolicy"`
+	LifecycleStatus   string     `json:"lifecycleStatus"`
+	EffectiveDateFrom time.Time  `json:"effectiveDateFrom"`
+	EffectiveDateTo   OptNilDate `json:"effectiveDateTo"`
+	ApprovalStatus    string     `json:"approvalStatus"`
+	ValidationOutcome string     `json:"validationOutcome"`
+	NextAction        string     `json:"nextAction"`
+	Version           int        `json:"version"`
+	RevisionNumber    int        `json:"revisionNumber"`
+}
+
+// GetID returns the value of ID.
+func (s *GlChartOfAccountsProjection) GetID() UUID {
+	return s.ID
+}
+
+// GetAccountingScopeId returns the value of AccountingScopeId.
+func (s *GlChartOfAccountsProjection) GetAccountingScopeId() UUID {
+	return s.AccountingScopeId
+}
+
+// GetLedgerId returns the value of LedgerId.
+func (s *GlChartOfAccountsProjection) GetLedgerId() UUID {
+	return s.LedgerId
+}
+
+// GetAccountCodePolicy returns the value of AccountCodePolicy.
+func (s *GlChartOfAccountsProjection) GetAccountCodePolicy() string {
+	return s.AccountCodePolicy
+}
+
+// GetLifecycleStatus returns the value of LifecycleStatus.
+func (s *GlChartOfAccountsProjection) GetLifecycleStatus() string {
+	return s.LifecycleStatus
+}
+
+// GetEffectiveDateFrom returns the value of EffectiveDateFrom.
+func (s *GlChartOfAccountsProjection) GetEffectiveDateFrom() time.Time {
+	return s.EffectiveDateFrom
+}
+
+// GetEffectiveDateTo returns the value of EffectiveDateTo.
+func (s *GlChartOfAccountsProjection) GetEffectiveDateTo() OptNilDate {
+	return s.EffectiveDateTo
+}
+
+// GetApprovalStatus returns the value of ApprovalStatus.
+func (s *GlChartOfAccountsProjection) GetApprovalStatus() string {
+	return s.ApprovalStatus
+}
+
+// GetValidationOutcome returns the value of ValidationOutcome.
+func (s *GlChartOfAccountsProjection) GetValidationOutcome() string {
+	return s.ValidationOutcome
+}
+
+// GetNextAction returns the value of NextAction.
+func (s *GlChartOfAccountsProjection) GetNextAction() string {
+	return s.NextAction
+}
+
+// GetVersion returns the value of Version.
+func (s *GlChartOfAccountsProjection) GetVersion() int {
+	return s.Version
+}
+
+// GetRevisionNumber returns the value of RevisionNumber.
+func (s *GlChartOfAccountsProjection) GetRevisionNumber() int {
+	return s.RevisionNumber
+}
+
+// SetID sets the value of ID.
+func (s *GlChartOfAccountsProjection) SetID(val UUID) {
+	s.ID = val
+}
+
+// SetAccountingScopeId sets the value of AccountingScopeId.
+func (s *GlChartOfAccountsProjection) SetAccountingScopeId(val UUID) {
+	s.AccountingScopeId = val
+}
+
+// SetLedgerId sets the value of LedgerId.
+func (s *GlChartOfAccountsProjection) SetLedgerId(val UUID) {
+	s.LedgerId = val
+}
+
+// SetAccountCodePolicy sets the value of AccountCodePolicy.
+func (s *GlChartOfAccountsProjection) SetAccountCodePolicy(val string) {
+	s.AccountCodePolicy = val
+}
+
+// SetLifecycleStatus sets the value of LifecycleStatus.
+func (s *GlChartOfAccountsProjection) SetLifecycleStatus(val string) {
+	s.LifecycleStatus = val
+}
+
+// SetEffectiveDateFrom sets the value of EffectiveDateFrom.
+func (s *GlChartOfAccountsProjection) SetEffectiveDateFrom(val time.Time) {
+	s.EffectiveDateFrom = val
+}
+
+// SetEffectiveDateTo sets the value of EffectiveDateTo.
+func (s *GlChartOfAccountsProjection) SetEffectiveDateTo(val OptNilDate) {
+	s.EffectiveDateTo = val
+}
+
+// SetApprovalStatus sets the value of ApprovalStatus.
+func (s *GlChartOfAccountsProjection) SetApprovalStatus(val string) {
+	s.ApprovalStatus = val
+}
+
+// SetValidationOutcome sets the value of ValidationOutcome.
+func (s *GlChartOfAccountsProjection) SetValidationOutcome(val string) {
+	s.ValidationOutcome = val
+}
+
+// SetNextAction sets the value of NextAction.
+func (s *GlChartOfAccountsProjection) SetNextAction(val string) {
+	s.NextAction = val
+}
+
+// SetVersion sets the value of Version.
+func (s *GlChartOfAccountsProjection) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetRevisionNumber sets the value of RevisionNumber.
+func (s *GlChartOfAccountsProjection) SetRevisionNumber(val int) {
+	s.RevisionNumber = val
+}
 
 type GlCloseOperationalReopenGateBadRequest ProblemDetails
 
@@ -3203,13 +3665,510 @@ type GlMaintainAccountsAndReportingMappingsBadRequest ProblemDetails
 func (*GlMaintainAccountsAndReportingMappingsBadRequest) glMaintainAccountsAndReportingMappingsRes() {
 }
 
+// Ref: #/components/schemas/GlMaintainAccountsAndReportingMappingsCommandData
+type GlMaintainAccountsAndReportingMappingsCommandData struct {
+	Action            GlMaintainAccountsAndReportingMappingsCommandDataAction          `json:"action"`
+	AccountId         OptUUID                                                          `json:"accountId"`
+	ChartOfAccountsId UUID                                                             `json:"chartOfAccountsId"`
+	AccountCode       string                                                           `json:"accountCode"`
+	AccountName       string                                                           `json:"accountName"`
+	AccountType       string                                                           `json:"accountType"`
+	NormalBalance     GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance   `json:"normalBalance"`
+	LifecycleStatus   GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus `json:"lifecycleStatus"`
+	Restrictions      []GlAccountRestriction                                           `json:"restrictions"`
+	CurrencyPolicy    string                                                           `json:"currencyPolicy"`
+	ReportingMappings []GlAccountReportingMapping                                      `json:"reportingMappings"`
+	EffectiveDateFrom time.Time                                                        `json:"effectiveDateFrom"`
+	EffectiveDateTo   OptNilDate                                                       `json:"effectiveDateTo"`
+	Approval          OptIamApprovalDecisionReference                                  `json:"approval"`
+}
+
+// GetAction returns the value of Action.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) GetAction() GlMaintainAccountsAndReportingMappingsCommandDataAction {
+	return s.Action
+}
+
+// GetAccountId returns the value of AccountId.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) GetAccountId() OptUUID {
+	return s.AccountId
+}
+
+// GetChartOfAccountsId returns the value of ChartOfAccountsId.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) GetChartOfAccountsId() UUID {
+	return s.ChartOfAccountsId
+}
+
+// GetAccountCode returns the value of AccountCode.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) GetAccountCode() string {
+	return s.AccountCode
+}
+
+// GetAccountName returns the value of AccountName.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) GetAccountName() string {
+	return s.AccountName
+}
+
+// GetAccountType returns the value of AccountType.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) GetAccountType() string {
+	return s.AccountType
+}
+
+// GetNormalBalance returns the value of NormalBalance.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) GetNormalBalance() GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance {
+	return s.NormalBalance
+}
+
+// GetLifecycleStatus returns the value of LifecycleStatus.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) GetLifecycleStatus() GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus {
+	return s.LifecycleStatus
+}
+
+// GetRestrictions returns the value of Restrictions.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) GetRestrictions() []GlAccountRestriction {
+	return s.Restrictions
+}
+
+// GetCurrencyPolicy returns the value of CurrencyPolicy.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) GetCurrencyPolicy() string {
+	return s.CurrencyPolicy
+}
+
+// GetReportingMappings returns the value of ReportingMappings.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) GetReportingMappings() []GlAccountReportingMapping {
+	return s.ReportingMappings
+}
+
+// GetEffectiveDateFrom returns the value of EffectiveDateFrom.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) GetEffectiveDateFrom() time.Time {
+	return s.EffectiveDateFrom
+}
+
+// GetEffectiveDateTo returns the value of EffectiveDateTo.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) GetEffectiveDateTo() OptNilDate {
+	return s.EffectiveDateTo
+}
+
+// GetApproval returns the value of Approval.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) GetApproval() OptIamApprovalDecisionReference {
+	return s.Approval
+}
+
+// SetAction sets the value of Action.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) SetAction(val GlMaintainAccountsAndReportingMappingsCommandDataAction) {
+	s.Action = val
+}
+
+// SetAccountId sets the value of AccountId.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) SetAccountId(val OptUUID) {
+	s.AccountId = val
+}
+
+// SetChartOfAccountsId sets the value of ChartOfAccountsId.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) SetChartOfAccountsId(val UUID) {
+	s.ChartOfAccountsId = val
+}
+
+// SetAccountCode sets the value of AccountCode.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) SetAccountCode(val string) {
+	s.AccountCode = val
+}
+
+// SetAccountName sets the value of AccountName.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) SetAccountName(val string) {
+	s.AccountName = val
+}
+
+// SetAccountType sets the value of AccountType.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) SetAccountType(val string) {
+	s.AccountType = val
+}
+
+// SetNormalBalance sets the value of NormalBalance.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) SetNormalBalance(val GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance) {
+	s.NormalBalance = val
+}
+
+// SetLifecycleStatus sets the value of LifecycleStatus.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) SetLifecycleStatus(val GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus) {
+	s.LifecycleStatus = val
+}
+
+// SetRestrictions sets the value of Restrictions.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) SetRestrictions(val []GlAccountRestriction) {
+	s.Restrictions = val
+}
+
+// SetCurrencyPolicy sets the value of CurrencyPolicy.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) SetCurrencyPolicy(val string) {
+	s.CurrencyPolicy = val
+}
+
+// SetReportingMappings sets the value of ReportingMappings.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) SetReportingMappings(val []GlAccountReportingMapping) {
+	s.ReportingMappings = val
+}
+
+// SetEffectiveDateFrom sets the value of EffectiveDateFrom.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) SetEffectiveDateFrom(val time.Time) {
+	s.EffectiveDateFrom = val
+}
+
+// SetEffectiveDateTo sets the value of EffectiveDateTo.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) SetEffectiveDateTo(val OptNilDate) {
+	s.EffectiveDateTo = val
+}
+
+// SetApproval sets the value of Approval.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) SetApproval(val OptIamApprovalDecisionReference) {
+	s.Approval = val
+}
+
+type GlMaintainAccountsAndReportingMappingsCommandDataAction string
+
+const (
+	GlMaintainAccountsAndReportingMappingsCommandDataActionCreate GlMaintainAccountsAndReportingMappingsCommandDataAction = "create"
+	GlMaintainAccountsAndReportingMappingsCommandDataActionUpdate GlMaintainAccountsAndReportingMappingsCommandDataAction = "update"
+)
+
+// AllValues returns all GlMaintainAccountsAndReportingMappingsCommandDataAction values.
+func (GlMaintainAccountsAndReportingMappingsCommandDataAction) AllValues() []GlMaintainAccountsAndReportingMappingsCommandDataAction {
+	return []GlMaintainAccountsAndReportingMappingsCommandDataAction{
+		GlMaintainAccountsAndReportingMappingsCommandDataActionCreate,
+		GlMaintainAccountsAndReportingMappingsCommandDataActionUpdate,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GlMaintainAccountsAndReportingMappingsCommandDataAction) MarshalText() ([]byte, error) {
+	switch s {
+	case GlMaintainAccountsAndReportingMappingsCommandDataActionCreate:
+		return []byte(s), nil
+	case GlMaintainAccountsAndReportingMappingsCommandDataActionUpdate:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GlMaintainAccountsAndReportingMappingsCommandDataAction) UnmarshalText(data []byte) error {
+	switch GlMaintainAccountsAndReportingMappingsCommandDataAction(data) {
+	case GlMaintainAccountsAndReportingMappingsCommandDataActionCreate:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataActionCreate
+		return nil
+	case GlMaintainAccountsAndReportingMappingsCommandDataActionUpdate:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataActionUpdate
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus string
+
+const (
+	GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusDraft     GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus = "draft"
+	GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusActive    GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus = "active"
+	GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusSuspended GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus = "suspended"
+	GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusRetired   GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus = "retired"
+)
+
+// AllValues returns all GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus values.
+func (GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus) AllValues() []GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus {
+	return []GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus{
+		GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusDraft,
+		GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusActive,
+		GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusSuspended,
+		GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusRetired,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus) MarshalText() ([]byte, error) {
+	switch s {
+	case GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusDraft:
+		return []byte(s), nil
+	case GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusActive:
+		return []byte(s), nil
+	case GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusSuspended:
+		return []byte(s), nil
+	case GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusRetired:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus) UnmarshalText(data []byte) error {
+	switch GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus(data) {
+	case GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusDraft:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusDraft
+		return nil
+	case GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusActive:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusActive
+		return nil
+	case GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusSuspended:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusSuspended
+		return nil
+	case GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusRetired:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusRetired
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance string
+
+const (
+	GlMaintainAccountsAndReportingMappingsCommandDataNormalBalanceDebit  GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance = "debit"
+	GlMaintainAccountsAndReportingMappingsCommandDataNormalBalanceCredit GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance = "credit"
+)
+
+// AllValues returns all GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance values.
+func (GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance) AllValues() []GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance {
+	return []GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance{
+		GlMaintainAccountsAndReportingMappingsCommandDataNormalBalanceDebit,
+		GlMaintainAccountsAndReportingMappingsCommandDataNormalBalanceCredit,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance) MarshalText() ([]byte, error) {
+	switch s {
+	case GlMaintainAccountsAndReportingMappingsCommandDataNormalBalanceDebit:
+		return []byte(s), nil
+	case GlMaintainAccountsAndReportingMappingsCommandDataNormalBalanceCredit:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance) UnmarshalText(data []byte) error {
+	switch GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance(data) {
+	case GlMaintainAccountsAndReportingMappingsCommandDataNormalBalanceDebit:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataNormalBalanceDebit
+		return nil
+	case GlMaintainAccountsAndReportingMappingsCommandDataNormalBalanceCredit:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataNormalBalanceCredit
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/GlMaintainAccountsAndReportingMappingsCommandRequest
+type GlMaintainAccountsAndReportingMappingsCommandRequest struct {
+	CommandId         UUID                                              `json:"commandId"`
+	ExpectedVersion   OptInt                                            `json:"expectedVersion"`
+	AccountingScopeId UUID                                              `json:"accountingScopeId"`
+	Data              GlMaintainAccountsAndReportingMappingsCommandData `json:"data"`
+}
+
+// GetCommandId returns the value of CommandId.
+func (s *GlMaintainAccountsAndReportingMappingsCommandRequest) GetCommandId() UUID {
+	return s.CommandId
+}
+
+// GetExpectedVersion returns the value of ExpectedVersion.
+func (s *GlMaintainAccountsAndReportingMappingsCommandRequest) GetExpectedVersion() OptInt {
+	return s.ExpectedVersion
+}
+
+// GetAccountingScopeId returns the value of AccountingScopeId.
+func (s *GlMaintainAccountsAndReportingMappingsCommandRequest) GetAccountingScopeId() UUID {
+	return s.AccountingScopeId
+}
+
+// GetData returns the value of Data.
+func (s *GlMaintainAccountsAndReportingMappingsCommandRequest) GetData() GlMaintainAccountsAndReportingMappingsCommandData {
+	return s.Data
+}
+
+// SetCommandId sets the value of CommandId.
+func (s *GlMaintainAccountsAndReportingMappingsCommandRequest) SetCommandId(val UUID) {
+	s.CommandId = val
+}
+
+// SetExpectedVersion sets the value of ExpectedVersion.
+func (s *GlMaintainAccountsAndReportingMappingsCommandRequest) SetExpectedVersion(val OptInt) {
+	s.ExpectedVersion = val
+}
+
+// SetAccountingScopeId sets the value of AccountingScopeId.
+func (s *GlMaintainAccountsAndReportingMappingsCommandRequest) SetAccountingScopeId(val UUID) {
+	s.AccountingScopeId = val
+}
+
+// SetData sets the value of Data.
+func (s *GlMaintainAccountsAndReportingMappingsCommandRequest) SetData(val GlMaintainAccountsAndReportingMappingsCommandData) {
+	s.Data = val
+}
+
 type GlMaintainAccountsAndReportingMappingsConflict ProblemDetails
 
 func (*GlMaintainAccountsAndReportingMappingsConflict) glMaintainAccountsAndReportingMappingsRes() {}
 
+// Ref: #/components/schemas/GlMaintainAccountsAndReportingMappingsEstablishedResult
+type GlMaintainAccountsAndReportingMappingsEstablishedResult struct {
+	Status           string                                           `json:"status"`
+	AggregateId      UUID                                             `json:"aggregateId"`
+	AggregateVersion int                                              `json:"aggregateVersion"`
+	ProcessId        OptNilUUID                                       `json:"processId"`
+	CorrelationId    UUID                                             `json:"correlationId"`
+	Links            Links                                            `json:"links"`
+	Data             GlMaintainAccountsAndReportingMappingsResultData `json:"data"`
+}
+
+// GetStatus returns the value of Status.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) GetStatus() string {
+	return s.Status
+}
+
+// GetAggregateId returns the value of AggregateId.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) GetAggregateId() UUID {
+	return s.AggregateId
+}
+
+// GetAggregateVersion returns the value of AggregateVersion.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) GetAggregateVersion() int {
+	return s.AggregateVersion
+}
+
+// GetProcessId returns the value of ProcessId.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) GetProcessId() OptNilUUID {
+	return s.ProcessId
+}
+
+// GetCorrelationId returns the value of CorrelationId.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) GetCorrelationId() UUID {
+	return s.CorrelationId
+}
+
+// GetLinks returns the value of Links.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) GetLinks() Links {
+	return s.Links
+}
+
+// GetData returns the value of Data.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) GetData() GlMaintainAccountsAndReportingMappingsResultData {
+	return s.Data
+}
+
+// SetStatus sets the value of Status.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) SetStatus(val string) {
+	s.Status = val
+}
+
+// SetAggregateId sets the value of AggregateId.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) SetAggregateId(val UUID) {
+	s.AggregateId = val
+}
+
+// SetAggregateVersion sets the value of AggregateVersion.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) SetAggregateVersion(val int) {
+	s.AggregateVersion = val
+}
+
+// SetProcessId sets the value of ProcessId.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) SetProcessId(val OptNilUUID) {
+	s.ProcessId = val
+}
+
+// SetCorrelationId sets the value of CorrelationId.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) SetCorrelationId(val UUID) {
+	s.CorrelationId = val
+}
+
+// SetLinks sets the value of Links.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) SetLinks(val Links) {
+	s.Links = val
+}
+
+// SetData sets the value of Data.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) SetData(val GlMaintainAccountsAndReportingMappingsResultData) {
+	s.Data = val
+}
+
+func (*GlMaintainAccountsAndReportingMappingsEstablishedResult) glMaintainAccountsAndReportingMappingsRes() {
+}
+
 type GlMaintainAccountsAndReportingMappingsForbidden ProblemDetails
 
 func (*GlMaintainAccountsAndReportingMappingsForbidden) glMaintainAccountsAndReportingMappingsRes() {}
+
+// Ref: #/components/schemas/GlMaintainAccountsAndReportingMappingsResultData
+type GlMaintainAccountsAndReportingMappingsResultData struct {
+	Account           GlAccountProjection `json:"account"`
+	DecisionReference OptUUID             `json:"decisionReference"`
+	PolicyReference   OptString           `json:"policyReference"`
+	ValidationOutcome string              `json:"validationOutcome"`
+	ApprovalStatus    string              `json:"approvalStatus"`
+	Replayed          OptBool             `json:"replayed"`
+}
+
+// GetAccount returns the value of Account.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) GetAccount() GlAccountProjection {
+	return s.Account
+}
+
+// GetDecisionReference returns the value of DecisionReference.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) GetDecisionReference() OptUUID {
+	return s.DecisionReference
+}
+
+// GetPolicyReference returns the value of PolicyReference.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) GetPolicyReference() OptString {
+	return s.PolicyReference
+}
+
+// GetValidationOutcome returns the value of ValidationOutcome.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) GetValidationOutcome() string {
+	return s.ValidationOutcome
+}
+
+// GetApprovalStatus returns the value of ApprovalStatus.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) GetApprovalStatus() string {
+	return s.ApprovalStatus
+}
+
+// GetReplayed returns the value of Replayed.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) GetReplayed() OptBool {
+	return s.Replayed
+}
+
+// SetAccount sets the value of Account.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) SetAccount(val GlAccountProjection) {
+	s.Account = val
+}
+
+// SetDecisionReference sets the value of DecisionReference.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) SetDecisionReference(val OptUUID) {
+	s.DecisionReference = val
+}
+
+// SetPolicyReference sets the value of PolicyReference.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) SetPolicyReference(val OptString) {
+	s.PolicyReference = val
+}
+
+// SetValidationOutcome sets the value of ValidationOutcome.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) SetValidationOutcome(val string) {
+	s.ValidationOutcome = val
+}
+
+// SetApprovalStatus sets the value of ApprovalStatus.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) SetApprovalStatus(val string) {
+	s.ApprovalStatus = val
+}
+
+// SetReplayed sets the value of Replayed.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) SetReplayed(val OptBool) {
+	s.Replayed = val
+}
 
 type GlMaintainAccountsAndReportingMappingsServiceUnavailable ProblemDetails
 
@@ -3225,13 +4184,402 @@ type GlMaintainChartsOfAccountsBadRequest ProblemDetails
 
 func (*GlMaintainChartsOfAccountsBadRequest) glMaintainChartsOfAccountsRes() {}
 
+// Ref: #/components/schemas/GlMaintainChartsOfAccountsCommandData
+type GlMaintainChartsOfAccountsCommandData struct {
+	Action            GlMaintainChartsOfAccountsCommandDataAction          `json:"action"`
+	ChartOfAccountsId OptUUID                                              `json:"chartOfAccountsId"`
+	LedgerId          UUID                                                 `json:"ledgerId"`
+	AccountCodePolicy string                                               `json:"accountCodePolicy"`
+	LifecycleStatus   GlMaintainChartsOfAccountsCommandDataLifecycleStatus `json:"lifecycleStatus"`
+	EffectiveDateFrom time.Time                                            `json:"effectiveDateFrom"`
+	EffectiveDateTo   OptNilDate                                           `json:"effectiveDateTo"`
+	Approval          OptIamApprovalDecisionReference                      `json:"approval"`
+}
+
+// GetAction returns the value of Action.
+func (s *GlMaintainChartsOfAccountsCommandData) GetAction() GlMaintainChartsOfAccountsCommandDataAction {
+	return s.Action
+}
+
+// GetChartOfAccountsId returns the value of ChartOfAccountsId.
+func (s *GlMaintainChartsOfAccountsCommandData) GetChartOfAccountsId() OptUUID {
+	return s.ChartOfAccountsId
+}
+
+// GetLedgerId returns the value of LedgerId.
+func (s *GlMaintainChartsOfAccountsCommandData) GetLedgerId() UUID {
+	return s.LedgerId
+}
+
+// GetAccountCodePolicy returns the value of AccountCodePolicy.
+func (s *GlMaintainChartsOfAccountsCommandData) GetAccountCodePolicy() string {
+	return s.AccountCodePolicy
+}
+
+// GetLifecycleStatus returns the value of LifecycleStatus.
+func (s *GlMaintainChartsOfAccountsCommandData) GetLifecycleStatus() GlMaintainChartsOfAccountsCommandDataLifecycleStatus {
+	return s.LifecycleStatus
+}
+
+// GetEffectiveDateFrom returns the value of EffectiveDateFrom.
+func (s *GlMaintainChartsOfAccountsCommandData) GetEffectiveDateFrom() time.Time {
+	return s.EffectiveDateFrom
+}
+
+// GetEffectiveDateTo returns the value of EffectiveDateTo.
+func (s *GlMaintainChartsOfAccountsCommandData) GetEffectiveDateTo() OptNilDate {
+	return s.EffectiveDateTo
+}
+
+// GetApproval returns the value of Approval.
+func (s *GlMaintainChartsOfAccountsCommandData) GetApproval() OptIamApprovalDecisionReference {
+	return s.Approval
+}
+
+// SetAction sets the value of Action.
+func (s *GlMaintainChartsOfAccountsCommandData) SetAction(val GlMaintainChartsOfAccountsCommandDataAction) {
+	s.Action = val
+}
+
+// SetChartOfAccountsId sets the value of ChartOfAccountsId.
+func (s *GlMaintainChartsOfAccountsCommandData) SetChartOfAccountsId(val OptUUID) {
+	s.ChartOfAccountsId = val
+}
+
+// SetLedgerId sets the value of LedgerId.
+func (s *GlMaintainChartsOfAccountsCommandData) SetLedgerId(val UUID) {
+	s.LedgerId = val
+}
+
+// SetAccountCodePolicy sets the value of AccountCodePolicy.
+func (s *GlMaintainChartsOfAccountsCommandData) SetAccountCodePolicy(val string) {
+	s.AccountCodePolicy = val
+}
+
+// SetLifecycleStatus sets the value of LifecycleStatus.
+func (s *GlMaintainChartsOfAccountsCommandData) SetLifecycleStatus(val GlMaintainChartsOfAccountsCommandDataLifecycleStatus) {
+	s.LifecycleStatus = val
+}
+
+// SetEffectiveDateFrom sets the value of EffectiveDateFrom.
+func (s *GlMaintainChartsOfAccountsCommandData) SetEffectiveDateFrom(val time.Time) {
+	s.EffectiveDateFrom = val
+}
+
+// SetEffectiveDateTo sets the value of EffectiveDateTo.
+func (s *GlMaintainChartsOfAccountsCommandData) SetEffectiveDateTo(val OptNilDate) {
+	s.EffectiveDateTo = val
+}
+
+// SetApproval sets the value of Approval.
+func (s *GlMaintainChartsOfAccountsCommandData) SetApproval(val OptIamApprovalDecisionReference) {
+	s.Approval = val
+}
+
+type GlMaintainChartsOfAccountsCommandDataAction string
+
+const (
+	GlMaintainChartsOfAccountsCommandDataActionCreate GlMaintainChartsOfAccountsCommandDataAction = "create"
+	GlMaintainChartsOfAccountsCommandDataActionUpdate GlMaintainChartsOfAccountsCommandDataAction = "update"
+)
+
+// AllValues returns all GlMaintainChartsOfAccountsCommandDataAction values.
+func (GlMaintainChartsOfAccountsCommandDataAction) AllValues() []GlMaintainChartsOfAccountsCommandDataAction {
+	return []GlMaintainChartsOfAccountsCommandDataAction{
+		GlMaintainChartsOfAccountsCommandDataActionCreate,
+		GlMaintainChartsOfAccountsCommandDataActionUpdate,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GlMaintainChartsOfAccountsCommandDataAction) MarshalText() ([]byte, error) {
+	switch s {
+	case GlMaintainChartsOfAccountsCommandDataActionCreate:
+		return []byte(s), nil
+	case GlMaintainChartsOfAccountsCommandDataActionUpdate:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GlMaintainChartsOfAccountsCommandDataAction) UnmarshalText(data []byte) error {
+	switch GlMaintainChartsOfAccountsCommandDataAction(data) {
+	case GlMaintainChartsOfAccountsCommandDataActionCreate:
+		*s = GlMaintainChartsOfAccountsCommandDataActionCreate
+		return nil
+	case GlMaintainChartsOfAccountsCommandDataActionUpdate:
+		*s = GlMaintainChartsOfAccountsCommandDataActionUpdate
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type GlMaintainChartsOfAccountsCommandDataLifecycleStatus string
+
+const (
+	GlMaintainChartsOfAccountsCommandDataLifecycleStatusDraft     GlMaintainChartsOfAccountsCommandDataLifecycleStatus = "draft"
+	GlMaintainChartsOfAccountsCommandDataLifecycleStatusActive    GlMaintainChartsOfAccountsCommandDataLifecycleStatus = "active"
+	GlMaintainChartsOfAccountsCommandDataLifecycleStatusSuspended GlMaintainChartsOfAccountsCommandDataLifecycleStatus = "suspended"
+	GlMaintainChartsOfAccountsCommandDataLifecycleStatusRetired   GlMaintainChartsOfAccountsCommandDataLifecycleStatus = "retired"
+)
+
+// AllValues returns all GlMaintainChartsOfAccountsCommandDataLifecycleStatus values.
+func (GlMaintainChartsOfAccountsCommandDataLifecycleStatus) AllValues() []GlMaintainChartsOfAccountsCommandDataLifecycleStatus {
+	return []GlMaintainChartsOfAccountsCommandDataLifecycleStatus{
+		GlMaintainChartsOfAccountsCommandDataLifecycleStatusDraft,
+		GlMaintainChartsOfAccountsCommandDataLifecycleStatusActive,
+		GlMaintainChartsOfAccountsCommandDataLifecycleStatusSuspended,
+		GlMaintainChartsOfAccountsCommandDataLifecycleStatusRetired,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GlMaintainChartsOfAccountsCommandDataLifecycleStatus) MarshalText() ([]byte, error) {
+	switch s {
+	case GlMaintainChartsOfAccountsCommandDataLifecycleStatusDraft:
+		return []byte(s), nil
+	case GlMaintainChartsOfAccountsCommandDataLifecycleStatusActive:
+		return []byte(s), nil
+	case GlMaintainChartsOfAccountsCommandDataLifecycleStatusSuspended:
+		return []byte(s), nil
+	case GlMaintainChartsOfAccountsCommandDataLifecycleStatusRetired:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GlMaintainChartsOfAccountsCommandDataLifecycleStatus) UnmarshalText(data []byte) error {
+	switch GlMaintainChartsOfAccountsCommandDataLifecycleStatus(data) {
+	case GlMaintainChartsOfAccountsCommandDataLifecycleStatusDraft:
+		*s = GlMaintainChartsOfAccountsCommandDataLifecycleStatusDraft
+		return nil
+	case GlMaintainChartsOfAccountsCommandDataLifecycleStatusActive:
+		*s = GlMaintainChartsOfAccountsCommandDataLifecycleStatusActive
+		return nil
+	case GlMaintainChartsOfAccountsCommandDataLifecycleStatusSuspended:
+		*s = GlMaintainChartsOfAccountsCommandDataLifecycleStatusSuspended
+		return nil
+	case GlMaintainChartsOfAccountsCommandDataLifecycleStatusRetired:
+		*s = GlMaintainChartsOfAccountsCommandDataLifecycleStatusRetired
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/GlMaintainChartsOfAccountsCommandRequest
+type GlMaintainChartsOfAccountsCommandRequest struct {
+	CommandId         UUID                                  `json:"commandId"`
+	ExpectedVersion   OptInt                                `json:"expectedVersion"`
+	AccountingScopeId UUID                                  `json:"accountingScopeId"`
+	Data              GlMaintainChartsOfAccountsCommandData `json:"data"`
+}
+
+// GetCommandId returns the value of CommandId.
+func (s *GlMaintainChartsOfAccountsCommandRequest) GetCommandId() UUID {
+	return s.CommandId
+}
+
+// GetExpectedVersion returns the value of ExpectedVersion.
+func (s *GlMaintainChartsOfAccountsCommandRequest) GetExpectedVersion() OptInt {
+	return s.ExpectedVersion
+}
+
+// GetAccountingScopeId returns the value of AccountingScopeId.
+func (s *GlMaintainChartsOfAccountsCommandRequest) GetAccountingScopeId() UUID {
+	return s.AccountingScopeId
+}
+
+// GetData returns the value of Data.
+func (s *GlMaintainChartsOfAccountsCommandRequest) GetData() GlMaintainChartsOfAccountsCommandData {
+	return s.Data
+}
+
+// SetCommandId sets the value of CommandId.
+func (s *GlMaintainChartsOfAccountsCommandRequest) SetCommandId(val UUID) {
+	s.CommandId = val
+}
+
+// SetExpectedVersion sets the value of ExpectedVersion.
+func (s *GlMaintainChartsOfAccountsCommandRequest) SetExpectedVersion(val OptInt) {
+	s.ExpectedVersion = val
+}
+
+// SetAccountingScopeId sets the value of AccountingScopeId.
+func (s *GlMaintainChartsOfAccountsCommandRequest) SetAccountingScopeId(val UUID) {
+	s.AccountingScopeId = val
+}
+
+// SetData sets the value of Data.
+func (s *GlMaintainChartsOfAccountsCommandRequest) SetData(val GlMaintainChartsOfAccountsCommandData) {
+	s.Data = val
+}
+
 type GlMaintainChartsOfAccountsConflict ProblemDetails
 
 func (*GlMaintainChartsOfAccountsConflict) glMaintainChartsOfAccountsRes() {}
 
+// Ref: #/components/schemas/GlMaintainChartsOfAccountsEstablishedResult
+type GlMaintainChartsOfAccountsEstablishedResult struct {
+	Status           string                               `json:"status"`
+	AggregateId      UUID                                 `json:"aggregateId"`
+	AggregateVersion int                                  `json:"aggregateVersion"`
+	ProcessId        OptNilUUID                           `json:"processId"`
+	CorrelationId    UUID                                 `json:"correlationId"`
+	Links            Links                                `json:"links"`
+	Data             GlMaintainChartsOfAccountsResultData `json:"data"`
+}
+
+// GetStatus returns the value of Status.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) GetStatus() string {
+	return s.Status
+}
+
+// GetAggregateId returns the value of AggregateId.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) GetAggregateId() UUID {
+	return s.AggregateId
+}
+
+// GetAggregateVersion returns the value of AggregateVersion.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) GetAggregateVersion() int {
+	return s.AggregateVersion
+}
+
+// GetProcessId returns the value of ProcessId.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) GetProcessId() OptNilUUID {
+	return s.ProcessId
+}
+
+// GetCorrelationId returns the value of CorrelationId.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) GetCorrelationId() UUID {
+	return s.CorrelationId
+}
+
+// GetLinks returns the value of Links.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) GetLinks() Links {
+	return s.Links
+}
+
+// GetData returns the value of Data.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) GetData() GlMaintainChartsOfAccountsResultData {
+	return s.Data
+}
+
+// SetStatus sets the value of Status.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) SetStatus(val string) {
+	s.Status = val
+}
+
+// SetAggregateId sets the value of AggregateId.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) SetAggregateId(val UUID) {
+	s.AggregateId = val
+}
+
+// SetAggregateVersion sets the value of AggregateVersion.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) SetAggregateVersion(val int) {
+	s.AggregateVersion = val
+}
+
+// SetProcessId sets the value of ProcessId.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) SetProcessId(val OptNilUUID) {
+	s.ProcessId = val
+}
+
+// SetCorrelationId sets the value of CorrelationId.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) SetCorrelationId(val UUID) {
+	s.CorrelationId = val
+}
+
+// SetLinks sets the value of Links.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) SetLinks(val Links) {
+	s.Links = val
+}
+
+// SetData sets the value of Data.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) SetData(val GlMaintainChartsOfAccountsResultData) {
+	s.Data = val
+}
+
+func (*GlMaintainChartsOfAccountsEstablishedResult) glMaintainChartsOfAccountsRes() {}
+
 type GlMaintainChartsOfAccountsForbidden ProblemDetails
 
 func (*GlMaintainChartsOfAccountsForbidden) glMaintainChartsOfAccountsRes() {}
+
+// Ref: #/components/schemas/GlMaintainChartsOfAccountsResultData
+type GlMaintainChartsOfAccountsResultData struct {
+	ChartOfAccounts   GlChartOfAccountsProjection `json:"chartOfAccounts"`
+	DecisionReference OptUUID                     `json:"decisionReference"`
+	PolicyReference   OptString                   `json:"policyReference"`
+	ValidationOutcome string                      `json:"validationOutcome"`
+	ApprovalStatus    string                      `json:"approvalStatus"`
+	Replayed          OptBool                     `json:"replayed"`
+}
+
+// GetChartOfAccounts returns the value of ChartOfAccounts.
+func (s *GlMaintainChartsOfAccountsResultData) GetChartOfAccounts() GlChartOfAccountsProjection {
+	return s.ChartOfAccounts
+}
+
+// GetDecisionReference returns the value of DecisionReference.
+func (s *GlMaintainChartsOfAccountsResultData) GetDecisionReference() OptUUID {
+	return s.DecisionReference
+}
+
+// GetPolicyReference returns the value of PolicyReference.
+func (s *GlMaintainChartsOfAccountsResultData) GetPolicyReference() OptString {
+	return s.PolicyReference
+}
+
+// GetValidationOutcome returns the value of ValidationOutcome.
+func (s *GlMaintainChartsOfAccountsResultData) GetValidationOutcome() string {
+	return s.ValidationOutcome
+}
+
+// GetApprovalStatus returns the value of ApprovalStatus.
+func (s *GlMaintainChartsOfAccountsResultData) GetApprovalStatus() string {
+	return s.ApprovalStatus
+}
+
+// GetReplayed returns the value of Replayed.
+func (s *GlMaintainChartsOfAccountsResultData) GetReplayed() OptBool {
+	return s.Replayed
+}
+
+// SetChartOfAccounts sets the value of ChartOfAccounts.
+func (s *GlMaintainChartsOfAccountsResultData) SetChartOfAccounts(val GlChartOfAccountsProjection) {
+	s.ChartOfAccounts = val
+}
+
+// SetDecisionReference sets the value of DecisionReference.
+func (s *GlMaintainChartsOfAccountsResultData) SetDecisionReference(val OptUUID) {
+	s.DecisionReference = val
+}
+
+// SetPolicyReference sets the value of PolicyReference.
+func (s *GlMaintainChartsOfAccountsResultData) SetPolicyReference(val OptString) {
+	s.PolicyReference = val
+}
+
+// SetValidationOutcome sets the value of ValidationOutcome.
+func (s *GlMaintainChartsOfAccountsResultData) SetValidationOutcome(val string) {
+	s.ValidationOutcome = val
+}
+
+// SetApprovalStatus sets the value of ApprovalStatus.
+func (s *GlMaintainChartsOfAccountsResultData) SetApprovalStatus(val string) {
+	s.ApprovalStatus = val
+}
+
+// SetReplayed sets the value of Replayed.
+func (s *GlMaintainChartsOfAccountsResultData) SetReplayed(val OptBool) {
+	s.Replayed = val
+}
 
 type GlMaintainChartsOfAccountsServiceUnavailable ProblemDetails
 

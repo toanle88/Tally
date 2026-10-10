@@ -13727,7 +13727,7 @@ func (s *Server) handleGlMaintainAccountsAndReportingMappingsRequest(args [0]str
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *GlMaintainAccountsAndReportingMappingsCommandRequest
 			Params   = GlMaintainAccountsAndReportingMappingsParams
 			Response = GlMaintainAccountsAndReportingMappingsRes
 		)
@@ -13884,7 +13884,7 @@ func (s *Server) handleGlMaintainChartsOfAccountsRequest(args [0]string, argsEsc
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *GlMaintainChartsOfAccountsCommandRequest
 			Params   = GlMaintainChartsOfAccountsParams
 			Response = GlMaintainChartsOfAccountsRes
 		)

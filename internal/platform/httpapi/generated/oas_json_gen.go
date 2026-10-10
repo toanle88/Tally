@@ -15911,6 +15911,720 @@ func (s *FxRunTranslationUnprocessableEntity) UnmarshalJSON(data []byte) error {
 }
 
 // Encode implements json.Marshaler.
+func (s *GlAccountProjection) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlAccountProjection) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("id")
+		s.ID.Encode(e)
+	}
+	{
+		e.FieldStart("accountingScopeId")
+		s.AccountingScopeId.Encode(e)
+	}
+	{
+		e.FieldStart("chartOfAccountsId")
+		s.ChartOfAccountsId.Encode(e)
+	}
+	{
+		e.FieldStart("accountCode")
+		e.Str(s.AccountCode)
+	}
+	{
+		e.FieldStart("accountName")
+		e.Str(s.AccountName)
+	}
+	{
+		e.FieldStart("accountType")
+		e.Str(s.AccountType)
+	}
+	{
+		e.FieldStart("normalBalance")
+		s.NormalBalance.Encode(e)
+	}
+	{
+		e.FieldStart("lifecycleStatus")
+		e.Str(s.LifecycleStatus)
+	}
+	{
+		e.FieldStart("restrictions")
+		e.ArrStart()
+		for _, elem := range s.Restrictions {
+			elem.Encode(e)
+		}
+		e.ArrEnd()
+	}
+	{
+		e.FieldStart("currencyPolicy")
+		e.Str(s.CurrencyPolicy)
+	}
+	{
+		e.FieldStart("reportingMappings")
+		e.ArrStart()
+		for _, elem := range s.ReportingMappings {
+			elem.Encode(e)
+		}
+		e.ArrEnd()
+	}
+	{
+		e.FieldStart("effectiveDateFrom")
+		json.EncodeDate(e, s.EffectiveDateFrom)
+	}
+	{
+		if s.EffectiveDateTo.Set {
+			e.FieldStart("effectiveDateTo")
+			s.EffectiveDateTo.Encode(e, json.EncodeDate)
+		}
+	}
+	{
+		e.FieldStart("approvalStatus")
+		e.Str(s.ApprovalStatus)
+	}
+	{
+		e.FieldStart("validationOutcome")
+		e.Str(s.ValidationOutcome)
+	}
+	{
+		e.FieldStart("nextAction")
+		e.Str(s.NextAction)
+	}
+	{
+		e.FieldStart("version")
+		e.Int(s.Version)
+	}
+	{
+		e.FieldStart("revisionNumber")
+		e.Int(s.RevisionNumber)
+	}
+}
+
+var jsonFieldsNameOfGlAccountProjection = [18]string{
+	0:  "id",
+	1:  "accountingScopeId",
+	2:  "chartOfAccountsId",
+	3:  "accountCode",
+	4:  "accountName",
+	5:  "accountType",
+	6:  "normalBalance",
+	7:  "lifecycleStatus",
+	8:  "restrictions",
+	9:  "currencyPolicy",
+	10: "reportingMappings",
+	11: "effectiveDateFrom",
+	12: "effectiveDateTo",
+	13: "approvalStatus",
+	14: "validationOutcome",
+	15: "nextAction",
+	16: "version",
+	17: "revisionNumber",
+}
+
+// Decode decodes GlAccountProjection from json.
+func (s *GlAccountProjection) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlAccountProjection to nil")
+	}
+	var requiredBitSet [3]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "id":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.ID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"id\"")
+			}
+		case "accountingScopeId":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.AccountingScopeId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountingScopeId\"")
+			}
+		case "chartOfAccountsId":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.ChartOfAccountsId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"chartOfAccountsId\"")
+			}
+		case "accountCode":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				v, err := d.Str()
+				s.AccountCode = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountCode\"")
+			}
+		case "accountName":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				v, err := d.Str()
+				s.AccountName = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountName\"")
+			}
+		case "accountType":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				v, err := d.Str()
+				s.AccountType = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountType\"")
+			}
+		case "normalBalance":
+			requiredBitSet[0] |= 1 << 6
+			if err := func() error {
+				if err := s.NormalBalance.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"normalBalance\"")
+			}
+		case "lifecycleStatus":
+			requiredBitSet[0] |= 1 << 7
+			if err := func() error {
+				v, err := d.Str()
+				s.LifecycleStatus = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"lifecycleStatus\"")
+			}
+		case "restrictions":
+			requiredBitSet[1] |= 1 << 0
+			if err := func() error {
+				s.Restrictions = make([]GlAccountRestriction, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem GlAccountRestriction
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Restrictions = append(s.Restrictions, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"restrictions\"")
+			}
+		case "currencyPolicy":
+			requiredBitSet[1] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.CurrencyPolicy = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"currencyPolicy\"")
+			}
+		case "reportingMappings":
+			requiredBitSet[1] |= 1 << 2
+			if err := func() error {
+				s.ReportingMappings = make([]GlAccountReportingMapping, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem GlAccountReportingMapping
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.ReportingMappings = append(s.ReportingMappings, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"reportingMappings\"")
+			}
+		case "effectiveDateFrom":
+			requiredBitSet[1] |= 1 << 3
+			if err := func() error {
+				v, err := json.DecodeDate(d)
+				s.EffectiveDateFrom = v
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"effectiveDateFrom\"")
+			}
+		case "effectiveDateTo":
+			if err := func() error {
+				s.EffectiveDateTo.Reset()
+				if err := s.EffectiveDateTo.Decode(d, json.DecodeDate); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"effectiveDateTo\"")
+			}
+		case "approvalStatus":
+			requiredBitSet[1] |= 1 << 5
+			if err := func() error {
+				v, err := d.Str()
+				s.ApprovalStatus = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"approvalStatus\"")
+			}
+		case "validationOutcome":
+			requiredBitSet[1] |= 1 << 6
+			if err := func() error {
+				v, err := d.Str()
+				s.ValidationOutcome = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"validationOutcome\"")
+			}
+		case "nextAction":
+			requiredBitSet[1] |= 1 << 7
+			if err := func() error {
+				v, err := d.Str()
+				s.NextAction = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"nextAction\"")
+			}
+		case "version":
+			requiredBitSet[2] |= 1 << 0
+			if err := func() error {
+				v, err := d.Int()
+				s.Version = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"version\"")
+			}
+		case "revisionNumber":
+			requiredBitSet[2] |= 1 << 1
+			if err := func() error {
+				v, err := d.Int()
+				s.RevisionNumber = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"revisionNumber\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlAccountProjection")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [3]uint8{
+		0b11111111,
+		0b11101111,
+		0b00000011,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlAccountProjection) {
+					name = jsonFieldsNameOfGlAccountProjection[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlAccountProjection) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlAccountProjection) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes GlAccountProjectionNormalBalance as json.
+func (s GlAccountProjectionNormalBalance) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes GlAccountProjectionNormalBalance from json.
+func (s *GlAccountProjectionNormalBalance) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlAccountProjectionNormalBalance to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch GlAccountProjectionNormalBalance(v) {
+	case GlAccountProjectionNormalBalanceDebit:
+		*s = GlAccountProjectionNormalBalanceDebit
+	case GlAccountProjectionNormalBalanceCredit:
+		*s = GlAccountProjectionNormalBalanceCredit
+	default:
+		*s = GlAccountProjectionNormalBalance(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s GlAccountProjectionNormalBalance) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlAccountProjectionNormalBalance) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *GlAccountReportingMapping) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlAccountReportingMapping) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("reportingDefinitionId")
+		s.ReportingDefinitionId.Encode(e)
+	}
+	{
+		e.FieldStart("reportingLineCode")
+		e.Str(s.ReportingLineCode)
+	}
+	{
+		e.FieldStart("approved")
+		e.Bool(s.Approved)
+	}
+	{
+		if s.EffectiveDateFrom.Set {
+			e.FieldStart("effectiveDateFrom")
+			s.EffectiveDateFrom.Encode(e, json.EncodeDate)
+		}
+	}
+	{
+		if s.EffectiveDateTo.Set {
+			e.FieldStart("effectiveDateTo")
+			s.EffectiveDateTo.Encode(e, json.EncodeDate)
+		}
+	}
+}
+
+var jsonFieldsNameOfGlAccountReportingMapping = [5]string{
+	0: "reportingDefinitionId",
+	1: "reportingLineCode",
+	2: "approved",
+	3: "effectiveDateFrom",
+	4: "effectiveDateTo",
+}
+
+// Decode decodes GlAccountReportingMapping from json.
+func (s *GlAccountReportingMapping) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlAccountReportingMapping to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "reportingDefinitionId":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.ReportingDefinitionId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"reportingDefinitionId\"")
+			}
+		case "reportingLineCode":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.ReportingLineCode = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"reportingLineCode\"")
+			}
+		case "approved":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Bool()
+				s.Approved = bool(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"approved\"")
+			}
+		case "effectiveDateFrom":
+			if err := func() error {
+				s.EffectiveDateFrom.Reset()
+				if err := s.EffectiveDateFrom.Decode(d, json.DecodeDate); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"effectiveDateFrom\"")
+			}
+		case "effectiveDateTo":
+			if err := func() error {
+				s.EffectiveDateTo.Reset()
+				if err := s.EffectiveDateTo.Decode(d, json.DecodeDate); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"effectiveDateTo\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlAccountReportingMapping")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlAccountReportingMapping) {
+					name = jsonFieldsNameOfGlAccountReportingMapping[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlAccountReportingMapping) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlAccountReportingMapping) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *GlAccountRestriction) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlAccountRestriction) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("restrictionCode")
+		e.Str(s.RestrictionCode)
+	}
+	{
+		if s.Description.Set {
+			e.FieldStart("description")
+			s.Description.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfGlAccountRestriction = [2]string{
+	0: "restrictionCode",
+	1: "description",
+}
+
+// Decode decodes GlAccountRestriction from json.
+func (s *GlAccountRestriction) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlAccountRestriction to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "restrictionCode":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.RestrictionCode = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"restrictionCode\"")
+			}
+		case "description":
+			if err := func() error {
+				s.Description.Reset()
+				if err := s.Description.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"description\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlAccountRestriction")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlAccountRestriction) {
+					name = jsonFieldsNameOfGlAccountRestriction[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlAccountRestriction) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlAccountRestriction) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
 func (s *GlAccountingBookProjection) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
@@ -16788,6 +17502,284 @@ func (s *GlBeginRecloseGateUnprocessableEntity) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *GlBeginRecloseGateUnprocessableEntity) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *GlChartOfAccountsProjection) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlChartOfAccountsProjection) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("id")
+		s.ID.Encode(e)
+	}
+	{
+		e.FieldStart("accountingScopeId")
+		s.AccountingScopeId.Encode(e)
+	}
+	{
+		e.FieldStart("ledgerId")
+		s.LedgerId.Encode(e)
+	}
+	{
+		e.FieldStart("accountCodePolicy")
+		e.Str(s.AccountCodePolicy)
+	}
+	{
+		e.FieldStart("lifecycleStatus")
+		e.Str(s.LifecycleStatus)
+	}
+	{
+		e.FieldStart("effectiveDateFrom")
+		json.EncodeDate(e, s.EffectiveDateFrom)
+	}
+	{
+		if s.EffectiveDateTo.Set {
+			e.FieldStart("effectiveDateTo")
+			s.EffectiveDateTo.Encode(e, json.EncodeDate)
+		}
+	}
+	{
+		e.FieldStart("approvalStatus")
+		e.Str(s.ApprovalStatus)
+	}
+	{
+		e.FieldStart("validationOutcome")
+		e.Str(s.ValidationOutcome)
+	}
+	{
+		e.FieldStart("nextAction")
+		e.Str(s.NextAction)
+	}
+	{
+		e.FieldStart("version")
+		e.Int(s.Version)
+	}
+	{
+		e.FieldStart("revisionNumber")
+		e.Int(s.RevisionNumber)
+	}
+}
+
+var jsonFieldsNameOfGlChartOfAccountsProjection = [12]string{
+	0:  "id",
+	1:  "accountingScopeId",
+	2:  "ledgerId",
+	3:  "accountCodePolicy",
+	4:  "lifecycleStatus",
+	5:  "effectiveDateFrom",
+	6:  "effectiveDateTo",
+	7:  "approvalStatus",
+	8:  "validationOutcome",
+	9:  "nextAction",
+	10: "version",
+	11: "revisionNumber",
+}
+
+// Decode decodes GlChartOfAccountsProjection from json.
+func (s *GlChartOfAccountsProjection) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlChartOfAccountsProjection to nil")
+	}
+	var requiredBitSet [2]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "id":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.ID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"id\"")
+			}
+		case "accountingScopeId":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.AccountingScopeId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountingScopeId\"")
+			}
+		case "ledgerId":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.LedgerId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"ledgerId\"")
+			}
+		case "accountCodePolicy":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				v, err := d.Str()
+				s.AccountCodePolicy = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountCodePolicy\"")
+			}
+		case "lifecycleStatus":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				v, err := d.Str()
+				s.LifecycleStatus = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"lifecycleStatus\"")
+			}
+		case "effectiveDateFrom":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				v, err := json.DecodeDate(d)
+				s.EffectiveDateFrom = v
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"effectiveDateFrom\"")
+			}
+		case "effectiveDateTo":
+			if err := func() error {
+				s.EffectiveDateTo.Reset()
+				if err := s.EffectiveDateTo.Decode(d, json.DecodeDate); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"effectiveDateTo\"")
+			}
+		case "approvalStatus":
+			requiredBitSet[0] |= 1 << 7
+			if err := func() error {
+				v, err := d.Str()
+				s.ApprovalStatus = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"approvalStatus\"")
+			}
+		case "validationOutcome":
+			requiredBitSet[1] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.ValidationOutcome = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"validationOutcome\"")
+			}
+		case "nextAction":
+			requiredBitSet[1] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.NextAction = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"nextAction\"")
+			}
+		case "version":
+			requiredBitSet[1] |= 1 << 2
+			if err := func() error {
+				v, err := d.Int()
+				s.Version = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"version\"")
+			}
+		case "revisionNumber":
+			requiredBitSet[1] |= 1 << 3
+			if err := func() error {
+				v, err := d.Int()
+				s.RevisionNumber = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"revisionNumber\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlChartOfAccountsProjection")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [2]uint8{
+		0b10111111,
+		0b00001111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlChartOfAccountsProjection) {
+					name = jsonFieldsNameOfGlChartOfAccountsProjection[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlChartOfAccountsProjection) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlChartOfAccountsProjection) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -19306,6 +20298,603 @@ func (s *GlMaintainAccountsAndReportingMappingsBadRequest) UnmarshalJSON(data []
 	return s.Decode(d)
 }
 
+// Encode implements json.Marshaler.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("action")
+		s.Action.Encode(e)
+	}
+	{
+		if s.AccountId.Set {
+			e.FieldStart("accountId")
+			s.AccountId.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("chartOfAccountsId")
+		s.ChartOfAccountsId.Encode(e)
+	}
+	{
+		e.FieldStart("accountCode")
+		e.Str(s.AccountCode)
+	}
+	{
+		e.FieldStart("accountName")
+		e.Str(s.AccountName)
+	}
+	{
+		e.FieldStart("accountType")
+		e.Str(s.AccountType)
+	}
+	{
+		e.FieldStart("normalBalance")
+		s.NormalBalance.Encode(e)
+	}
+	{
+		e.FieldStart("lifecycleStatus")
+		s.LifecycleStatus.Encode(e)
+	}
+	{
+		if s.Restrictions != nil {
+			e.FieldStart("restrictions")
+			e.ArrStart()
+			for _, elem := range s.Restrictions {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		e.FieldStart("currencyPolicy")
+		e.Str(s.CurrencyPolicy)
+	}
+	{
+		if s.ReportingMappings != nil {
+			e.FieldStart("reportingMappings")
+			e.ArrStart()
+			for _, elem := range s.ReportingMappings {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		e.FieldStart("effectiveDateFrom")
+		json.EncodeDate(e, s.EffectiveDateFrom)
+	}
+	{
+		if s.EffectiveDateTo.Set {
+			e.FieldStart("effectiveDateTo")
+			s.EffectiveDateTo.Encode(e, json.EncodeDate)
+		}
+	}
+	{
+		if s.Approval.Set {
+			e.FieldStart("approval")
+			s.Approval.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfGlMaintainAccountsAndReportingMappingsCommandData = [14]string{
+	0:  "action",
+	1:  "accountId",
+	2:  "chartOfAccountsId",
+	3:  "accountCode",
+	4:  "accountName",
+	5:  "accountType",
+	6:  "normalBalance",
+	7:  "lifecycleStatus",
+	8:  "restrictions",
+	9:  "currencyPolicy",
+	10: "reportingMappings",
+	11: "effectiveDateFrom",
+	12: "effectiveDateTo",
+	13: "approval",
+}
+
+// Decode decodes GlMaintainAccountsAndReportingMappingsCommandData from json.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlMaintainAccountsAndReportingMappingsCommandData to nil")
+	}
+	var requiredBitSet [2]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "action":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Action.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"action\"")
+			}
+		case "accountId":
+			if err := func() error {
+				s.AccountId.Reset()
+				if err := s.AccountId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountId\"")
+			}
+		case "chartOfAccountsId":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.ChartOfAccountsId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"chartOfAccountsId\"")
+			}
+		case "accountCode":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				v, err := d.Str()
+				s.AccountCode = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountCode\"")
+			}
+		case "accountName":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				v, err := d.Str()
+				s.AccountName = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountName\"")
+			}
+		case "accountType":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				v, err := d.Str()
+				s.AccountType = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountType\"")
+			}
+		case "normalBalance":
+			requiredBitSet[0] |= 1 << 6
+			if err := func() error {
+				if err := s.NormalBalance.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"normalBalance\"")
+			}
+		case "lifecycleStatus":
+			requiredBitSet[0] |= 1 << 7
+			if err := func() error {
+				if err := s.LifecycleStatus.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"lifecycleStatus\"")
+			}
+		case "restrictions":
+			if err := func() error {
+				s.Restrictions = make([]GlAccountRestriction, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem GlAccountRestriction
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Restrictions = append(s.Restrictions, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"restrictions\"")
+			}
+		case "currencyPolicy":
+			requiredBitSet[1] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.CurrencyPolicy = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"currencyPolicy\"")
+			}
+		case "reportingMappings":
+			if err := func() error {
+				s.ReportingMappings = make([]GlAccountReportingMapping, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem GlAccountReportingMapping
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.ReportingMappings = append(s.ReportingMappings, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"reportingMappings\"")
+			}
+		case "effectiveDateFrom":
+			requiredBitSet[1] |= 1 << 3
+			if err := func() error {
+				v, err := json.DecodeDate(d)
+				s.EffectiveDateFrom = v
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"effectiveDateFrom\"")
+			}
+		case "effectiveDateTo":
+			if err := func() error {
+				s.EffectiveDateTo.Reset()
+				if err := s.EffectiveDateTo.Decode(d, json.DecodeDate); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"effectiveDateTo\"")
+			}
+		case "approval":
+			if err := func() error {
+				s.Approval.Reset()
+				if err := s.Approval.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"approval\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlMaintainAccountsAndReportingMappingsCommandData")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [2]uint8{
+		0b11111101,
+		0b00001010,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlMaintainAccountsAndReportingMappingsCommandData) {
+					name = jsonFieldsNameOfGlMaintainAccountsAndReportingMappingsCommandData[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlMaintainAccountsAndReportingMappingsCommandData) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes GlMaintainAccountsAndReportingMappingsCommandDataAction as json.
+func (s GlMaintainAccountsAndReportingMappingsCommandDataAction) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes GlMaintainAccountsAndReportingMappingsCommandDataAction from json.
+func (s *GlMaintainAccountsAndReportingMappingsCommandDataAction) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlMaintainAccountsAndReportingMappingsCommandDataAction to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch GlMaintainAccountsAndReportingMappingsCommandDataAction(v) {
+	case GlMaintainAccountsAndReportingMappingsCommandDataActionCreate:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataActionCreate
+	case GlMaintainAccountsAndReportingMappingsCommandDataActionUpdate:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataActionUpdate
+	default:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataAction(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s GlMaintainAccountsAndReportingMappingsCommandDataAction) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlMaintainAccountsAndReportingMappingsCommandDataAction) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus as json.
+func (s GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus from json.
+func (s *GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus(v) {
+	case GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusDraft:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusDraft
+	case GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusActive:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusActive
+	case GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusSuspended:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusSuspended
+	case GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusRetired:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatusRetired
+	default:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlMaintainAccountsAndReportingMappingsCommandDataLifecycleStatus) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance as json.
+func (s GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance from json.
+func (s *GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance(v) {
+	case GlMaintainAccountsAndReportingMappingsCommandDataNormalBalanceDebit:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataNormalBalanceDebit
+	case GlMaintainAccountsAndReportingMappingsCommandDataNormalBalanceCredit:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataNormalBalanceCredit
+	default:
+		*s = GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlMaintainAccountsAndReportingMappingsCommandDataNormalBalance) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *GlMaintainAccountsAndReportingMappingsCommandRequest) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlMaintainAccountsAndReportingMappingsCommandRequest) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("commandId")
+		s.CommandId.Encode(e)
+	}
+	{
+		if s.ExpectedVersion.Set {
+			e.FieldStart("expectedVersion")
+			s.ExpectedVersion.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("accountingScopeId")
+		s.AccountingScopeId.Encode(e)
+	}
+	{
+		e.FieldStart("data")
+		s.Data.Encode(e)
+	}
+}
+
+var jsonFieldsNameOfGlMaintainAccountsAndReportingMappingsCommandRequest = [4]string{
+	0: "commandId",
+	1: "expectedVersion",
+	2: "accountingScopeId",
+	3: "data",
+}
+
+// Decode decodes GlMaintainAccountsAndReportingMappingsCommandRequest from json.
+func (s *GlMaintainAccountsAndReportingMappingsCommandRequest) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlMaintainAccountsAndReportingMappingsCommandRequest to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "commandId":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.CommandId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"commandId\"")
+			}
+		case "expectedVersion":
+			if err := func() error {
+				s.ExpectedVersion.Reset()
+				if err := s.ExpectedVersion.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"expectedVersion\"")
+			}
+		case "accountingScopeId":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.AccountingScopeId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountingScopeId\"")
+			}
+		case "data":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				if err := s.Data.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"data\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlMaintainAccountsAndReportingMappingsCommandRequest")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00001101,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlMaintainAccountsAndReportingMappingsCommandRequest) {
+					name = jsonFieldsNameOfGlMaintainAccountsAndReportingMappingsCommandRequest[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlMaintainAccountsAndReportingMappingsCommandRequest) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlMaintainAccountsAndReportingMappingsCommandRequest) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes GlMaintainAccountsAndReportingMappingsConflict as json.
 func (s *GlMaintainAccountsAndReportingMappingsConflict) Encode(e *jx.Encoder) {
 	unwrapped := (*ProblemDetails)(s)
@@ -19344,6 +20933,196 @@ func (s *GlMaintainAccountsAndReportingMappingsConflict) UnmarshalJSON(data []by
 	return s.Decode(d)
 }
 
+// Encode implements json.Marshaler.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("status")
+		e.Str("established")
+	}
+	{
+		e.FieldStart("aggregateId")
+		s.AggregateId.Encode(e)
+	}
+	{
+		e.FieldStart("aggregateVersion")
+		e.Int(s.AggregateVersion)
+	}
+	{
+		if s.ProcessId.Set {
+			e.FieldStart("processId")
+			s.ProcessId.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("correlationId")
+		s.CorrelationId.Encode(e)
+	}
+	{
+		e.FieldStart("links")
+		s.Links.Encode(e)
+	}
+	{
+		e.FieldStart("data")
+		s.Data.Encode(e)
+	}
+}
+
+var jsonFieldsNameOfGlMaintainAccountsAndReportingMappingsEstablishedResult = [7]string{
+	0: "status",
+	1: "aggregateId",
+	2: "aggregateVersion",
+	3: "processId",
+	4: "correlationId",
+	5: "links",
+	6: "data",
+}
+
+// Decode decodes GlMaintainAccountsAndReportingMappingsEstablishedResult from json.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlMaintainAccountsAndReportingMappingsEstablishedResult to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "status":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.Status = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"status\"")
+			}
+		case "aggregateId":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.AggregateId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"aggregateId\"")
+			}
+		case "aggregateVersion":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Int()
+				s.AggregateVersion = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"aggregateVersion\"")
+			}
+		case "processId":
+			if err := func() error {
+				s.ProcessId.Reset()
+				if err := s.ProcessId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"processId\"")
+			}
+		case "correlationId":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				if err := s.CorrelationId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"correlationId\"")
+			}
+		case "links":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				if err := s.Links.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"links\"")
+			}
+		case "data":
+			requiredBitSet[0] |= 1 << 6
+			if err := func() error {
+				if err := s.Data.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"data\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlMaintainAccountsAndReportingMappingsEstablishedResult")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b01110111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlMaintainAccountsAndReportingMappingsEstablishedResult) {
+					name = jsonFieldsNameOfGlMaintainAccountsAndReportingMappingsEstablishedResult[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlMaintainAccountsAndReportingMappingsEstablishedResult) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes GlMaintainAccountsAndReportingMappingsForbidden as json.
 func (s *GlMaintainAccountsAndReportingMappingsForbidden) Encode(e *jx.Encoder) {
 	unwrapped := (*ProblemDetails)(s)
@@ -19378,6 +21157,185 @@ func (s *GlMaintainAccountsAndReportingMappingsForbidden) MarshalJSON() ([]byte,
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *GlMaintainAccountsAndReportingMappingsForbidden) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("account")
+		s.Account.Encode(e)
+	}
+	{
+		if s.DecisionReference.Set {
+			e.FieldStart("decisionReference")
+			s.DecisionReference.Encode(e)
+		}
+	}
+	{
+		if s.PolicyReference.Set {
+			e.FieldStart("policyReference")
+			s.PolicyReference.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("validationOutcome")
+		e.Str(s.ValidationOutcome)
+	}
+	{
+		e.FieldStart("approvalStatus")
+		e.Str(s.ApprovalStatus)
+	}
+	{
+		if s.Replayed.Set {
+			e.FieldStart("replayed")
+			s.Replayed.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfGlMaintainAccountsAndReportingMappingsResultData = [6]string{
+	0: "account",
+	1: "decisionReference",
+	2: "policyReference",
+	3: "validationOutcome",
+	4: "approvalStatus",
+	5: "replayed",
+}
+
+// Decode decodes GlMaintainAccountsAndReportingMappingsResultData from json.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlMaintainAccountsAndReportingMappingsResultData to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "account":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Account.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"account\"")
+			}
+		case "decisionReference":
+			if err := func() error {
+				s.DecisionReference.Reset()
+				if err := s.DecisionReference.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"decisionReference\"")
+			}
+		case "policyReference":
+			if err := func() error {
+				s.PolicyReference.Reset()
+				if err := s.PolicyReference.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"policyReference\"")
+			}
+		case "validationOutcome":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				v, err := d.Str()
+				s.ValidationOutcome = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"validationOutcome\"")
+			}
+		case "approvalStatus":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				v, err := d.Str()
+				s.ApprovalStatus = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"approvalStatus\"")
+			}
+		case "replayed":
+			if err := func() error {
+				s.Replayed.Reset()
+				if err := s.Replayed.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"replayed\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlMaintainAccountsAndReportingMappingsResultData")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00011001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlMaintainAccountsAndReportingMappingsResultData) {
+					name = jsonFieldsNameOfGlMaintainAccountsAndReportingMappingsResultData[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlMaintainAccountsAndReportingMappingsResultData) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -19496,6 +21454,440 @@ func (s *GlMaintainChartsOfAccountsBadRequest) UnmarshalJSON(data []byte) error 
 	return s.Decode(d)
 }
 
+// Encode implements json.Marshaler.
+func (s *GlMaintainChartsOfAccountsCommandData) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlMaintainChartsOfAccountsCommandData) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("action")
+		s.Action.Encode(e)
+	}
+	{
+		if s.ChartOfAccountsId.Set {
+			e.FieldStart("chartOfAccountsId")
+			s.ChartOfAccountsId.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("ledgerId")
+		s.LedgerId.Encode(e)
+	}
+	{
+		e.FieldStart("accountCodePolicy")
+		e.Str(s.AccountCodePolicy)
+	}
+	{
+		e.FieldStart("lifecycleStatus")
+		s.LifecycleStatus.Encode(e)
+	}
+	{
+		e.FieldStart("effectiveDateFrom")
+		json.EncodeDate(e, s.EffectiveDateFrom)
+	}
+	{
+		if s.EffectiveDateTo.Set {
+			e.FieldStart("effectiveDateTo")
+			s.EffectiveDateTo.Encode(e, json.EncodeDate)
+		}
+	}
+	{
+		if s.Approval.Set {
+			e.FieldStart("approval")
+			s.Approval.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfGlMaintainChartsOfAccountsCommandData = [8]string{
+	0: "action",
+	1: "chartOfAccountsId",
+	2: "ledgerId",
+	3: "accountCodePolicy",
+	4: "lifecycleStatus",
+	5: "effectiveDateFrom",
+	6: "effectiveDateTo",
+	7: "approval",
+}
+
+// Decode decodes GlMaintainChartsOfAccountsCommandData from json.
+func (s *GlMaintainChartsOfAccountsCommandData) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlMaintainChartsOfAccountsCommandData to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "action":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Action.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"action\"")
+			}
+		case "chartOfAccountsId":
+			if err := func() error {
+				s.ChartOfAccountsId.Reset()
+				if err := s.ChartOfAccountsId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"chartOfAccountsId\"")
+			}
+		case "ledgerId":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.LedgerId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"ledgerId\"")
+			}
+		case "accountCodePolicy":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				v, err := d.Str()
+				s.AccountCodePolicy = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountCodePolicy\"")
+			}
+		case "lifecycleStatus":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				if err := s.LifecycleStatus.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"lifecycleStatus\"")
+			}
+		case "effectiveDateFrom":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				v, err := json.DecodeDate(d)
+				s.EffectiveDateFrom = v
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"effectiveDateFrom\"")
+			}
+		case "effectiveDateTo":
+			if err := func() error {
+				s.EffectiveDateTo.Reset()
+				if err := s.EffectiveDateTo.Decode(d, json.DecodeDate); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"effectiveDateTo\"")
+			}
+		case "approval":
+			if err := func() error {
+				s.Approval.Reset()
+				if err := s.Approval.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"approval\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlMaintainChartsOfAccountsCommandData")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00111101,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlMaintainChartsOfAccountsCommandData) {
+					name = jsonFieldsNameOfGlMaintainChartsOfAccountsCommandData[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlMaintainChartsOfAccountsCommandData) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlMaintainChartsOfAccountsCommandData) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes GlMaintainChartsOfAccountsCommandDataAction as json.
+func (s GlMaintainChartsOfAccountsCommandDataAction) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes GlMaintainChartsOfAccountsCommandDataAction from json.
+func (s *GlMaintainChartsOfAccountsCommandDataAction) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlMaintainChartsOfAccountsCommandDataAction to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch GlMaintainChartsOfAccountsCommandDataAction(v) {
+	case GlMaintainChartsOfAccountsCommandDataActionCreate:
+		*s = GlMaintainChartsOfAccountsCommandDataActionCreate
+	case GlMaintainChartsOfAccountsCommandDataActionUpdate:
+		*s = GlMaintainChartsOfAccountsCommandDataActionUpdate
+	default:
+		*s = GlMaintainChartsOfAccountsCommandDataAction(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s GlMaintainChartsOfAccountsCommandDataAction) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlMaintainChartsOfAccountsCommandDataAction) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes GlMaintainChartsOfAccountsCommandDataLifecycleStatus as json.
+func (s GlMaintainChartsOfAccountsCommandDataLifecycleStatus) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes GlMaintainChartsOfAccountsCommandDataLifecycleStatus from json.
+func (s *GlMaintainChartsOfAccountsCommandDataLifecycleStatus) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlMaintainChartsOfAccountsCommandDataLifecycleStatus to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch GlMaintainChartsOfAccountsCommandDataLifecycleStatus(v) {
+	case GlMaintainChartsOfAccountsCommandDataLifecycleStatusDraft:
+		*s = GlMaintainChartsOfAccountsCommandDataLifecycleStatusDraft
+	case GlMaintainChartsOfAccountsCommandDataLifecycleStatusActive:
+		*s = GlMaintainChartsOfAccountsCommandDataLifecycleStatusActive
+	case GlMaintainChartsOfAccountsCommandDataLifecycleStatusSuspended:
+		*s = GlMaintainChartsOfAccountsCommandDataLifecycleStatusSuspended
+	case GlMaintainChartsOfAccountsCommandDataLifecycleStatusRetired:
+		*s = GlMaintainChartsOfAccountsCommandDataLifecycleStatusRetired
+	default:
+		*s = GlMaintainChartsOfAccountsCommandDataLifecycleStatus(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s GlMaintainChartsOfAccountsCommandDataLifecycleStatus) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlMaintainChartsOfAccountsCommandDataLifecycleStatus) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *GlMaintainChartsOfAccountsCommandRequest) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlMaintainChartsOfAccountsCommandRequest) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("commandId")
+		s.CommandId.Encode(e)
+	}
+	{
+		if s.ExpectedVersion.Set {
+			e.FieldStart("expectedVersion")
+			s.ExpectedVersion.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("accountingScopeId")
+		s.AccountingScopeId.Encode(e)
+	}
+	{
+		e.FieldStart("data")
+		s.Data.Encode(e)
+	}
+}
+
+var jsonFieldsNameOfGlMaintainChartsOfAccountsCommandRequest = [4]string{
+	0: "commandId",
+	1: "expectedVersion",
+	2: "accountingScopeId",
+	3: "data",
+}
+
+// Decode decodes GlMaintainChartsOfAccountsCommandRequest from json.
+func (s *GlMaintainChartsOfAccountsCommandRequest) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlMaintainChartsOfAccountsCommandRequest to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "commandId":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.CommandId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"commandId\"")
+			}
+		case "expectedVersion":
+			if err := func() error {
+				s.ExpectedVersion.Reset()
+				if err := s.ExpectedVersion.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"expectedVersion\"")
+			}
+		case "accountingScopeId":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.AccountingScopeId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountingScopeId\"")
+			}
+		case "data":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				if err := s.Data.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"data\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlMaintainChartsOfAccountsCommandRequest")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00001101,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlMaintainChartsOfAccountsCommandRequest) {
+					name = jsonFieldsNameOfGlMaintainChartsOfAccountsCommandRequest[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlMaintainChartsOfAccountsCommandRequest) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlMaintainChartsOfAccountsCommandRequest) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes GlMaintainChartsOfAccountsConflict as json.
 func (s *GlMaintainChartsOfAccountsConflict) Encode(e *jx.Encoder) {
 	unwrapped := (*ProblemDetails)(s)
@@ -19534,6 +21926,196 @@ func (s *GlMaintainChartsOfAccountsConflict) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode implements json.Marshaler.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("status")
+		e.Str("established")
+	}
+	{
+		e.FieldStart("aggregateId")
+		s.AggregateId.Encode(e)
+	}
+	{
+		e.FieldStart("aggregateVersion")
+		e.Int(s.AggregateVersion)
+	}
+	{
+		if s.ProcessId.Set {
+			e.FieldStart("processId")
+			s.ProcessId.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("correlationId")
+		s.CorrelationId.Encode(e)
+	}
+	{
+		e.FieldStart("links")
+		s.Links.Encode(e)
+	}
+	{
+		e.FieldStart("data")
+		s.Data.Encode(e)
+	}
+}
+
+var jsonFieldsNameOfGlMaintainChartsOfAccountsEstablishedResult = [7]string{
+	0: "status",
+	1: "aggregateId",
+	2: "aggregateVersion",
+	3: "processId",
+	4: "correlationId",
+	5: "links",
+	6: "data",
+}
+
+// Decode decodes GlMaintainChartsOfAccountsEstablishedResult from json.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlMaintainChartsOfAccountsEstablishedResult to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "status":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.Status = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"status\"")
+			}
+		case "aggregateId":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.AggregateId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"aggregateId\"")
+			}
+		case "aggregateVersion":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Int()
+				s.AggregateVersion = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"aggregateVersion\"")
+			}
+		case "processId":
+			if err := func() error {
+				s.ProcessId.Reset()
+				if err := s.ProcessId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"processId\"")
+			}
+		case "correlationId":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				if err := s.CorrelationId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"correlationId\"")
+			}
+		case "links":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				if err := s.Links.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"links\"")
+			}
+		case "data":
+			requiredBitSet[0] |= 1 << 6
+			if err := func() error {
+				if err := s.Data.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"data\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlMaintainChartsOfAccountsEstablishedResult")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b01110111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlMaintainChartsOfAccountsEstablishedResult) {
+					name = jsonFieldsNameOfGlMaintainChartsOfAccountsEstablishedResult[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlMaintainChartsOfAccountsEstablishedResult) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes GlMaintainChartsOfAccountsForbidden as json.
 func (s *GlMaintainChartsOfAccountsForbidden) Encode(e *jx.Encoder) {
 	unwrapped := (*ProblemDetails)(s)
@@ -19568,6 +22150,185 @@ func (s *GlMaintainChartsOfAccountsForbidden) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *GlMaintainChartsOfAccountsForbidden) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *GlMaintainChartsOfAccountsResultData) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlMaintainChartsOfAccountsResultData) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("chartOfAccounts")
+		s.ChartOfAccounts.Encode(e)
+	}
+	{
+		if s.DecisionReference.Set {
+			e.FieldStart("decisionReference")
+			s.DecisionReference.Encode(e)
+		}
+	}
+	{
+		if s.PolicyReference.Set {
+			e.FieldStart("policyReference")
+			s.PolicyReference.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("validationOutcome")
+		e.Str(s.ValidationOutcome)
+	}
+	{
+		e.FieldStart("approvalStatus")
+		e.Str(s.ApprovalStatus)
+	}
+	{
+		if s.Replayed.Set {
+			e.FieldStart("replayed")
+			s.Replayed.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfGlMaintainChartsOfAccountsResultData = [6]string{
+	0: "chartOfAccounts",
+	1: "decisionReference",
+	2: "policyReference",
+	3: "validationOutcome",
+	4: "approvalStatus",
+	5: "replayed",
+}
+
+// Decode decodes GlMaintainChartsOfAccountsResultData from json.
+func (s *GlMaintainChartsOfAccountsResultData) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlMaintainChartsOfAccountsResultData to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "chartOfAccounts":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.ChartOfAccounts.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"chartOfAccounts\"")
+			}
+		case "decisionReference":
+			if err := func() error {
+				s.DecisionReference.Reset()
+				if err := s.DecisionReference.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"decisionReference\"")
+			}
+		case "policyReference":
+			if err := func() error {
+				s.PolicyReference.Reset()
+				if err := s.PolicyReference.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"policyReference\"")
+			}
+		case "validationOutcome":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				v, err := d.Str()
+				s.ValidationOutcome = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"validationOutcome\"")
+			}
+		case "approvalStatus":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				v, err := d.Str()
+				s.ApprovalStatus = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"approvalStatus\"")
+			}
+		case "replayed":
+			if err := func() error {
+				s.Replayed.Reset()
+				if err := s.Replayed.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"replayed\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlMaintainChartsOfAccountsResultData")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00011001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlMaintainChartsOfAccountsResultData) {
+					name = jsonFieldsNameOfGlMaintainChartsOfAccountsResultData[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlMaintainChartsOfAccountsResultData) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlMaintainChartsOfAccountsResultData) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

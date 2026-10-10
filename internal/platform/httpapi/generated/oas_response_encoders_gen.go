@@ -10114,7 +10114,7 @@ func encodeGlMaintainAccountingBooksResponse(response GlMaintainAccountingBooksR
 
 func encodeGlMaintainAccountsAndReportingMappingsResponse(response GlMaintainAccountsAndReportingMappingsRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
-	case *EstablishedResult:
+	case *GlMaintainAccountsAndReportingMappingsEstablishedResult:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
@@ -10225,7 +10225,7 @@ func encodeGlMaintainAccountsAndReportingMappingsResponse(response GlMaintainAcc
 
 func encodeGlMaintainChartsOfAccountsResponse(response GlMaintainChartsOfAccountsRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
-	case *EstablishedResult:
+	case *GlMaintainChartsOfAccountsEstablishedResult:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 

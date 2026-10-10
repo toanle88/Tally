@@ -21,13 +21,32 @@ export default defineConfig({
     dedupe: ['react', 'react-dom'],
   },
   test: {
-    environment: 'jsdom',
-    setupFiles: './src/test/setup.ts',
-    include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],
     server: {
       deps: {
         inline: ['@testing-library/react', 'react-dom'],
       },
     },
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'dom',
+          environment: 'jsdom',
+          globals: true,
+          setupFiles: './src/test/setup.ts',
+          include: ['src/**/*.{test,spec}.{jsx,tsx}', 'src/lib/auth/msal-auth-client.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'unit',
+          environment: 'node',
+          setupFiles: [],
+          include: ['src/**/*.{test,spec}.{js,ts}'],
+          exclude: ['src/lib/auth/msal-auth-client.test.ts'],
+        },
+      },
+    ],
   },
 })

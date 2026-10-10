@@ -8,6 +8,38 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type GlAccount struct {
+	AccountID          pgtype.UUID
+	AccountingScopeID  pgtype.UUID
+	ChartOfAccountsID  pgtype.UUID
+	AccountCode        string
+	AccountName        string
+	AccountType        string
+	NormalBalance      string
+	LifecycleStatus    string
+	Restrictions       []byte
+	CurrencyPolicy     string
+	ReportingMappings  []byte
+	EffectiveFrom      pgtype.Date
+	EffectiveTo        pgtype.Date
+	ApprovalReference  []byte
+	AggregateVersion   int64
+	RevisionNumber     int64
+	CreatedAt          pgtype.Timestamptz
+	UpdatedAt          pgtype.Timestamptz
+	LastAuditReference pgtype.UUID
+}
+
+type GlAccountRevision struct {
+	AccountID        pgtype.UUID
+	RevisionNumber   int64
+	AggregateVersion int64
+	Snapshot         []byte
+	EffectiveFrom    pgtype.Date
+	EffectiveTo      pgtype.Date
+	CreatedAt        pgtype.Timestamptz
+}
+
 type GlAccountingBook struct {
 	AccountingBookID     pgtype.UUID
 	AccountingScopeID    pgtype.UUID
@@ -34,6 +66,32 @@ type GlAccountingBookRevision struct {
 	EffectiveFrom    pgtype.Date
 	EffectiveTo      pgtype.Date
 	CreatedAt        pgtype.Timestamptz
+}
+
+type GlChartOfAccount struct {
+	ChartOfAccountsID  pgtype.UUID
+	AccountingScopeID  pgtype.UUID
+	LedgerID           pgtype.UUID
+	AccountCodePolicy  string
+	LifecycleStatus    string
+	EffectiveFrom      pgtype.Date
+	EffectiveTo        pgtype.Date
+	ApprovalReference  []byte
+	AggregateVersion   int64
+	RevisionNumber     int64
+	CreatedAt          pgtype.Timestamptz
+	UpdatedAt          pgtype.Timestamptz
+	LastAuditReference pgtype.UUID
+}
+
+type GlChartOfAccountsRevision struct {
+	ChartOfAccountsID pgtype.UUID
+	RevisionNumber    int64
+	AggregateVersion  int64
+	Snapshot          []byte
+	EffectiveFrom     pgtype.Date
+	EffectiveTo       pgtype.Date
+	CreatedAt         pgtype.Timestamptz
 }
 
 type GlLedger struct {

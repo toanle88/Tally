@@ -375,11 +375,11 @@ type Handler interface {
 	// GlMaintainAccountsAndReportingMappings implements glMaintainAccountsAndReportingMappings operation.
 	//
 	// PUT /general-ledger/configuration/maintain-accounts-and-reporting-mappings
-	GlMaintainAccountsAndReportingMappings(ctx context.Context, req *CommandRequest, params GlMaintainAccountsAndReportingMappingsParams) (GlMaintainAccountsAndReportingMappingsRes, error)
+	GlMaintainAccountsAndReportingMappings(ctx context.Context, req *GlMaintainAccountsAndReportingMappingsCommandRequest, params GlMaintainAccountsAndReportingMappingsParams) (GlMaintainAccountsAndReportingMappingsRes, error)
 	// GlMaintainChartsOfAccounts implements glMaintainChartsOfAccounts operation.
 	//
 	// PUT /general-ledger/configuration/maintain-charts-of-accounts
-	GlMaintainChartsOfAccounts(ctx context.Context, req *CommandRequest, params GlMaintainChartsOfAccountsParams) (GlMaintainChartsOfAccountsRes, error)
+	GlMaintainChartsOfAccounts(ctx context.Context, req *GlMaintainChartsOfAccountsCommandRequest, params GlMaintainChartsOfAccountsParams) (GlMaintainChartsOfAccountsRes, error)
 	// GlMaintainLedgers implements glMaintainLedgers operation.
 	//
 	// PUT /general-ledger/configuration/maintain-ledgers

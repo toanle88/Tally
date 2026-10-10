@@ -212,6 +212,135 @@ export type GlMaintainAccountingBooksEstablishedResult = {
     data: GlMaintainAccountingBooksResultData;
 };
 
+export type GlMaintainChartsOfAccountsCommandData = {
+    action: 'create' | 'update';
+    chartOfAccountsId?: Uuid;
+    ledgerId: Uuid;
+    accountCodePolicy: string;
+    lifecycleStatus: 'draft' | 'active' | 'suspended' | 'retired';
+    effectiveDateFrom: string;
+    effectiveDateTo?: string | null;
+    approval?: IamApprovalDecisionReference;
+};
+
+export type GlMaintainChartsOfAccountsCommandRequest = {
+    commandId: Uuid;
+    expectedVersion?: number;
+    accountingScopeId: Uuid;
+    data: GlMaintainChartsOfAccountsCommandData;
+};
+
+export type GlChartOfAccountsProjection = {
+    id: Uuid;
+    accountingScopeId: Uuid;
+    ledgerId: Uuid;
+    accountCodePolicy: string;
+    lifecycleStatus: string;
+    effectiveDateFrom: string;
+    effectiveDateTo?: string | null;
+    approvalStatus: string;
+    validationOutcome: string;
+    nextAction: string;
+    version: number;
+    revisionNumber: number;
+};
+
+export type GlMaintainChartsOfAccountsResultData = {
+    chartOfAccounts: GlChartOfAccountsProjection;
+    decisionReference?: Uuid;
+    policyReference?: string;
+    validationOutcome: string;
+    approvalStatus: string;
+    replayed?: boolean;
+};
+
+export type GlMaintainChartsOfAccountsEstablishedResult = {
+    status: 'established';
+    aggregateId: Uuid;
+    aggregateVersion: number;
+    processId?: Uuid | null;
+    correlationId: Uuid;
+    links: Links;
+    data: GlMaintainChartsOfAccountsResultData;
+};
+
+export type GlAccountRestriction = {
+    restrictionCode: string;
+    description?: string;
+};
+
+export type GlAccountReportingMapping = {
+    reportingDefinitionId: Uuid;
+    reportingLineCode: string;
+    approved: boolean;
+    effectiveDateFrom?: string;
+    effectiveDateTo?: string | null;
+};
+
+export type GlMaintainAccountsAndReportingMappingsCommandData = {
+    action: 'create' | 'update';
+    accountId?: Uuid;
+    chartOfAccountsId: Uuid;
+    accountCode: string;
+    accountName: string;
+    accountType: string;
+    normalBalance: 'debit' | 'credit';
+    lifecycleStatus: 'draft' | 'active' | 'suspended' | 'retired';
+    restrictions?: Array<GlAccountRestriction>;
+    currencyPolicy: string;
+    reportingMappings?: Array<GlAccountReportingMapping>;
+    effectiveDateFrom: string;
+    effectiveDateTo?: string | null;
+    approval?: IamApprovalDecisionReference;
+};
+
+export type GlMaintainAccountsAndReportingMappingsCommandRequest = {
+    commandId: Uuid;
+    expectedVersion?: number;
+    accountingScopeId: Uuid;
+    data: GlMaintainAccountsAndReportingMappingsCommandData;
+};
+
+export type GlAccountProjection = {
+    id: Uuid;
+    accountingScopeId: Uuid;
+    chartOfAccountsId: Uuid;
+    accountCode: string;
+    accountName: string;
+    accountType: string;
+    normalBalance: 'debit' | 'credit';
+    lifecycleStatus: string;
+    restrictions: Array<GlAccountRestriction>;
+    currencyPolicy: string;
+    reportingMappings: Array<GlAccountReportingMapping>;
+    effectiveDateFrom: string;
+    effectiveDateTo?: string | null;
+    approvalStatus: string;
+    validationOutcome: string;
+    nextAction: string;
+    version: number;
+    revisionNumber: number;
+};
+
+export type GlMaintainAccountsAndReportingMappingsResultData = {
+    account: GlAccountProjection;
+    decisionReference?: Uuid;
+    policyReference?: string;
+    validationOutcome: string;
+    approvalStatus: string;
+    replayed?: boolean;
+};
+
+export type GlMaintainAccountsAndReportingMappingsEstablishedResult = {
+    status: 'established';
+    aggregateId: Uuid;
+    aggregateVersion: number;
+    processId?: Uuid | null;
+    correlationId: Uuid;
+    links: Links;
+    data: GlMaintainAccountsAndReportingMappingsResultData;
+};
+
 export type IamPermissionGrant = {
     permission: string;
     scopeIds: Array<string>;
@@ -1521,7 +1650,7 @@ export type GlMaintainAccountingBooksResponses = {
 export type GlMaintainAccountingBooksResponse = GlMaintainAccountingBooksResponses[keyof GlMaintainAccountingBooksResponses];
 
 export type GlMaintainChartsOfAccountsData = {
-    body: CommandRequest;
+    body: GlMaintainChartsOfAccountsCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
@@ -1565,15 +1694,15 @@ export type GlMaintainChartsOfAccountsError = GlMaintainChartsOfAccountsErrors[k
 
 export type GlMaintainChartsOfAccountsResponses = {
     /**
-     * Established result
+     * Established chart-of-accounts result
      */
-    200: EstablishedResult;
+    200: GlMaintainChartsOfAccountsEstablishedResult;
 };
 
 export type GlMaintainChartsOfAccountsResponse = GlMaintainChartsOfAccountsResponses[keyof GlMaintainChartsOfAccountsResponses];
 
 export type GlMaintainAccountsAndReportingMappingsData = {
-    body: CommandRequest;
+    body: GlMaintainAccountsAndReportingMappingsCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
@@ -1617,9 +1746,9 @@ export type GlMaintainAccountsAndReportingMappingsError = GlMaintainAccountsAndR
 
 export type GlMaintainAccountsAndReportingMappingsResponses = {
     /**
-     * Established result
+     * Established account and reporting-mapping result
      */
-    200: EstablishedResult;
+    200: GlMaintainAccountsAndReportingMappingsEstablishedResult;
 };
 
 export type GlMaintainAccountsAndReportingMappingsResponse = GlMaintainAccountsAndReportingMappingsResponses[keyof GlMaintainAccountsAndReportingMappingsResponses];

@@ -312,25 +312,25 @@ reproducible.
 
 Acceptance criteria:
 
-- [ ] An authorized command can create or maintain a versioned chart of
+- [x] An authorized command can create or maintain a versioned chart of
   accounts and account-code policy for an existing ledger with a valid
   effective scope.
-- [ ] An authorized command can create or maintain accounts with account code,
+- [x] An authorized command can create or maintain accounts with account code,
   name, type, normal balance, status, posting restrictions, currency policy,
   effective dates, and approved reporting mappings.
-- [ ] The command validates account-code uniqueness in the effective chart,
+- [x] The command validates account-code uniqueness in the effective chart,
   account type/normal balance, restrictions, currency policy, mapping
   references, chart version, and effective-date rules before commit.
-- [ ] COA segment definitions and combinations are referenced through the
+- [x] COA segment definitions and combinations are referenced through the
   published COA boundary; GL does not read or write the `coa` schema.
-- [ ] Accepted results identify chart/account identity and version, ledger and
+- [x] Accepted results identify chart/account identity and version, ledger and
   chart relationship, restrictions, mappings, effective dates, approval
   evidence, and validation outcome.
 - [ ] Configuration changes preserve the chart/account version used by
   established journals and never rewrite historical journal facts.
-- [ ] Scope, authorization, expected-version, idempotency, correlation, audit,
+- [x] Scope, authorization, expected-version, idempotency, correlation, audit,
   and safe conflict behavior match the approved platform contract.
-- [ ] `GL-SCR-05` shows current state, dependent impact, effective dates,
+- [x] `GL-SCR-05` shows current state, dependent impact, effective dates,
   approval/validation status, blocked actions, and the next permitted action.
 
 Suggested implementation steps:
@@ -348,13 +348,22 @@ Suggested implementation steps:
 
 Required test evidence:
 
-- [ ] Domain tests for chart/account lifecycle, uniqueness, effective dating,
+- [x] Domain tests for chart/account lifecycle, uniqueness, effective dating,
   restrictions, currency policy, normal balances, and mapping validation.
-- [ ] Persistence tests for version retention, constraints, atomic rollback,
-  and journal references to the correct historical configuration.
-- [ ] API, authorization, audit, idempotency, and optimistic-concurrency tests.
-- [ ] Component and Playwright tests for chart/account configuration,
-  validation, dependent-impact messaging, accessibility, and safe errors.
+- [x] Persistence tests cover version retention, parent constraints, and
+  atomic rollback; journal references to the correct historical configuration
+  remain open until the JournalEntry aggregate is delivered.
+- [x] API, authorization, audit, idempotency, and optimistic-concurrency tests.
+- [ ] Component tests for chart/account configuration, validation,
+  dependent-impact messaging, accessibility, and safe errors.
+- [ ] Playwright tests for chart/account configuration, keyboard/focus,
+  zoom/reflow, and safe status updates.
+
+#### User Story 2 implementation evidence — 2026-10-10
+
+The implementation is on branch `feat/gl-us2-chart-account-mappings`.
+Evidence and remaining qualification boundaries are recorded in
+[docs/verification/DLV-FR-GL-017-018-us2-chart-account-mappings.md](../../verification/DLV-FR-GL-017-018-us2-chart-account-mappings.md).
 
 ### User Story 3 — Submit and validate a posting request
 
