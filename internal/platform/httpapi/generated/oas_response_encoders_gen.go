@@ -10891,7 +10891,7 @@ func encodeGlReverseJournalEntryResponse(response GlReverseJournalEntryRes, w ht
 
 func encodeGlSubmitPostingRequestResponse(response GlSubmitPostingRequestRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
-	case *EstablishedResult:
+	case *GlSubmitPostingRequestEstablishedResult:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 

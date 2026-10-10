@@ -23813,6 +23813,692 @@ func (s *GlOpenScopedReopenGateUnprocessableEntity) UnmarshalJSON(data []byte) e
 	return s.Decode(d)
 }
 
+// Encode implements json.Marshaler.
+func (s *GlPostingConversionEvidence) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlPostingConversionEvidence) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("rateSetId")
+		s.RateSetId.Encode(e)
+	}
+	{
+		e.FieldStart("rateType")
+		e.Str(s.RateType)
+	}
+	{
+		e.FieldStart("conversionDate")
+		json.EncodeDate(e, s.ConversionDate)
+	}
+	{
+		e.FieldStart("conversionTimestamp")
+		json.EncodeDateTime(e, s.ConversionTimestamp)
+	}
+}
+
+var jsonFieldsNameOfGlPostingConversionEvidence = [4]string{
+	0: "rateSetId",
+	1: "rateType",
+	2: "conversionDate",
+	3: "conversionTimestamp",
+}
+
+// Decode decodes GlPostingConversionEvidence from json.
+func (s *GlPostingConversionEvidence) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlPostingConversionEvidence to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "rateSetId":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.RateSetId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"rateSetId\"")
+			}
+		case "rateType":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.RateType = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"rateType\"")
+			}
+		case "conversionDate":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := json.DecodeDate(d)
+				s.ConversionDate = v
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"conversionDate\"")
+			}
+		case "conversionTimestamp":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				v, err := json.DecodeDateTime(d)
+				s.ConversionTimestamp = v
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"conversionTimestamp\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlPostingConversionEvidence")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00001111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlPostingConversionEvidence) {
+					name = jsonFieldsNameOfGlPostingConversionEvidence[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlPostingConversionEvidence) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlPostingConversionEvidence) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *GlPostingGateEvidence) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlPostingGateEvidence) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("fiscalPeriodId")
+		s.FiscalPeriodId.Encode(e)
+	}
+	{
+		e.FieldStart("periodStateVersion")
+		e.Int(s.PeriodStateVersion)
+	}
+	{
+		e.FieldStart("postingGateVersion")
+		e.Int(s.PostingGateVersion)
+	}
+	{
+		e.FieldStart("gateMode")
+		e.Str(s.GateMode)
+	}
+}
+
+var jsonFieldsNameOfGlPostingGateEvidence = [4]string{
+	0: "fiscalPeriodId",
+	1: "periodStateVersion",
+	2: "postingGateVersion",
+	3: "gateMode",
+}
+
+// Decode decodes GlPostingGateEvidence from json.
+func (s *GlPostingGateEvidence) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlPostingGateEvidence to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "fiscalPeriodId":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.FiscalPeriodId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"fiscalPeriodId\"")
+			}
+		case "periodStateVersion":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Int()
+				s.PeriodStateVersion = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"periodStateVersion\"")
+			}
+		case "postingGateVersion":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Int()
+				s.PostingGateVersion = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"postingGateVersion\"")
+			}
+		case "gateMode":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				v, err := d.Str()
+				s.GateMode = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"gateMode\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlPostingGateEvidence")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00001111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlPostingGateEvidence) {
+					name = jsonFieldsNameOfGlPostingGateEvidence[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlPostingGateEvidence) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlPostingGateEvidence) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *GlPostingRequestLine) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlPostingRequestLine) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("accountId")
+		s.AccountId.Encode(e)
+	}
+	{
+		e.FieldStart("debitOrCredit")
+		s.DebitOrCredit.Encode(e)
+	}
+	{
+		e.FieldStart("lineCurrencyMode")
+		s.LineCurrencyMode.Encode(e)
+	}
+	{
+		e.FieldStart("transactionAmount")
+		s.TransactionAmount.Encode(e)
+	}
+	{
+		e.FieldStart("functionalAmount")
+		s.FunctionalAmount.Encode(e)
+	}
+	{
+		e.FieldStart("segmentCombinationId")
+		s.SegmentCombinationId.Encode(e)
+	}
+	{
+		if s.LineReference.Set {
+			e.FieldStart("lineReference")
+			s.LineReference.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfGlPostingRequestLine = [7]string{
+	0: "accountId",
+	1: "debitOrCredit",
+	2: "lineCurrencyMode",
+	3: "transactionAmount",
+	4: "functionalAmount",
+	5: "segmentCombinationId",
+	6: "lineReference",
+}
+
+// Decode decodes GlPostingRequestLine from json.
+func (s *GlPostingRequestLine) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlPostingRequestLine to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "accountId":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.AccountId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountId\"")
+			}
+		case "debitOrCredit":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.DebitOrCredit.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"debitOrCredit\"")
+			}
+		case "lineCurrencyMode":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.LineCurrencyMode.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"lineCurrencyMode\"")
+			}
+		case "transactionAmount":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				if err := s.TransactionAmount.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"transactionAmount\"")
+			}
+		case "functionalAmount":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				if err := s.FunctionalAmount.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"functionalAmount\"")
+			}
+		case "segmentCombinationId":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				if err := s.SegmentCombinationId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"segmentCombinationId\"")
+			}
+		case "lineReference":
+			if err := func() error {
+				s.LineReference.Reset()
+				if err := s.LineReference.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"lineReference\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlPostingRequestLine")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00111111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlPostingRequestLine) {
+					name = jsonFieldsNameOfGlPostingRequestLine[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlPostingRequestLine) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlPostingRequestLine) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes GlPostingRequestLineDebitOrCredit as json.
+func (s GlPostingRequestLineDebitOrCredit) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes GlPostingRequestLineDebitOrCredit from json.
+func (s *GlPostingRequestLineDebitOrCredit) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlPostingRequestLineDebitOrCredit to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch GlPostingRequestLineDebitOrCredit(v) {
+	case GlPostingRequestLineDebitOrCreditDebit:
+		*s = GlPostingRequestLineDebitOrCreditDebit
+	case GlPostingRequestLineDebitOrCreditCredit:
+		*s = GlPostingRequestLineDebitOrCreditCredit
+	default:
+		*s = GlPostingRequestLineDebitOrCredit(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s GlPostingRequestLineDebitOrCredit) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlPostingRequestLineDebitOrCredit) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes GlPostingRequestLineLineCurrencyMode as json.
+func (s GlPostingRequestLineLineCurrencyMode) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes GlPostingRequestLineLineCurrencyMode from json.
+func (s *GlPostingRequestLineLineCurrencyMode) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlPostingRequestLineLineCurrencyMode to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch GlPostingRequestLineLineCurrencyMode(v) {
+	case GlPostingRequestLineLineCurrencyModeTransactionAndFunctional:
+		*s = GlPostingRequestLineLineCurrencyModeTransactionAndFunctional
+	case GlPostingRequestLineLineCurrencyModeFunctionalOnlyAdjustment:
+		*s = GlPostingRequestLineLineCurrencyModeFunctionalOnlyAdjustment
+	default:
+		*s = GlPostingRequestLineLineCurrencyMode(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s GlPostingRequestLineLineCurrencyMode) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlPostingRequestLineLineCurrencyMode) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *GlPostingValidationIssue) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlPostingValidationIssue) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("code")
+		e.Str(s.Code)
+	}
+	{
+		e.FieldStart("field")
+		e.Str(s.Field)
+	}
+	{
+		e.FieldStart("message")
+		e.Str(s.Message)
+	}
+}
+
+var jsonFieldsNameOfGlPostingValidationIssue = [3]string{
+	0: "code",
+	1: "field",
+	2: "message",
+}
+
+// Decode decodes GlPostingValidationIssue from json.
+func (s *GlPostingValidationIssue) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlPostingValidationIssue to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "code":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.Code = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"code\"")
+			}
+		case "field":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.Field = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"field\"")
+			}
+		case "message":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Str()
+				s.Message = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"message\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlPostingValidationIssue")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlPostingValidationIssue) {
+					name = jsonFieldsNameOfGlPostingValidationIssue[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlPostingValidationIssue) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlPostingValidationIssue) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes GlReleasePostingBarrierBadRequest as json.
 func (s *GlReleasePostingBarrierBadRequest) Encode(e *jx.Encoder) {
 	unwrapped := (*ProblemDetails)(s)
@@ -24231,6 +24917,758 @@ func (s *GlSubmitPostingRequestBadRequest) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode implements json.Marshaler.
+func (s *GlSubmitPostingRequestCommandData) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlSubmitPostingRequestCommandData) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("contractVersion")
+		e.Int(2)
+	}
+	{
+		e.FieldStart("requestId")
+		s.RequestId.Encode(e)
+	}
+	{
+		e.FieldStart("sourceContext")
+		e.Str(s.SourceContext)
+	}
+	{
+		e.FieldStart("sourceAggregateType")
+		e.Str(s.SourceAggregateType)
+	}
+	{
+		e.FieldStart("sourceAggregateId")
+		s.SourceAggregateId.Encode(e)
+	}
+	{
+		e.FieldStart("sourceVersion")
+		e.Int(s.SourceVersion)
+	}
+	{
+		e.FieldStart("tenantId")
+		s.TenantId.Encode(e)
+	}
+	{
+		e.FieldStart("legalEntityId")
+		s.LegalEntityId.Encode(e)
+	}
+	{
+		e.FieldStart("ledgerId")
+		s.LedgerId.Encode(e)
+	}
+	{
+		e.FieldStart("accountingBookId")
+		s.AccountingBookId.Encode(e)
+	}
+	{
+		e.FieldStart("functionalCurrency")
+		s.FunctionalCurrency.Encode(e)
+	}
+	{
+		e.FieldStart("postingDate")
+		json.EncodeDate(e, s.PostingDate)
+	}
+	{
+		e.FieldStart("fiscalPeriodId")
+		s.FiscalPeriodId.Encode(e)
+	}
+	{
+		e.FieldStart("periodStateVersion")
+		e.Int(s.PeriodStateVersion)
+	}
+	{
+		e.FieldStart("postingGateVersion")
+		e.Int(s.PostingGateVersion)
+	}
+	{
+		e.FieldStart("postingPurpose")
+		s.PostingPurpose.Encode(e)
+	}
+	{
+		if s.AdjustmentPeriodIndicator.Set {
+			e.FieldStart("adjustmentPeriodIndicator")
+			s.AdjustmentPeriodIndicator.Encode(e)
+		}
+	}
+	{
+		if s.PostingAuthorizationId.Set {
+			e.FieldStart("postingAuthorizationId")
+			s.PostingAuthorizationId.Encode(e)
+		}
+	}
+	{
+		if s.CloseRunId.Set {
+			e.FieldStart("closeRunId")
+			s.CloseRunId.Encode(e)
+		}
+	}
+	{
+		if s.ReopenRequestId.Set {
+			e.FieldStart("reopenRequestId")
+			s.ReopenRequestId.Encode(e)
+		}
+	}
+	{
+		if s.OperationalReopenRequestId.Set {
+			e.FieldStart("operationalReopenRequestId")
+			s.OperationalReopenRequestId.Encode(e)
+		}
+	}
+	{
+		if s.ControlAuthorityEpoch.Set {
+			e.FieldStart("controlAuthorityEpoch")
+			s.ControlAuthorityEpoch.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("transactionCurrency")
+		s.TransactionCurrency.Encode(e)
+	}
+	{
+		if s.ConversionEvidence.Set {
+			e.FieldStart("conversionEvidence")
+			s.ConversionEvidence.Encode(e)
+		}
+	}
+	{
+		if s.Description.Set {
+			e.FieldStart("description")
+			s.Description.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("lines")
+		e.ArrStart()
+		for _, elem := range s.Lines {
+			elem.Encode(e)
+		}
+		e.ArrEnd()
+	}
+	{
+		if s.ReversalOfJournalEntryId.Set {
+			e.FieldStart("reversalOfJournalEntryId")
+			s.ReversalOfJournalEntryId.Encode(e)
+		}
+	}
+	{
+		if s.AutomaticReversalDate.Set {
+			e.FieldStart("automaticReversalDate")
+			s.AutomaticReversalDate.Encode(e, json.EncodeDate)
+		}
+	}
+}
+
+var jsonFieldsNameOfGlSubmitPostingRequestCommandData = [28]string{
+	0:  "contractVersion",
+	1:  "requestId",
+	2:  "sourceContext",
+	3:  "sourceAggregateType",
+	4:  "sourceAggregateId",
+	5:  "sourceVersion",
+	6:  "tenantId",
+	7:  "legalEntityId",
+	8:  "ledgerId",
+	9:  "accountingBookId",
+	10: "functionalCurrency",
+	11: "postingDate",
+	12: "fiscalPeriodId",
+	13: "periodStateVersion",
+	14: "postingGateVersion",
+	15: "postingPurpose",
+	16: "adjustmentPeriodIndicator",
+	17: "postingAuthorizationId",
+	18: "closeRunId",
+	19: "reopenRequestId",
+	20: "operationalReopenRequestId",
+	21: "controlAuthorityEpoch",
+	22: "transactionCurrency",
+	23: "conversionEvidence",
+	24: "description",
+	25: "lines",
+	26: "reversalOfJournalEntryId",
+	27: "automaticReversalDate",
+}
+
+// Decode decodes GlSubmitPostingRequestCommandData from json.
+func (s *GlSubmitPostingRequestCommandData) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlSubmitPostingRequestCommandData to nil")
+	}
+	var requiredBitSet [4]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "contractVersion":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Int()
+				s.ContractVersion = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"contractVersion\"")
+			}
+		case "requestId":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.RequestId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"requestId\"")
+			}
+		case "sourceContext":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Str()
+				s.SourceContext = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"sourceContext\"")
+			}
+		case "sourceAggregateType":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				v, err := d.Str()
+				s.SourceAggregateType = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"sourceAggregateType\"")
+			}
+		case "sourceAggregateId":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				if err := s.SourceAggregateId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"sourceAggregateId\"")
+			}
+		case "sourceVersion":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				v, err := d.Int()
+				s.SourceVersion = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"sourceVersion\"")
+			}
+		case "tenantId":
+			requiredBitSet[0] |= 1 << 6
+			if err := func() error {
+				if err := s.TenantId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"tenantId\"")
+			}
+		case "legalEntityId":
+			requiredBitSet[0] |= 1 << 7
+			if err := func() error {
+				if err := s.LegalEntityId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"legalEntityId\"")
+			}
+		case "ledgerId":
+			requiredBitSet[1] |= 1 << 0
+			if err := func() error {
+				if err := s.LedgerId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"ledgerId\"")
+			}
+		case "accountingBookId":
+			requiredBitSet[1] |= 1 << 1
+			if err := func() error {
+				if err := s.AccountingBookId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountingBookId\"")
+			}
+		case "functionalCurrency":
+			requiredBitSet[1] |= 1 << 2
+			if err := func() error {
+				if err := s.FunctionalCurrency.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"functionalCurrency\"")
+			}
+		case "postingDate":
+			requiredBitSet[1] |= 1 << 3
+			if err := func() error {
+				v, err := json.DecodeDate(d)
+				s.PostingDate = v
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"postingDate\"")
+			}
+		case "fiscalPeriodId":
+			requiredBitSet[1] |= 1 << 4
+			if err := func() error {
+				if err := s.FiscalPeriodId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"fiscalPeriodId\"")
+			}
+		case "periodStateVersion":
+			requiredBitSet[1] |= 1 << 5
+			if err := func() error {
+				v, err := d.Int()
+				s.PeriodStateVersion = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"periodStateVersion\"")
+			}
+		case "postingGateVersion":
+			requiredBitSet[1] |= 1 << 6
+			if err := func() error {
+				v, err := d.Int()
+				s.PostingGateVersion = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"postingGateVersion\"")
+			}
+		case "postingPurpose":
+			requiredBitSet[1] |= 1 << 7
+			if err := func() error {
+				if err := s.PostingPurpose.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"postingPurpose\"")
+			}
+		case "adjustmentPeriodIndicator":
+			if err := func() error {
+				s.AdjustmentPeriodIndicator.Reset()
+				if err := s.AdjustmentPeriodIndicator.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"adjustmentPeriodIndicator\"")
+			}
+		case "postingAuthorizationId":
+			if err := func() error {
+				s.PostingAuthorizationId.Reset()
+				if err := s.PostingAuthorizationId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"postingAuthorizationId\"")
+			}
+		case "closeRunId":
+			if err := func() error {
+				s.CloseRunId.Reset()
+				if err := s.CloseRunId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"closeRunId\"")
+			}
+		case "reopenRequestId":
+			if err := func() error {
+				s.ReopenRequestId.Reset()
+				if err := s.ReopenRequestId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"reopenRequestId\"")
+			}
+		case "operationalReopenRequestId":
+			if err := func() error {
+				s.OperationalReopenRequestId.Reset()
+				if err := s.OperationalReopenRequestId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"operationalReopenRequestId\"")
+			}
+		case "controlAuthorityEpoch":
+			if err := func() error {
+				s.ControlAuthorityEpoch.Reset()
+				if err := s.ControlAuthorityEpoch.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"controlAuthorityEpoch\"")
+			}
+		case "transactionCurrency":
+			requiredBitSet[2] |= 1 << 6
+			if err := func() error {
+				if err := s.TransactionCurrency.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"transactionCurrency\"")
+			}
+		case "conversionEvidence":
+			if err := func() error {
+				s.ConversionEvidence.Reset()
+				if err := s.ConversionEvidence.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"conversionEvidence\"")
+			}
+		case "description":
+			if err := func() error {
+				s.Description.Reset()
+				if err := s.Description.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"description\"")
+			}
+		case "lines":
+			requiredBitSet[3] |= 1 << 1
+			if err := func() error {
+				s.Lines = make([]GlPostingRequestLine, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem GlPostingRequestLine
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Lines = append(s.Lines, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"lines\"")
+			}
+		case "reversalOfJournalEntryId":
+			if err := func() error {
+				s.ReversalOfJournalEntryId.Reset()
+				if err := s.ReversalOfJournalEntryId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"reversalOfJournalEntryId\"")
+			}
+		case "automaticReversalDate":
+			if err := func() error {
+				s.AutomaticReversalDate.Reset()
+				if err := s.AutomaticReversalDate.Decode(d, json.DecodeDate); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"automaticReversalDate\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlSubmitPostingRequestCommandData")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [4]uint8{
+		0b11111111,
+		0b11111111,
+		0b01000000,
+		0b00000010,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlSubmitPostingRequestCommandData) {
+					name = jsonFieldsNameOfGlSubmitPostingRequestCommandData[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlSubmitPostingRequestCommandData) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlSubmitPostingRequestCommandData) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes GlSubmitPostingRequestCommandDataPostingPurpose as json.
+func (s GlSubmitPostingRequestCommandDataPostingPurpose) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes GlSubmitPostingRequestCommandDataPostingPurpose from json.
+func (s *GlSubmitPostingRequestCommandDataPostingPurpose) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlSubmitPostingRequestCommandDataPostingPurpose to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch GlSubmitPostingRequestCommandDataPostingPurpose(v) {
+	case GlSubmitPostingRequestCommandDataPostingPurposeOrdinary:
+		*s = GlSubmitPostingRequestCommandDataPostingPurposeOrdinary
+	case GlSubmitPostingRequestCommandDataPostingPurposeClose:
+		*s = GlSubmitPostingRequestCommandDataPostingPurposeClose
+	case GlSubmitPostingRequestCommandDataPostingPurposeReopenCorrection:
+		*s = GlSubmitPostingRequestCommandDataPostingPurposeReopenCorrection
+	case GlSubmitPostingRequestCommandDataPostingPurposeOperationalReopen:
+		*s = GlSubmitPostingRequestCommandDataPostingPurposeOperationalReopen
+	case GlSubmitPostingRequestCommandDataPostingPurposePolicyAdjustment:
+		*s = GlSubmitPostingRequestCommandDataPostingPurposePolicyAdjustment
+	default:
+		*s = GlSubmitPostingRequestCommandDataPostingPurpose(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s GlSubmitPostingRequestCommandDataPostingPurpose) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlSubmitPostingRequestCommandDataPostingPurpose) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *GlSubmitPostingRequestCommandRequest) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlSubmitPostingRequestCommandRequest) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("commandId")
+		s.CommandId.Encode(e)
+	}
+	{
+		if s.ExpectedVersion.Set {
+			e.FieldStart("expectedVersion")
+			s.ExpectedVersion.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("accountingScopeId")
+		s.AccountingScopeId.Encode(e)
+	}
+	{
+		if s.BusinessDate.Set {
+			e.FieldStart("businessDate")
+			s.BusinessDate.Encode(e, json.EncodeDate)
+		}
+	}
+	{
+		e.FieldStart("data")
+		s.Data.Encode(e)
+	}
+}
+
+var jsonFieldsNameOfGlSubmitPostingRequestCommandRequest = [5]string{
+	0: "commandId",
+	1: "expectedVersion",
+	2: "accountingScopeId",
+	3: "businessDate",
+	4: "data",
+}
+
+// Decode decodes GlSubmitPostingRequestCommandRequest from json.
+func (s *GlSubmitPostingRequestCommandRequest) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlSubmitPostingRequestCommandRequest to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "commandId":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.CommandId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"commandId\"")
+			}
+		case "expectedVersion":
+			if err := func() error {
+				s.ExpectedVersion.Reset()
+				if err := s.ExpectedVersion.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"expectedVersion\"")
+			}
+		case "accountingScopeId":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.AccountingScopeId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountingScopeId\"")
+			}
+		case "businessDate":
+			if err := func() error {
+				s.BusinessDate.Reset()
+				if err := s.BusinessDate.Decode(d, json.DecodeDate); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"businessDate\"")
+			}
+		case "data":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				if err := s.Data.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"data\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlSubmitPostingRequestCommandRequest")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00010101,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlSubmitPostingRequestCommandRequest) {
+					name = jsonFieldsNameOfGlSubmitPostingRequestCommandRequest[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlSubmitPostingRequestCommandRequest) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlSubmitPostingRequestCommandRequest) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes GlSubmitPostingRequestConflict as json.
 func (s *GlSubmitPostingRequestConflict) Encode(e *jx.Encoder) {
 	unwrapped := (*ProblemDetails)(s)
@@ -24269,6 +25707,196 @@ func (s *GlSubmitPostingRequestConflict) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode implements json.Marshaler.
+func (s *GlSubmitPostingRequestEstablishedResult) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlSubmitPostingRequestEstablishedResult) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("status")
+		e.Str("established")
+	}
+	{
+		e.FieldStart("aggregateId")
+		s.AggregateId.Encode(e)
+	}
+	{
+		e.FieldStart("aggregateVersion")
+		e.Int(s.AggregateVersion)
+	}
+	{
+		if s.ProcessId.Set {
+			e.FieldStart("processId")
+			s.ProcessId.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("correlationId")
+		s.CorrelationId.Encode(e)
+	}
+	{
+		e.FieldStart("links")
+		s.Links.Encode(e)
+	}
+	{
+		e.FieldStart("data")
+		s.Data.Encode(e)
+	}
+}
+
+var jsonFieldsNameOfGlSubmitPostingRequestEstablishedResult = [7]string{
+	0: "status",
+	1: "aggregateId",
+	2: "aggregateVersion",
+	3: "processId",
+	4: "correlationId",
+	5: "links",
+	6: "data",
+}
+
+// Decode decodes GlSubmitPostingRequestEstablishedResult from json.
+func (s *GlSubmitPostingRequestEstablishedResult) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlSubmitPostingRequestEstablishedResult to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "status":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.Status = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"status\"")
+			}
+		case "aggregateId":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.AggregateId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"aggregateId\"")
+			}
+		case "aggregateVersion":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Int()
+				s.AggregateVersion = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"aggregateVersion\"")
+			}
+		case "processId":
+			if err := func() error {
+				s.ProcessId.Reset()
+				if err := s.ProcessId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"processId\"")
+			}
+		case "correlationId":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				if err := s.CorrelationId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"correlationId\"")
+			}
+		case "links":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				if err := s.Links.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"links\"")
+			}
+		case "data":
+			requiredBitSet[0] |= 1 << 6
+			if err := func() error {
+				if err := s.Data.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"data\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlSubmitPostingRequestEstablishedResult")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b01110111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlSubmitPostingRequestEstablishedResult) {
+					name = jsonFieldsNameOfGlSubmitPostingRequestEstablishedResult[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlSubmitPostingRequestEstablishedResult) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlSubmitPostingRequestEstablishedResult) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes GlSubmitPostingRequestForbidden as json.
 func (s *GlSubmitPostingRequestForbidden) Encode(e *jx.Encoder) {
 	unwrapped := (*ProblemDetails)(s)
@@ -24303,6 +25931,426 @@ func (s *GlSubmitPostingRequestForbidden) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *GlSubmitPostingRequestForbidden) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *GlSubmitPostingRequestResultData) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlSubmitPostingRequestResultData) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("outcome")
+		s.Outcome.Encode(e)
+	}
+	{
+		e.FieldStart("lifecycleStatus")
+		s.LifecycleStatus.Encode(e)
+	}
+	{
+		if s.JournalId.Set {
+			e.FieldStart("journalId")
+			s.JournalId.Encode(e)
+		}
+	}
+	{
+		if s.JournalNumber.Set {
+			e.FieldStart("journalNumber")
+			s.JournalNumber.Encode(e)
+		}
+	}
+	{
+		if s.JournalVersion.Set {
+			e.FieldStart("journalVersion")
+			s.JournalVersion.Encode(e)
+		}
+	}
+	{
+		if s.LedgerPosition.Set {
+			e.FieldStart("ledgerPosition")
+			s.LedgerPosition.Encode(e)
+		}
+	}
+	{
+		if s.ApprovalRequestId.Set {
+			e.FieldStart("approvalRequestId")
+			s.ApprovalRequestId.Encode(e)
+		}
+	}
+	{
+		if s.NextAction.Set {
+			e.FieldStart("nextAction")
+			s.NextAction.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("validationOutcome")
+		e.Str(s.ValidationOutcome)
+	}
+	{
+		e.FieldStart("approvalStatus")
+		e.Str(s.ApprovalStatus)
+	}
+	{
+		e.FieldStart("sourceReference")
+		e.Str(s.SourceReference)
+	}
+	{
+		e.FieldStart("gateEvidence")
+		s.GateEvidence.Encode(e)
+	}
+	{
+		if s.AuditReference.Set {
+			e.FieldStart("auditReference")
+			s.AuditReference.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("replayed")
+		e.Bool(s.Replayed)
+	}
+	{
+		if s.Issues != nil {
+			e.FieldStart("issues")
+			e.ArrStart()
+			for _, elem := range s.Issues {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+}
+
+var jsonFieldsNameOfGlSubmitPostingRequestResultData = [15]string{
+	0:  "outcome",
+	1:  "lifecycleStatus",
+	2:  "journalId",
+	3:  "journalNumber",
+	4:  "journalVersion",
+	5:  "ledgerPosition",
+	6:  "approvalRequestId",
+	7:  "nextAction",
+	8:  "validationOutcome",
+	9:  "approvalStatus",
+	10: "sourceReference",
+	11: "gateEvidence",
+	12: "auditReference",
+	13: "replayed",
+	14: "issues",
+}
+
+// Decode decodes GlSubmitPostingRequestResultData from json.
+func (s *GlSubmitPostingRequestResultData) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlSubmitPostingRequestResultData to nil")
+	}
+	var requiredBitSet [2]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "outcome":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Outcome.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"outcome\"")
+			}
+		case "lifecycleStatus":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.LifecycleStatus.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"lifecycleStatus\"")
+			}
+		case "journalId":
+			if err := func() error {
+				s.JournalId.Reset()
+				if err := s.JournalId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"journalId\"")
+			}
+		case "journalNumber":
+			if err := func() error {
+				s.JournalNumber.Reset()
+				if err := s.JournalNumber.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"journalNumber\"")
+			}
+		case "journalVersion":
+			if err := func() error {
+				s.JournalVersion.Reset()
+				if err := s.JournalVersion.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"journalVersion\"")
+			}
+		case "ledgerPosition":
+			if err := func() error {
+				s.LedgerPosition.Reset()
+				if err := s.LedgerPosition.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"ledgerPosition\"")
+			}
+		case "approvalRequestId":
+			if err := func() error {
+				s.ApprovalRequestId.Reset()
+				if err := s.ApprovalRequestId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"approvalRequestId\"")
+			}
+		case "nextAction":
+			if err := func() error {
+				s.NextAction.Reset()
+				if err := s.NextAction.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"nextAction\"")
+			}
+		case "validationOutcome":
+			requiredBitSet[1] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.ValidationOutcome = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"validationOutcome\"")
+			}
+		case "approvalStatus":
+			requiredBitSet[1] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.ApprovalStatus = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"approvalStatus\"")
+			}
+		case "sourceReference":
+			requiredBitSet[1] |= 1 << 2
+			if err := func() error {
+				v, err := d.Str()
+				s.SourceReference = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"sourceReference\"")
+			}
+		case "gateEvidence":
+			requiredBitSet[1] |= 1 << 3
+			if err := func() error {
+				if err := s.GateEvidence.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"gateEvidence\"")
+			}
+		case "auditReference":
+			if err := func() error {
+				s.AuditReference.Reset()
+				if err := s.AuditReference.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"auditReference\"")
+			}
+		case "replayed":
+			requiredBitSet[1] |= 1 << 5
+			if err := func() error {
+				v, err := d.Bool()
+				s.Replayed = bool(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"replayed\"")
+			}
+		case "issues":
+			if err := func() error {
+				s.Issues = make([]GlPostingValidationIssue, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem GlPostingValidationIssue
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Issues = append(s.Issues, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"issues\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlSubmitPostingRequestResultData")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [2]uint8{
+		0b00000011,
+		0b00101111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGlSubmitPostingRequestResultData) {
+					name = jsonFieldsNameOfGlSubmitPostingRequestResultData[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlSubmitPostingRequestResultData) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlSubmitPostingRequestResultData) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes GlSubmitPostingRequestResultDataLifecycleStatus as json.
+func (s GlSubmitPostingRequestResultDataLifecycleStatus) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes GlSubmitPostingRequestResultDataLifecycleStatus from json.
+func (s *GlSubmitPostingRequestResultDataLifecycleStatus) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlSubmitPostingRequestResultDataLifecycleStatus to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch GlSubmitPostingRequestResultDataLifecycleStatus(v) {
+	case GlSubmitPostingRequestResultDataLifecycleStatusPendingApproval:
+		*s = GlSubmitPostingRequestResultDataLifecycleStatusPendingApproval
+	case GlSubmitPostingRequestResultDataLifecycleStatusPosted:
+		*s = GlSubmitPostingRequestResultDataLifecycleStatusPosted
+	default:
+		*s = GlSubmitPostingRequestResultDataLifecycleStatus(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s GlSubmitPostingRequestResultDataLifecycleStatus) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlSubmitPostingRequestResultDataLifecycleStatus) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes GlSubmitPostingRequestResultDataOutcome as json.
+func (s GlSubmitPostingRequestResultDataOutcome) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes GlSubmitPostingRequestResultDataOutcome from json.
+func (s *GlSubmitPostingRequestResultDataOutcome) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlSubmitPostingRequestResultDataOutcome to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch GlSubmitPostingRequestResultDataOutcome(v) {
+	case GlSubmitPostingRequestResultDataOutcomeJournalEntryPosted:
+		*s = GlSubmitPostingRequestResultDataOutcomeJournalEntryPosted
+	case GlSubmitPostingRequestResultDataOutcomePostingPendingApproval:
+		*s = GlSubmitPostingRequestResultDataOutcomePostingPendingApproval
+	default:
+		*s = GlSubmitPostingRequestResultDataOutcome(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s GlSubmitPostingRequestResultDataOutcome) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlSubmitPostingRequestResultDataOutcome) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -32851,6 +34899,39 @@ func (s OptDateTime) MarshalJSON() ([]byte, error) {
 func (s *OptDateTime) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d, json.DecodeDateTime)
+}
+
+// Encode encodes GlPostingConversionEvidence as json.
+func (o OptGlPostingConversionEvidence) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes GlPostingConversionEvidence from json.
+func (o *OptGlPostingConversionEvidence) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptGlPostingConversionEvidence to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptGlPostingConversionEvidence) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptGlPostingConversionEvidence) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
 }
 
 // Encode encodes IamApprovalDecisionReference as json.

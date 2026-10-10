@@ -702,7 +702,7 @@ func (UnimplementedHandler) GlReverseJournalEntry(ctx context.Context, req *Comm
 // GlSubmitPostingRequest implements glSubmitPostingRequest operation.
 //
 // POST /general-ledger/actions/submit-posting-request
-func (UnimplementedHandler) GlSubmitPostingRequest(ctx context.Context, req *CommandRequest, params GlSubmitPostingRequestParams) (r GlSubmitPostingRequestRes, _ error) {
+func (UnimplementedHandler) GlSubmitPostingRequest(ctx context.Context, req *GlSubmitPostingRequestCommandRequest, params GlSubmitPostingRequestParams) (r GlSubmitPostingRequestRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

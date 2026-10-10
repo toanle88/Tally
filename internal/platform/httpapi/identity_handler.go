@@ -42,6 +42,7 @@ type IdentityHandler struct {
 	AccountingBookService                *gl.AccountingBookService
 	ChartOfAccountsService               *gl.ChartOfAccountsService
 	AccountService                       *gl.AccountService
+	PostingService                       *gl.PostingService
 	Instrumentation                      *telemetry.Instrumentation
 }
 

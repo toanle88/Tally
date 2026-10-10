@@ -106,6 +106,19 @@ describe('application router', () => {
     expect(screen.getByRole('button', { name: 'Save accounting-book revision' })).toBeInTheDocument()
   })
 
+  it('supports the GL posting workbench and request screen', async () => {
+    renderRoute('/general-ledger/gl-ws-01')
+    expect(await screen.findByRole('heading', { name: 'Posting request workbench', level: 1 })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Submit posting request' })).toBeInTheDocument()
+    expect(screen.getByText('glSubmitPostingRequest')).toBeInTheDocument()
+  })
+
+  it('supports direct entry to the GL posting result screen', async () => {
+    renderRoute('/general-ledger/gl-scr-02')
+    expect(await screen.findByRole('heading', { name: 'Posting result', level: 1 })).toBeInTheDocument()
+    expect(screen.getByText(/No result is loaded/)).toBeInTheDocument()
+  })
+
   it('updates active navigation and supports back navigation', async () => {
     const router = renderRoute('/')
     fireEvent.click(screen.getByRole('link', { name: 'Exceptions' }))

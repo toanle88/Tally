@@ -14806,7 +14806,7 @@ func (s *Server) handleGlSubmitPostingRequestRequest(args [0]string, argsEscaped
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *GlSubmitPostingRequestCommandRequest
 			Params   = GlSubmitPostingRequestParams
 			Response = GlSubmitPostingRequestRes
 		)

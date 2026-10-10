@@ -432,6 +432,13 @@ Required test evidence:
 - [ ] Playwright `e2e/wf-6-6.spec.ts` coverage for primary, exception,
   recovery, authorization, and accessibility paths.
 
+#### User Story 3 implementation evidence — 2026-10-10
+
+The implementation is on branch `feat/gl-us3-submit-posting-request`.
+Evidence, acceptance traceability, verification commands, and remaining
+production/browser qualification boundaries are recorded in
+[`docs/verification/DLV-FR-GL-001-us3-submit-posting-request.md`](../../verification/DLV-FR-GL-001-us3-submit-posting-request.md).
+
 ### User Story 4 — Apply a journal approval decision
 
 **Delivery item:** `DLV-FR-GL-002` / `FR-GL-002`
