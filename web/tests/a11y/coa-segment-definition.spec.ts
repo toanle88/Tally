@@ -116,7 +116,7 @@ test('COA-SCR-03 displays a read-only validation result with source versions', a
   await expectNoAccessibilityViolations(page, 'COA-SCR-03 result')
 })
 
-test('COA-SCR-04 captures the Workflow reference and exposes a pending safe request', async ({ page }) => {
+test('COA-SCR-04 captures the Workflow reference and applies an approved decision safely', async ({ page }) => {
   await page.route('**/api/v1/coa-segments/actions/request-segment-changes', async (route) => {
     await route.fulfill({
       status: 200,
@@ -137,6 +137,7 @@ test('COA-SCR-04 captures the Workflow reference and exposes a pending safe requ
             subjectVersion: 3,
             requestedEffectiveDate: '2026-01-01',
             approvalRequestId: '11111111-1111-4111-8111-111111111111',
+            proposedFingerprint: 'sha256:proposal',
             approvalStatus: 'pending',
             applicationStatus: 'not-applied',
             validationOutcome: 'valid',
@@ -144,6 +145,48 @@ test('COA-SCR-04 captures the Workflow reference and exposes a pending safe requ
             proposedChange: { name: 'Operations and Shared Services' },
             version: 1,
             revisionNumber: 1,
+          },
+        },
+      }),
+    })
+  })
+  await page.route('**/api/v1/coa-segments/actions/apply-segment-change-approval-decision', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'established',
+        aggregateId: 'request-001',
+        aggregateVersion: 2,
+        processId: null,
+        correlationId: '00000000-0000-0000-0000-000000000002',
+        links: { self: '/api/v1/coa-segments/actions/apply-segment-change-approval-decision' },
+        data: {
+          effectiveDateResult: 'effective',
+          segmentChangeRequest: {
+            id: 'request-001',
+            scopeId: 'scope-vietnam-statutory',
+            changeType: 'definition',
+            subjectId: 'segment-department-operations',
+            subjectVersion: 3,
+            requestedEffectiveDate: '2026-01-01',
+            approvalRequestId: '11111111-1111-4111-8111-111111111111',
+            proposedFingerprint: 'sha256:proposal',
+            approvalDecisionId: '22222222-2222-4222-8222-222222222222',
+            approvalPolicyVersion: 'coa-apply-v1',
+            approvalDecisionVersion: 1,
+            approvalSubjectVersion: 3,
+            approvalCandidateFingerprint: 'sha256:proposal',
+            approvalApproverUserId: '33333333-3333-4333-8333-333333333333',
+            approvalStatus: 'approved',
+            applicationStatus: 'applied',
+            resultingSubjectVersion: 4,
+            appliedSubjectVersion: 4,
+            validationOutcome: 'valid',
+            nextAction: 'completed',
+            proposedChange: { name: 'Operations and Shared Services' },
+            version: 2,
+            revisionNumber: 2,
           },
         },
       }),
@@ -167,6 +210,13 @@ test('COA-SCR-04 captures the Workflow reference and exposes a pending safe requ
   await expect(page.getByRole('textbox', { name: 'Approval status' })).toHaveValue('pending')
   await expect(page.getByRole('textbox', { name: 'Application status' })).toHaveValue('not-applied')
   await expect(page.locator('p[role="status"]')).toContainText('subject remains unchanged')
+  await page.getByRole('textbox', { name: 'Workflow decision reference' }).fill('22222222-2222-4222-8222-222222222222')
+  await page.getByRole('textbox', { name: 'Approver user reference' }).fill('33333333-3333-4333-8333-333333333333')
+  await page.getByRole('button', { name: 'Apply approval decision' }).click()
+  await expect(page.getByRole('textbox', { name: 'Application status' })).toHaveValue('applied')
+  await expect(page.getByRole('textbox', { name: 'Resulting subject version' })).toHaveValue('v4')
+  await expect(page.getByRole('textbox', { name: 'Effective-date result' })).toHaveValue('effective')
+  await expect(page.locator('p[role="status"]')).toContainText('Applied the approved decision')
   await expectNoDocumentHorizontalOverflow(page, 'COA-SCR-04 request')
   await expectNoAccessibilityViolations(page, 'COA-SCR-04 request')
 })
