@@ -66,12 +66,12 @@ func TestLedgerServiceRejectsDuplicateAndAuthorizationScope(t *testing.T) {
 		}
 		return service
 	}
-	command := LedgerCommand{Action: LedgerActionCreate, AccountingScopeID: scopeID, LegalEntityID: uuid.New(), LedgerType: "primary", FunctionalCurrency: "USD", FiscalCalendarID: uuid.New(), LifecycleStatus: LedgerStatusDraft, EffectiveDateFrom: date(2026, 2, 1), IdempotencyKey: "ledger-duplicate-1"}
+	command := LedgerCommand{Action: LedgerActionCreate, AccountingScopeID: scopeID, LegalEntityID: uuid.New(), LedgerType: "primary", FunctionalCurrency: "USD", FiscalCalendarID: uuid.New(), LifecycleStatus: LedgerStatusDraft, EffectiveDateFrom: date(2026, 2, 1), IdempotencyKey: "dup-1"}
 	service := newService(AuthorizationDecision{Allowed: true, Permission: LedgerManagementPermission, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{scopeID}})
 	if _, err := service.Execute(context.Background(), actor, command); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := service.Execute(context.Background(), actor, LedgerCommand{Action: LedgerActionCreate, AccountingScopeID: scopeID, LegalEntityID: command.LegalEntityID, LedgerType: command.LedgerType, FunctionalCurrency: command.FunctionalCurrency, FiscalCalendarID: command.FiscalCalendarID, LifecycleStatus: LedgerStatusDraft, EffectiveDateFrom: command.EffectiveDateFrom, IdempotencyKey: "ledger-duplicate-2"}); !errors.Is(err, ErrLedgerDuplicate) {
+	if _, err := service.Execute(context.Background(), actor, LedgerCommand{Action: LedgerActionCreate, AccountingScopeID: scopeID, LegalEntityID: command.LegalEntityID, LedgerType: command.LedgerType, FunctionalCurrency: command.FunctionalCurrency, FiscalCalendarID: command.FiscalCalendarID, LifecycleStatus: LedgerStatusDraft, EffectiveDateFrom: command.EffectiveDateFrom, IdempotencyKey: "dup-2"}); !errors.Is(err, ErrLedgerDuplicate) {
 		t.Fatalf("duplicate error = %v, want duplicate", err)
 	}
 
