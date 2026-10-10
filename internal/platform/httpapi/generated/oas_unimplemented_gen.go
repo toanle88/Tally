@@ -653,14 +653,14 @@ func (UnimplementedHandler) GlMaintainAccountingBooks(ctx context.Context, req *
 // GlMaintainAccountsAndReportingMappings implements glMaintainAccountsAndReportingMappings operation.
 //
 // PUT /general-ledger/configuration/maintain-accounts-and-reporting-mappings
-func (UnimplementedHandler) GlMaintainAccountsAndReportingMappings(ctx context.Context, req *CommandRequest, params GlMaintainAccountsAndReportingMappingsParams) (r GlMaintainAccountsAndReportingMappingsRes, _ error) {
+func (UnimplementedHandler) GlMaintainAccountsAndReportingMappings(ctx context.Context, req *GlMaintainAccountsAndReportingMappingsCommandRequest, params GlMaintainAccountsAndReportingMappingsParams) (r GlMaintainAccountsAndReportingMappingsRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
 // GlMaintainChartsOfAccounts implements glMaintainChartsOfAccounts operation.
 //
 // PUT /general-ledger/configuration/maintain-charts-of-accounts
-func (UnimplementedHandler) GlMaintainChartsOfAccounts(ctx context.Context, req *CommandRequest, params GlMaintainChartsOfAccountsParams) (r GlMaintainChartsOfAccountsRes, _ error) {
+func (UnimplementedHandler) GlMaintainChartsOfAccounts(ctx context.Context, req *GlMaintainChartsOfAccountsCommandRequest, params GlMaintainChartsOfAccountsParams) (r GlMaintainChartsOfAccountsRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

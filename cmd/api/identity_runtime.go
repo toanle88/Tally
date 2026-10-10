@@ -38,6 +38,8 @@ const (
 	coaSegmentValidationOperationID     = "coa.validate-segment-combinations.v1"
 	glLedgerOperationID                 = "gl.maintain-ledgers.v1"
 	glAccountingBookOperationID         = "gl.maintain-accounting-books.v1"
+	glChartOfAccountsOperationID        = "gl.maintain-charts-of-accounts.v1"
+	glAccountOperationID                = "gl.maintain-accounts-and-reporting-mappings.v1"
 )
 
 func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
@@ -327,8 +329,36 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err != nil {
 		return identityUnavailableHandler("accounting-book service unavailable"), nil
 	}
+	glChartAccountRepository, err := gl.NewPostgresChartAccountRepository(pool, postgresGLChartOfAccountsAuditWriter(auditWriter), postgresGLAccountAuditWriter(auditWriter))
+	if err != nil {
+		return identityUnavailableHandler("general-ledger chart/account persistence unavailable"), nil
+	}
+	glChartOfAccountsService, err := gl.NewChartOfAccountsServiceWithDurableIdempotency(
+		glChartAccountRepository,
+		evaluatorGLChartOfAccountsAuthorizer{evaluator: policyEvaluator},
+		runtimeGLChartAccountReferenceValidator{},
+		gl.UnavailableChartAccountApprovalValidator{},
+		&gl.MemoryChartOfAccountsAuditRecorder{},
+		time.Now,
+		gl.DurableChartOfAccountsServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, OperationID: glChartOfAccountsOperationID},
+	)
+	if err != nil {
+		return identityUnavailableHandler("chart-of-accounts service unavailable"), nil
+	}
+	glAccountService, err := gl.NewAccountServiceWithDurableIdempotency(
+		glChartAccountRepository,
+		evaluatorGLAccountAuthorizer{evaluator: policyEvaluator},
+		runtimeGLChartAccountReferenceValidator{},
+		gl.UnavailableChartAccountApprovalValidator{},
+		&gl.MemoryAccountAuditRecorder{},
+		time.Now,
+		gl.DurableAccountServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, OperationID: glAccountOperationID},
+	)
+	if err != nil {
+		return identityUnavailableHandler("account service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -808,8 +838,32 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err != nil {
 		return identityUnavailableHandler("accounting-book service unavailable"), nil
 	}
+	glChartAccountRepository := gl.NewMemoryChartOfAccountsRepository(glLedgerRepository)
+	glChartOfAccountsService, err := gl.NewChartOfAccountsService(
+		glChartAccountRepository,
+		permissiveGLChartOfAccountsAuthorizer{},
+		gl.AllowAllChartAccountReferenceValidator{},
+		gl.AllowAllChartAccountApprovalValidator{},
+		&gl.MemoryChartOfAccountsAuditRecorder{},
+		time.Now,
+	)
+	if err != nil {
+		return identityUnavailableHandler("chart-of-accounts service unavailable"), nil
+	}
+	glAccountRepository := gl.NewMemoryAccountRepository(glChartAccountRepository)
+	glAccountService, err := gl.NewAccountService(
+		glAccountRepository,
+		permissiveGLAccountAuthorizer{},
+		gl.AllowAllChartAccountReferenceValidator{},
+		gl.AllowAllChartAccountApprovalValidator{},
+		&gl.MemoryAccountAuditRecorder{},
+		time.Now,
+	)
+	if err != nil {
+		return identityUnavailableHandler("account service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {

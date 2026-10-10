@@ -7046,7 +7046,7 @@ func (s *Server) decodeGlMaintainAccountingBooksRequest(r *http.Request) (
 }
 
 func (s *Server) decodeGlMaintainAccountsAndReportingMappingsRequest(r *http.Request) (
-	req *CommandRequest,
+	req *GlMaintainAccountsAndReportingMappingsCommandRequest,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -7093,7 +7093,7 @@ func (s *Server) decodeGlMaintainAccountsAndReportingMappingsRequest(r *http.Req
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request CommandRequest
+		var request GlMaintainAccountsAndReportingMappingsCommandRequest
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -7125,7 +7125,7 @@ func (s *Server) decodeGlMaintainAccountsAndReportingMappingsRequest(r *http.Req
 }
 
 func (s *Server) decodeGlMaintainChartsOfAccountsRequest(r *http.Request) (
-	req *CommandRequest,
+	req *GlMaintainChartsOfAccountsCommandRequest,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -7172,7 +7172,7 @@ func (s *Server) decodeGlMaintainChartsOfAccountsRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request CommandRequest
+		var request GlMaintainChartsOfAccountsCommandRequest
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err

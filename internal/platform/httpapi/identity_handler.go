@@ -40,6 +40,8 @@ type IdentityHandler struct {
 	PublicationService                   *organization.MasterDataPublicationService
 	LedgerService                        *gl.LedgerService
 	AccountingBookService                *gl.AccountingBookService
+	ChartOfAccountsService               *gl.ChartOfAccountsService
+	AccountService                       *gl.AccountService
 	Instrumentation                      *telemetry.Instrumentation
 }
 

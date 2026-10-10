@@ -491,10 +491,22 @@ func mapGLPostgresError(err error) error {
 			return ErrAccountingBookDuplicate
 		case "accounting_book_ledger_fk":
 			return ErrAccountingBookReferenceInvalid
+		case "chart_of_accounts_effective_identity_unique":
+			return ErrChartOfAccountsDuplicate
+		case "chart_of_accounts_ledger_fk":
+			return ErrChartOfAccountsReferenceInvalid
+		case "account_effective_identity_unique":
+			return ErrAccountDuplicate
+		case "account_chart_fk":
+			return ErrAccountReferenceInvalid
 		case "ledger_status_check", "ledger_currency_check", "ledger_effective_check", "ledger_type_check":
 			return ErrInvalidLedger
 		case "accounting_book_status_check", "accounting_book_effective_check", "accounting_book_type_check":
 			return ErrInvalidAccountingBook
+		case "chart_of_accounts_status_check", "chart_of_accounts_policy_check", "chart_of_accounts_effective_check":
+			return ErrInvalidChartOfAccounts
+		case "account_status_check", "account_normal_balance_check", "account_code_check", "account_name_check", "account_type_check", "account_currency_policy_check", "account_effective_check", "account_restrictions_array_check", "account_reporting_mappings_array_check":
+			return ErrInvalidAccount
 		}
 	}
 	return err

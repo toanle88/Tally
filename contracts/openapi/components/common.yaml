@@ -246,6 +246,198 @@ schemas:
       correlationId: { $ref: '#/schemas/Uuid' }
       links: { $ref: '#/schemas/Links' }
       data: { $ref: '#/schemas/GlMaintainAccountingBooksResultData' }
+  GlMaintainChartsOfAccountsCommandRequest:
+    type: object
+    additionalProperties: false
+    required: [commandId, accountingScopeId, data]
+    properties:
+      commandId: { $ref: '#/schemas/Uuid' }
+      expectedVersion: { type: integer, minimum: 1 }
+      accountingScopeId: { $ref: '#/schemas/Uuid' }
+      data: { $ref: '#/schemas/GlMaintainChartsOfAccountsCommandData' }
+  GlMaintainChartsOfAccountsCommandData:
+    type: object
+    additionalProperties: false
+    required: [action, ledgerId, accountCodePolicy, lifecycleStatus, effectiveDateFrom]
+    properties:
+      action:
+        type: string
+        enum: [create, update]
+      chartOfAccountsId: { $ref: '#/schemas/Uuid' }
+      ledgerId: { $ref: '#/schemas/Uuid' }
+      accountCodePolicy: { type: string, minLength: 1, maxLength: 120 }
+      lifecycleStatus:
+        type: string
+        enum: [draft, active, suspended, retired]
+      effectiveDateFrom: { type: string, format: date }
+      effectiveDateTo:
+        oneOf:
+          - { type: string, format: date }
+          - { type: 'null' }
+      approval: { $ref: '#/schemas/IamApprovalDecisionReference' }
+  GlAccountRestriction:
+    type: object
+    additionalProperties: false
+    required: [restrictionCode]
+    properties:
+      restrictionCode: { type: string, minLength: 1, maxLength: 120 }
+      description: { type: string, maxLength: 500 }
+  GlAccountReportingMapping:
+    type: object
+    additionalProperties: false
+    required: [reportingDefinitionId, reportingLineCode, approved]
+    properties:
+      reportingDefinitionId: { $ref: '#/schemas/Uuid' }
+      reportingLineCode: { type: string, minLength: 1, maxLength: 120 }
+      approved: { type: boolean }
+      effectiveDateFrom: { type: string, format: date }
+      effectiveDateTo:
+        oneOf:
+          - { type: string, format: date }
+          - { type: 'null' }
+  GlAccountProjection:
+    type: object
+    additionalProperties: false
+    required: [id, accountingScopeId, chartOfAccountsId, accountCode, accountName, accountType, normalBalance, lifecycleStatus, restrictions, currencyPolicy, reportingMappings, effectiveDateFrom, approvalStatus, validationOutcome, nextAction, version, revisionNumber]
+    properties:
+      id: { $ref: '#/schemas/Uuid' }
+      accountingScopeId: { $ref: '#/schemas/Uuid' }
+      chartOfAccountsId: { $ref: '#/schemas/Uuid' }
+      accountCode: { type: string }
+      accountName: { type: string }
+      accountType: { type: string }
+      normalBalance: { type: string, enum: [debit, credit] }
+      lifecycleStatus: { type: string }
+      restrictions:
+        type: array
+        items: { $ref: '#/schemas/GlAccountRestriction' }
+      currencyPolicy: { type: string }
+      reportingMappings:
+        type: array
+        items: { $ref: '#/schemas/GlAccountReportingMapping' }
+      effectiveDateFrom: { type: string, format: date }
+      effectiveDateTo:
+        oneOf:
+          - { type: string, format: date }
+          - { type: 'null' }
+      approvalStatus: { type: string }
+      validationOutcome: { type: string }
+      nextAction: { type: string }
+      version: { type: integer, minimum: 1 }
+      revisionNumber: { type: integer, minimum: 1 }
+  GlMaintainAccountsAndReportingMappingsCommandRequest:
+    type: object
+    additionalProperties: false
+    required: [commandId, accountingScopeId, data]
+    properties:
+      commandId: { $ref: '#/schemas/Uuid' }
+      expectedVersion: { type: integer, minimum: 1 }
+      accountingScopeId: { $ref: '#/schemas/Uuid' }
+      data: { $ref: '#/schemas/GlMaintainAccountsAndReportingMappingsCommandData' }
+  GlMaintainAccountsAndReportingMappingsCommandData:
+    type: object
+    additionalProperties: false
+    required: [action, chartOfAccountsId, accountCode, accountName, accountType, normalBalance, lifecycleStatus, currencyPolicy, effectiveDateFrom]
+    properties:
+      action:
+        type: string
+        enum: [create, update]
+      accountId: { $ref: '#/schemas/Uuid' }
+      chartOfAccountsId: { $ref: '#/schemas/Uuid' }
+      accountCode: { type: string, minLength: 1, maxLength: 80 }
+      accountName: { type: string, minLength: 1, maxLength: 240 }
+      accountType: { type: string, minLength: 1, maxLength: 80 }
+      normalBalance:
+        type: string
+        enum: [debit, credit]
+      lifecycleStatus:
+        type: string
+        enum: [draft, active, suspended, retired]
+      restrictions:
+        type: array
+        items: { $ref: '#/schemas/GlAccountRestriction' }
+      currencyPolicy: { type: string, minLength: 1, maxLength: 120 }
+      reportingMappings:
+        type: array
+        items: { $ref: '#/schemas/GlAccountReportingMapping' }
+      effectiveDateFrom: { type: string, format: date }
+      effectiveDateTo:
+        oneOf:
+          - { type: string, format: date }
+          - { type: 'null' }
+      approval: { $ref: '#/schemas/IamApprovalDecisionReference' }
+  GlMaintainChartsOfAccountsResultData:
+    type: object
+    additionalProperties: false
+    required: [chartOfAccounts, validationOutcome, approvalStatus]
+    properties:
+      chartOfAccounts: { $ref: '#/schemas/GlChartOfAccountsProjection' }
+      decisionReference: { $ref: '#/schemas/Uuid' }
+      policyReference: { type: string }
+      validationOutcome: { type: string }
+      approvalStatus: { type: string }
+      replayed: { type: boolean }
+  GlMaintainAccountsAndReportingMappingsResultData:
+    type: object
+    additionalProperties: false
+    required: [account, validationOutcome, approvalStatus]
+    properties:
+      account: { $ref: '#/schemas/GlAccountProjection' }
+      decisionReference: { $ref: '#/schemas/Uuid' }
+      policyReference: { type: string }
+      validationOutcome: { type: string }
+      approvalStatus: { type: string }
+      replayed: { type: boolean }
+  GlChartOfAccountsProjection:
+    type: object
+    additionalProperties: false
+    required: [id, accountingScopeId, ledgerId, accountCodePolicy, lifecycleStatus, effectiveDateFrom, approvalStatus, validationOutcome, nextAction, version, revisionNumber]
+    properties:
+      id: { $ref: '#/schemas/Uuid' }
+      accountingScopeId: { $ref: '#/schemas/Uuid' }
+      ledgerId: { $ref: '#/schemas/Uuid' }
+      accountCodePolicy: { type: string }
+      lifecycleStatus: { type: string }
+      effectiveDateFrom: { type: string, format: date }
+      effectiveDateTo:
+        oneOf:
+          - { type: string, format: date }
+          - { type: 'null' }
+      approvalStatus: { type: string }
+      validationOutcome: { type: string }
+      nextAction: { type: string }
+      version: { type: integer, minimum: 1 }
+      revisionNumber: { type: integer, minimum: 1 }
+  GlMaintainChartsOfAccountsEstablishedResult:
+    type: object
+    additionalProperties: false
+    required: [status, aggregateId, aggregateVersion, correlationId, links, data]
+    properties:
+      status: { type: string, const: established }
+      aggregateId: { $ref: '#/schemas/Uuid' }
+      aggregateVersion: { type: integer, minimum: 1 }
+      processId:
+        oneOf:
+          - { $ref: '#/schemas/Uuid' }
+          - { type: 'null' }
+      correlationId: { $ref: '#/schemas/Uuid' }
+      links: { $ref: '#/schemas/Links' }
+      data: { $ref: '#/schemas/GlMaintainChartsOfAccountsResultData' }
+  GlMaintainAccountsAndReportingMappingsEstablishedResult:
+    type: object
+    additionalProperties: false
+    required: [status, aggregateId, aggregateVersion, correlationId, links, data]
+    properties:
+      status: { type: string, const: established }
+      aggregateId: { $ref: '#/schemas/Uuid' }
+      aggregateVersion: { type: integer, minimum: 1 }
+      processId:
+        oneOf:
+          - { $ref: '#/schemas/Uuid' }
+          - { type: 'null' }
+      correlationId: { $ref: '#/schemas/Uuid' }
+      links: { $ref: '#/schemas/Links' }
+      data: { $ref: '#/schemas/GlMaintainAccountsAndReportingMappingsResultData' }
   IamManageUsersCommandRequest:
     type: object
     additionalProperties: false
