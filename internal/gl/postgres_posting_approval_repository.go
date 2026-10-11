@@ -287,7 +287,7 @@ func loadPostingApprovalSubject(ctx context.Context, queryer postingQueryer, jou
 		&journal.ID, &journal.Number, &actualScopeID, &tenantID, &legalEntityID, &ledgerID, &accountingBookID,
 		&functionalCurrency, &sourceContext, &sourceAggregateType, &sourceAggregateID, &sourceVersion, &requestID,
 		&idempotencyKey, &requestFingerprint, &postingDate, &fiscalPeriodID, &periodStateVersion, &postingGateVersion,
-		&postingPurpose, &adjustmentPeriodIndicator, &postingAuthorizationID, &closeRunID, &reopenRequestID,
+		&gateMode, &postingPurpose, &adjustmentPeriodIndicator, &postingAuthorizationID, &closeRunID, &reopenRequestID,
 		&operationalReopenRequestID, &controlAuthorityEpoch, &reopenScope, &reopenExpiry, &transactionCurrency, &conversionJSON, &description,
 		&status, &approvalJSON, &journal.Version, &journal.LedgerPosition, &journal.AuditReference, &correlationID, &causationID, &submittedByUserID)
 	if errors.Is(err, pgx.ErrNoRows) {

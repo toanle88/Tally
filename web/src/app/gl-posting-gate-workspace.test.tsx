@@ -235,6 +235,6 @@ describe('GL posting-gate monitor', () => {
     const closeRequest = vi.mocked(glCloseScopedReopenGate).mock.calls[0][0]
     expect(closeRequest.body.expectedVersion).toBe(6)
     expect(closeRequest.body.data.reopenRequestId).toBe('reopen-request-1')
-    expect(screen.getByText(/Mandatory reclose handoff is required/)).toBeInTheDocument()
+    expect(screen.getByText('Corrections were admitted. Mandatory reclose handoff is required before finalization.', { selector: 'p' })).toBeInTheDocument()
   })
 })
