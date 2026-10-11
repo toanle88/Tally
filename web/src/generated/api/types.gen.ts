@@ -146,11 +146,20 @@ export type GlSubmitPostingRequestCommandRequest = {
     data: GlSubmitPostingRequestCommandData;
 };
 
+export type GlPostingAuthorizationScope = {
+    accountIds?: Array<Uuid>;
+    transactionClasses?: Array<string>;
+};
+
 export type GlPostingGateEvidence = {
     fiscalPeriodId: Uuid;
     periodStateVersion: number;
     postingGateVersion: number;
     gateMode: string;
+    reopenRequestId?: Uuid;
+    authorizationScope?: GlPostingAuthorizationScope;
+    authorizationExpiry?: string;
+    controlAuthorityEpoch?: number;
 };
 
 export type GlPostingValidationIssue = {

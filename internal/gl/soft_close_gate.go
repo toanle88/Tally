@@ -61,6 +61,7 @@ var (
 	ErrSoftCloseGateAuthorizationDenied      = errors.New("soft-close gate authorization denied")
 	ErrSoftCloseGateAuthorizationUnavailable = errors.New("soft-close gate authorization unavailable")
 	ErrSoftCloseGateAuthorizationStale       = errors.New("soft-close gate authorization is stale")
+	ErrSoftCloseGateAuthorizationExpired     = errors.New("soft-close gate authorization has expired")
 	ErrSoftCloseGatePolicyUnavailable        = errors.New("soft-close gate policy evaluator unavailable")
 	ErrSoftCloseGatePolicyRejected           = errors.New("soft-close gate policy rejected")
 	ErrSoftCloseGateAuditUnavailable         = errors.New("soft-close gate audit unavailable")
@@ -90,8 +91,8 @@ func (e *SoftCloseGateValidationError) Error() string {
 func (e *SoftCloseGateValidationError) Unwrap() error { return ErrInvalidSoftCloseGateCommand }
 
 // ActiveGateAdmissionCounters are the mutable observations for the active
-// control owner. The close/reopen flags intentionally remain false while this
-// story only owns the soft-close boundary.
+// control owner. GL updates these counters in the same consistency outcome as
+// each admitted controlled posting.
 type ActiveGateAdmissionCounters struct {
 	ControlOwnerType            string    `json:"controlOwnerType"`
 	ControlOwnerID              uuid.UUID `json:"controlOwnerId"`
@@ -142,6 +143,12 @@ type PeriodPostingGate struct {
 	ActiveSoftCloseControlEpoch    int64                        `json:"activeSoftCloseControlEpoch,omitempty"`
 	SoftClosePolicyVersion         string                       `json:"softClosePolicyVersion,omitempty"`
 	SoftCloseRestrictions          json.RawMessage              `json:"softCloseRestrictions,omitempty"`
+	ActiveReopenRequestID          *uuid.UUID                   `json:"activeReopenRequestId,omitempty"`
+	ReopenAuthorizationScope       json.RawMessage              `json:"reopenAuthorizationScope,omitempty"`
+	ReopenAuthorizationExpiry      *time.Time                   `json:"reopenAuthorizationExpiry,omitempty"`
+	ReopenControlAuthorityEpoch    *int64                       `json:"reopenControlAuthorityEpoch,omitempty"`
+	ReopenApproval                 *ApprovalDecisionReference   `json:"reopenApproval,omitempty"`
+	ReopenNoChangeClosePermitted   bool                         `json:"reopenNoChangeClosePermitted,omitempty"`
 	ActiveCloseRunID               *uuid.UUID                   `json:"activeCloseRunId,omitempty"`
 	ActiveCloseType                string                       `json:"activeCloseType,omitempty"`
 	PriorControlProcessID          *uuid.UUID                   `json:"priorControlProcessId,omitempty"`
@@ -331,6 +338,10 @@ func (authorizer MemorySoftCloseGateAuthorizer) AuthorizeSoftCloseGate(_ context
 			decision.Permission = SoftCloseGateEnterPermission
 		case SoftCloseGateExitOperation:
 			decision.Permission = SoftCloseGateExitPermission
+		case ScopedReopenGateOpenOperation:
+			decision.Permission = ScopedReopenGateOpenPermission
+		case ScopedReopenGateCloseOperation:
+			decision.Permission = ScopedReopenGateClosePermission
 		case PostingBarrierAcquireOperation:
 			decision.Permission = PostingBarrierAcquirePermission
 		case PostingBarrierReleaseOperation:
@@ -353,6 +364,9 @@ type SoftCloseGateAuditRecord struct {
 	PolicyReference       string
 	PolicyVersion         string
 	DecisionReference     uuid.UUID
+	ApprovalRequestID     uuid.UUID
+	ApprovalDecisionID    uuid.UUID
+	ApproverUserID        uuid.UUID
 	RevisionNumber        int64
 	BeforeFingerprint     string
 	AfterFingerprint      string
@@ -396,14 +410,16 @@ type DurableSoftCloseGateRepository interface {
 }
 
 type DurableSoftCloseGateServiceConfig struct {
-	Database            platformidempotency.TxBeginner
-	Coordinator         platformidempotency.DurableCoordinator
-	Policy              platformidempotency.IdempotencyPolicy
-	EnterOperationID    string
-	ExitOperationID     string
-	AcquireOperationID  string
-	ReleaseOperationID  string
-	FinalizeOperationID string
+	Database                     platformidempotency.TxBeginner
+	Coordinator                  platformidempotency.DurableCoordinator
+	Policy                       platformidempotency.IdempotencyPolicy
+	EnterOperationID             string
+	ExitOperationID              string
+	AcquireOperationID           string
+	ReleaseOperationID           string
+	FinalizeOperationID          string
+	OpenScopedReopenOperationID  string
+	CloseScopedReopenOperationID string
 }
 
 type SoftCloseGateResult struct {
@@ -583,7 +599,16 @@ func (service *SoftCloseGateService) execute(ctx context.Context, actor Actor, o
 		return SoftCloseGateResult{}, err
 	}
 	now := service.clock().UTC()
+	approval := after.ReopenApproval
+	if approval == nil {
+		approval = before.ReopenApproval
+	}
 	audit := SoftCloseGateAuditRecord{GateID: after.ID, ActorUserID: actor.UserID, ActorSubjectReference: actor.SubjectReference, Action: operation, AccountingScopeID: scopeID, FiscalPeriodID: periodID, Permission: authorization.Permission, PolicyReference: authorization.PolicyReference, PolicyVersion: authorization.PolicyVersion, DecisionReference: authorization.DecisionReference, RevisionNumber: after.GateVersion, BeforeFingerprint: fingerprintPeriodPostingGate(before), AfterFingerprint: fingerprintPeriodPostingGate(after), CommandFingerprint: fingerprint, CorrelationID: correlationID, CausationID: causationID}
+	if approval != nil {
+		audit.ApprovalRequestID = approval.ApprovalRequestID
+		audit.ApprovalDecisionID = approval.DecisionID
+		audit.ApproverUserID = approval.ApproverUserID
+	}
 	mutation := SoftCloseGateMutation{Before: before, After: after, Operation: operation, CommandID: commandID, CommandFingerprint: fingerprint, Actor: actor, Authorization: authorization, Audit: audit, Now: now}
 
 	var result SoftCloseGateResult
@@ -621,6 +646,14 @@ func (service *SoftCloseGateService) durableOperationID(operation, fallback stri
 		if strings.TrimSpace(service.durable.ExitOperationID) != "" {
 			return service.durable.ExitOperationID
 		}
+	case ScopedReopenGateOpenOperation:
+		if strings.TrimSpace(service.durable.OpenScopedReopenOperationID) != "" {
+			return service.durable.OpenScopedReopenOperationID
+		}
+	case ScopedReopenGateCloseOperation:
+		if strings.TrimSpace(service.durable.CloseScopedReopenOperationID) != "" {
+			return service.durable.CloseScopedReopenOperationID
+		}
 	case PostingBarrierAcquireOperation:
 		if strings.TrimSpace(service.durable.AcquireOperationID) != "" {
 			return service.durable.AcquireOperationID
@@ -644,6 +677,10 @@ func authorizeSoftCloseGateDecision(decision AuthorizationDecision, operation st
 		expectedPermission = SoftCloseGateEnterPermission
 	case SoftCloseGateExitOperation:
 		expectedPermission = SoftCloseGateExitPermission
+	case ScopedReopenGateOpenOperation:
+		expectedPermission = ScopedReopenGateOpenPermission
+	case ScopedReopenGateCloseOperation:
+		expectedPermission = ScopedReopenGateClosePermission
 	case PostingBarrierAcquireOperation:
 		expectedPermission = PostingBarrierAcquirePermission
 	case PostingBarrierReleaseOperation:
@@ -843,17 +880,28 @@ func clonePeriodPostingGate(gate PeriodPostingGate) PeriodPostingGate {
 		value := *gate.ActiveCloseRunID
 		gate.ActiveCloseRunID = &value
 	}
+	if gate.ActiveReopenRequestID != nil {
+		value := *gate.ActiveReopenRequestID
+		gate.ActiveReopenRequestID = &value
+	}
 	if gate.PriorControlProcessID != nil {
 		value := *gate.PriorControlProcessID
 		gate.PriorControlProcessID = &value
 	}
 	gate.PriorControlEpoch = cloneInt64Pointer(gate.PriorControlEpoch)
+	if gate.ReopenAuthorizationExpiry != nil {
+		value := gate.ReopenAuthorizationExpiry.UTC()
+		gate.ReopenAuthorizationExpiry = &value
+	}
+	gate.ReopenControlAuthorityEpoch = cloneInt64Pointer(gate.ReopenControlAuthorityEpoch)
+	gate.ReopenApproval = cloneApproval(gate.ReopenApproval)
 	gate.FinalLedgerWatermark = cloneInt64Pointer(gate.FinalLedgerWatermark)
 	if gate.FinalizedCloseRunID != nil {
 		value := *gate.FinalizedCloseRunID
 		gate.FinalizedCloseRunID = &value
 	}
 	gate.SoftCloseRestrictions = append(json.RawMessage(nil), gate.SoftCloseRestrictions...)
+	gate.ReopenAuthorizationScope = append(json.RawMessage(nil), gate.ReopenAuthorizationScope...)
 	gate.ActiveAdmissionCounters.ControlOwnerEpoch = cloneInt64Pointer(gate.ActiveAdmissionCounters.ControlOwnerEpoch)
 	if gate.LastFrozenAdmissionSummary != nil {
 		value := *gate.LastFrozenAdmissionSummary
@@ -1030,6 +1078,10 @@ func softCloseGateNextAction(operation string) string {
 		return "Soft-close policy is active. Review blocked ordinary actions and exit with the matching run and control epoch when ready."
 	case SoftCloseGateExitOperation:
 		return "The gate is open. Review the frozen soft-close admission summary before continuing the period workflow."
+	case ScopedReopenGateOpenOperation:
+		return "The scoped reopen gate is active. Admit only authorized ReopenCorrection postings within the recorded scope and expiry."
+	case ScopedReopenGateCloseOperation:
+		return "The scoped reopen gate is closed. Review the frozen correction summary; hard-close or mandatory reclose follows the authoritative result."
 	case PostingBarrierAcquireOperation:
 		return "The posting barrier is acquired. Complete close-only work and finalize or release only under the authoritative barrier rules."
 	case PostingBarrierReleaseOperation:
@@ -1046,6 +1098,10 @@ func softCloseGateEventType(operation string) string {
 		return SoftCloseGateEnteredEventType
 	case SoftCloseGateExitOperation:
 		return SoftCloseGateExitedEventType
+	case ScopedReopenGateOpenOperation:
+		return ScopedReopenGateOpenedEventType
+	case ScopedReopenGateCloseOperation:
+		return ScopedReopenGateClosedEventType
 	case PostingBarrierAcquireOperation:
 		return PostingBarrierAcquiredEventType
 	case PostingBarrierReleaseOperation:
@@ -1097,7 +1153,7 @@ func softCloseGateFailureCode(err error) string {
 		return "AUTHORIZATION_DENIED"
 	case errors.Is(err, ErrSoftCloseGateAuthorizationUnavailable), errors.Is(err, ErrSoftCloseGateAuthorizationStale), errors.Is(err, ErrSoftCloseGatePolicyUnavailable), errors.Is(err, ErrSoftCloseGateAuditUnavailable), errors.Is(err, ErrSoftCloseGateOutboxUnavailable), errors.Is(err, ErrSoftCloseGateReferenceUnavailable):
 		return "SERVICE_UNAVAILABLE"
-	case errors.Is(err, ErrSoftCloseGateVersionConflict), errors.Is(err, ErrSoftCloseGateScopeConflict), errors.Is(err, ErrSoftCloseGateOwnerConflict), errors.Is(err, ErrSoftCloseGateEpochConflict), errors.Is(err, ErrSoftCloseGateModeConflict), errors.Is(err, ErrSoftCloseGatePolicyConflict), errors.Is(err, ErrSoftCloseGateIdempotencyConflict):
+	case errors.Is(err, ErrSoftCloseGateVersionConflict), errors.Is(err, ErrSoftCloseGateScopeConflict), errors.Is(err, ErrSoftCloseGateOwnerConflict), errors.Is(err, ErrSoftCloseGateEpochConflict), errors.Is(err, ErrSoftCloseGateModeConflict), errors.Is(err, ErrSoftCloseGatePolicyConflict), errors.Is(err, ErrSoftCloseGateAuthorizationExpired), errors.Is(err, ErrSoftCloseGateIdempotencyConflict):
 		return "VERSION_CONFLICT"
 	case errors.Is(err, ErrPostingBarrierNotReleasable), errors.Is(err, ErrPostingBarrierAdmissionConflict), errors.Is(err, ErrPostingBarrierWatermarkConflict), errors.Is(err, ErrPostingBarrierFinalized):
 		return "VERSION_CONFLICT"

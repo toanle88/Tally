@@ -144,23 +144,32 @@ func (repository *PostgresSoftCloseGateRepository) getSoftCloseGate(ctx context.
 		gateID, accountingScopeID, fiscalPeriodUUID                                                                  uuid.UUID
 		mode, policyVersion, activeCloseType, priorControlProcessType, priorGateMode, finalizationCommandFingerprint string
 		periodStateVersion, gateVersion, aggregateVersion, nextLedgerPosition, barrierLedgerPosition                 int64
-		activeRunID, activeCloseRunID, priorControlProcessID, finalizedCloseRunID                                    *uuid.UUID
-		activeEpoch, priorControlEpoch, finalLedgerWatermark                                                         *int64
-		restrictions, countersJSON                                                                                   []byte
+		activeRunID, activeReopenRequestID, activeCloseRunID, priorControlProcessID, finalizedCloseRunID             *uuid.UUID
+		activeEpoch, reopenControlAuthorityEpoch, priorControlEpoch, finalLedgerWatermark                            *int64
+		reopenAuthorizationExpiry                                                                                    *time.Time
+		restrictions, reopenScope, reopenApprovalJSON, countersJSON                                                  []byte
 		lastSummaryJSON, historyJSON                                                                                 []byte
+		reopenNoChangeClosePermitted                                                                                 bool
 		createdAt, updatedAt                                                                                         time.Time
 	)
-	query := `SELECT period_posting_gate_id, accounting_scope_id, fiscal_period_id, gate_mode, period_state_version, gate_version, aggregate_version, next_ledger_position, active_soft_close_run_id, active_soft_close_control_epoch, COALESCE(soft_close_policy_version, ''), soft_close_restrictions, active_close_run_id, COALESCE(active_close_type, ''), prior_control_process_id, COALESCE(prior_control_process_type, ''), prior_control_epoch, COALESCE(prior_gate_mode, ''), barrier_ledger_position, final_ledger_watermark, finalized_close_run_id, COALESCE(finalization_command_fingerprint, ''), active_gate_admission_counters, last_frozen_admission_summary, frozen_admission_summary_history, created_at, updated_at FROM gl.period_posting_gate WHERE accounting_scope_id = $1 AND fiscal_period_id = $2` + lock
-	err := db.QueryRow(ctx, query, scopeID, periodID).Scan(&gateID, &accountingScopeID, &fiscalPeriodUUID, &mode, &periodStateVersion, &gateVersion, &aggregateVersion, &nextLedgerPosition, &activeRunID, &activeEpoch, &policyVersion, &restrictions, &activeCloseRunID, &activeCloseType, &priorControlProcessID, &priorControlProcessType, &priorControlEpoch, &priorGateMode, &barrierLedgerPosition, &finalLedgerWatermark, &finalizedCloseRunID, &finalizationCommandFingerprint, &countersJSON, &lastSummaryJSON, &historyJSON, &createdAt, &updatedAt)
+	query := `SELECT period_posting_gate_id, accounting_scope_id, fiscal_period_id, gate_mode, period_state_version, gate_version, aggregate_version, next_ledger_position, active_soft_close_run_id, active_soft_close_control_epoch, COALESCE(soft_close_policy_version, ''), soft_close_restrictions, active_reopen_request_id, reopen_authorization_scope, reopen_authorization_expiry, reopen_control_authority_epoch, reopen_approval, reopen_no_change_close_permitted, active_close_run_id, COALESCE(active_close_type, ''), prior_control_process_id, COALESCE(prior_control_process_type, ''), prior_control_epoch, COALESCE(prior_gate_mode, ''), barrier_ledger_position, final_ledger_watermark, finalized_close_run_id, COALESCE(finalization_command_fingerprint, ''), active_gate_admission_counters, last_frozen_admission_summary, frozen_admission_summary_history, created_at, updated_at FROM gl.period_posting_gate WHERE accounting_scope_id = $1 AND fiscal_period_id = $2` + lock
+	err := db.QueryRow(ctx, query, scopeID, periodID).Scan(&gateID, &accountingScopeID, &fiscalPeriodUUID, &mode, &periodStateVersion, &gateVersion, &aggregateVersion, &nextLedgerPosition, &activeRunID, &activeEpoch, &policyVersion, &restrictions, &activeReopenRequestID, &reopenScope, &reopenAuthorizationExpiry, &reopenControlAuthorityEpoch, &reopenApprovalJSON, &reopenNoChangeClosePermitted, &activeCloseRunID, &activeCloseType, &priorControlProcessID, &priorControlProcessType, &priorControlEpoch, &priorGateMode, &barrierLedgerPosition, &finalLedgerWatermark, &finalizedCloseRunID, &finalizationCommandFingerprint, &countersJSON, &lastSummaryJSON, &historyJSON, &createdAt, &updatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return PeriodPostingGate{}, ErrSoftCloseGateNotFound
 	}
 	if err != nil {
 		return PeriodPostingGate{}, mapPostingPostgresError(err)
 	}
-	gate := PeriodPostingGate{ID: gateID, AccountingScopeID: accountingScopeID, FiscalPeriodID: fiscalPeriodUUID, GateMode: mode, PeriodStateVersion: periodStateVersion, GateVersion: gateVersion, AggregateVersion: aggregateVersion, NextLedgerPosition: nextLedgerPosition, ActiveSoftCloseRunID: activeRunID, SoftClosePolicyVersion: policyVersion, SoftCloseRestrictions: append(json.RawMessage(nil), restrictions...), ActiveCloseRunID: activeCloseRunID, ActiveCloseType: activeCloseType, PriorControlProcessID: priorControlProcessID, PriorControlProcessType: priorControlProcessType, PriorControlEpoch: priorControlEpoch, PriorGateMode: priorGateMode, BarrierLedgerPosition: barrierLedgerPosition, FinalLedgerWatermark: finalLedgerWatermark, FinalizedCloseRunID: finalizedCloseRunID, FinalizationCommandFingerprint: finalizationCommandFingerprint, CreatedAt: createdAt.UTC(), UpdatedAt: updatedAt.UTC()}
+	gate := PeriodPostingGate{ID: gateID, AccountingScopeID: accountingScopeID, FiscalPeriodID: fiscalPeriodUUID, GateMode: mode, PeriodStateVersion: periodStateVersion, GateVersion: gateVersion, AggregateVersion: aggregateVersion, NextLedgerPosition: nextLedgerPosition, ActiveSoftCloseRunID: activeRunID, SoftClosePolicyVersion: policyVersion, SoftCloseRestrictions: append(json.RawMessage(nil), restrictions...), ActiveReopenRequestID: activeReopenRequestID, ReopenAuthorizationScope: append(json.RawMessage(nil), reopenScope...), ReopenAuthorizationExpiry: reopenAuthorizationExpiry, ReopenControlAuthorityEpoch: reopenControlAuthorityEpoch, ReopenNoChangeClosePermitted: reopenNoChangeClosePermitted, ActiveCloseRunID: activeCloseRunID, ActiveCloseType: activeCloseType, PriorControlProcessID: priorControlProcessID, PriorControlProcessType: priorControlProcessType, PriorControlEpoch: priorControlEpoch, PriorGateMode: priorGateMode, BarrierLedgerPosition: barrierLedgerPosition, FinalLedgerWatermark: finalLedgerWatermark, FinalizedCloseRunID: finalizedCloseRunID, FinalizationCommandFingerprint: finalizationCommandFingerprint, CreatedAt: createdAt.UTC(), UpdatedAt: updatedAt.UTC()}
 	if activeEpoch != nil {
 		gate.ActiveSoftCloseControlEpoch = *activeEpoch
+	}
+	if len(reopenApprovalJSON) > 0 && string(reopenApprovalJSON) != "null" {
+		var approval ApprovalDecisionReference
+		if err := json.Unmarshal(reopenApprovalJSON, &approval); err != nil {
+			return PeriodPostingGate{}, err
+		}
+		gate.ReopenApproval = &approval
 	}
 	if len(countersJSON) > 0 {
 		if err := json.Unmarshal(countersJSON, &gate.ActiveAdmissionCounters); err != nil {
@@ -220,6 +229,31 @@ func (repository *PostgresSoftCloseGateRepository) updateSoftCloseGate(ctx conte
 	if mutation.After.ActiveSoftCloseControlEpoch > 0 {
 		activeEpoch = mutation.After.ActiveSoftCloseControlEpoch
 	}
+	var activeReopenRequestID any
+	if mutation.After.ActiveReopenRequestID != nil {
+		activeReopenRequestID = *mutation.After.ActiveReopenRequestID
+	}
+	var reopenScope any
+	if len(mutation.After.ReopenAuthorizationScope) > 0 {
+		reopenScope = mutation.After.ReopenAuthorizationScope
+	} else {
+		reopenScope = []byte(`{}`)
+	}
+	var reopenAuthorizationExpiry any
+	if mutation.After.ReopenAuthorizationExpiry != nil {
+		reopenAuthorizationExpiry = mutation.After.ReopenAuthorizationExpiry.UTC()
+	}
+	var reopenControlAuthorityEpoch any
+	if mutation.After.ReopenControlAuthorityEpoch != nil {
+		reopenControlAuthorityEpoch = *mutation.After.ReopenControlAuthorityEpoch
+	}
+	var reopenApproval any
+	if mutation.After.ReopenApproval != nil {
+		reopenApproval, err = json.Marshal(mutation.After.ReopenApproval)
+		if err != nil {
+			return err
+		}
+	}
 	var activeCloseRunID any
 	if mutation.After.ActiveCloseRunID != nil {
 		activeCloseRunID = *mutation.After.ActiveCloseRunID
@@ -256,7 +290,7 @@ func (repository *PostgresSoftCloseGateRepository) updateSoftCloseGate(ctx conte
 	if mutation.After.FinalizationCommandFingerprint != "" {
 		finalizationCommandFingerprint = mutation.After.FinalizationCommandFingerprint
 	}
-	commandTag, err := tx.Exec(ctx, `UPDATE gl.period_posting_gate SET gate_mode = $3, period_state_version = $4, gate_version = $5, aggregate_version = $6, active_soft_close_run_id = $7, active_soft_close_control_epoch = $8, soft_close_policy_version = $9, soft_close_restrictions = $10, active_close_run_id = $11, active_close_type = $12, prior_control_process_id = $13, prior_control_process_type = $14, prior_control_epoch = $15, prior_gate_mode = $16, barrier_ledger_position = $17, final_ledger_watermark = $18, finalized_close_run_id = $19, finalization_command_fingerprint = $20, active_gate_admission_counters = $21, last_frozen_admission_summary = $22, frozen_admission_summary_history = $23, updated_at = $24 WHERE accounting_scope_id = $1 AND fiscal_period_id = $2 AND gate_version = $25`, mutation.After.AccountingScopeID, mutation.After.FiscalPeriodID, mutation.After.GateMode, mutation.After.PeriodStateVersion, mutation.After.GateVersion, mutation.After.AggregateVersion, activeRunID, activeEpoch, policyVersion, mutation.After.SoftCloseRestrictions, activeCloseRunID, activeCloseType, priorControlProcessID, priorControlProcessType, priorControlEpoch, priorGateMode, mutation.After.BarrierLedgerPosition, finalLedgerWatermark, finalizedCloseRunID, finalizationCommandFingerprint, countersJSON, lastSummaryJSON, historyJSON, mutation.After.UpdatedAt, mutation.Before.GateVersion)
+	commandTag, err := tx.Exec(ctx, `UPDATE gl.period_posting_gate SET gate_mode = $3, period_state_version = $4, gate_version = $5, aggregate_version = $6, active_soft_close_run_id = $7, active_soft_close_control_epoch = $8, soft_close_policy_version = $9, soft_close_restrictions = $10, active_reopen_request_id = $11, reopen_authorization_scope = $12, reopen_authorization_expiry = $13, reopen_control_authority_epoch = $14, reopen_approval = $15, reopen_no_change_close_permitted = $16, active_close_run_id = $17, active_close_type = $18, prior_control_process_id = $19, prior_control_process_type = $20, prior_control_epoch = $21, prior_gate_mode = $22, barrier_ledger_position = $23, final_ledger_watermark = $24, finalized_close_run_id = $25, finalization_command_fingerprint = $26, active_gate_admission_counters = $27, last_frozen_admission_summary = $28, frozen_admission_summary_history = $29, updated_at = $30 WHERE accounting_scope_id = $1 AND fiscal_period_id = $2 AND gate_version = $31`, mutation.After.AccountingScopeID, mutation.After.FiscalPeriodID, mutation.After.GateMode, mutation.After.PeriodStateVersion, mutation.After.GateVersion, mutation.After.AggregateVersion, activeRunID, activeEpoch, policyVersion, mutation.After.SoftCloseRestrictions, activeReopenRequestID, reopenScope, reopenAuthorizationExpiry, reopenControlAuthorityEpoch, reopenApproval, mutation.After.ReopenNoChangeClosePermitted, activeCloseRunID, activeCloseType, priorControlProcessID, priorControlProcessType, priorControlEpoch, priorGateMode, mutation.After.BarrierLedgerPosition, finalLedgerWatermark, finalizedCloseRunID, finalizationCommandFingerprint, countersJSON, lastSummaryJSON, historyJSON, mutation.After.UpdatedAt, mutation.Before.GateVersion)
 	if err := mapPostingPostgresError(err); err != nil {
 		return err
 	}

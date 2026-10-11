@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -112,7 +113,7 @@ func establishedGlPostingResult(result gl.PostingResult, correlationID uuid.UUID
 		Outcome:           generated.GlSubmitPostingRequestResultDataOutcome(result.Outcome),
 		LifecycleStatus:   generated.GlSubmitPostingRequestResultDataLifecycleStatus(result.LifecycleStatus()),
 		ValidationOutcome: result.ValidationOutcome, ApprovalStatus: result.ApprovalStatus, SourceReference: result.SourceReference,
-		GateEvidence: generated.GlPostingGateEvidence{FiscalPeriodId: generated.UUID(result.GateEvidence.FiscalPeriodID), PeriodStateVersion: int(result.GateEvidence.PeriodStateVersion), PostingGateVersion: int(result.GateEvidence.PostingGateVersion), GateMode: result.GateEvidence.GateMode},
+		GateEvidence: generatedPostingGateEvidence(result.GateEvidence),
 		Lines:        generatedPostingResultLines(result.Journal),
 		Replayed:     result.Replayed,
 	}
@@ -149,6 +150,34 @@ func establishedGlPostingResult(result gl.PostingResult, correlationID uuid.UUID
 		Status: "established", AggregateId: generated.UUID(journalID), AggregateVersion: int(result.AggregateVersion()), CorrelationId: generated.UUID(correlationID),
 		Links: generated.Links{Self: "/api/v1/general-ledger/actions/submit-posting-request"}, Data: data,
 	}
+}
+
+func generatedPostingGateEvidence(evidence gl.PostingGateEvidence) generated.GlPostingGateEvidence {
+	result := generated.GlPostingGateEvidence{FiscalPeriodId: generated.UUID(evidence.FiscalPeriodID), PeriodStateVersion: int(evidence.PeriodStateVersion), PostingGateVersion: int(evidence.PostingGateVersion), GateMode: evidence.GateMode}
+	if evidence.ReopenRequestID != nil {
+		result.ReopenRequestId = generated.NewOptUUID(generated.UUID(*evidence.ReopenRequestID))
+	}
+	if evidence.AuthorizationExpiry != nil {
+		result.AuthorizationExpiry = generated.NewOptDateTime(*evidence.AuthorizationExpiry)
+	}
+	if evidence.ControlAuthorityEpoch != nil {
+		result.ControlAuthorityEpoch = generated.NewOptInt(int(*evidence.ControlAuthorityEpoch))
+	}
+	if len(evidence.AuthorizationScope) > 0 {
+		var scope struct {
+			AccountIDs         []uuid.UUID `json:"accountIds"`
+			TransactionClasses []string    `json:"transactionClasses"`
+		}
+		if err := json.Unmarshal(evidence.AuthorizationScope, &scope); err == nil {
+			value := generated.GlPostingAuthorizationScope{}
+			for _, accountID := range scope.AccountIDs {
+				value.AccountIds = append(value.AccountIds, generated.UUID(accountID))
+			}
+			value.TransactionClasses = scope.TransactionClasses
+			result.AuthorizationScope = generated.NewOptGlPostingAuthorizationScope(value)
+		}
+	}
+	return result
 }
 
 func generatedPostingResultLines(journal *gl.PostingJournal) []generated.GlPostingRequestLine {

@@ -331,6 +331,10 @@ func (service *PostingApprovalDecisionService) Execute(ctx context.Context, acto
 }
 
 func validatePostingApprovalGateEvidence(request PostingRequest, evidence PostingGateEvidence, outcome string) error {
+	return validatePostingApprovalGateEvidenceAt(request, evidence, outcome, time.Now().UTC())
+}
+
+func validatePostingApprovalGateEvidenceAt(request PostingRequest, evidence PostingGateEvidence, outcome string, now time.Time) error {
 	if evidence.FiscalPeriodID != request.FiscalPeriodID {
 		return fmt.Errorf("%w: fiscal period does not match", ErrPostingPeriodConflict)
 	}
@@ -341,7 +345,7 @@ func validatePostingApprovalGateEvidence(request PostingRequest, evidence Postin
 		return fmt.Errorf("%w: expected %d, current %d", ErrPostingGateConflict, request.PostingGateVersion, evidence.PostingGateVersion)
 	}
 	if outcome == PostingApprovalOutcomeApproved {
-		return validatePostingGateEvidence(request, evidence)
+		return validatePostingGateEvidenceAt(request, evidence, now)
 	}
 	return nil
 }

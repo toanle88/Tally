@@ -5059,6 +5059,32 @@ type GlOpenScopedReopenGateUnprocessableEntity ProblemDetails
 
 func (*GlOpenScopedReopenGateUnprocessableEntity) glOpenScopedReopenGateRes() {}
 
+// Ref: #/components/schemas/GlPostingAuthorizationScope
+type GlPostingAuthorizationScope struct {
+	AccountIds         []UUID   `json:"accountIds"`
+	TransactionClasses []string `json:"transactionClasses"`
+}
+
+// GetAccountIds returns the value of AccountIds.
+func (s *GlPostingAuthorizationScope) GetAccountIds() []UUID {
+	return s.AccountIds
+}
+
+// GetTransactionClasses returns the value of TransactionClasses.
+func (s *GlPostingAuthorizationScope) GetTransactionClasses() []string {
+	return s.TransactionClasses
+}
+
+// SetAccountIds sets the value of AccountIds.
+func (s *GlPostingAuthorizationScope) SetAccountIds(val []UUID) {
+	s.AccountIds = val
+}
+
+// SetTransactionClasses sets the value of TransactionClasses.
+func (s *GlPostingAuthorizationScope) SetTransactionClasses(val []string) {
+	s.TransactionClasses = val
+}
+
 // Ref: #/components/schemas/GlPostingConversionEvidence
 type GlPostingConversionEvidence struct {
 	RateSetId           UUID      `json:"rateSetId"`
@@ -5109,10 +5135,14 @@ func (s *GlPostingConversionEvidence) SetConversionTimestamp(val time.Time) {
 
 // Ref: #/components/schemas/GlPostingGateEvidence
 type GlPostingGateEvidence struct {
-	FiscalPeriodId     UUID   `json:"fiscalPeriodId"`
-	PeriodStateVersion int    `json:"periodStateVersion"`
-	PostingGateVersion int    `json:"postingGateVersion"`
-	GateMode           string `json:"gateMode"`
+	FiscalPeriodId        UUID                           `json:"fiscalPeriodId"`
+	PeriodStateVersion    int                            `json:"periodStateVersion"`
+	PostingGateVersion    int                            `json:"postingGateVersion"`
+	GateMode              string                         `json:"gateMode"`
+	ReopenRequestId       OptUUID                        `json:"reopenRequestId"`
+	AuthorizationScope    OptGlPostingAuthorizationScope `json:"authorizationScope"`
+	AuthorizationExpiry   OptDateTime                    `json:"authorizationExpiry"`
+	ControlAuthorityEpoch OptInt                         `json:"controlAuthorityEpoch"`
 }
 
 // GetFiscalPeriodId returns the value of FiscalPeriodId.
@@ -5135,6 +5165,26 @@ func (s *GlPostingGateEvidence) GetGateMode() string {
 	return s.GateMode
 }
 
+// GetReopenRequestId returns the value of ReopenRequestId.
+func (s *GlPostingGateEvidence) GetReopenRequestId() OptUUID {
+	return s.ReopenRequestId
+}
+
+// GetAuthorizationScope returns the value of AuthorizationScope.
+func (s *GlPostingGateEvidence) GetAuthorizationScope() OptGlPostingAuthorizationScope {
+	return s.AuthorizationScope
+}
+
+// GetAuthorizationExpiry returns the value of AuthorizationExpiry.
+func (s *GlPostingGateEvidence) GetAuthorizationExpiry() OptDateTime {
+	return s.AuthorizationExpiry
+}
+
+// GetControlAuthorityEpoch returns the value of ControlAuthorityEpoch.
+func (s *GlPostingGateEvidence) GetControlAuthorityEpoch() OptInt {
+	return s.ControlAuthorityEpoch
+}
+
 // SetFiscalPeriodId sets the value of FiscalPeriodId.
 func (s *GlPostingGateEvidence) SetFiscalPeriodId(val UUID) {
 	s.FiscalPeriodId = val
@@ -5153,6 +5203,26 @@ func (s *GlPostingGateEvidence) SetPostingGateVersion(val int) {
 // SetGateMode sets the value of GateMode.
 func (s *GlPostingGateEvidence) SetGateMode(val string) {
 	s.GateMode = val
+}
+
+// SetReopenRequestId sets the value of ReopenRequestId.
+func (s *GlPostingGateEvidence) SetReopenRequestId(val OptUUID) {
+	s.ReopenRequestId = val
+}
+
+// SetAuthorizationScope sets the value of AuthorizationScope.
+func (s *GlPostingGateEvidence) SetAuthorizationScope(val OptGlPostingAuthorizationScope) {
+	s.AuthorizationScope = val
+}
+
+// SetAuthorizationExpiry sets the value of AuthorizationExpiry.
+func (s *GlPostingGateEvidence) SetAuthorizationExpiry(val OptDateTime) {
+	s.AuthorizationExpiry = val
+}
+
+// SetControlAuthorityEpoch sets the value of ControlAuthorityEpoch.
+func (s *GlPostingGateEvidence) SetControlAuthorityEpoch(val OptInt) {
+	s.ControlAuthorityEpoch = val
 }
 
 // Ref: #/components/schemas/GlPostingRequestLine
@@ -7993,6 +8063,52 @@ func (o OptDateTime) Get() (v time.Time, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptDateTime) Or(d time.Time) time.Time {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptGlPostingAuthorizationScope returns new OptGlPostingAuthorizationScope with value set to v.
+func NewOptGlPostingAuthorizationScope(v GlPostingAuthorizationScope) OptGlPostingAuthorizationScope {
+	return OptGlPostingAuthorizationScope{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptGlPostingAuthorizationScope is optional GlPostingAuthorizationScope.
+type OptGlPostingAuthorizationScope struct {
+	Value GlPostingAuthorizationScope
+	Set   bool
+}
+
+// IsSet returns true if OptGlPostingAuthorizationScope was set.
+func (o OptGlPostingAuthorizationScope) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptGlPostingAuthorizationScope) Reset() {
+	var v GlPostingAuthorizationScope
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptGlPostingAuthorizationScope) SetTo(v GlPostingAuthorizationScope) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptGlPostingAuthorizationScope) Get() (v GlPostingAuthorizationScope, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptGlPostingAuthorizationScope) Or(d GlPostingAuthorizationScope) GlPostingAuthorizationScope {
 	if v, ok := o.Get(); ok {
 		return v
 	}

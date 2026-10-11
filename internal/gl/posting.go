@@ -136,6 +136,10 @@ type PostingGateEvidence struct {
 	GateMode               string          `json:"gateMode"`
 	SoftClosePolicyVersion string          `json:"softClosePolicyVersion,omitempty"`
 	SoftCloseRestrictions  json.RawMessage `json:"softCloseRestrictions,omitempty"`
+	ReopenRequestID        *uuid.UUID      `json:"reopenRequestId,omitempty"`
+	AuthorizationScope     json.RawMessage `json:"authorizationScope,omitempty"`
+	AuthorizationExpiry    *time.Time      `json:"authorizationExpiry,omitempty"`
+	ControlAuthorityEpoch  *int64          `json:"controlAuthorityEpoch,omitempty"`
 }
 
 type PostingApproval struct {
@@ -646,8 +650,8 @@ func validatePostingPurpose(request PostingRequest, issue func(string, string, s
 			issue("required", "closeRunId", "closeRunId is required for close postings")
 		}
 	case PostingPurposeReopenCorrection:
-		if request.ReopenRequestID == nil || *request.ReopenRequestID == uuid.Nil {
-			issue("required", "reopenRequestId", "reopenRequestId is required for reopen corrections")
+		if request.ReopenRequestID == nil || *request.ReopenRequestID == uuid.Nil || request.ControlAuthorityEpoch == nil || *request.ControlAuthorityEpoch < 1 {
+			issue("required", "reopenRequestId", "reopen request and control authority epoch are required for reopen corrections")
 		}
 	case PostingPurposeOperationalReopen:
 		if request.OperationalReopenRequestID == nil || *request.OperationalReopenRequestID == uuid.Nil || request.ControlAuthorityEpoch == nil || *request.ControlAuthorityEpoch < 1 {
@@ -667,6 +671,10 @@ func validatePostingPurpose(request PostingRequest, issue func(string, string, s
 }
 
 func validatePostingGateEvidence(request PostingRequest, evidence PostingGateEvidence) error {
+	return validatePostingGateEvidenceAt(request, evidence, time.Now().UTC())
+}
+
+func validatePostingGateEvidenceAt(request PostingRequest, evidence PostingGateEvidence, now time.Time) error {
 	if evidence.FiscalPeriodID != request.FiscalPeriodID {
 		return fmt.Errorf("%w: fiscal period does not match", ErrPostingPeriodConflict)
 	}
@@ -688,6 +696,21 @@ func validatePostingGateEvidence(request PostingRequest, evidence PostingGateEvi
 	case PostingPurposeReopenCorrection:
 		if evidence.GateMode != PostingGateScopedReopen {
 			return fmt.Errorf("%w: gate mode %s does not admit scoped reopen corrections", ErrPostingGateClosed, evidence.GateMode)
+		}
+		if evidence.ReopenRequestID == nil || request.ReopenRequestID == nil || *evidence.ReopenRequestID != *request.ReopenRequestID {
+			return fmt.Errorf("%w: reopen request does not own the posting gate", ErrPostingGateClosed)
+		}
+		if evidence.AuthorizationExpiry == nil || !now.Before(evidence.AuthorizationExpiry.UTC()) {
+			return fmt.Errorf("%w: scoped reopen authorization has expired", ErrPostingGateClosed)
+		}
+		if evidence.ControlAuthorityEpoch == nil || request.ControlAuthorityEpoch == nil || *request.ControlAuthorityEpoch != *evidence.ControlAuthorityEpoch {
+			return fmt.Errorf("%w: control authority epoch does not match", ErrPostingGateClosed)
+		}
+		if len(evidence.AuthorizationScope) == 0 {
+			return fmt.Errorf("%w: approved reopen scope is unavailable", ErrPostingGateClosed)
+		}
+		if err := validateScopedReopenScope(request, evidence.AuthorizationScope); err != nil {
+			return err
 		}
 	case PostingPurposeOperationalReopen:
 		if evidence.GateMode != PostingGateOperationalReopen {

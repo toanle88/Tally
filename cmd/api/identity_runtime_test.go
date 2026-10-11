@@ -66,6 +66,8 @@ func TestEvaluatorGLSoftCloseGateAuthorizerUsesOperationPermissions(t *testing.T
 	}{
 		{operation: gl.SoftCloseGateEnterOperation, permission: gl.SoftCloseGateEnterPermission},
 		{operation: gl.SoftCloseGateExitOperation, permission: gl.SoftCloseGateExitPermission},
+		{operation: gl.ScopedReopenGateOpenOperation, permission: gl.ScopedReopenGateOpenPermission},
+		{operation: gl.ScopedReopenGateCloseOperation, permission: gl.ScopedReopenGateClosePermission},
 		{operation: gl.PostingBarrierAcquireOperation, permission: gl.PostingBarrierAcquirePermission},
 		{operation: gl.PostingBarrierReleaseOperation, permission: gl.PostingBarrierReleasePermission},
 		{operation: gl.PostingBarrierFinalizeOperation, permission: gl.PostingBarrierFinalizePermission},
