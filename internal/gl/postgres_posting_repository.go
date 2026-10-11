@@ -280,7 +280,9 @@ type postgresPostingGate struct {
 
 func (repository *PostgresPostingRepository) lockGate(ctx context.Context, tx pgx.Tx, request PostingRequest) (postgresPostingGate, error) {
 	var gate postgresPostingGate
-	err := tx.QueryRow(ctx, `SELECT gate_mode, period_state_version, gate_version, next_ledger_position FROM gl.period_posting_gate WHERE accounting_scope_id = $1 AND fiscal_period_id = $2 FOR UPDATE`, request.AccountingScopeID, request.FiscalPeriodID).Scan(&gate.Evidence.GateMode, &gate.Evidence.PeriodStateVersion, &gate.Evidence.PostingGateVersion, &gate.LedgerPosition)
+	var policyVersion string
+	var restrictions []byte
+	err := tx.QueryRow(ctx, `SELECT gate_mode, period_state_version, gate_version, next_ledger_position, COALESCE(soft_close_policy_version, ''), soft_close_restrictions FROM gl.period_posting_gate WHERE accounting_scope_id = $1 AND fiscal_period_id = $2 FOR UPDATE`, request.AccountingScopeID, request.FiscalPeriodID).Scan(&gate.Evidence.GateMode, &gate.Evidence.PeriodStateVersion, &gate.Evidence.PostingGateVersion, &gate.LedgerPosition, &policyVersion, &restrictions)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return postgresPostingGate{}, ErrPostingReferenceUnavailable
 	}
@@ -288,6 +290,8 @@ func (repository *PostgresPostingRepository) lockGate(ctx context.Context, tx pg
 		return postgresPostingGate{}, mapPostingPostgresError(err)
 	}
 	gate.Evidence.FiscalPeriodID = request.FiscalPeriodID
+	gate.Evidence.SoftClosePolicyVersion = policyVersion
+	gate.Evidence.SoftCloseRestrictions = append(json.RawMessage(nil), restrictions...)
 	return gate, nil
 }
 

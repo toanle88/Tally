@@ -35,6 +35,7 @@ describe('route registry', () => {
       ['GL-WS-01', '/general-ledger/gl-ws-01'],
       ['GL-SCR-01', '/general-ledger/gl-scr-01'],
       ['GL-SCR-02', '/general-ledger/gl-scr-02'],
+      ['GL-SCR-03', '/general-ledger/gl-scr-03'],
       ['GL-SCR-04', '/general-ledger/gl-scr-04'],
       ['GL-SCR-05', '/general-ledger/gl-scr-05'],
       ['XCT-WS-01', '/operations/xct-ws-01'],

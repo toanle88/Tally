@@ -119,6 +119,13 @@ describe('application router', () => {
     expect(screen.getByText(/No result is loaded/)).toBeInTheDocument()
   })
 
+  it('supports direct entry to the GL posting-gate monitor', async () => {
+    renderRoute('/general-ledger/gl-scr-03')
+    expect(await screen.findByRole('heading', { name: 'Posting-gate monitor' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Enter soft-close gate' })).toBeInTheDocument()
+    expect(screen.getByText(/This screen is action-result driven/)).toBeInTheDocument()
+  })
+
   it('updates active navigation and supports back navigation', async () => {
     const router = renderRoute('/')
     fireEvent.click(screen.getByRole('link', { name: 'Exceptions' }))

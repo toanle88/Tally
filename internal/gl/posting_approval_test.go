@@ -54,6 +54,44 @@ func TestPostingApprovalDecisionApprovedPostsPendingJournalExactlyOnce(t *testin
 	}
 }
 
+func TestPostingApprovalDecisionEvaluatesSoftClosePolicyBeforeApplication(t *testing.T) {
+	request := validPostingRequest(t, "approval-soft-close-policy")
+	gate := MemoryPostingGateValidator{Evidence: PostingGateEvidence{
+		FiscalPeriodID: request.FiscalPeriodID, PeriodStateVersion: request.PeriodStateVersion, PostingGateVersion: request.PostingGateVersion,
+		GateMode: PostingGateSoftClosePolicy, SoftClosePolicyVersion: "policy-v1", SoftCloseRestrictions: []byte(`{"ordinaryPosting":"review"}`),
+	}}
+	evaluator := &recordingSoftClosePostingPolicyEvaluator{}
+	repository := NewMemoryPostingRepository()
+	audit := &MemoryPostingAuditRecorder{}
+	currency := testPostingCurrencyRegistry(t)
+	postingAuthorizer := MemoryPostingAuthorizer{Decision: PostingAuthorizationDecision{Allowed: true, ApprovalRequired: true, PolicyReference: "policy-1", PolicyVersion: "1"}}
+	posting, err := NewPostingService(
+		repository, postingAuthorizer, AllowAllPostingReferenceValidator{}, gate,
+		requiredPostingApprovalValidator{approval: PostingApproval{Required: true, ApprovalRequestID: uuid.New(), PolicyReference: "policy-1", PolicyVersion: "1"}},
+		audit, currency, time.Now, evaluator,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	apply, err := NewPostingApprovalDecisionService(
+		repository, MemoryPostingApprovalDecisionVerifier{}, MemoryPostingApprovalDecisionAuthorizer{Decision: PostingApprovalDecisionAuthorization{Allowed: true}},
+		postingAuthorizer, AllowAllPostingReferenceValidator{}, gate, currency, time.Now, evaluator,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pending, err := posting.Execute(context.Background(), Actor{UserID: uuid.New(), SubjectReference: "submitter-1"}, request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := apply.Execute(context.Background(), Actor{UserID: uuid.New(), SubjectReference: "approver-1"}, approvalDecisionCommand(t, pending, request.AccountingScopeID, PostingApprovalOutcomeApproved, "approval-soft-close-policy-apply")); err != nil {
+		t.Fatal(err)
+	}
+	if evaluator.calls != 2 {
+		t.Fatalf("policy evaluator calls = %d, want submission and approval application", evaluator.calls)
+	}
+}
+
 func TestPostingApprovalDecisionRejectedCancelsWithoutLedgerEffect(t *testing.T) {
 	posting, apply, repository, _, actor := testPostingApprovalServices(t)
 	request := validPostingRequest(t, "approval-rejected")

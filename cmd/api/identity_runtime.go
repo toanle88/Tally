@@ -40,6 +40,8 @@ const (
 	glAccountingBookOperationID         = "gl.maintain-accounting-books.v1"
 	glChartOfAccountsOperationID        = "gl.maintain-charts-of-accounts.v1"
 	glAccountOperationID                = "gl.maintain-accounts-and-reporting-mappings.v1"
+	glSoftCloseGateEnterOperationID     = gl.SoftCloseGateEnterCommandIdentity
+	glSoftCloseGateExitOperationID      = gl.SoftCloseGateExitCommandIdentity
 )
 
 func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
@@ -357,8 +359,28 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err != nil {
 		return identityUnavailableHandler("account service unavailable"), nil
 	}
+	glSoftCloseGateRepository, err := gl.NewPostgresSoftCloseGateRepository(pool, postgresGLSoftCloseGateAuditWriter(auditWriter))
+	if err != nil {
+		return identityUnavailableHandler("general-ledger soft-close gate persistence unavailable"), nil
+	}
+	glSoftCloseGateService, err := gl.NewSoftCloseGateServiceWithDurableIdempotency(
+		glSoftCloseGateRepository,
+		evaluatorGLSoftCloseGateAuthorizer{evaluator: policyEvaluator},
+		gl.UnavailableSoftClosePolicyEvaluator{},
+		time.Now,
+		gl.DurableSoftCloseGateServiceConfig{
+			Database:         pool,
+			Coordinator:      platformidempotency.NewPostgresCoordinator(),
+			Policy:           platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute},
+			EnterOperationID: glSoftCloseGateEnterOperationID,
+			ExitOperationID:  glSoftCloseGateExitOperationID,
+		},
+	)
+	if err != nil {
+		return identityUnavailableHandler("general-ledger soft-close gate service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -455,6 +477,30 @@ func postgresGLAccountingBookAuditWriter(auditWriter identity.PostgresAuditWrite
 			ApprovalRequestID:             record.ApprovalRequestID,
 			ApprovalDecisionID:            record.ApprovalDecisionID,
 			ApproverUserID:                record.ApproverUserID,
+			RevisionVersion:               record.RevisionNumber,
+			BeforeFingerprint:             record.BeforeFingerprint,
+			AfterFingerprint:              record.AfterFingerprint,
+			CorrelationID:                 record.CorrelationID,
+			CausationID:                   record.CausationID,
+		})
+	}
+}
+
+func postgresGLSoftCloseGateAuditWriter(auditWriter identity.PostgresAuditWriter) gl.PostgresSoftCloseGateAuditWriter {
+	return func(ctx context.Context, tx pgx.Tx, record gl.SoftCloseGateAuditRecord) (uuid.UUID, error) {
+		if auditWriter == nil {
+			return uuid.Nil, gl.ErrSoftCloseGateAuditUnavailable
+		}
+		return auditWriter(ctx, tx, identity.AuditRecord{
+			UserID:                        record.GateID,
+			ActorUserID:                   record.ActorUserID,
+			ActorAuthenticationSubjectRef: record.ActorSubjectReference,
+			Action:                        record.Action,
+			ScopeIDs:                      []string{record.AccountingScopeID.String()},
+			Permission:                    record.Permission,
+			PolicyReference:               record.PolicyReference,
+			PolicyVersion:                 record.PolicyVersion,
+			DecisionReference:             record.DecisionReference,
 			RevisionVersion:               record.RevisionNumber,
 			BeforeFingerprint:             record.BeforeFingerprint,
 			AfterFingerprint:              record.AfterFingerprint,
@@ -866,8 +912,18 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err != nil {
 		return identityUnavailableHandler("posting service unavailable"), nil
 	}
+	glSoftCloseGateRepository := gl.NewMemorySoftCloseGateRepository()
+	glSoftCloseGateService, err := gl.NewSoftCloseGateService(
+		glSoftCloseGateRepository,
+		gl.MemorySoftCloseGateAuthorizer{Decision: gl.AuthorizationDecision{Allowed: true, DecisionReference: uuid.New(), ApprovedScopeIDs: []uuid.UUID{uuid.Nil}}},
+		gl.AllowAllSoftClosePolicyEvaluator{},
+		time.Now,
+	)
+	if err != nil {
+		return identityUnavailableHandler("general-ledger soft-close gate service unavailable"), nil
+	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, PostingService: postingService, PostingApprovalDecisionService: postingApprovalDecisionService, JournalReversalService: journalReversalService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, PostingService: postingService, PostingApprovalDecisionService: postingApprovalDecisionService, JournalReversalService: journalReversalService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -905,6 +961,10 @@ type evaluatorGLAccountingBookAuthorizer struct {
 	evaluator identity.AuthorizationEvaluator
 }
 
+type evaluatorGLSoftCloseGateAuthorizer struct {
+	evaluator identity.AuthorizationEvaluator
+}
+
 func (authorizer evaluatorGLLedgerAuthorizer) AuthorizeLedger(ctx context.Context, actor gl.Actor, command gl.LedgerCommand, _ *gl.Ledger) (gl.AuthorizationDecision, error) {
 	if authorizer.evaluator == nil {
 		return gl.AuthorizationDecision{}, gl.ErrLedgerAuthorizationUnavailable
@@ -935,6 +995,27 @@ func (authorizer evaluatorGLAccountingBookAuthorizer) AuthorizeAccountingBook(ct
 	}
 	if decision.Outcome == identity.AuthorizationStale {
 		return gl.AuthorizationDecision{}, gl.ErrAccountingBookAuthorizationStale
+	}
+	return glAuthorizationDecision(decision), nil
+}
+
+func (authorizer evaluatorGLSoftCloseGateAuthorizer) AuthorizeSoftCloseGate(ctx context.Context, actor gl.Actor, operation string, scopeID uuid.UUID) (gl.AuthorizationDecision, error) {
+	if authorizer.evaluator == nil {
+		return gl.AuthorizationDecision{}, gl.ErrSoftCloseGateAuthorizationUnavailable
+	}
+	permission := gl.SoftCloseGateExitPermission
+	if operation == gl.SoftCloseGateEnterOperation {
+		permission = gl.SoftCloseGateEnterPermission
+	}
+	decision, err := authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{ActorID: actor.UserID, Permission: permission, RequestedScopeIDs: []string{scopeID.String()}})
+	if err != nil {
+		return gl.AuthorizationDecision{}, gl.ErrSoftCloseGateAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationUnavailable {
+		return gl.AuthorizationDecision{}, gl.ErrSoftCloseGateAuthorizationUnavailable
+	}
+	if decision.Outcome == identity.AuthorizationStale {
+		return gl.AuthorizationDecision{}, gl.ErrSoftCloseGateAuthorizationStale
 	}
 	return glAuthorizationDecision(decision), nil
 }

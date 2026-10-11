@@ -2,6 +2,7 @@ package gl
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"testing"
 	"time"
@@ -224,6 +225,48 @@ func TestPostingServiceRequiresPurposeSpecificGateMode(t *testing.T) {
 	}
 }
 
+func TestPostingServiceEvaluatesOrdinaryPostingAgainstSoftClosePolicy(t *testing.T) {
+	request := validPostingRequest(t, "posting-soft-close-policy")
+	evaluator := &recordingSoftClosePostingPolicyEvaluator{}
+	service, repository, _ := testPostingService(t, MemoryPostingGateValidator{Evidence: PostingGateEvidence{
+		FiscalPeriodID: request.FiscalPeriodID, PeriodStateVersion: request.PeriodStateVersion, PostingGateVersion: request.PostingGateVersion,
+		GateMode: PostingGateSoftClosePolicy, SoftClosePolicyVersion: "policy-v1", SoftCloseRestrictions: json.RawMessage(`{"ordinaryPosting":"review"}`),
+	}}, evaluator)
+
+	result, err := service.Execute(context.Background(), Actor{UserID: uuid.New(), SubjectReference: "accountant-1"}, request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Journal == nil || result.Journal.Status != PostingStatusPosted || evaluator.calls != 1 {
+		t.Fatalf("result = %#v, evaluator calls = %d", result, evaluator.calls)
+	}
+	if evaluator.policy.Version != "policy-v1" || string(evaluator.policy.Restrictions) != `{"ordinaryPosting":"review"}` {
+		t.Fatalf("policy = %#v, want the persisted soft-close policy", evaluator.policy)
+	}
+	if len(repository.Journals()) != 1 {
+		t.Fatalf("journal count = %d, want one admitted ordinary posting", len(repository.Journals()))
+	}
+}
+
+func TestPostingServiceFailsClosedForSoftClosePolicyWithoutEvaluator(t *testing.T) {
+	request := validPostingRequest(t, "posting-soft-close-policy-unavailable")
+	service, repository, _ := testPostingService(t, MemoryPostingGateValidator{Evidence: PostingGateEvidence{
+		FiscalPeriodID: request.FiscalPeriodID, PeriodStateVersion: request.PeriodStateVersion, PostingGateVersion: request.PostingGateVersion,
+		GateMode: PostingGateSoftClosePolicy, SoftClosePolicyVersion: "policy-v1", SoftCloseRestrictions: json.RawMessage(`{"ordinaryPosting":"review"}`),
+	}})
+
+	_, err := service.Execute(context.Background(), Actor{UserID: uuid.New(), SubjectReference: "accountant-1"}, request)
+	if !errors.Is(err, ErrPostingGatePolicyUnavailable) {
+		t.Fatalf("error = %v, want policy-unavailable failure", err)
+	}
+	if len(repository.Journals()) != 0 {
+		t.Fatal("ordinary posting was admitted without a policy evaluator")
+	}
+	if attempts := repository.Attempts(); len(attempts) != 0 {
+		t.Fatalf("attempts = %#v, want no rejected-attempt record for infrastructure unavailability", attempts)
+	}
+}
+
 func TestPostingServiceEstablishesPendingApprovalWithoutPostedEffect(t *testing.T) {
 	repository := NewMemoryPostingRepository()
 	audit := &MemoryPostingAuditRecorder{}
@@ -271,14 +314,26 @@ func (validator *replayGateValidator) ValidatePostingGate(_ context.Context, req
 	return PostingGateEvidence{FiscalPeriodID: request.FiscalPeriodID, PeriodStateVersion: request.PeriodStateVersion, PostingGateVersion: request.PostingGateVersion, GateMode: PostingGateOpen}, nil
 }
 
-func testPostingService(t *testing.T, gate PostingGateValidator) (*PostingService, *MemoryPostingRepository, *MemoryPostingAuditRecorder) {
+type recordingSoftClosePostingPolicyEvaluator struct {
+	calls  int
+	policy SoftCloseGatePolicy
+	err    error
+}
+
+func (evaluator *recordingSoftClosePostingPolicyEvaluator) EvaluateSoftClosePosting(_ context.Context, _ Actor, _ PostingRequest, policy SoftCloseGatePolicy) error {
+	evaluator.calls++
+	evaluator.policy = SoftCloseGatePolicy{Version: policy.Version, Restrictions: append(json.RawMessage(nil), policy.Restrictions...)}
+	return evaluator.err
+}
+
+func testPostingService(t *testing.T, gate PostingGateValidator, policy ...SoftClosePostingPolicyEvaluator) (*PostingService, *MemoryPostingRepository, *MemoryPostingAuditRecorder) {
 	t.Helper()
 	repository := NewMemoryPostingRepository()
 	audit := &MemoryPostingAuditRecorder{}
 	service, err := NewPostingService(
 		repository,
 		MemoryPostingAuthorizer{Decision: PostingAuthorizationDecision{Allowed: true}},
-		AllowAllPostingReferenceValidator{}, gate, AllowAllPostingApprovalValidator{}, audit, testPostingCurrencyRegistry(t), time.Now,
+		AllowAllPostingReferenceValidator{}, gate, AllowAllPostingApprovalValidator{}, audit, testPostingCurrencyRegistry(t), time.Now, policy...,
 	)
 	if err != nil {
 		t.Fatal(err)

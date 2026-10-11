@@ -36,6 +36,7 @@ func newMemoryPostingServices() (*gl.PostingService, *gl.PostingApprovalDecision
 		audit,
 		currencyRegistry,
 		time.Now,
+		gl.AllowAllSoftClosePolicyEvaluator{},
 	)
 	if err != nil {
 		return nil, nil, nil, err
@@ -49,6 +50,7 @@ func newMemoryPostingServices() (*gl.PostingService, *gl.PostingApprovalDecision
 		gl.MemoryPostingGateValidator{},
 		currencyRegistry,
 		time.Now,
+		gl.AllowAllSoftClosePolicyEvaluator{},
 	)
 	if err != nil {
 		return nil, nil, nil, err
