@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { glApplyJournalApprovalDecision, glSubmitPostingRequest } from '@/generated/api/sdk.gen'
+import { glApplyJournalApprovalDecision, glReverseJournalEntry, glSubmitPostingRequest } from '@/generated/api/sdk.gen'
 import { ScopeProvider } from '@/lib/scope/scope-context'
 
 import { developmentScopes } from './app'
@@ -11,6 +11,7 @@ import { GlPostingWorkspace } from './gl-posting-workspace'
 
 vi.mock('@/generated/api/sdk.gen', () => ({
   glApplyJournalApprovalDecision: vi.fn(),
+  glReverseJournalEntry: vi.fn(),
   glSubmitPostingRequest: vi.fn(),
 }))
 
@@ -43,6 +44,7 @@ const establishedResult = {
 describe('GL posting workbench', () => {
   beforeEach(() => {
     vi.mocked(glApplyJournalApprovalDecision).mockReset()
+    vi.mocked(glReverseJournalEntry).mockReset()
     vi.mocked(glSubmitPostingRequest).mockReset()
   })
 
@@ -66,8 +68,7 @@ describe('GL posting workbench', () => {
     expect(request.body.data.lines).toHaveLength(2)
     expect(request.body.accountingScopeId).toBe('scope-vietnam-statutory')
     expect(request.headers['Idempotency-Key']).toBeTruthy()
-    expect(screen.getByText('JE-2026-000001')).toBeInTheDocument()
-    expect(screen.getByText('JE-2026-000001')).toBeInTheDocument()
+    expect(screen.getAllByText('JE-2026-000001')).toHaveLength(2)
   })
 
   it('reuses command identity and conversion evidence after an ambiguous retry', async () => {
@@ -137,5 +138,45 @@ describe('GL posting workbench', () => {
     expect(request.body.data.candidateFingerprint).toBe('sha256:pending-candidate')
     expect(request.headers['Idempotency-Key']).toBeTruthy()
     expect(screen.getByText('Decision applied')).toBeInTheDocument()
+  })
+
+  it('previews and submits a linked reversal with explicit reason and source evidence', async () => {
+    const reversalResult = {
+      status: 'established',
+      aggregateId: 'reversal-1',
+      aggregateVersion: 1,
+      correlationId: 'reversal-correlation-1',
+      links: { self: '/api/v1/general-ledger/actions/reverse-journal-entry' },
+      data: { outcome: 'JournalEntryReversed', originalJournalId: 'journal-1', reversalJournalId: 'reversal-1', reversalJournalNumber: 'JE-2026-000002', correctionReason: 'Correct classification', auditReference: 'audit-reversal-1', replayed: false },
+    }
+    vi.mocked(glReverseJournalEntry).mockResolvedValue({ data: reversalResult, error: undefined } as never)
+    const postedResult = {
+      ...establishedResult,
+      data: {
+        ...establishedResult.data,
+        lines: [
+          { accountId: 'account-cash', debitOrCredit: 'debit', lineCurrencyMode: 'TransactionAndFunctional', transactionAmount: '100.00', functionalAmount: '100.00', segmentCombinationId: 'combination-cash' },
+          { accountId: 'account-revenue', debitOrCredit: 'credit', lineCurrencyMode: 'TransactionAndFunctional', transactionAmount: '100.00', functionalAmount: '100.00', segmentCombinationId: 'combination-revenue' },
+        ],
+      },
+    }
+    renderWithScope(<GlPostingWorkspace view="result" />, [{ pathname: '/general-ledger/gl-scr-02', state: { postingResult: postedResult } }])
+
+    expect(screen.getByText('Equal-and-opposite preview')).toBeInTheDocument()
+    fireEvent.change(screen.getByRole('textbox', { name: 'Correction reason' }), { target: { value: 'Correct classification' } })
+    fireEvent.change(screen.getByRole('textbox', { name: 'Authorization evidence ID' }), { target: { value: 'authorization-1' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Reverse posted journal' }))
+
+    await waitFor(() => expect(glReverseJournalEntry).toHaveBeenCalledTimes(1))
+	const request = vi.mocked(glReverseJournalEntry).mock.calls[0][0] as unknown as { body: { expectedVersion: number; data: { journalId: string; reason: string; postingAuthorizationId: string; sourceContext: string; sourceVersion: number } }; headers: { 'Idempotency-Key': string } }
+    expect(request.body.expectedVersion).toBe(1)
+    expect(request.body.data.journalId).toBe('journal-1')
+    expect(request.body.data.reason).toBe('Correct classification')
+    expect(request.body.data.postingAuthorizationId).toBe('authorization-1')
+    expect(request.body.data.sourceContext).toBe('general-ledger')
+    expect(request.body.data.sourceVersion).toBe(1)
+    expect(request.headers['Idempotency-Key']).toBeTruthy()
+    expect(screen.getByText('Linked reversal established')).toBeInTheDocument()
+    expect(screen.getByText('JE-2026-000002')).toBeInTheDocument()
   })
 })

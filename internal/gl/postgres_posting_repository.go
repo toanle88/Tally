@@ -129,15 +129,15 @@ func (repository *PostgresPostingRepository) CommitPosting(ctx context.Context, 
 		INSERT INTO gl.journal_entry (
 			journal_entry_id, journal_number, accounting_scope_id, tenant_id, legal_entity_id, ledger_id, accounting_book_id,
 			functional_currency, source_context, source_aggregate_type, source_aggregate_id, source_version, request_id,
-			idempotency_key, request_fingerprint, posting_date, fiscal_period_id, period_state_version, posting_gate_version,
+			idempotency_key, request_fingerprint, posting_date, fiscal_period_id, period_state_version, posting_gate_version, posting_gate_mode,
 			posting_purpose, adjustment_period_indicator, posting_authorization_id, close_run_id, reopen_request_id, operational_reopen_request_id, control_authority_epoch,
 			transaction_currency, conversion_evidence, description, lifecycle_status, approval_reference, aggregate_version,
 			ledger_position, audit_reference, correlation_id, causation_id, submitted_by_user_id, created_at
-		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38)`,
+		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39)`,
 		journalID, journalNumber, commit.Request.AccountingScopeID, commit.Request.AccountingScope.TenantID(), commit.Request.AccountingScope.LegalEntityID(), commit.Request.AccountingScope.LedgerID(), commit.Request.AccountingScope.AccountingBookID(),
 		commit.Request.AccountingScope.FunctionalCurrency(), commit.Request.SourceContext, commit.Request.SourceAggregateType, commit.Request.SourceAggregateID, commit.Request.SourceVersion, commit.Request.RequestID,
 		commit.Request.IdempotencyKey, commit.Request.RequestFingerprint, commit.Request.PostingDate, commit.Request.FiscalPeriodID, commit.Request.PeriodStateVersion, commit.Request.PostingGateVersion,
-		commit.Request.PostingPurpose, commit.Request.AdjustmentPeriodIndicator, nullablePostingUUID(commit.Request.PostingAuthorizationID), nullablePostingUUID(commit.Request.CloseRunID), nullablePostingUUID(commit.Request.ReopenRequestID), nullablePostingUUID(commit.Request.OperationalReopenRequestID), nullablePostingInt64(commit.Request.ControlAuthorityEpoch),
+		gate.Evidence.GateMode, commit.Request.PostingPurpose, commit.Request.AdjustmentPeriodIndicator, nullablePostingUUID(commit.Request.PostingAuthorizationID), nullablePostingUUID(commit.Request.CloseRunID), nullablePostingUUID(commit.Request.ReopenRequestID), nullablePostingUUID(commit.Request.OperationalReopenRequestID), nullablePostingInt64(commit.Request.ControlAuthorityEpoch),
 		commit.Request.TransactionCurrency, nullablePostingJSON(conversionJSON), commit.Request.Description, storedStatus, nullablePostingJSON(approvalJSON), 1,
 		ledgerPosition, auditReference, correlationID, causationID, commit.Actor.UserID, now)
 	if err != nil {
@@ -158,7 +158,7 @@ func (repository *PostgresPostingRepository) CommitPosting(ctx context.Context, 
 		Outcome: outcome, ApprovalRequestID: commit.Approval.ApprovalRequestID, NextAction: nextAction,
 		ValidationOutcome: "valid", ApprovalStatus: approvalStatus, SourceReference: sourceReference(commit.Request),
 		GateEvidence: gate.Evidence, AuditReference: auditReference,
-		Journal: &PostingJournal{ID: journalID, Number: journalNumber, Version: 1, LedgerPosition: valueOrZero(ledgerPosition), Status: status, SourceReference: sourceReference(commit.Request), RequestFingerprint: commit.Request.RequestFingerprint, GateEvidence: gate.Evidence, AuditReference: auditReference},
+		Journal: &PostingJournal{ID: journalID, Number: journalNumber, Version: 1, LedgerPosition: valueOrZero(ledgerPosition), Status: status, SourceReference: sourceReference(commit.Request), RequestFingerprint: commit.Request.RequestFingerprint, GateEvidence: gate.Evidence, AuditReference: auditReference, PostingPurpose: commit.Request.PostingPurpose, PostingAuthorizationID: cloneUUIDValue(commit.Request.PostingAuthorizationID), Lines: append([]PostingLine(nil), commit.Request.Lines...)},
 	}
 	if commit.Approval.Required {
 		approval := commit.Approval
@@ -292,22 +292,23 @@ func (repository *PostgresPostingRepository) lockGate(ctx context.Context, tx pg
 }
 
 func (repository *PostgresPostingRepository) findJournalByIdempotency(ctx context.Context, tx pgx.Tx, request PostingRequest) (PostingResult, bool, error) {
-	return repository.findJournal(ctx, tx, `accounting_scope_id = $1 AND idempotency_key = $2`, request.AccountingScopeID, request.IdempotencyKey)
+	return repository.findJournal(ctx, tx, request.AccountingScopeID, `accounting_scope_id = $1 AND idempotency_key = $2`, request.AccountingScopeID, request.IdempotencyKey)
 }
 
 func (repository *PostgresPostingRepository) findJournalBySource(ctx context.Context, tx pgx.Tx, request PostingRequest) (PostingResult, bool, error) {
-	return repository.findJournal(ctx, tx, `accounting_scope_id = $1 AND source_context = $2 AND source_aggregate_type = $3 AND source_aggregate_id = $4 AND source_version = $5`, request.AccountingScopeID, request.SourceContext, request.SourceAggregateType, request.SourceAggregateID, request.SourceVersion)
+	return repository.findJournal(ctx, tx, request.AccountingScopeID, `accounting_scope_id = $1 AND source_context = $2 AND source_aggregate_type = $3 AND source_aggregate_id = $4 AND source_version = $5`, request.AccountingScopeID, request.SourceContext, request.SourceAggregateType, request.SourceAggregateID, request.SourceVersion)
 }
 
-func (repository *PostgresPostingRepository) findJournal(ctx context.Context, tx pgx.Tx, predicate string, args ...any) (PostingResult, bool, error) {
+func (repository *PostgresPostingRepository) findJournal(ctx context.Context, tx pgx.Tx, scopeID uuid.UUID, predicate string, args ...any) (PostingResult, bool, error) {
 	var (
 		journalID, periodID, auditReference, sourceAggregateID                 uuid.UUID
 		journalNumber, fingerprint, sourceContext, sourceAggregateType, status string
+		gateMode                                                               string
 		version, position, periodVersion, gateVersion, sourceVersion           int64
 		approvalJSON                                                           []byte
 	)
-	query := `SELECT journal_entry_id, journal_number, request_fingerprint, source_context, source_aggregate_type, source_aggregate_id, source_version, fiscal_period_id, period_state_version, posting_gate_version, lifecycle_status, approval_reference, aggregate_version, COALESCE(ledger_position, 0), audit_reference FROM gl.journal_entry WHERE ` + predicate + ` FOR UPDATE`
-	err := tx.QueryRow(ctx, query, args...).Scan(&journalID, &journalNumber, &fingerprint, &sourceContext, &sourceAggregateType, &sourceAggregateID, &sourceVersion, &periodID, &periodVersion, &gateVersion, &status, &approvalJSON, &version, &position, &auditReference)
+	query := `SELECT journal_entry_id, journal_number, request_fingerprint, source_context, source_aggregate_type, source_aggregate_id, source_version, fiscal_period_id, period_state_version, posting_gate_version, posting_gate_mode, lifecycle_status, approval_reference, aggregate_version, COALESCE(ledger_position, 0), audit_reference FROM gl.journal_entry WHERE ` + predicate + ` FOR UPDATE`
+	err := tx.QueryRow(ctx, query, args...).Scan(&journalID, &journalNumber, &fingerprint, &sourceContext, &sourceAggregateType, &sourceAggregateID, &sourceVersion, &periodID, &periodVersion, &gateVersion, &gateMode, &status, &approvalJSON, &version, &position, &auditReference)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return PostingResult{}, false, nil
 	}
@@ -334,8 +335,13 @@ func (repository *PostgresPostingRepository) findJournal(ctx context.Context, tx
 	} else if approval.DecisionOutcome == PostingApprovalOutcomeApproved {
 		approvalStatus = PostingApprovalOutcomeApproved
 	}
-	result := PostingResult{Outcome: outcome, ApprovalRequestID: approval.ApprovalRequestID, NextAction: nextAction, ValidationOutcome: "valid", ApprovalStatus: approvalStatus, SourceReference: fmt.Sprintf("%s:%s:%s:%d", sourceContext, sourceAggregateType, sourceAggregateID, sourceVersion), GateEvidence: PostingGateEvidence{FiscalPeriodID: periodID, PeriodStateVersion: periodVersion, PostingGateVersion: gateVersion, GateMode: "Open"}, AuditReference: auditReference}
+	result := PostingResult{Outcome: outcome, ApprovalRequestID: approval.ApprovalRequestID, NextAction: nextAction, ValidationOutcome: "valid", ApprovalStatus: approvalStatus, SourceReference: fmt.Sprintf("%s:%s:%s:%d", sourceContext, sourceAggregateType, sourceAggregateID, sourceVersion), GateEvidence: PostingGateEvidence{FiscalPeriodID: periodID, PeriodStateVersion: periodVersion, PostingGateVersion: gateVersion, GateMode: gateMode}, AuditReference: auditReference}
 	result.Journal = &PostingJournal{ID: journalID, Number: journalNumber, Version: version, LedgerPosition: position, Status: status, Approval: &approval, SourceReference: result.SourceReference, RequestFingerprint: fingerprint, GateEvidence: result.GateEvidence, AuditReference: auditReference}
+	lines, err := repository.loadJournalLines(ctx, tx, scopeID, journalID)
+	if err != nil {
+		return PostingResult{}, false, err
+	}
+	result.Journal.Lines = lines
 	if approval.ApprovalRequestID == uuid.Nil {
 		result.Journal.Approval = nil
 	}
@@ -522,11 +528,17 @@ func mapPostingPostgresError(err error) error {
 			return ErrPostingIdempotencyConflict
 		case "journal_entry_source_unique":
 			return ErrPostingSourceDuplicate
+		case "journal_entry_reversal_unique":
+			return ErrJournalEntryAlreadyReversed
 		case "journal_entry_approval_application_unique", "journal_entry_approval_decision_unique":
 			return ErrPostingApprovalDecisionIdempotencyConflict
 		case "journal_entry_ledger_fk", "journal_entry_book_fk", "journal_entry_line_account_fk":
 			return ErrPostingReferenceInvalid
-		case "journal_entry_line_amount_check", "journal_entry_line_functional_only_check":
+		case "journal_entry_line_amount_check", "journal_entry_line_functional_only_check", "journal_entry_reversal_reason_check", "journal_entry_gate_mode_check":
+			return ErrPostingValidation
+		case "journal_entry_reversal_fk":
+			return ErrPostingReferenceInvalid
+		case "posting_attempt_operation_check", "posting_attempt_outcome_check":
 			return ErrPostingValidation
 		}
 	}

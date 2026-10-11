@@ -5939,9 +5939,11 @@ type GlSubmitPostingRequestResultData struct {
 	ApprovalStatus    string                                          `json:"approvalStatus"`
 	SourceReference   string                                          `json:"sourceReference"`
 	GateEvidence      GlPostingGateEvidence                           `json:"gateEvidence"`
-	AuditReference    OptUUID                                         `json:"auditReference"`
-	Replayed          bool                                            `json:"replayed"`
-	Issues            []GlPostingValidationIssue                      `json:"issues"`
+	// Original journal lines returned for correction preview; amounts remain exact-decimal strings.
+	Lines          []GlPostingRequestLine     `json:"lines"`
+	AuditReference OptUUID                    `json:"auditReference"`
+	Replayed       bool                       `json:"replayed"`
+	Issues         []GlPostingValidationIssue `json:"issues"`
 }
 
 // GetOutcome returns the value of Outcome.
@@ -6012,6 +6014,11 @@ func (s *GlSubmitPostingRequestResultData) GetSourceReference() string {
 // GetGateEvidence returns the value of GateEvidence.
 func (s *GlSubmitPostingRequestResultData) GetGateEvidence() GlPostingGateEvidence {
 	return s.GateEvidence
+}
+
+// GetLines returns the value of Lines.
+func (s *GlSubmitPostingRequestResultData) GetLines() []GlPostingRequestLine {
+	return s.Lines
 }
 
 // GetAuditReference returns the value of AuditReference.
@@ -6097,6 +6104,11 @@ func (s *GlSubmitPostingRequestResultData) SetSourceReference(val string) {
 // SetGateEvidence sets the value of GateEvidence.
 func (s *GlSubmitPostingRequestResultData) SetGateEvidence(val GlPostingGateEvidence) {
 	s.GateEvidence = val
+}
+
+// SetLines sets the value of Lines.
+func (s *GlSubmitPostingRequestResultData) SetLines(val []GlPostingRequestLine) {
+	s.Lines = val
 }
 
 // SetAuditReference sets the value of AuditReference.

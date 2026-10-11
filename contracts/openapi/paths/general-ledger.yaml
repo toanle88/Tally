@@ -93,6 +93,8 @@
   post:
     tags: [general-ledger]
     operationId: glReverseJournalEntry
+    summary: Reverse a posted journal entry
+    description: Creates a separate linked reversal journal with equal-and-opposite exact-decimal lines. The original posted journal remains immutable; source identity and authorization evidence belong to the correction owner.
     x-owner-capability: general-ledger
     x-permission: finance.gl.reverse.journal.entry
     parameters:
@@ -107,7 +109,22 @@
           schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
           examples:
             deterministic:
-              $ref: ../examples/command-request.yaml
+              value:
+                commandId: 00000000-0000-0000-0000-000000000101
+                expectedVersion: 1
+                accountingScopeId: 00000000-0000-0000-0000-000000000102
+                data:
+                  journalId: 00000000-0000-0000-0000-000000000103
+                  reason: Corrected classification after approved review
+                  effectivePostingDate: '2026-01-20'
+                  fiscalPeriodId: 00000000-0000-0000-0000-000000000104
+                  periodStateVersion: 2
+                  postingGateVersion: 4
+                  postingAuthorizationId: 00000000-0000-0000-0000-000000000105
+                  sourceContext: general-ledger
+                  sourceAggregateType: journal-correction
+                  sourceAggregateId: 00000000-0000-0000-0000-000000000106
+                  sourceVersion: 1
     responses:
       '200': { $ref: ../components/common.yaml#/responses/Established }
       '400': { $ref: ../components/common.yaml#/responses/Problem }

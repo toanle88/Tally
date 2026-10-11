@@ -34,17 +34,20 @@ type PostingEvent struct {
 }
 
 type MemoryPostingRepository struct {
-	mu           sync.RWMutex
-	results      map[string]PostingResult
-	sources      map[string]PostingResult
-	requests     map[uuid.UUID]PostingRequest
-	applications map[string]storedPostingApprovalApplication
-	decisions    map[string]storedPostingApprovalApplication
-	journals     []PostingJournal
-	attempts     []PostingAttempt
-	events       []PostingEvent
-	audit        PostingAuditRecorder
-	nextNumber   int64
+	mu                  sync.RWMutex
+	results             map[string]PostingResult
+	sources             map[string]PostingResult
+	reversalResults     map[string]JournalReversalResult
+	reversalSources     map[string]JournalReversalResult
+	reversalsByOriginal map[uuid.UUID]JournalReversalResult
+	requests            map[uuid.UUID]PostingRequest
+	applications        map[string]storedPostingApprovalApplication
+	decisions           map[string]storedPostingApprovalApplication
+	journals            []PostingJournal
+	attempts            []PostingAttempt
+	events              []PostingEvent
+	audit               PostingAuditRecorder
+	nextNumber          int64
 }
 
 type storedPostingApprovalApplication struct {
@@ -54,11 +57,14 @@ type storedPostingApprovalApplication struct {
 
 func NewMemoryPostingRepository() *MemoryPostingRepository {
 	return &MemoryPostingRepository{
-		results:      make(map[string]PostingResult),
-		sources:      make(map[string]PostingResult),
-		requests:     make(map[uuid.UUID]PostingRequest),
-		applications: make(map[string]storedPostingApprovalApplication),
-		decisions:    make(map[string]storedPostingApprovalApplication),
+		results:             make(map[string]PostingResult),
+		sources:             make(map[string]PostingResult),
+		reversalResults:     make(map[string]JournalReversalResult),
+		reversalSources:     make(map[string]JournalReversalResult),
+		reversalsByOriginal: make(map[uuid.UUID]JournalReversalResult),
+		requests:            make(map[uuid.UUID]PostingRequest),
+		applications:        make(map[string]storedPostingApprovalApplication),
+		decisions:           make(map[string]storedPostingApprovalApplication),
 	}
 }
 
@@ -154,6 +160,8 @@ func (repository *MemoryPostingRepository) CommitPosting(_ context.Context, comm
 		ID: journalID, Number: journalNumber, Version: 1, LedgerPosition: ledgerPosition,
 		Status: status, Approval: approval, SourceReference: sourceReference(commit.Request), GateEvidence: commit.GateEvidence,
 		RequestFingerprint: commit.Request.RequestFingerprint, SubmittedByUserID: commit.Actor.UserID,
+		PostingPurpose: commit.Request.PostingPurpose, PostingAuthorizationID: cloneUUIDValue(commit.Request.PostingAuthorizationID),
+		Lines: append([]PostingLine(nil), commit.Request.Lines...),
 	}
 	auditReference, err := repository.recordAuditLocked(commit, uuid.New(), journalID, outcome, nil)
 	if err != nil {
@@ -516,6 +524,15 @@ func clonePostingApproval(value *PostingApproval) *PostingApproval {
 
 func clonePostingJournal(value PostingJournal) PostingJournal {
 	value.Approval = clonePostingApproval(value.Approval)
+	if value.PostingAuthorizationID != nil {
+		copy := *value.PostingAuthorizationID
+		value.PostingAuthorizationID = &copy
+	}
+	if value.ReversalOfJournalEntryID != nil {
+		copy := *value.ReversalOfJournalEntryID
+		value.ReversalOfJournalEntryID = &copy
+	}
+	value.Lines = append([]PostingLine(nil), value.Lines...)
 	return value
 }
 
@@ -536,6 +553,7 @@ func clonePostingRequest(value PostingRequest) PostingRequest {
 		return &copy
 	}
 	cloned.PostingAuthorizationID = cloneUUID(value.PostingAuthorizationID)
+	cloned.ReversalOfJournalEntryID = cloneUUID(value.ReversalOfJournalEntryID)
 	cloned.CloseRunID = cloneUUID(value.CloseRunID)
 	cloned.ReopenRequestID = cloneUUID(value.ReopenRequestID)
 	cloned.OperationalReopenRequestID = cloneUUID(value.OperationalReopenRequestID)

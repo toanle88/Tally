@@ -398,6 +398,10 @@ type Handler interface {
 	GlReleasePostingBarrier(ctx context.Context, req *CommandRequest, params GlReleasePostingBarrierParams) (GlReleasePostingBarrierRes, error)
 	// GlReverseJournalEntry implements glReverseJournalEntry operation.
 	//
+	// Creates a separate linked reversal journal with equal-and-opposite exact-decimal lines. The original
+	// posted journal remains immutable; source identity and authorization evidence belong to the
+	// correction owner.
+	//
 	// POST /general-ledger/actions/reverse-journal-entry
 	GlReverseJournalEntry(ctx context.Context, req *CommandRequest, params GlReverseJournalEntryParams) (GlReverseJournalEntryRes, error)
 	// GlSubmitPostingRequest implements glSubmitPostingRequest operation.

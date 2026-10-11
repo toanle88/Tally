@@ -174,6 +174,10 @@ export type GlSubmitPostingRequestResultData = {
     approvalStatus: string;
     sourceReference: string;
     gateEvidence: GlPostingGateEvidence;
+    /**
+     * Original journal lines returned for correction preview; amounts remain exact-decimal strings.
+     */
+    lines?: Array<GlPostingRequestLine>;
     auditReference?: Uuid;
     replayed: boolean;
     issues?: Array<GlPostingValidationIssue>;

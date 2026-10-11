@@ -10213,7 +10213,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								switch method {
 								case "POST":
 									r.name = GlReverseJournalEntryOperation
-									r.summary = ""
+									r.summary = "Reverse a posted journal entry"
 									r.operationID = "glReverseJournalEntry"
 									r.operationGroup = ""
 									r.pathPattern = "/general-ledger/actions/reverse-journal-entry"

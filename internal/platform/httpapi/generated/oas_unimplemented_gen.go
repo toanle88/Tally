@@ -694,6 +694,10 @@ func (UnimplementedHandler) GlReleasePostingBarrier(ctx context.Context, req *Co
 
 // GlReverseJournalEntry implements glReverseJournalEntry operation.
 //
+// Creates a separate linked reversal journal with equal-and-opposite exact-decimal lines. The original
+// posted journal remains immutable; source identity and authorization evidence belong to the
+// correction owner.
+//
 // POST /general-ledger/actions/reverse-journal-entry
 func (UnimplementedHandler) GlReverseJournalEntry(ctx context.Context, req *CommandRequest, params GlReverseJournalEntryParams) (r GlReverseJournalEntryRes, _ error) {
 	return r, ht.ErrNotImplemented

@@ -26017,6 +26017,16 @@ func (s *GlSubmitPostingRequestResultData) encodeFields(e *jx.Encoder) {
 		s.GateEvidence.Encode(e)
 	}
 	{
+		if s.Lines != nil {
+			e.FieldStart("lines")
+			e.ArrStart()
+			for _, elem := range s.Lines {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
 		if s.AuditReference.Set {
 			e.FieldStart("auditReference")
 			s.AuditReference.Encode(e)
@@ -26038,7 +26048,7 @@ func (s *GlSubmitPostingRequestResultData) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfGlSubmitPostingRequestResultData = [17]string{
+var jsonFieldsNameOfGlSubmitPostingRequestResultData = [18]string{
 	0:  "outcome",
 	1:  "lifecycleStatus",
 	2:  "journalId",
@@ -26053,9 +26063,10 @@ var jsonFieldsNameOfGlSubmitPostingRequestResultData = [17]string{
 	11: "approvalStatus",
 	12: "sourceReference",
 	13: "gateEvidence",
-	14: "auditReference",
-	15: "replayed",
-	16: "issues",
+	14: "lines",
+	15: "auditReference",
+	16: "replayed",
+	17: "issues",
 }
 
 // Decode decodes GlSubmitPostingRequestResultData from json.
@@ -26213,6 +26224,23 @@ func (s *GlSubmitPostingRequestResultData) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"gateEvidence\"")
 			}
+		case "lines":
+			if err := func() error {
+				s.Lines = make([]GlPostingRequestLine, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem GlPostingRequestLine
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Lines = append(s.Lines, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"lines\"")
+			}
 		case "auditReference":
 			if err := func() error {
 				s.AuditReference.Reset()
@@ -26224,7 +26252,7 @@ func (s *GlSubmitPostingRequestResultData) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"auditReference\"")
 			}
 		case "replayed":
-			requiredBitSet[1] |= 1 << 7
+			requiredBitSet[2] |= 1 << 0
 			if err := func() error {
 				v, err := d.Bool()
 				s.Replayed = bool(v)
@@ -26263,8 +26291,8 @@ func (s *GlSubmitPostingRequestResultData) Decode(d *jx.Decoder) error {
 	var failures []validate.FieldError
 	for i, mask := range [3]uint8{
 		0b00000011,
-		0b10111100,
-		0b00000000,
+		0b00111100,
+		0b00000001,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
