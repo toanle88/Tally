@@ -184,7 +184,7 @@ func TestGLPostingRepositoryAppliesApprovalDecisionAtomicallyAndReplays(t *testi
 	decision := gl.ApplyJournalApprovalDecisionCommand{
 		CommandID: uuid.New(), JournalID: pending.AggregateID(), AccountingScopeID: references.scopeID, ExpectedJournalVersion: pending.AggregateVersion(),
 		Decision:       gl.PostingApprovalDecision{Outcome: gl.PostingApprovalOutcomeApproved, Reason: "approved by integration decision", Reference: gl.ApprovalDecisionReference{ApprovalRequestID: pending.Journal.Approval.ApprovalRequestID, DecisionID: uuid.New(), PolicyVersion: pending.Journal.Approval.PolicyVersion, DecisionVersion: 1, SubjectVersion: pending.AggregateVersion(), CandidateFingerprint: pending.Journal.RequestFingerprint, ApproverUserID: actor.UserID}},
-		IdempotencyKey: "approval-integration-1", CorrelationID: uuid.NewString(), CausationID: uuid.NewString(),
+		IdempotencyKey: uuid.NewString(), CorrelationID: uuid.NewString(), CausationID: uuid.NewString(),
 	}
 	first, err := approvalService.Execute(ctx, actor, decision)
 	if err != nil {

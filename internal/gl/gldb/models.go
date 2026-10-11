@@ -95,43 +95,48 @@ type GlChartOfAccountsRevision struct {
 }
 
 type GlJournalEntry struct {
-	JournalEntryID             pgtype.UUID
-	JournalNumber              string
-	AccountingScopeID          pgtype.UUID
-	TenantID                   pgtype.UUID
-	LegalEntityID              pgtype.UUID
-	LedgerID                   pgtype.UUID
-	AccountingBookID           pgtype.UUID
-	FunctionalCurrency         string
-	SourceContext              string
-	SourceAggregateType        string
-	SourceAggregateID          pgtype.UUID
-	SourceVersion              int64
-	RequestID                  pgtype.UUID
-	IdempotencyKey             string
-	RequestFingerprint         string
-	PostingDate                pgtype.Date
-	FiscalPeriodID             pgtype.UUID
-	PeriodStateVersion         int64
-	PostingGateVersion         int64
-	PostingPurpose             string
-	AdjustmentPeriodIndicator  bool
-	PostingAuthorizationID     pgtype.UUID
-	CloseRunID                 pgtype.UUID
-	ReopenRequestID            pgtype.UUID
-	OperationalReopenRequestID pgtype.UUID
-	ControlAuthorityEpoch      pgtype.Int8
-	TransactionCurrency        string
-	ConversionEvidence         []byte
-	Description                string
-	LifecycleStatus            string
-	ApprovalReference          []byte
-	AggregateVersion           int64
-	LedgerPosition             pgtype.Int8
-	AuditReference             pgtype.UUID
-	CorrelationID              pgtype.UUID
-	CausationID                pgtype.UUID
-	CreatedAt                  pgtype.Timestamptz
+	JournalEntryID                 pgtype.UUID
+	JournalNumber                  string
+	AccountingScopeID              pgtype.UUID
+	TenantID                       pgtype.UUID
+	LegalEntityID                  pgtype.UUID
+	LedgerID                       pgtype.UUID
+	AccountingBookID               pgtype.UUID
+	FunctionalCurrency             string
+	SourceContext                  string
+	SourceAggregateType            string
+	SourceAggregateID              pgtype.UUID
+	SourceVersion                  int64
+	RequestID                      pgtype.UUID
+	IdempotencyKey                 string
+	RequestFingerprint             string
+	PostingDate                    pgtype.Date
+	FiscalPeriodID                 pgtype.UUID
+	PeriodStateVersion             int64
+	PostingGateVersion             int64
+	PostingPurpose                 string
+	AdjustmentPeriodIndicator      bool
+	PostingAuthorizationID         pgtype.UUID
+	CloseRunID                     pgtype.UUID
+	ReopenRequestID                pgtype.UUID
+	OperationalReopenRequestID     pgtype.UUID
+	ControlAuthorityEpoch          pgtype.Int8
+	TransactionCurrency            string
+	ConversionEvidence             []byte
+	Description                    string
+	LifecycleStatus                string
+	ApprovalReference              []byte
+	AggregateVersion               int64
+	LedgerPosition                 pgtype.Int8
+	AuditReference                 pgtype.UUID
+	CorrelationID                  pgtype.UUID
+	CausationID                    pgtype.UUID
+	CreatedAt                      pgtype.Timestamptz
+	SubmittedByUserID              pgtype.UUID
+	ApprovalApplicationKey         pgtype.Text
+	ApprovalApplicationFingerprint pgtype.Text
+	ApprovalDecisionID             pgtype.UUID
+	ApprovalAppliedAt              pgtype.Timestamptz
 }
 
 type GlJournalEntryLine struct {
@@ -204,4 +209,5 @@ type GlPostingAttempt struct {
 	CorrelationID         pgtype.UUID
 	CausationID           pgtype.UUID
 	CreatedAt             pgtype.Timestamptz
+	Operation             string
 }
