@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 
 import { glAcquirePostingBarrier, glEnterSoftCloseGate, glExitSoftCloseGate, glFinalizePostingGate, glReleasePostingBarrier } from '@/generated/api/sdk.gen'
 import type { EstablishedResult } from '@/generated/api/types.gen'
 import { Button, Field, Panel, StatusBadge, type SemanticState } from '@/components/ui'
+import type { AccountingScopeFixture } from '@/lib/auth/auth-scope-adapter'
 import { useScopeContext } from '@/lib/scope/scope-context'
 
 type CommandIdentity = {
@@ -58,6 +59,14 @@ function actionLabel(action: GateAction) {
 
 export function GlPostingGateWorkspace() {
   const { currentScope } = useScopeContext()
+  if (!currentScope) {
+    return <section><p className="text-sm font-semibold uppercase tracking-wide text-primary">GL-SCR-03</p><h2 className="mt-1 text-2xl font-semibold">Posting-gate monitor</h2><p className="mt-2">Select an accounting scope before changing the posting barrier.</p></section>
+  }
+
+  return <GlPostingGateScopeWorkspace key={currentScope.id} currentScope={currentScope} />
+}
+
+function GlPostingGateScopeWorkspace({ currentScope }: { currentScope: AccountingScopeFixture }) {
   const [softCloseRunId, setSoftCloseRunId] = useState('soft-close-run-1')
   const [controlEpoch, setControlEpoch] = useState('1')
   const [expectedVersion, setExpectedVersion] = useState('1')
@@ -71,18 +80,6 @@ export function GlPostingGateWorkspace() {
   const [saving, setSaving] = useState(false)
   const [validationError, setValidationError] = useState('')
   const commandIdentity = useRef<CommandIdentity | null>(null)
-
-  useEffect(() => {
-    setResult(null)
-    setSelectedAction('enter')
-    setExpectedVersion('1')
-    setNotice('No authoritative gate result has been received for this scope.')
-    commandIdentity.current = null
-  }, [currentScope?.id])
-
-  if (!currentScope) {
-    return <section><p className="text-sm font-semibold uppercase tracking-wide text-primary">GL-SCR-03</p><h2 className="mt-1 text-2xl font-semibold">Posting-gate monitor</h2><p className="mt-2">Select an accounting scope before changing the posting barrier.</p></section>
-  }
 
   const periodId = currentScope.period?.id
   const establishedGateVersion = result ? resultValue<number>(result, 'gateVersion') : undefined
