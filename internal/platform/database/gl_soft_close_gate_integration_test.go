@@ -198,10 +198,10 @@ func TestGLPostingBarrierRepositoryTransfersReleasesAndFinalizes(t *testing.T) {
 	}
 	actor := gl.Actor{UserID: uuid.New(), SubjectReference: "posting-barrier-integration-actor"}
 
-	if _, err := service.EnterSoftCloseGate(ctx, actor, gl.EnterSoftCloseGateCommand{CommandID: uuid.New(), AccountingScopeID: scopeID, FiscalPeriodID: periodID, ExpectedGateVersion: 1, SoftCloseRunID: softCloseRunID, ControlEpoch: 1, PolicyVersion: "soft-close-policy-v1", Restrictions: json.RawMessage(`{"ordinaryPosting":"evaluator-controlled"}`), IdempotencyKey: "integration-barrier-enter", CorrelationID: uuid.NewString(), CausationID: uuid.NewString()}); err != nil {
+	if _, err := service.EnterSoftCloseGate(ctx, actor, gl.EnterSoftCloseGateCommand{CommandID: uuid.New(), AccountingScopeID: scopeID, FiscalPeriodID: periodID, ExpectedGateVersion: 1, SoftCloseRunID: softCloseRunID, ControlEpoch: 1, PolicyVersion: "soft-close-policy-v1", Restrictions: json.RawMessage(`{"ordinaryPosting":"evaluator-controlled"}`), IdempotencyKey: uuid.NewString(), CorrelationID: uuid.NewString(), CausationID: uuid.NewString()}); err != nil {
 		t.Fatal(err)
 	}
-	acquire := gl.AcquirePostingBarrierCommand{CommandID: uuid.New(), AccountingScopeID: scopeID, FiscalPeriodID: periodID, ExpectedGateVersion: 2, SoftCloseRunID: softCloseRunID, SoftCloseControlEpoch: 1, SoftClosePolicyVersion: "soft-close-policy-v1", CloseRunID: firstCloseRunID, CloseType: gl.CloseTypeInitialHardClose, IdempotencyKey: "integration-barrier-acquire-1", CorrelationID: uuid.NewString(), CausationID: uuid.NewString()}
+	acquire := gl.AcquirePostingBarrierCommand{CommandID: uuid.New(), AccountingScopeID: scopeID, FiscalPeriodID: periodID, ExpectedGateVersion: 2, SoftCloseRunID: softCloseRunID, SoftCloseControlEpoch: 1, SoftClosePolicyVersion: "soft-close-policy-v1", CloseRunID: firstCloseRunID, CloseType: gl.CloseTypeInitialHardClose, IdempotencyKey: uuid.NewString(), CorrelationID: uuid.NewString(), CausationID: uuid.NewString()}
 	acquired, err := service.AcquirePostingBarrier(ctx, actor, acquire)
 	if err != nil {
 		t.Fatal(err)
@@ -210,7 +210,7 @@ func TestGLPostingBarrierRepositoryTransfersReleasesAndFinalizes(t *testing.T) {
 		t.Fatalf("acquired gate = %#v", acquired.Gate)
 	}
 
-	release, err := service.ReleasePostingBarrier(ctx, actor, gl.ReleasePostingBarrierCommand{CommandID: uuid.New(), AccountingScopeID: scopeID, FiscalPeriodID: periodID, ExpectedGateVersion: 3, CloseRunID: firstCloseRunID, IdempotencyKey: "integration-barrier-release-1", CorrelationID: uuid.NewString(), CausationID: uuid.NewString()})
+	release, err := service.ReleasePostingBarrier(ctx, actor, gl.ReleasePostingBarrierCommand{CommandID: uuid.New(), AccountingScopeID: scopeID, FiscalPeriodID: periodID, ExpectedGateVersion: 3, CloseRunID: firstCloseRunID, IdempotencyKey: uuid.NewString(), CorrelationID: uuid.NewString(), CausationID: uuid.NewString()})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -218,7 +218,7 @@ func TestGLPostingBarrierRepositoryTransfersReleasesAndFinalizes(t *testing.T) {
 		t.Fatalf("released gate = %#v", release.Gate)
 	}
 
-	secondAcquire, err := service.AcquirePostingBarrier(ctx, actor, gl.AcquirePostingBarrierCommand{CommandID: uuid.New(), AccountingScopeID: scopeID, FiscalPeriodID: periodID, ExpectedGateVersion: 4, SoftCloseRunID: softCloseRunID, SoftCloseControlEpoch: 2, SoftClosePolicyVersion: "soft-close-policy-v1", CloseRunID: secondCloseRunID, CloseType: gl.CloseTypeInitialHardClose, IdempotencyKey: "integration-barrier-acquire-2", CorrelationID: uuid.NewString(), CausationID: uuid.NewString()})
+	secondAcquire, err := service.AcquirePostingBarrier(ctx, actor, gl.AcquirePostingBarrierCommand{CommandID: uuid.New(), AccountingScopeID: scopeID, FiscalPeriodID: periodID, ExpectedGateVersion: 4, SoftCloseRunID: softCloseRunID, SoftCloseControlEpoch: 2, SoftClosePolicyVersion: "soft-close-policy-v1", CloseRunID: secondCloseRunID, CloseType: gl.CloseTypeInitialHardClose, IdempotencyKey: uuid.NewString(), CorrelationID: uuid.NewString(), CausationID: uuid.NewString()})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -226,7 +226,7 @@ func TestGLPostingBarrierRepositoryTransfersReleasesAndFinalizes(t *testing.T) {
 		t.Fatalf("second acquisition = %#v", secondAcquire.Gate)
 	}
 
-	finalize := gl.FinalizePostingGateCommand{CommandID: uuid.New(), AccountingScopeID: scopeID, FiscalPeriodID: periodID, ExpectedGateVersion: 5, CloseRunID: secondCloseRunID, FinalLedgerWatermark: 3, IdempotencyKey: "integration-barrier-finalize-1", CorrelationID: uuid.NewString(), CausationID: uuid.NewString()}
+	finalize := gl.FinalizePostingGateCommand{CommandID: uuid.New(), AccountingScopeID: scopeID, FiscalPeriodID: periodID, ExpectedGateVersion: 5, CloseRunID: secondCloseRunID, FinalLedgerWatermark: 3, IdempotencyKey: uuid.NewString(), CorrelationID: uuid.NewString(), CausationID: uuid.NewString()}
 	finalized, err := service.FinalizePostingGate(ctx, actor, finalize)
 	if err != nil {
 		t.Fatal(err)
