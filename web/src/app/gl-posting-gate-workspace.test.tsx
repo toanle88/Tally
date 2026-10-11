@@ -74,7 +74,7 @@ describe('GL posting-gate monitor', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Exit soft-close gate' }))
     await waitFor(() => expect(glExitSoftCloseGate).toHaveBeenCalledTimes(1))
-    const request = vi.mocked(glExitSoftCloseGate).mock.calls[0][0] as { body: { expectedVersion: number; data: { softCloseRunId: string; controlEpoch: number } }; headers: { 'Idempotency-Key': string } }
+    const request = vi.mocked(glExitSoftCloseGate).mock.calls[0][0]
     expect(request.body.expectedVersion).toBe(2)
     expect(request.body.data.softCloseRunId).toBe('soft-close-run-1')
     expect(request.body.data.controlEpoch).toBe(1)

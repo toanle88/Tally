@@ -67,7 +67,11 @@ func TestGLSoftCloseGateRepositoryEntersExitsAtomicallyAndReplays(t *testing.T) 
 	if err := fixture.pool.QueryRow(ctx, `SELECT gate_mode, active_soft_close_run_id, active_soft_close_control_epoch, gate_version, soft_close_restrictions FROM gl.period_posting_gate WHERE accounting_scope_id = $1 AND fiscal_period_id = $2`, scopeID, periodID).Scan(&mode, &storedRun, &epoch, &gateVersion, &storedRestrictions); err != nil {
 		t.Fatal(err)
 	}
-	if mode != gl.PostingGateSoftClosePolicy || storedRun != runID || epoch != 4 || gateVersion != 2 || string(storedRestrictions) != `{"ordinaryPosting":"evaluator-controlled"}` {
+	var storedPolicy map[string]string
+	if err := json.Unmarshal(storedRestrictions, &storedPolicy); err != nil {
+		t.Fatal(err)
+	}
+	if mode != gl.PostingGateSoftClosePolicy || storedRun != runID || epoch != 4 || gateVersion != 2 || storedPolicy["ordinaryPosting"] != "evaluator-controlled" {
 		t.Fatalf("stored entry = mode %s, run %s, epoch %d, version %d, restrictions %s", mode, storedRun, epoch, gateVersion, storedRestrictions)
 	}
 	var enteredOutbox int
@@ -99,12 +103,13 @@ func TestGLSoftCloseGateRepositoryEntersExitsAtomicallyAndReplays(t *testing.T) 
 		t.Fatalf("exit result = %#v", exit)
 	}
 	var activeRun *uuid.UUID
+	var activeEpoch *int64
 	var frozenSummary []byte
-	if err := fixture.pool.QueryRow(ctx, `SELECT gate_mode, active_soft_close_run_id, active_soft_close_control_epoch, last_frozen_admission_summary FROM gl.period_posting_gate WHERE accounting_scope_id = $1 AND fiscal_period_id = $2`, scopeID, periodID).Scan(&mode, &activeRun, &epoch, &frozenSummary); err != nil {
+	if err := fixture.pool.QueryRow(ctx, `SELECT gate_mode, active_soft_close_run_id, active_soft_close_control_epoch, last_frozen_admission_summary FROM gl.period_posting_gate WHERE accounting_scope_id = $1 AND fiscal_period_id = $2`, scopeID, periodID).Scan(&mode, &activeRun, &activeEpoch, &frozenSummary); err != nil {
 		t.Fatal(err)
 	}
-	if mode != gl.PostingGateOpen || activeRun != nil || epoch != 0 || len(frozenSummary) == 0 || string(frozenSummary) == "null" {
-		t.Fatalf("stored exit = mode %s, run %v, epoch %d, summary %s", mode, activeRun, epoch, frozenSummary)
+	if mode != gl.PostingGateOpen || activeRun != nil || activeEpoch != nil || len(frozenSummary) == 0 || string(frozenSummary) == "null" {
+		t.Fatalf("stored exit = mode %s, run %v, epoch %v, summary %s", mode, activeRun, activeEpoch, frozenSummary)
 	}
 	var exitedOutbox int
 	if err := fixture.pool.QueryRow(ctx, `SELECT COUNT(*) FROM integration.outbox WHERE aggregate_id = $1 AND event_type = $2 AND source_context = 'gl'`, gate.ID, gl.SoftCloseGateExitedEventType).Scan(&exitedOutbox); err != nil {

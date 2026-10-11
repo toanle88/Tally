@@ -196,7 +196,11 @@ func (repository *PostgresSoftCloseGateRepository) updateSoftCloseGate(ctx conte
 			return err
 		}
 	}
-	historyJSON, err := json.Marshal(mutation.After.FrozenAdmissionSummaryHistory)
+	history := mutation.After.FrozenAdmissionSummaryHistory
+	if history == nil {
+		history = []FrozenGateAdmissionSummary{}
+	}
+	historyJSON, err := json.Marshal(history)
 	if err != nil {
 		return err
 	}
