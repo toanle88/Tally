@@ -71,6 +71,23 @@ describe('GL posting workbench', () => {
     expect(screen.getAllByText('JE-2026-000001')).toHaveLength(2)
   })
 
+  it('submits scoped reopen evidence for a reopen correction', async () => {
+    vi.mocked(glSubmitPostingRequest).mockResolvedValue({ data: establishedResult, error: undefined } as never)
+    renderWithScope(<GlPostingWorkspace view="request" />)
+    fireEvent.change(screen.getByRole('combobox', { name: 'Posting purpose' }), { target: { value: 'ReopenCorrection' } })
+    fireEvent.change(screen.getByRole('textbox', { name: 'Source aggregate type' }), { target: { value: 'manual-journal' } })
+    fireEvent.change(screen.getByRole('textbox', { name: 'Reopen request ID' }), { target: { value: 'reopen-request-1' } })
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Control-authority epoch' }), { target: { value: '3' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Submit posting request' }))
+
+    await waitFor(() => expect(glSubmitPostingRequest).toHaveBeenCalledTimes(1))
+    const request = vi.mocked(glSubmitPostingRequest).mock.calls[0][0] as { body: { data: { postingPurpose: string; sourceAggregateType: string; reopenRequestId?: string; controlAuthorityEpoch?: number } } }
+    expect(request.body.data.postingPurpose).toBe('ReopenCorrection')
+    expect(request.body.data.sourceAggregateType).toBe('manual-journal')
+    expect(request.body.data.reopenRequestId).toBe('reopen-request-1')
+    expect(request.body.data.controlAuthorityEpoch).toBe(3)
+  })
+
   it('reuses command identity and conversion evidence after an ambiguous retry', async () => {
     vi.mocked(glSubmitPostingRequest)
       .mockResolvedValueOnce({ data: undefined, error: { detail: 'temporary gateway failure' } } as never)
@@ -179,4 +196,29 @@ describe('GL posting workbench', () => {
     expect(screen.getByText('Linked reversal established')).toBeInTheDocument()
     expect(screen.getByText('JE-2026-000002')).toBeInTheDocument()
   })
+
+	it('carries scoped reopen request and authority evidence for a linked reversal', async () => {
+		vi.mocked(glReverseJournalEntry).mockResolvedValue({ data: { status: 'established', aggregateId: 'reversal-2', aggregateVersion: 1, correlationId: 'reversal-correlation-2', links: { self: '/api/v1/general-ledger/actions/reverse-journal-entry' }, data: { outcome: 'JournalEntryReversed', reversalJournalNumber: 'JE-2026-000003', replayed: false } }, error: undefined } as never)
+		const scopedPostedResult = {
+			...establishedResult,
+			data: {
+				...establishedResult.data,
+				gateEvidence: { ...establishedResult.data.gateEvidence, gateMode: 'ScopedReopen', reopenRequestId: 'reopen-request-1', controlAuthorityEpoch: 3 },
+				lines: [
+					{ accountId: 'account-cash', debitOrCredit: 'debit', lineCurrencyMode: 'TransactionAndFunctional', transactionAmount: '100.00', functionalAmount: '100.00', segmentCombinationId: 'combination-cash' },
+					{ accountId: 'account-revenue', debitOrCredit: 'credit', lineCurrencyMode: 'TransactionAndFunctional', transactionAmount: '100.00', functionalAmount: '100.00', segmentCombinationId: 'combination-revenue' },
+				],
+			},
+		}
+		renderWithScope(<GlPostingWorkspace view="result" />, [{ pathname: '/general-ledger/gl-scr-02', state: { postingResult: scopedPostedResult } }])
+
+		fireEvent.change(screen.getByRole('textbox', { name: 'Correction reason' }), { target: { value: 'Correct scoped classification' } })
+		fireEvent.change(screen.getByRole('textbox', { name: 'Authorization evidence ID' }), { target: { value: 'authorization-2' } })
+		fireEvent.click(screen.getByRole('button', { name: 'Reverse posted journal' }))
+
+		await waitFor(() => expect(glReverseJournalEntry).toHaveBeenCalledTimes(1))
+		const request = vi.mocked(glReverseJournalEntry).mock.calls[0][0] as unknown as { body: { data: { reopenRequestId?: string; controlAuthorityEpoch?: number } } }
+		expect(request.body.data.reopenRequestId).toBe('reopen-request-1')
+		expect(request.body.data.controlAuthorityEpoch).toBe(3)
+	})
 })

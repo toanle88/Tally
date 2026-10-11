@@ -40,6 +40,8 @@ type ReverseJournalEntryCommand struct {
 	PeriodStateVersion     int64
 	PostingGateVersion     int64
 	PostingAuthorizationID uuid.UUID
+	ReopenRequestID        *uuid.UUID
+	ControlAuthorityEpoch  *int64
 
 	SourceContext       string
 	SourceAggregateType string
@@ -106,6 +108,15 @@ func (command ReverseJournalEntryCommand) Validate() error {
 	}
 	if command.CorrelationID == "" || command.CausationID == "" {
 		issue("required", "correlation", "correlation and causation references are required")
+	}
+	if (command.ReopenRequestID == nil) != (command.ControlAuthorityEpoch == nil) {
+		issue("required", "reopenEvidence", "reopen request and control authority epoch must be supplied together")
+	}
+	if command.ReopenRequestID != nil && *command.ReopenRequestID == uuid.Nil {
+		issue("required", "reopenRequestId", "reopenRequestId must be a non-zero UUID")
+	}
+	if command.ControlAuthorityEpoch != nil && *command.ControlAuthorityEpoch < 1 {
+		issue("invalid_version", "controlAuthorityEpoch", "controlAuthorityEpoch must be positive")
 	}
 	if len(issues) > 0 {
 		return &PostingValidationError{Issues: issues}
@@ -250,7 +261,7 @@ func (service *JournalReversalService) Execute(ctx context.Context, actor Actor,
 	if err != nil {
 		return service.reject(ctx, command, actor, "rejected", err)
 	}
-	if err := validatePostingGateEvidence(validationRequest, gateEvidence); err != nil {
+	if err := validatePostingGateEvidenceAt(validationRequest, gateEvidence, service.clock().UTC()); err != nil {
 		return service.reject(ctx, command, actor, "rejected", err)
 	}
 	reversalID := command.OriginalJournalID
@@ -302,6 +313,14 @@ func validateReversalOriginal(command ReverseJournalEntryCommand, original Journ
 
 func buildReversalRequest(command ReverseJournalEntryCommand, original JournalEntrySnapshot) PostingRequest {
 	authorizationID := command.PostingAuthorizationID
+	postingPurpose := PostingPurposePolicyAdjustment
+	var reopenRequestID *uuid.UUID
+	var controlAuthorityEpoch *int64
+	if command.ReopenRequestID != nil {
+		postingPurpose = PostingPurposeReopenCorrection
+		reopenRequestID = cloneUUIDValue(command.ReopenRequestID)
+		controlAuthorityEpoch = cloneInt64Pointer(command.ControlAuthorityEpoch)
+	}
 	return PostingRequest{
 		ContractVersion: PostingContractVersion,
 		RequestID:       command.CommandID,
@@ -309,7 +328,7 @@ func buildReversalRequest(command ReverseJournalEntryCommand, original JournalEn
 		AccountingScope: original.Request.AccountingScope, AccountingScopeID: command.AccountingScopeID,
 		PostingDate: command.EffectivePostingDate, FiscalPeriodID: command.FiscalPeriodID,
 		PeriodStateVersion: command.PeriodStateVersion, PostingGateVersion: command.PostingGateVersion,
-		PostingPurpose: PostingPurposePolicyAdjustment, PostingAuthorizationID: &authorizationID,
+		PostingPurpose: postingPurpose, PostingAuthorizationID: &authorizationID, ReopenRequestID: reopenRequestID, ControlAuthorityEpoch: controlAuthorityEpoch,
 		TransactionCurrency: original.Request.TransactionCurrency, ConversionEvidence: original.Request.ConversionEvidence,
 		Description: "Reversal of " + original.Journal.Number + ": " + command.CorrectionReason,
 		Lines:       invertPostingLines(original.Lines), IdempotencyKey: command.IdempotencyKey,
@@ -333,24 +352,27 @@ func invertPostingLines(lines []PostingLine) []PostingLine {
 
 func journalReversalFingerprint(command ReverseJournalEntryCommand) (string, error) {
 	payload := struct {
-		OriginalJournalID      uuid.UUID `json:"journalId"`
-		AccountingScopeID      uuid.UUID `json:"accountingScopeId"`
-		ExpectedJournalVersion int64     `json:"expectedVersion"`
-		CorrectionReason       string    `json:"reason"`
-		EffectivePostingDate   time.Time `json:"effectivePostingDate"`
-		FiscalPeriodID         uuid.UUID `json:"fiscalPeriodId"`
-		PeriodStateVersion     int64     `json:"periodStateVersion"`
-		PostingGateVersion     int64     `json:"postingGateVersion"`
-		PostingAuthorizationID uuid.UUID `json:"postingAuthorizationId"`
-		SourceContext          string    `json:"sourceContext"`
-		SourceAggregateType    string    `json:"sourceAggregateType"`
-		SourceAggregateID      uuid.UUID `json:"sourceAggregateId"`
-		SourceVersion          int64     `json:"sourceVersion"`
+		OriginalJournalID      uuid.UUID  `json:"journalId"`
+		AccountingScopeID      uuid.UUID  `json:"accountingScopeId"`
+		ExpectedJournalVersion int64      `json:"expectedVersion"`
+		CorrectionReason       string     `json:"reason"`
+		EffectivePostingDate   time.Time  `json:"effectivePostingDate"`
+		FiscalPeriodID         uuid.UUID  `json:"fiscalPeriodId"`
+		PeriodStateVersion     int64      `json:"periodStateVersion"`
+		PostingGateVersion     int64      `json:"postingGateVersion"`
+		PostingAuthorizationID uuid.UUID  `json:"postingAuthorizationId"`
+		ReopenRequestID        *uuid.UUID `json:"reopenRequestId,omitempty"`
+		ControlAuthorityEpoch  *int64     `json:"controlAuthorityEpoch,omitempty"`
+		SourceContext          string     `json:"sourceContext"`
+		SourceAggregateType    string     `json:"sourceAggregateType"`
+		SourceAggregateID      uuid.UUID  `json:"sourceAggregateId"`
+		SourceVersion          int64      `json:"sourceVersion"`
 	}{
 		OriginalJournalID: command.OriginalJournalID, AccountingScopeID: command.AccountingScopeID, ExpectedJournalVersion: command.ExpectedJournalVersion,
 		CorrectionReason: command.CorrectionReason, EffectivePostingDate: command.EffectivePostingDate, FiscalPeriodID: command.FiscalPeriodID,
 		PeriodStateVersion: command.PeriodStateVersion, PostingGateVersion: command.PostingGateVersion, PostingAuthorizationID: command.PostingAuthorizationID,
 		SourceContext: command.SourceContext, SourceAggregateType: command.SourceAggregateType, SourceAggregateID: command.SourceAggregateID, SourceVersion: command.SourceVersion,
+		ReopenRequestID: command.ReopenRequestID, ControlAuthorityEpoch: command.ControlAuthorityEpoch,
 	}
 	data, err := json.Marshal(payload)
 	if err != nil {

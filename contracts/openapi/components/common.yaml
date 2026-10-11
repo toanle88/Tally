@@ -188,6 +188,20 @@ schemas:
       periodStateVersion: { type: integer, minimum: 1 }
       postingGateVersion: { type: integer, minimum: 1 }
       gateMode: { type: string }
+      reopenRequestId: { $ref: '#/schemas/Uuid' }
+      authorizationScope: { $ref: '#/schemas/GlPostingAuthorizationScope' }
+      authorizationExpiry: { type: string, format: date-time }
+      controlAuthorityEpoch: { type: integer, minimum: 1 }
+  GlPostingAuthorizationScope:
+    type: object
+    additionalProperties: false
+    properties:
+      accountIds:
+        type: array
+        items: { $ref: '#/schemas/Uuid' }
+      transactionClasses:
+        type: array
+        items: { type: string }
   GlPostingValidationIssue:
     type: object
     additionalProperties: false

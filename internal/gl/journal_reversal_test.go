@@ -96,6 +96,81 @@ func TestJournalReversalCreatesImmutableLinkedOppositeEntry(t *testing.T) {
 	}
 }
 
+func TestJournalReversalAdmitsScopedReopenCorrection(t *testing.T) {
+	repository := NewMemoryPostingRepository()
+	audit := &MemoryPostingAuditRecorder{}
+	clockTime := time.Date(2026, 1, 20, 8, 0, 0, 0, time.UTC)
+	posting, err := NewPostingService(
+		repository,
+		MemoryPostingAuthorizer{Decision: PostingAuthorizationDecision{Allowed: true}},
+		AllowAllPostingReferenceValidator{},
+		MemoryPostingGateValidator{},
+		AllowAllPostingApprovalValidator{},
+		audit,
+		testPostingCurrencyRegistry(t),
+		func() time.Time { return clockTime },
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	actor := Actor{UserID: uuid.New(), SubjectReference: "scoped-reopen-actor"}
+	originalRequest := validPostingRequest(t, "scoped-original")
+	original, err := posting.Execute(context.Background(), actor, originalRequest)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	reopenRequestID := uuid.New()
+	controlAuthorityEpoch := int64(9)
+	sourceAggregateType := "manual-journal"
+	accountIDs := make([]uuid.UUID, 0, len(originalRequest.Lines))
+	for _, line := range originalRequest.Lines {
+		accountIDs = append(accountIDs, line.AccountID)
+	}
+	_, scopeJSON, err := canonicalScopedReopenScope(ScopedReopenScope{AccountIDs: accountIDs, TransactionClasses: []string{sourceAggregateType}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	gateEvidence := PostingGateEvidence{
+		FiscalPeriodID: original.GateEvidence.FiscalPeriodID, PeriodStateVersion: original.GateEvidence.PeriodStateVersion,
+		PostingGateVersion: original.GateEvidence.PostingGateVersion, GateMode: PostingGateScopedReopen,
+		ReopenRequestID: &reopenRequestID, AuthorizationScope: scopeJSON,
+		AuthorizationExpiry: timePointer(clockTime.Add(time.Hour)), ControlAuthorityEpoch: &controlAuthorityEpoch,
+	}
+	reversal, err := NewJournalReversalService(
+		repository,
+		MemoryJournalReversalAuthorizer{Decision: PostingAuthorizationDecision{Allowed: true}},
+		AllowAllPostingReferenceValidator{},
+		MemoryPostingGateValidator{Evidence: gateEvidence},
+		testPostingCurrencyRegistry(t),
+		func() time.Time { return clockTime },
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	command := reverseCommandForJournal(original, originalRequest.AccountingScopeID, uuid.New(), "scoped-reversal")
+	command.SourceAggregateType = sourceAggregateType
+	command.ReopenRequestID = &reopenRequestID
+	command.ControlAuthorityEpoch = &controlAuthorityEpoch
+
+	result, err := reversal.Execute(context.Background(), actor, command)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Reversal.Journal.PostingPurpose != PostingPurposeReopenCorrection {
+		t.Fatalf("posting purpose = %q, want %q", result.Reversal.Journal.PostingPurpose, PostingPurposeReopenCorrection)
+	}
+	if result.Reversal.Journal.ReversalOfJournalEntryID == nil || *result.Reversal.Journal.ReversalOfJournalEntryID != original.AggregateID() {
+		t.Fatalf("reversal link = %#v", result.Reversal.Journal.ReversalOfJournalEntryID)
+	}
+	if result.Reversal.Request.ReopenRequestID == nil || *result.Reversal.Request.ReopenRequestID != reopenRequestID || result.Reversal.Request.ControlAuthorityEpoch == nil || *result.Reversal.Request.ControlAuthorityEpoch != controlAuthorityEpoch {
+		t.Fatalf("reopen correction evidence = %#v", result.Reversal.Request)
+	}
+	if result.Original.Journal.CorrectionReason != "" || result.Original.Journal.ID != original.AggregateID() {
+		t.Fatalf("original journal was changed = %#v", result.Original.Journal)
+	}
+}
+
 func TestJournalReversalReplaysAndAllowsOnlyOneCorrection(t *testing.T) {
 	service, posting, actor, original, scopeID := newMemoryJournalReversalFixture(t)
 	command := reverseCommandForJournal(original, scopeID, uuid.New(), "replay-source")

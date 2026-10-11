@@ -710,20 +710,20 @@ hard-closed period and the result determines whether reclose is required.
 
 Acceptance criteria:
 
-- [ ] `OpenScopedReopenGate` changes `HardClosed` to `ScopedReopen`, records
+- [x] `OpenScopedReopenGate` changes `HardClosed` to `ScopedReopen`, records
   approved accounting scope, expiry, reopen request owner, expected gate
   version, and zero reopen counters.
-- [ ] Reopen correction postings are admitted only when their request,
+- [x] Reopen correction postings are admitted only when their request,
   account/transaction scope, authorization, epoch/expiry, period, and gate
   version match the active gate.
-- [ ] `CloseScopedReopenGate` freezes and returns the reopen summary. With zero
+- [x] `CloseScopedReopenGate` freezes and returns the reopen summary. With zero
   admissions and approved no-change policy it restores `HardClosed`; with any
   admission it changes to `CloseOnly` and retains the owner and summary for
   reclose handoff.
-- [ ] Expiry rejects new postings but does not silently clear the owner or
+- [x] Expiry rejects new postings but does not silently clear the owner or
   discard the summary. Duplicate and changed-fingerprint commands return the
   established result or typed conflict.
-- [ ] GL never edits the original posted journal; correction subledgers or an
+- [x] GL never edits the original posted journal; correction subledgers or an
   authorized manual-journal producer submit linked reversals/replacements.
 - [ ] The monitor and journal screens show approved scope, expiry, owner,
   counters, frozen summary, permitted posting purpose, and whether reclose is
@@ -748,6 +748,18 @@ Required test evidence:
   remains the sole journal/gate authority.
 - [ ] API/UI/accessibility tests cover permissions, safe scope display,
   rejection reasons, and correction/recovery next actions.
+
+#### User Story 8 implementation evidence — 2026-10-11
+
+The implementation is on branch `feat/gl-us8-scoped-reopen-gate`. The GL-owned
+scoped-reopen transitions, immutable scope/expiry evidence, correction posting
+admission, PostgreSQL adapter and migration, generic action handlers, and
+focused API/domain/UI implementation are present. PostgreSQL runtime,
+cross-context FPM handoff, browser, and accessibility qualification remain
+open; the frontend Vitest runner timed out in the current environment after
+startup. The exact acceptance traceability and verification commands are
+recorded in
+[`docs/verification/DLV-FR-GL-009-010-us8-scoped-reopen-gate.md`](../../verification/DLV-FR-GL-009-010-us8-scoped-reopen-gate.md).
 
 ### User Story 9 — Open and close operational reopen, then begin reclose
 

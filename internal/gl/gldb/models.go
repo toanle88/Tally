@@ -140,6 +140,8 @@ type GlJournalEntry struct {
 	PostingGateMode                string
 	ReversalOfJournalEntryID       pgtype.UUID
 	CorrectionReason               pgtype.Text
+	ReopenAuthorizationScope       []byte
+	ReopenAuthorizationExpiry      pgtype.Timestamptz
 }
 
 type GlJournalEntryLine struct {
@@ -211,6 +213,12 @@ type GlPeriodPostingGate struct {
 	FinalLedgerWatermark           pgtype.Int8
 	FinalizedCloseRunID            pgtype.UUID
 	FinalizationCommandFingerprint pgtype.Text
+	ActiveReopenRequestID          pgtype.UUID
+	ReopenAuthorizationScope       []byte
+	ReopenAuthorizationExpiry      pgtype.Timestamptz
+	ReopenControlAuthorityEpoch    pgtype.Int8
+	ReopenApproval                 []byte
+	ReopenNoChangeClosePermitted   bool
 }
 
 type GlPostingAttempt struct {

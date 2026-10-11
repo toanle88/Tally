@@ -72,7 +72,7 @@ func (repository *PostgresPostingRepository) CommitPosting(ctx context.Context, 
 		existing.Replayed = true
 		return existing, nil
 	}
-	if err := validatePostingGateEvidence(commit.Request, gate.Evidence); err != nil {
+	if err := validatePostingGateEvidenceAt(commit.Request, gate.Evidence, commit.Now.UTC()); err != nil {
 		return PostingResult{}, err
 	}
 	if err := validatePostingGateAdmissionOwner(commit.Request, gate); err != nil {
@@ -133,14 +133,14 @@ func (repository *PostgresPostingRepository) CommitPosting(ctx context.Context, 
 			journal_entry_id, journal_number, accounting_scope_id, tenant_id, legal_entity_id, ledger_id, accounting_book_id,
 			functional_currency, source_context, source_aggregate_type, source_aggregate_id, source_version, request_id,
 			idempotency_key, request_fingerprint, posting_date, fiscal_period_id, period_state_version, posting_gate_version, posting_gate_mode,
-			posting_purpose, adjustment_period_indicator, posting_authorization_id, close_run_id, reopen_request_id, operational_reopen_request_id, control_authority_epoch,
+		posting_purpose, adjustment_period_indicator, posting_authorization_id, close_run_id, reopen_request_id, operational_reopen_request_id, control_authority_epoch, reopen_authorization_scope, reopen_authorization_expiry,
 			transaction_currency, conversion_evidence, description, lifecycle_status, approval_reference, aggregate_version,
 			ledger_position, audit_reference, correlation_id, causation_id, submitted_by_user_id, created_at
-		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39)`,
+		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41)`,
 		journalID, journalNumber, commit.Request.AccountingScopeID, commit.Request.AccountingScope.TenantID(), commit.Request.AccountingScope.LegalEntityID(), commit.Request.AccountingScope.LedgerID(), commit.Request.AccountingScope.AccountingBookID(),
 		commit.Request.AccountingScope.FunctionalCurrency(), commit.Request.SourceContext, commit.Request.SourceAggregateType, commit.Request.SourceAggregateID, commit.Request.SourceVersion, commit.Request.RequestID,
 		commit.Request.IdempotencyKey, commit.Request.RequestFingerprint, commit.Request.PostingDate, commit.Request.FiscalPeriodID, commit.Request.PeriodStateVersion, commit.Request.PostingGateVersion,
-		gate.Evidence.GateMode, commit.Request.PostingPurpose, commit.Request.AdjustmentPeriodIndicator, nullablePostingUUID(commit.Request.PostingAuthorizationID), nullablePostingUUID(commit.Request.CloseRunID), nullablePostingUUID(commit.Request.ReopenRequestID), nullablePostingUUID(commit.Request.OperationalReopenRequestID), nullablePostingInt64(commit.Request.ControlAuthorityEpoch),
+		gate.Evidence.GateMode, commit.Request.PostingPurpose, commit.Request.AdjustmentPeriodIndicator, nullablePostingUUID(commit.Request.PostingAuthorizationID), nullablePostingUUID(commit.Request.CloseRunID), nullablePostingUUID(commit.Request.ReopenRequestID), nullablePostingUUID(commit.Request.OperationalReopenRequestID), nullablePostingInt64(commit.Request.ControlAuthorityEpoch), nonNullPostingJSON(gate.Evidence.AuthorizationScope), nullablePostingTime(gate.Evidence.AuthorizationExpiry),
 		commit.Request.TransactionCurrency, nullablePostingJSON(conversionJSON), commit.Request.Description, storedStatus, nullablePostingJSON(approvalJSON), 1,
 		ledgerPosition, auditReference, correlationID, causationID, commit.Actor.UserID, now)
 	if err != nil {
@@ -280,6 +280,7 @@ type postgresPostingGate struct {
 	Evidence                PostingGateEvidence
 	LedgerPosition          int64
 	ActiveAdmissionCounters ActiveGateAdmissionCounters
+	ActiveReopenRequestID   *uuid.UUID
 	ActiveCloseRunID        *uuid.UUID
 	ActiveCloseType         string
 }
@@ -287,8 +288,8 @@ type postgresPostingGate struct {
 func (repository *PostgresPostingRepository) lockGate(ctx context.Context, tx pgx.Tx, request PostingRequest) (postgresPostingGate, error) {
 	var gate postgresPostingGate
 	var policyVersion string
-	var restrictions, countersJSON []byte
-	err := tx.QueryRow(ctx, `SELECT gate_mode, period_state_version, gate_version, next_ledger_position, COALESCE(soft_close_policy_version, ''), soft_close_restrictions, active_close_run_id, COALESCE(active_close_type, ''), active_gate_admission_counters FROM gl.period_posting_gate WHERE accounting_scope_id = $1 AND fiscal_period_id = $2 FOR UPDATE`, request.AccountingScopeID, request.FiscalPeriodID).Scan(&gate.Evidence.GateMode, &gate.Evidence.PeriodStateVersion, &gate.Evidence.PostingGateVersion, &gate.LedgerPosition, &policyVersion, &restrictions, &gate.ActiveCloseRunID, &gate.ActiveCloseType, &countersJSON)
+	var restrictions, reopenScope, countersJSON []byte
+	err := tx.QueryRow(ctx, `SELECT gate_mode, period_state_version, gate_version, next_ledger_position, COALESCE(soft_close_policy_version, ''), soft_close_restrictions, active_reopen_request_id, reopen_authorization_scope, reopen_authorization_expiry, reopen_control_authority_epoch, active_close_run_id, COALESCE(active_close_type, ''), active_gate_admission_counters FROM gl.period_posting_gate WHERE accounting_scope_id = $1 AND fiscal_period_id = $2 FOR UPDATE`, request.AccountingScopeID, request.FiscalPeriodID).Scan(&gate.Evidence.GateMode, &gate.Evidence.PeriodStateVersion, &gate.Evidence.PostingGateVersion, &gate.LedgerPosition, &policyVersion, &restrictions, &gate.ActiveReopenRequestID, &reopenScope, &gate.Evidence.AuthorizationExpiry, &gate.Evidence.ControlAuthorityEpoch, &gate.ActiveCloseRunID, &gate.ActiveCloseType, &countersJSON)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return postgresPostingGate{}, ErrPostingReferenceUnavailable
 	}
@@ -298,6 +299,8 @@ func (repository *PostgresPostingRepository) lockGate(ctx context.Context, tx pg
 	gate.Evidence.FiscalPeriodID = request.FiscalPeriodID
 	gate.Evidence.SoftClosePolicyVersion = policyVersion
 	gate.Evidence.SoftCloseRestrictions = append(json.RawMessage(nil), restrictions...)
+	gate.Evidence.ReopenRequestID = cloneUUIDValue(gate.ActiveReopenRequestID)
+	gate.Evidence.AuthorizationScope = append(json.RawMessage(nil), reopenScope...)
 	if len(countersJSON) > 0 && string(countersJSON) != "null" {
 		if err := json.Unmarshal(countersJSON, &gate.ActiveAdmissionCounters); err != nil {
 			return postgresPostingGate{}, err
@@ -313,7 +316,7 @@ func validatePostingGateAdmissionOwner(request PostingRequest, gate postgresPost
 			return fmt.Errorf("%w: close run does not own the posting barrier", ErrPostingGateClosed)
 		}
 	case PostingPurposeReopenCorrection:
-		if gate.ActiveAdmissionCounters.ControlOwnerType != "ReopenRequest" || gate.ActiveAdmissionCounters.ControlOwnerID != uuidValue(request.ReopenRequestID) {
+		if gate.ActiveReopenRequestID == nil || gate.ActiveAdmissionCounters.ControlOwnerType != ScopedReopenGateOwnerType || gate.ActiveAdmissionCounters.ControlOwnerID != uuidValue(request.ReopenRequestID) || *gate.ActiveReopenRequestID != uuidValue(request.ReopenRequestID) {
 			return fmt.Errorf("%w: reopen request does not own the posting gate", ErrPostingGateClosed)
 		}
 	case PostingPurposeOperationalReopen:
@@ -376,10 +379,13 @@ func (repository *PostgresPostingRepository) findJournal(ctx context.Context, tx
 		journalNumber, fingerprint, sourceContext, sourceAggregateType, status string
 		gateMode                                                               string
 		version, position, periodVersion, gateVersion, sourceVersion           int64
-		approvalJSON                                                           []byte
+		reopenRequestID                                                        *uuid.UUID
+		controlAuthorityEpoch                                                  *int64
+		approvalJSON, reopenScope                                              []byte
+		reopenExpiry                                                           *time.Time
 	)
-	query := `SELECT journal_entry_id, journal_number, request_fingerprint, source_context, source_aggregate_type, source_aggregate_id, source_version, fiscal_period_id, period_state_version, posting_gate_version, posting_gate_mode, lifecycle_status, approval_reference, aggregate_version, COALESCE(ledger_position, 0), audit_reference FROM gl.journal_entry WHERE ` + predicate + ` FOR UPDATE`
-	err := tx.QueryRow(ctx, query, args...).Scan(&journalID, &journalNumber, &fingerprint, &sourceContext, &sourceAggregateType, &sourceAggregateID, &sourceVersion, &periodID, &periodVersion, &gateVersion, &gateMode, &status, &approvalJSON, &version, &position, &auditReference)
+	query := `SELECT journal_entry_id, journal_number, request_fingerprint, source_context, source_aggregate_type, source_aggregate_id, source_version, fiscal_period_id, period_state_version, posting_gate_version, posting_gate_mode, reopen_request_id, reopen_authorization_scope, reopen_authorization_expiry, control_authority_epoch, lifecycle_status, approval_reference, aggregate_version, COALESCE(ledger_position, 0), audit_reference FROM gl.journal_entry WHERE ` + predicate + ` FOR UPDATE`
+	err := tx.QueryRow(ctx, query, args...).Scan(&journalID, &journalNumber, &fingerprint, &sourceContext, &sourceAggregateType, &sourceAggregateID, &sourceVersion, &periodID, &periodVersion, &gateVersion, &gateMode, &reopenRequestID, &reopenScope, &reopenExpiry, &controlAuthorityEpoch, &status, &approvalJSON, &version, &position, &auditReference)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return PostingResult{}, false, nil
 	}
@@ -406,7 +412,7 @@ func (repository *PostgresPostingRepository) findJournal(ctx context.Context, tx
 	} else if approval.DecisionOutcome == PostingApprovalOutcomeApproved {
 		approvalStatus = PostingApprovalOutcomeApproved
 	}
-	result := PostingResult{Outcome: outcome, ApprovalRequestID: approval.ApprovalRequestID, NextAction: nextAction, ValidationOutcome: "valid", ApprovalStatus: approvalStatus, SourceReference: fmt.Sprintf("%s:%s:%s:%d", sourceContext, sourceAggregateType, sourceAggregateID, sourceVersion), GateEvidence: PostingGateEvidence{FiscalPeriodID: periodID, PeriodStateVersion: periodVersion, PostingGateVersion: gateVersion, GateMode: gateMode}, AuditReference: auditReference}
+	result := PostingResult{Outcome: outcome, ApprovalRequestID: approval.ApprovalRequestID, NextAction: nextAction, ValidationOutcome: "valid", ApprovalStatus: approvalStatus, SourceReference: fmt.Sprintf("%s:%s:%s:%d", sourceContext, sourceAggregateType, sourceAggregateID, sourceVersion), GateEvidence: PostingGateEvidence{FiscalPeriodID: periodID, PeriodStateVersion: periodVersion, PostingGateVersion: gateVersion, GateMode: gateMode, ReopenRequestID: cloneUUIDValue(reopenRequestID), AuthorizationScope: append(json.RawMessage(nil), reopenScope...), AuthorizationExpiry: reopenExpiry, ControlAuthorityEpoch: cloneInt64Pointer(controlAuthorityEpoch)}, AuditReference: auditReference}
 	result.Journal = &PostingJournal{ID: journalID, Number: journalNumber, Version: version, LedgerPosition: position, Status: status, Approval: &approval, SourceReference: result.SourceReference, RequestFingerprint: fingerprint, GateEvidence: result.GateEvidence, AuditReference: auditReference}
 	lines, err := repository.loadJournalLines(ctx, tx, scopeID, journalID)
 	if err != nil {
@@ -533,6 +539,13 @@ func nullablePostingJSON(value []byte) any {
 	return value
 }
 
+func nonNullPostingJSON(value []byte) any {
+	if len(value) == 0 {
+		return []byte(`{}`)
+	}
+	return value
+}
+
 func nullablePostingFingerprint(value string) any {
 	if value == "" {
 		return nil
@@ -554,6 +567,13 @@ func nullablePostingInt64(value *int64) any {
 	return *value
 }
 
+func nullablePostingTime(value *time.Time) any {
+	if value == nil {
+		return nil
+	}
+	return value.UTC()
+}
+
 func valueOrZero(value *int64) int64 {
 	if value == nil {
 		return 0
@@ -569,6 +589,14 @@ func journalNumber(result PostingResult) string {
 }
 
 func withCurrentPostingGate(result PostingResult, evidence PostingGateEvidence) PostingResult {
+	// A replay returns the established journal fact and its original gate
+	// evidence. Replacing scoped-reopen evidence with the gate's current mode
+	// after closure would make a safe replay appear to have been admitted under
+	// a different authority.
+	if result.Journal != nil && result.Journal.GateEvidence.GateMode != "" {
+		result.GateEvidence = result.Journal.GateEvidence
+		return result
+	}
 	result.GateEvidence = evidence
 	if result.Journal != nil {
 		result.Journal.GateEvidence = evidence

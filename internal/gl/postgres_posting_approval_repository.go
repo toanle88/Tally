@@ -156,7 +156,7 @@ func (repository *PostgresPostingRepository) CommitPostingApprovalDecision(ctx c
 	if err := repository.validateReferences(ctx, tx, subject.Request); err != nil {
 		return PostingApprovalDecisionResult{}, err
 	}
-	if err := validatePostingApprovalGateEvidence(subject.Request, gate.Evidence, commit.Decision.Decision.Outcome); err != nil {
+	if err := validatePostingApprovalGateEvidenceAt(subject.Request, gate.Evidence, commit.Decision.Decision.Outcome, commit.Now.UTC()); err != nil {
 		return PostingApprovalDecisionResult{}, err
 	}
 	if err := validatePostingGateAdmissionOwner(subject.Request, gate); err != nil {
@@ -266,28 +266,29 @@ func loadPostingApprovalSubject(ctx context.Context, queryer postingQueryer, jou
 		functionalCurrency, sourceContext                     string
 		sourceAggregateType, idempotencyKey                   string
 		requestFingerprint, transactionCurrency               string
-		postingPurpose, description, status                   string
+		postingPurpose, description, status, gateMode         string
 		postingDate                                           time.Time
 		periodStateVersion, postingGateVersion, sourceVersion int64
 		adjustmentPeriodIndicator                             bool
-		conversionJSON, approvalJSON                          []byte
+		conversionJSON, approvalJSON, reopenScope             []byte
+		reopenExpiry                                          *time.Time
 		correlationID, causationID                            uuid.UUID
 		submittedByUserID                                     *uuid.UUID
 	)
 	err := queryer.QueryRow(ctx, `
 		SELECT journal_entry_id, journal_number, accounting_scope_id, tenant_id, legal_entity_id, ledger_id, accounting_book_id,
 		       functional_currency, source_context, source_aggregate_type, source_aggregate_id, source_version, request_id,
-		       idempotency_key, request_fingerprint, posting_date, fiscal_period_id, period_state_version, posting_gate_version,
+		       idempotency_key, request_fingerprint, posting_date, fiscal_period_id, period_state_version, posting_gate_version, posting_gate_mode,
 		       posting_purpose, adjustment_period_indicator, posting_authorization_id, close_run_id, reopen_request_id,
-		       operational_reopen_request_id, control_authority_epoch, transaction_currency, conversion_evidence, description,
+		       operational_reopen_request_id, control_authority_epoch, reopen_authorization_scope, reopen_authorization_expiry, transaction_currency, conversion_evidence, description,
 		       lifecycle_status, approval_reference, aggregate_version, COALESCE(ledger_position, 0), audit_reference,
 		       correlation_id, causation_id, submitted_by_user_id
 		FROM gl.journal_entry WHERE journal_entry_id = $1`+lock, journalID).Scan(
 		&journal.ID, &journal.Number, &actualScopeID, &tenantID, &legalEntityID, &ledgerID, &accountingBookID,
 		&functionalCurrency, &sourceContext, &sourceAggregateType, &sourceAggregateID, &sourceVersion, &requestID,
 		&idempotencyKey, &requestFingerprint, &postingDate, &fiscalPeriodID, &periodStateVersion, &postingGateVersion,
-		&postingPurpose, &adjustmentPeriodIndicator, &postingAuthorizationID, &closeRunID, &reopenRequestID,
-		&operationalReopenRequestID, &controlAuthorityEpoch, &transactionCurrency, &conversionJSON, &description,
+		&gateMode, &postingPurpose, &adjustmentPeriodIndicator, &postingAuthorizationID, &closeRunID, &reopenRequestID,
+		&operationalReopenRequestID, &controlAuthorityEpoch, &reopenScope, &reopenExpiry, &transactionCurrency, &conversionJSON, &description,
 		&status, &approvalJSON, &journal.Version, &journal.LedgerPosition, &journal.AuditReference, &correlationID, &causationID, &submittedByUserID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return PostingApprovalSubject{}, ErrPostingApprovalDecisionNotFound
@@ -328,7 +329,7 @@ func loadPostingApprovalSubject(ctx context.Context, queryer postingQueryer, jou
 	journal.Status = status
 	journal.SourceReference = sourceReference(request)
 	journal.RequestFingerprint = requestFingerprint
-	journal.GateEvidence = PostingGateEvidence{FiscalPeriodID: fiscalPeriodID, PeriodStateVersion: periodStateVersion, PostingGateVersion: postingGateVersion, GateMode: PostingGateOpen}
+	journal.GateEvidence = PostingGateEvidence{FiscalPeriodID: fiscalPeriodID, PeriodStateVersion: periodStateVersion, PostingGateVersion: postingGateVersion, GateMode: gateMode, ReopenRequestID: cloneUUIDValue(reopenRequestID), AuthorizationScope: append(json.RawMessage(nil), reopenScope...), AuthorizationExpiry: reopenExpiry, ControlAuthorityEpoch: cloneInt64Pointer(controlAuthorityEpoch)}
 	if submittedByUserID != nil {
 		journal.SubmittedByUserID = *submittedByUserID
 	}

@@ -23,6 +23,8 @@ type glReverseJournalEntryCommandData struct {
 	PeriodStateVersion     int64  `json:"periodStateVersion"`
 	PostingGateVersion     int64  `json:"postingGateVersion"`
 	PostingAuthorizationID string `json:"postingAuthorizationId"`
+	ReopenRequestID        string `json:"reopenRequestId,omitempty"`
+	ControlAuthorityEpoch  *int64 `json:"controlAuthorityEpoch,omitempty"`
 	SourceContext          string `json:"sourceContext"`
 	SourceAggregateType    string `json:"sourceAggregateType"`
 	SourceAggregateID      string `json:"sourceAggregateId"`
@@ -92,6 +94,17 @@ func glReverseJournalEntryCommandFromTransport(request *generated.CommandRequest
 	if err != nil {
 		return gl.ReverseJournalEntryCommand{}, err
 	}
+	var reopenRequestID *uuid.UUID
+	if strings.TrimSpace(payload.ReopenRequestID) != "" {
+		parsed, parseErr := parseRequiredUUID(payload.ReopenRequestID)
+		if parseErr != nil {
+			return gl.ReverseJournalEntryCommand{}, parseErr
+		}
+		reopenRequestID = &parsed
+	}
+	if (reopenRequestID == nil) != (payload.ControlAuthorityEpoch == nil) {
+		return gl.ReverseJournalEntryCommand{}, errors.New("reopen request and control authority epoch must be supplied together")
+	}
 	sourceAggregateID, err := parseRequiredUUID(payload.SourceAggregateID)
 	if err != nil {
 		return gl.ReverseJournalEntryCommand{}, err
@@ -108,6 +121,7 @@ func glReverseJournalEntryCommandFromTransport(request *generated.CommandRequest
 		CommandID: uuid.UUID(request.CommandId), OriginalJournalID: journalID, AccountingScopeID: scopeID, ExpectedJournalVersion: int64(request.ExpectedVersion.Value),
 		CorrectionReason: payload.Reason, EffectivePostingDate: effectivePostingDate, FiscalPeriodID: fiscalPeriodID,
 		PeriodStateVersion: payload.PeriodStateVersion, PostingGateVersion: payload.PostingGateVersion, PostingAuthorizationID: authorizationID,
+		ReopenRequestID: reopenRequestID, ControlAuthorityEpoch: payload.ControlAuthorityEpoch,
 		SourceContext: payload.SourceContext, SourceAggregateType: payload.SourceAggregateType, SourceAggregateID: sourceAggregateID, SourceVersion: payload.SourceVersion,
 		IdempotencyKey: params.IdempotencyKey, CorrelationID: correlationID.String(), CausationID: uuid.UUID(request.CommandId).String(),
 	}, nil

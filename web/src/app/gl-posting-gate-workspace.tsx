@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react'
 
-import { glAcquirePostingBarrier, glEnterSoftCloseGate, glExitSoftCloseGate, glFinalizePostingGate, glReleasePostingBarrier } from '@/generated/api/sdk.gen'
+import { glAcquirePostingBarrier, glCloseScopedReopenGate, glEnterSoftCloseGate, glExitSoftCloseGate, glFinalizePostingGate, glOpenScopedReopenGate, glReleasePostingBarrier } from '@/generated/api/sdk.gen'
 import type { EstablishedResult } from '@/generated/api/types.gen'
 import { Button, Field, Panel, StatusBadge, type SemanticState } from '@/components/ui'
 import type { AccountingScopeFixture } from '@/lib/auth/auth-scope-adapter'
@@ -13,7 +13,7 @@ type CommandIdentity = {
   correlationId: string
 }
 
-type GateAction = 'enter' | 'exit' | 'acquire' | 'release' | 'finalize'
+type GateAction = 'enter' | 'exit' | 'acquire' | 'release' | 'finalize' | 'openScopedReopen' | 'closeScopedReopen' | 'awaitReclose'
 
 function newIdentifier() {
   return globalThis.crypto?.randomUUID?.() ?? `ui-${Date.now()}-${Math.random().toString(16).slice(2)}`
@@ -42,7 +42,9 @@ function gateState(result: EstablishedResult): SemanticState {
 function nextActionForResult(result: EstablishedResult): GateAction {
   switch (resultValue<string>(result, 'gateMode')) {
     case 'SoftClosePolicy': return 'exit'
-    case 'CloseOnly': return 'finalize'
+    case 'ScopedReopen': return 'closeScopedReopen'
+    case 'CloseOnly': return resultValue<string>(result, 'ownerType') === 'ReopenRequest' ? 'awaitReclose' : 'finalize'
+    case 'HardClosed': return 'openScopedReopen'
     default: return 'enter'
   }
 }
@@ -54,6 +56,9 @@ function actionLabel(action: GateAction) {
     case 'acquire': return 'Acquire posting barrier'
     case 'release': return 'Release posting barrier'
     case 'finalize': return 'Finalize posting gate'
+    case 'openScopedReopen': return 'Open scoped reopen gate'
+    case 'closeScopedReopen': return 'Close scoped reopen gate'
+    case 'awaitReclose': return 'Await mandatory reclose handoff'
   }
 }
 
@@ -74,6 +79,12 @@ function GlPostingGateScopeWorkspace({ currentScope }: { currentScope: Accountin
   const [restrictions, setRestrictions] = useState('{"ordinaryPosting":"evaluator-controlled"}')
   const [closeRunId, setCloseRunId] = useState('close-run-1')
   const [finalLedgerWatermark, setFinalLedgerWatermark] = useState('0')
+  const [reopenRequestId, setReopenRequestId] = useState('reopen-request-1')
+  const [authorizationScope, setAuthorizationScope] = useState('{"accountIds":[],"transactionClasses":["manual-journal"]}')
+  const [authorizationExpiry, setAuthorizationExpiry] = useState('2026-12-31T23:59')
+  const [reopenAuthorityEpoch, setReopenAuthorityEpoch] = useState('1')
+  const [reopenApproval, setReopenApproval] = useState('{"approvalRequestId":"00000000-0000-0000-0000-000000000001","decisionId":"00000000-0000-0000-0000-000000000002","policyVersion":"reopen-policy-v1","decisionVersion":1,"subjectVersion":1,"candidateFingerprint":"sha256:approved","approverUserId":"00000000-0000-0000-0000-000000000003"}')
+  const [noChangeClosePermitted, setNoChangeClosePermitted] = useState(true)
   const [result, setResult] = useState<EstablishedResult | null>(null)
   const [selectedAction, setSelectedAction] = useState<GateAction>('enter')
   const [notice, setNotice] = useState('No authoritative gate result has been received for this scope.')
@@ -88,6 +99,8 @@ function GlPostingGateScopeWorkspace({ currentScope }: { currentScope: Accountin
   const expectedVersionValue = action !== 'enter' && typeof establishedGateVersion === 'number' ? String(establishedGateVersion) : expectedVersion
   const barrierActive = gateMode === 'CloseOnly'
   const hardClosed = gateMode === 'HardClosed'
+  const ownerType = result ? resultValue<string>(result, 'ownerType') : undefined
+  const mandatoryReclose = gateMode === 'CloseOnly' && ownerType === 'ReopenRequest'
 
   const submitAction = async (requestedAction: GateAction) => {
     setValidationError('')
@@ -101,7 +114,8 @@ function GlPostingGateScopeWorkspace({ currentScope }: { currentScope: Accountin
     const parsedWatermark = Number(finalLedgerWatermark)
     const needsSoftClose = requestedAction === 'enter' || requestedAction === 'exit' || requestedAction === 'acquire'
     const needsCloseRun = requestedAction === 'acquire' || requestedAction === 'release' || requestedAction === 'finalize'
-    if ((needsSoftClose && !softCloseRunId.trim()) || (needsCloseRun && !closeRunId.trim()) || !Number.isInteger(parsedExpectedVersion) || parsedExpectedVersion < 1) {
+    const needsReopenRequest = requestedAction === 'openScopedReopen' || requestedAction === 'closeScopedReopen'
+    if ((needsSoftClose && !softCloseRunId.trim()) || (needsCloseRun && !closeRunId.trim()) || (needsReopenRequest && !reopenRequestId.trim()) || !Number.isInteger(parsedExpectedVersion) || parsedExpectedVersion < 1) {
       setValidationError('The required process identifiers and expected gate version must be present and valid.')
       return
     }
@@ -128,7 +142,28 @@ function GlPostingGateScopeWorkspace({ currentScope }: { currentScope: Accountin
       }
     }
 
-    const fingerprint = JSON.stringify({ action: requestedAction, scopeId: currentScope.id, periodId, softCloseRunId: softCloseRunId.trim(), controlEpoch: parsedEpoch, policyVersion: policyVersion.trim(), restrictions: parsedRestrictions, closeRunId: closeRunId.trim(), finalLedgerWatermark: parsedWatermark, expectedVersion: parsedExpectedVersion })
+    let parsedReopenScope: unknown = undefined
+    let parsedApproval: unknown = undefined
+    let parsedReopenExpiry: string | undefined
+    if (requestedAction === 'openScopedReopen') {
+      try {
+        parsedReopenScope = JSON.parse(authorizationScope)
+        parsedApproval = JSON.parse(reopenApproval)
+        const expiry = new Date(authorizationExpiry)
+        if (Number.isNaN(expiry.getTime())) throw new Error('invalid expiry')
+        parsedReopenExpiry = expiry.toISOString()
+      } catch {
+        setValidationError('The approved reopen scope, approval evidence, and expiry must be valid.')
+        return
+      }
+      const parsedReopenEpoch = Number(reopenAuthorityEpoch)
+      if (!Number.isInteger(parsedReopenEpoch) || parsedReopenEpoch < 1) {
+        setValidationError('The reopen authority epoch must be a positive whole number.')
+        return
+      }
+    }
+
+    const fingerprint = JSON.stringify({ action: requestedAction, scopeId: currentScope.id, periodId, softCloseRunId: softCloseRunId.trim(), controlEpoch: parsedEpoch, policyVersion: policyVersion.trim(), restrictions: parsedRestrictions, closeRunId: closeRunId.trim(), finalLedgerWatermark: parsedWatermark, reopenRequestId: reopenRequestId.trim(), authorizationScope: parsedReopenScope, authorizationExpiry: parsedReopenExpiry, reopenAuthorityEpoch: Number(reopenAuthorityEpoch), approval: parsedApproval, noChangeClosePermitted, expectedVersion: parsedExpectedVersion })
     const identity = commandIdentity.current?.fingerprint === fingerprint
       ? commandIdentity.current
       : { fingerprint, commandId: newIdentifier(), idempotencyKey: newIdentifier(), correlationId: newIdentifier() }
@@ -139,7 +174,11 @@ function GlPostingGateScopeWorkspace({ currentScope }: { currentScope: Accountin
     try {
       const base = { commandId: identity.commandId, expectedVersion: parsedExpectedVersion, accountingScopeId: currentScope.id }
       const headers = { 'Idempotency-Key': identity.idempotencyKey, 'X-Accounting-Scope-Id': currentScope.id, 'X-Correlation-Id': identity.correlationId }
-      const response = requestedAction === 'enter'
+      const response = requestedAction === 'openScopedReopen'
+        ? await glOpenScopedReopenGate({ body: { ...base, data: { fiscalPeriodId: periodId, reopenRequestId: reopenRequestId.trim(), authorizationScope: parsedReopenScope, authorizationExpiry: parsedReopenExpiry, controlAuthorityEpoch: Number(reopenAuthorityEpoch), approval: parsedApproval, noChangeClosePermitted } }, headers })
+        : requestedAction === 'closeScopedReopen'
+          ? await glCloseScopedReopenGate({ body: { ...base, data: { fiscalPeriodId: periodId, reopenRequestId: reopenRequestId.trim() } }, headers })
+          : requestedAction === 'enter'
         ? await glEnterSoftCloseGate({ body: { ...base, data: { fiscalPeriodId: periodId, softCloseRunId: softCloseRunId.trim(), controlEpoch: parsedEpoch, policyVersion: policyVersion.trim(), restrictions: parsedRestrictions } }, headers })
         : requestedAction === 'exit'
           ? await glExitSoftCloseGate({ body: { ...base, data: { fiscalPeriodId: periodId, softCloseRunId: softCloseRunId.trim(), controlEpoch: parsedEpoch } }, headers })
@@ -147,7 +186,9 @@ function GlPostingGateScopeWorkspace({ currentScope }: { currentScope: Accountin
             ? await glAcquirePostingBarrier({ body: { ...base, data: { fiscalPeriodId: periodId, softCloseRunId: softCloseRunId.trim(), softCloseControlEpoch: parsedEpoch, policyVersion: policyVersion.trim(), closeRunId: closeRunId.trim(), closeType: 'InitialHardClose' } }, headers })
             : requestedAction === 'release'
               ? await glReleasePostingBarrier({ body: { ...base, data: { fiscalPeriodId: periodId, closeRunId: closeRunId.trim() } }, headers })
-              : await glFinalizePostingGate({ body: { ...base, data: { fiscalPeriodId: periodId, closeRunId: closeRunId.trim(), finalLedgerWatermark: parsedWatermark } }, headers })
+              : requestedAction === 'finalize'
+                ? await glFinalizePostingGate({ body: { ...base, data: { fiscalPeriodId: periodId, closeRunId: closeRunId.trim(), finalLedgerWatermark: parsedWatermark } }, headers })
+                : { data: undefined, error: { detail: 'The mandatory reclose handoff is owned by the next workflow.' } }
       if (response.error) {
         setNotice(errorDetail(response.error))
         return
@@ -187,14 +228,23 @@ function GlPostingGateScopeWorkspace({ currentScope }: { currentScope: Accountin
           <Field id="gl-soft-close-expected-version" label="Expected gate version" type="number" min="1" value={expectedVersionValue} onChange={(event) => setExpectedVersion(event.target.value)} required disabled={action !== 'enter' && typeof establishedGateVersion === 'number'} />
           <Field id="gl-soft-close-policy-version" label="Policy version" value={policyVersion} onChange={(event) => setPolicyVersion(event.target.value)} required={action === 'enter' || action === 'acquire'} disabled={action !== 'enter' && action !== 'acquire'} />
           <Field id="gl-posting-final-ledger-watermark" label="Final ledger watermark" type="number" min="0" value={finalLedgerWatermark} onChange={(event) => setFinalLedgerWatermark(event.target.value)} required={action === 'finalize'} disabled={action !== 'finalize'} />
+          <Field id="gl-reopen-request-id" label="Reopen request ID" value={reopenRequestId} onChange={(event) => setReopenRequestId(event.target.value)} required={action === 'openScopedReopen' || action === 'closeScopedReopen'} disabled={action !== 'openScopedReopen' && action !== 'closeScopedReopen'} description="The approved request remains the sole scoped-reopen owner until closure or reclose handoff." />
+          <Field id="gl-reopen-authorization-expiry" label="Authorization expiry" type="datetime-local" value={authorizationExpiry} onChange={(event) => setAuthorizationExpiry(event.target.value)} required={action === 'openScopedReopen'} disabled={action !== 'openScopedReopen'} />
+          <Field id="gl-reopen-authority-epoch" label="Control authority epoch" type="number" min="1" value={reopenAuthorityEpoch} onChange={(event) => setReopenAuthorityEpoch(event.target.value)} required={action === 'openScopedReopen'} disabled={action !== 'openScopedReopen'} />
         </div>
         <label className="form-control mt-4 w-full gap-2" htmlFor="gl-soft-close-restrictions"><span className="label font-medium">Restrictions JSON</span><textarea id="gl-soft-close-restrictions" className="textarea textarea-bordered min-h-28 w-full border-2 border-base-300 bg-base-100 p-3 font-mono text-sm focus:border-primary focus:outline-2 focus:outline-offset-1 focus:outline-primary" value={restrictions} onChange={(event) => setRestrictions(event.target.value)} disabled={action !== 'enter'} /></label>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <label className="form-control w-full gap-2" htmlFor="gl-reopen-authorization-scope"><span className="label font-medium">Approved reopen scope JSON</span><textarea id="gl-reopen-authorization-scope" className="textarea textarea-bordered min-h-28 w-full border-2 border-base-300 bg-base-100 p-3 font-mono text-sm focus:border-primary focus:outline-2 focus:outline-offset-1 focus:outline-primary" value={authorizationScope} onChange={(event) => setAuthorizationScope(event.target.value)} disabled={action !== 'openScopedReopen'} /></label>
+          <label className="form-control w-full gap-2" htmlFor="gl-reopen-approval"><span className="label font-medium">Approval evidence JSON</span><textarea id="gl-reopen-approval" className="textarea textarea-bordered min-h-28 w-full border-2 border-base-300 bg-base-100 p-3 font-mono text-sm focus:border-primary focus:outline-2 focus:outline-offset-1 focus:outline-primary" value={reopenApproval} onChange={(event) => setReopenApproval(event.target.value)} disabled={action !== 'openScopedReopen'} /></label>
+        </div>
+        {action === 'openScopedReopen' ? <label className="mt-4 flex items-center gap-3 text-sm" htmlFor="gl-reopen-no-change-policy"><input id="gl-reopen-no-change-policy" type="checkbox" className="checkbox checkbox-primary" checked={noChangeClosePermitted} onChange={(event) => setNoChangeClosePermitted(event.target.checked)} />The approved handoff permits an audited no-change closure.</label> : null}
         {validationError ? <p role="alert" className="mt-4 rounded-box border border-error/40 bg-error/10 p-3 text-sm">{validationError}</p> : null}
         <p role="status" aria-live="polite" className="mt-4 text-sm text-base-content/75">{notice}</p>
         <div className="mt-4 flex flex-wrap gap-3">
-          {!hardClosed ? <Button type="submit" loading={saving}>{actionLabel(action)}</Button> : <p role="note" className="self-center text-sm text-base-content/75">The gate is hard closed. No further barrier action is available from this workflow.</p>}
+          {!hardClosed || action === 'openScopedReopen' ? <Button type="submit" loading={saving} disabled={action === 'awaitReclose'}>{actionLabel(action)}</Button> : <p role="note" className="self-center text-sm text-base-content/75">The gate is hard closed. Open a scoped correction window only with the approved request, scope, expiry, and authority evidence.</p>}
           {gateMode === 'SoftClosePolicy' && !saving ? <Button type="button" variant="secondary" onClick={() => void submitAction('acquire')}>Acquire posting barrier</Button> : null}
-          {barrierActive && !saving ? <><Button type="button" variant="secondary" onClick={() => void submitAction('release')}>Release posting barrier</Button>{action !== 'finalize' ? <Button type="button" variant="secondary" onClick={() => void submitAction('finalize')}>Finalize posting gate</Button> : null}</> : null}
+          {barrierActive && !mandatoryReclose && !saving ? <><Button type="button" variant="secondary" onClick={() => void submitAction('release')}>Release posting barrier</Button>{action !== 'finalize' ? <Button type="button" variant="secondary" onClick={() => void submitAction('finalize')}>Finalize posting gate</Button> : null}</> : null}
+          {mandatoryReclose ? <p role="note" className="self-center text-sm font-semibold text-warning">Corrections were admitted. Mandatory reclose handoff is required before finalization.</p> : null}
           {result ? <span className="self-center text-sm text-base-content/70">Next command uses the latest gate result at version {displayValue(establishedGateVersion)}.</span> : null}
         </div>
       </form>
@@ -203,7 +253,7 @@ function GlPostingGateScopeWorkspace({ currentScope }: { currentScope: Accountin
       {!result ? <p role="note" className="text-sm text-base-content/75">No result is loaded. Establish a gate command to inspect the posting barrier.</p> : <>
         <div className="flex flex-wrap items-center gap-3"><StatusBadge state={gateState(result)} label={gateMode ?? 'Unknown'} announce /><span className="text-sm text-base-content/70">Aggregate {result.aggregateId} · version {result.aggregateVersion}</span></div>
         <dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><div><dt className="text-sm text-base-content/65">Gate mode</dt><dd>{displayValue(gateMode)}</dd></div><div><dt className="text-sm text-base-content/65">Gate version</dt><dd>{displayValue(establishedGateVersion)}</dd></div><div><dt className="text-sm text-base-content/65">Owner</dt><dd className="font-mono break-all">{displayValue(ownerId)}</dd></div><div><dt className="text-sm text-base-content/65">Close type</dt><dd>{displayValue(resultValue<string>(result, 'closeType'))}</dd></div><div><dt className="text-sm text-base-content/65">Barrier position</dt><dd>{displayValue(resultValue<number>(result, 'barrierLedgerPosition'))}</dd></div><div><dt className="text-sm text-base-content/65">Final watermark</dt><dd>{displayValue(resultValue<number | null>(result, 'finalLedgerWatermark'))}</dd></div><div><dt className="text-sm text-base-content/65">Audit reference</dt><dd className="font-mono break-all">{displayValue(resultValue<string>(result, 'auditReference'))}</dd></div><div><dt className="text-sm text-base-content/65">Next action</dt><dd>{displayValue(resultValue<string>(result, 'nextAction'))}</dd></div><div><dt className="text-sm text-base-content/65">Replay</dt><dd>{resultValue<boolean>(result, 'replayed') ? 'Existing result returned' : 'First establishment'}</dd></div></dl>
-        <div className="mt-5 grid gap-4 lg:grid-cols-2"><EvidenceBlock label="Prior owner" value={{ type: resultValue<unknown>(result, 'priorOwnerType'), id: resultValue<unknown>(result, 'priorOwnerId'), epoch: resultValue<unknown>(result, 'priorControlEpoch'), mode: resultValue<unknown>(result, 'priorGateMode') }} /><EvidenceBlock label="Restrictions" value={resultRestrictions} /><EvidenceBlock label="Ordinary posting admission" value={ordinaryPostingAdmission} /><EvidenceBlock label="Active admission counters" value={counters} /><EvidenceBlock label="Last frozen admission summary" value={frozenSummary} /><EvidenceBlock label="Finalization fingerprint" value={resultValue<string>(result, 'finalizationCommandFingerprint')} /></div>
+        <div className="mt-5 grid gap-4 lg:grid-cols-2"><EvidenceBlock label="Prior owner" value={{ type: resultValue<unknown>(result, 'priorOwnerType'), id: resultValue<unknown>(result, 'priorOwnerId'), epoch: resultValue<unknown>(result, 'priorControlEpoch'), mode: resultValue<unknown>(result, 'priorGateMode') }} /><EvidenceBlock label="Restrictions" value={resultRestrictions} /><EvidenceBlock label="Approved reopen scope" value={{ requestId: resultValue<unknown>(result, 'reopenRequestId'), scope: resultValue<unknown>(result, 'authorizationScope'), expiry: resultValue<unknown>(result, 'authorizationExpiry'), authorityEpoch: resultValue<unknown>(result, 'controlAuthorityEpoch') }} /><EvidenceBlock label="Ordinary posting admission" value={ordinaryPostingAdmission} /><EvidenceBlock label="Reopen correction admission" value={resultValue<unknown>(result, 'reopenPostingAdmission')} /><EvidenceBlock label="Active admission counters" value={counters} /><EvidenceBlock label="Last frozen admission summary" value={frozenSummary} /><EvidenceBlock label="Finalization fingerprint" value={resultValue<string>(result, 'finalizationCommandFingerprint')} /></div>
       </>}
     </Panel>
   </section>

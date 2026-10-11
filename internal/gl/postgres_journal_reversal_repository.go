@@ -150,7 +150,7 @@ func (repository *PostgresPostingRepository) CommitJournalReversal(ctx context.C
 	if err != nil {
 		return JournalReversalResult{}, err
 	}
-	if err := validatePostingGateEvidence(commit.Request, gate.Evidence); err != nil {
+	if err := validatePostingGateEvidenceAt(commit.Request, gate.Evidence, commit.Now.UTC()); err != nil {
 		return JournalReversalResult{}, err
 	}
 	if err := validatePostingGateAdmissionOwner(commit.Request, gate); err != nil {
@@ -197,14 +197,14 @@ func (repository *PostgresPostingRepository) CommitJournalReversal(ctx context.C
 			journal_entry_id, journal_number, accounting_scope_id, tenant_id, legal_entity_id, ledger_id, accounting_book_id,
 			functional_currency, source_context, source_aggregate_type, source_aggregate_id, source_version, request_id,
 			idempotency_key, request_fingerprint, posting_date, fiscal_period_id, period_state_version, posting_gate_version,
-			posting_gate_mode, posting_purpose, adjustment_period_indicator, posting_authorization_id, close_run_id, reopen_request_id, operational_reopen_request_id, control_authority_epoch,
+			posting_gate_mode, posting_purpose, adjustment_period_indicator, posting_authorization_id, close_run_id, reopen_request_id, operational_reopen_request_id, control_authority_epoch, reopen_authorization_scope, reopen_authorization_expiry,
 			transaction_currency, conversion_evidence, description, lifecycle_status, approval_reference, aggregate_version,
 			ledger_position, audit_reference, correlation_id, causation_id, submitted_by_user_id, reversal_of_journal_entry_id, correction_reason, created_at
-		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41)`,
+		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43)`,
 		reversalID, journalNumber, commit.Request.AccountingScopeID, commit.Request.AccountingScope.TenantID(), commit.Request.AccountingScope.LegalEntityID(), commit.Request.AccountingScope.LedgerID(), commit.Request.AccountingScope.AccountingBookID(),
 		commit.Request.AccountingScope.FunctionalCurrency(), commit.Request.SourceContext, commit.Request.SourceAggregateType, commit.Request.SourceAggregateID, commit.Request.SourceVersion, commit.Request.RequestID,
 		commit.Request.IdempotencyKey, commit.Request.RequestFingerprint, commit.Request.PostingDate, commit.Request.FiscalPeriodID, commit.Request.PeriodStateVersion, commit.Request.PostingGateVersion,
-		gate.Evidence.GateMode, commit.Request.PostingPurpose, commit.Request.AdjustmentPeriodIndicator, nullablePostingUUID(commit.Request.PostingAuthorizationID), nullablePostingUUID(commit.Request.CloseRunID), nullablePostingUUID(commit.Request.ReopenRequestID), nullablePostingUUID(commit.Request.OperationalReopenRequestID), nullablePostingInt64(commit.Request.ControlAuthorityEpoch),
+		gate.Evidence.GateMode, commit.Request.PostingPurpose, commit.Request.AdjustmentPeriodIndicator, nullablePostingUUID(commit.Request.PostingAuthorizationID), nullablePostingUUID(commit.Request.CloseRunID), nullablePostingUUID(commit.Request.ReopenRequestID), nullablePostingUUID(commit.Request.OperationalReopenRequestID), nullablePostingInt64(commit.Request.ControlAuthorityEpoch), nonNullPostingJSON(gate.Evidence.AuthorizationScope), nullablePostingTime(gate.Evidence.AuthorizationExpiry),
 		commit.Request.TransactionCurrency, nullablePostingJSON(conversionJSON), commit.Request.Description, storedStatus, nil, 1,
 		gate.LedgerPosition, auditReference, correlationID, causationID, commit.Actor.UserID, commit.Command.OriginalJournalID, commit.Command.CorrectionReason, now)
 	if err != nil {
@@ -336,12 +336,13 @@ func (repository *PostgresPostingRepository) loadJournalSnapshot(ctx context.Con
 		sourceVersion, periodVersion, postingGateVersion, controlEpoch, aggregateVersion, ledgerPosition                                                                                 int64
 		postingDate                                                                                                                                                                      time.Time
 		adjustmentPeriod                                                                                                                                                                 bool
-		conversionJSON, approvalJSON                                                                                                                                                     []byte
+		conversionJSON, approvalJSON, reopenScope                                                                                                                                        []byte
+		reopenExpiry                                                                                                                                                                     *time.Time
 		correlationID, causationID                                                                                                                                                       uuid.UUID
 	)
-	query := `SELECT journal_entry_id, journal_number, accounting_scope_id, tenant_id, legal_entity_id, ledger_id, accounting_book_id, functional_currency, source_context, source_aggregate_type, source_aggregate_id, source_version, request_id, idempotency_key, request_fingerprint, posting_date, fiscal_period_id, period_state_version, posting_gate_version, posting_gate_mode, posting_purpose, adjustment_period_indicator, COALESCE(posting_authorization_id, '` + zeroUUIDLiteral + `'), COALESCE(close_run_id, '` + zeroUUIDLiteral + `'), COALESCE(reopen_request_id, '` + zeroUUIDLiteral + `'), COALESCE(operational_reopen_request_id, '` + zeroUUIDLiteral + `'), COALESCE(control_authority_epoch, 0), transaction_currency, conversion_evidence, description, lifecycle_status, approval_reference, aggregate_version, COALESCE(ledger_position, 0), audit_reference, correlation_id, causation_id, COALESCE(submitted_by_user_id, '` + zeroUUIDLiteral + `'), COALESCE(reversal_of_journal_entry_id, '` + zeroUUIDLiteral + `'), COALESCE(correction_reason, '') FROM gl.journal_entry WHERE journal_entry_id = $1 AND accounting_scope_id = $2` + lock
+	query := `SELECT journal_entry_id, journal_number, accounting_scope_id, tenant_id, legal_entity_id, ledger_id, accounting_book_id, functional_currency, source_context, source_aggregate_type, source_aggregate_id, source_version, request_id, idempotency_key, request_fingerprint, posting_date, fiscal_period_id, period_state_version, posting_gate_version, posting_gate_mode, posting_purpose, adjustment_period_indicator, COALESCE(posting_authorization_id, '` + zeroUUIDLiteral + `'), COALESCE(close_run_id, '` + zeroUUIDLiteral + `'), COALESCE(reopen_request_id, '` + zeroUUIDLiteral + `'), COALESCE(operational_reopen_request_id, '` + zeroUUIDLiteral + `'), COALESCE(control_authority_epoch, 0), reopen_authorization_scope, reopen_authorization_expiry, transaction_currency, conversion_evidence, description, lifecycle_status, approval_reference, aggregate_version, COALESCE(ledger_position, 0), audit_reference, correlation_id, causation_id, COALESCE(submitted_by_user_id, '` + zeroUUIDLiteral + `'), COALESCE(reversal_of_journal_entry_id, '` + zeroUUIDLiteral + `'), COALESCE(correction_reason, '') FROM gl.journal_entry WHERE journal_entry_id = $1 AND accounting_scope_id = $2` + lock
 	err := tx.QueryRow(ctx, query, journalID, scopeID).Scan(
-		&id, &journalNumber, &storedScopeID, &tenantID, &legalEntityID, &ledgerID, &bookID, &functionalCurrency, &sourceContext, &sourceType, &sourceID, &sourceVersion, &requestID, &idempotencyKey, &fingerprint, &postingDate, &periodID, &periodVersion, &postingGateVersion, &gateMode, &postingPurpose, &adjustmentPeriod, &authID, &closeRunID, &reopenID, &operationalReopenID, &controlEpoch, &transactionCurrency, &conversionJSON, &description, &status, &approvalJSON, &aggregateVersion, &ledgerPosition, &auditID, &correlationID, &causationID, &submittedBy, &reversalOf, &correctionReason,
+		&id, &journalNumber, &storedScopeID, &tenantID, &legalEntityID, &ledgerID, &bookID, &functionalCurrency, &sourceContext, &sourceType, &sourceID, &sourceVersion, &requestID, &idempotencyKey, &fingerprint, &postingDate, &periodID, &periodVersion, &postingGateVersion, &gateMode, &postingPurpose, &adjustmentPeriod, &authID, &closeRunID, &reopenID, &operationalReopenID, &controlEpoch, &reopenScope, &reopenExpiry, &transactionCurrency, &conversionJSON, &description, &status, &approvalJSON, &aggregateVersion, &ledgerPosition, &auditID, &correlationID, &causationID, &submittedBy, &reversalOf, &correctionReason,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return JournalEntrySnapshot{}, ErrJournalEntryNotFound
@@ -401,7 +402,7 @@ func (repository *PostgresPostingRepository) loadJournalSnapshot(ctx context.Con
 	journal := PostingJournal{
 		ID: id, Number: journalNumber, Version: aggregateVersion, LedgerPosition: ledgerPosition, Status: status, Approval: approval,
 		SourceReference: sourceReference(request), RequestFingerprint: fingerprint,
-		GateEvidence:   PostingGateEvidence{FiscalPeriodID: periodID, PeriodStateVersion: periodVersion, PostingGateVersion: postingGateVersion, GateMode: gateMode},
+		GateEvidence:   PostingGateEvidence{FiscalPeriodID: periodID, PeriodStateVersion: periodVersion, PostingGateVersion: postingGateVersion, GateMode: gateMode, ReopenRequestID: cloneUUIDValue(request.ReopenRequestID), AuthorizationScope: append(json.RawMessage(nil), reopenScope...), AuthorizationExpiry: reopenExpiry, ControlAuthorityEpoch: cloneInt64Pointer(request.ControlAuthorityEpoch)},
 		AuditReference: auditID, SubmittedByUserID: submittedBy, PostingPurpose: postingPurpose, PostingAuthorizationID: cloneUUIDValue(request.PostingAuthorizationID),
 		ReversalOfJournalEntryID: reversalPointer, CorrectionReason: correctionReason, Lines: append([]PostingLine(nil), lines...),
 	}

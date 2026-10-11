@@ -23814,6 +23814,110 @@ func (s *GlOpenScopedReopenGateUnprocessableEntity) UnmarshalJSON(data []byte) e
 }
 
 // Encode implements json.Marshaler.
+func (s *GlPostingAuthorizationScope) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GlPostingAuthorizationScope) encodeFields(e *jx.Encoder) {
+	{
+		if s.AccountIds != nil {
+			e.FieldStart("accountIds")
+			e.ArrStart()
+			for _, elem := range s.AccountIds {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		if s.TransactionClasses != nil {
+			e.FieldStart("transactionClasses")
+			e.ArrStart()
+			for _, elem := range s.TransactionClasses {
+				e.Str(elem)
+			}
+			e.ArrEnd()
+		}
+	}
+}
+
+var jsonFieldsNameOfGlPostingAuthorizationScope = [2]string{
+	0: "accountIds",
+	1: "transactionClasses",
+}
+
+// Decode decodes GlPostingAuthorizationScope from json.
+func (s *GlPostingAuthorizationScope) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GlPostingAuthorizationScope to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "accountIds":
+			if err := func() error {
+				s.AccountIds = make([]UUID, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem UUID
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.AccountIds = append(s.AccountIds, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountIds\"")
+			}
+		case "transactionClasses":
+			if err := func() error {
+				s.TransactionClasses = make([]string, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem string
+					v, err := d.Str()
+					elem = string(v)
+					if err != nil {
+						return err
+					}
+					s.TransactionClasses = append(s.TransactionClasses, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"transactionClasses\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GlPostingAuthorizationScope")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GlPostingAuthorizationScope) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GlPostingAuthorizationScope) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
 func (s *GlPostingConversionEvidence) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
@@ -23983,13 +24087,41 @@ func (s *GlPostingGateEvidence) encodeFields(e *jx.Encoder) {
 		e.FieldStart("gateMode")
 		e.Str(s.GateMode)
 	}
+	{
+		if s.ReopenRequestId.Set {
+			e.FieldStart("reopenRequestId")
+			s.ReopenRequestId.Encode(e)
+		}
+	}
+	{
+		if s.AuthorizationScope.Set {
+			e.FieldStart("authorizationScope")
+			s.AuthorizationScope.Encode(e)
+		}
+	}
+	{
+		if s.AuthorizationExpiry.Set {
+			e.FieldStart("authorizationExpiry")
+			s.AuthorizationExpiry.Encode(e, json.EncodeDateTime)
+		}
+	}
+	{
+		if s.ControlAuthorityEpoch.Set {
+			e.FieldStart("controlAuthorityEpoch")
+			s.ControlAuthorityEpoch.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfGlPostingGateEvidence = [4]string{
+var jsonFieldsNameOfGlPostingGateEvidence = [8]string{
 	0: "fiscalPeriodId",
 	1: "periodStateVersion",
 	2: "postingGateVersion",
 	3: "gateMode",
+	4: "reopenRequestId",
+	5: "authorizationScope",
+	6: "authorizationExpiry",
+	7: "controlAuthorityEpoch",
 }
 
 // Decode decodes GlPostingGateEvidence from json.
@@ -24046,6 +24178,46 @@ func (s *GlPostingGateEvidence) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"gateMode\"")
+			}
+		case "reopenRequestId":
+			if err := func() error {
+				s.ReopenRequestId.Reset()
+				if err := s.ReopenRequestId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"reopenRequestId\"")
+			}
+		case "authorizationScope":
+			if err := func() error {
+				s.AuthorizationScope.Reset()
+				if err := s.AuthorizationScope.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"authorizationScope\"")
+			}
+		case "authorizationExpiry":
+			if err := func() error {
+				s.AuthorizationExpiry.Reset()
+				if err := s.AuthorizationExpiry.Decode(d, json.DecodeDateTime); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"authorizationExpiry\"")
+			}
+		case "controlAuthorityEpoch":
+			if err := func() error {
+				s.ControlAuthorityEpoch.Reset()
+				if err := s.ControlAuthorityEpoch.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"controlAuthorityEpoch\"")
 			}
 		default:
 			return errors.Errorf("unexpected field %q", k)
@@ -34966,6 +35138,39 @@ func (s OptDateTime) MarshalJSON() ([]byte, error) {
 func (s *OptDateTime) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d, json.DecodeDateTime)
+}
+
+// Encode encodes GlPostingAuthorizationScope as json.
+func (o OptGlPostingAuthorizationScope) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes GlPostingAuthorizationScope from json.
+func (o *OptGlPostingAuthorizationScope) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptGlPostingAuthorizationScope to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptGlPostingAuthorizationScope) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptGlPostingAuthorizationScope) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
 }
 
 // Encode encodes GlPostingConversionEvidence as json.

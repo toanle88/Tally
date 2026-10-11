@@ -4,7 +4,7 @@
 > `[x]` means complete or intentionally closed; `[ ]` means open, planned, or awaiting qualification evidence.
 > Workflow and NFR delivery tables do not define an Epic column, so those items are grouped under their primary roadmap epic for navigation.
 
-**Last updated:** 2026-10-10
+**Last updated:** 2026-10-11
 
 ## [x] EP-PLAT-001 — Engineering foundation (M0)
 
@@ -120,6 +120,12 @@ User-story plan: [EP-COA-001 user stories](docs/backlog/stories/EP-COA-001_user_
 ## [ ] EP-GL-001 — General Ledger (M2)
 
 Journal validation, approval, posting, reversal, posting gates, ledgers, books, charts of accounts, accounts, and ledger inquiry.
+
+User Story 8 has local implementation and focused verification evidence on
+`feat/gl-us8-scoped-reopen-gate`; the delivery items remain open pending
+PostgreSQL runtime, cross-context, browser, accessibility, and release
+qualification. See
+[`docs/verification/DLV-FR-GL-009-010-us8-scoped-reopen-gate.md`](docs/verification/DLV-FR-GL-009-010-us8-scoped-reopen-gate.md).
 
 - [ ] `DLV-GFR-005` — GFR-005 — EP-GL-001
 - [ ] `DLV-GFR-011` — GFR-011 — EP-GL-001

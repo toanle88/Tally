@@ -20,6 +20,8 @@ type PostingGateApplicationPort interface {
 	AcquirePostingBarrier(context.Context, Actor, AcquirePostingBarrierCommand) (SoftCloseGateResult, error)
 	ReleasePostingBarrier(context.Context, Actor, ReleasePostingBarrierCommand) (SoftCloseGateResult, error)
 	FinalizePostingGate(context.Context, Actor, FinalizePostingGateCommand) (SoftCloseGateResult, error)
+	OpenScopedReopenGate(context.Context, Actor, OpenScopedReopenGateCommand) (SoftCloseGateResult, error)
+	CloseScopedReopenGate(context.Context, Actor, CloseScopedReopenGateCommand) (SoftCloseGateResult, error)
 	GetPostingGateStatus(context.Context, uuid.UUID, uuid.UUID) (PostingGateStatus, error)
 }
 
@@ -413,7 +415,7 @@ func postingBarrierFingerprint(value any) (string, error) {
 }
 
 func postingGateProcessID(gate PeriodPostingGate) *uuid.UUID {
-	for _, value := range []*uuid.UUID{gate.ActiveCloseRunID, gate.ActiveSoftCloseRunID, gate.FinalizedCloseRunID} {
+	for _, value := range []*uuid.UUID{gate.ActiveCloseRunID, gate.ActiveReopenRequestID, gate.ActiveSoftCloseRunID, gate.FinalizedCloseRunID} {
 		if value != nil {
 			copy := *value
 			return &copy

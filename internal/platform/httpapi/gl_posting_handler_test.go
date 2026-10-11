@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -11,6 +12,30 @@ import (
 	"github.com/toanle88/Tally/internal/platform/httpapi/generated"
 	"github.com/toanle88/Tally/internal/platform/money"
 )
+
+func TestGeneratedPostingGateEvidenceIncludesScopedReopenContext(t *testing.T) {
+	reopenRequestID, accountID := uuid.New(), uuid.New()
+	scopeJSON, err := json.Marshal(gl.ScopedReopenScope{AccountIDs: []uuid.UUID{accountID}, TransactionClasses: []string{"manual-journal"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	expiry := time.Date(2026, 8, 15, 9, 0, 0, 0, time.UTC)
+	epoch := int64(3)
+	evidence := generatedPostingGateEvidence(gl.PostingGateEvidence{
+		FiscalPeriodID: uuid.New(), PeriodStateVersion: 4, PostingGateVersion: 9, GateMode: gl.PostingGateScopedReopen,
+		ReopenRequestID: &reopenRequestID, AuthorizationScope: scopeJSON, AuthorizationExpiry: &expiry, ControlAuthorityEpoch: &epoch,
+	})
+	if !evidence.ReopenRequestId.Set || evidence.ReopenRequestId.Value != generated.UUID(reopenRequestID) {
+		t.Fatalf("reopen request evidence = %#v", evidence.ReopenRequestId)
+	}
+	scope, ok := evidence.AuthorizationScope.Get()
+	if !ok || len(scope.AccountIds) != 1 || scope.AccountIds[0] != generated.UUID(accountID) || len(scope.TransactionClasses) != 1 || scope.TransactionClasses[0] != "manual-journal" {
+		t.Fatalf("authorization scope evidence = %#v, set = %t", scope, ok)
+	}
+	if !evidence.AuthorizationExpiry.Set || evidence.ControlAuthorityEpoch.Value != 3 {
+		t.Fatalf("expiry/epoch evidence = %#v / %#v", evidence.AuthorizationExpiry, evidence.ControlAuthorityEpoch)
+	}
+}
 
 func TestGLPostingHandlerEstablishesReplaysAndMapsTypedConflicts(t *testing.T) {
 	service, err := newHTTPPostingService(t, true)

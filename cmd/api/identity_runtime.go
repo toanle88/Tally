@@ -42,6 +42,8 @@ const (
 	glAccountOperationID                = "gl.maintain-accounts-and-reporting-mappings.v1"
 	glSoftCloseGateEnterOperationID     = gl.SoftCloseGateEnterCommandIdentity
 	glSoftCloseGateExitOperationID      = gl.SoftCloseGateExitCommandIdentity
+	glScopedReopenGateOpenOperationID   = gl.ScopedReopenGateOpenCommandIdentity
+	glScopedReopenGateCloseOperationID  = gl.ScopedReopenGateCloseCommandIdentity
 )
 
 func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
@@ -369,14 +371,16 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 		gl.UnavailableSoftClosePolicyEvaluator{},
 		time.Now,
 		gl.DurableSoftCloseGateServiceConfig{
-			Database:            pool,
-			Coordinator:         platformidempotency.NewPostgresCoordinator(),
-			Policy:              platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute},
-			EnterOperationID:    glSoftCloseGateEnterOperationID,
-			ExitOperationID:     glSoftCloseGateExitOperationID,
-			AcquireOperationID:  gl.PostingBarrierAcquireCommandIdentity,
-			ReleaseOperationID:  gl.PostingBarrierReleaseCommandIdentity,
-			FinalizeOperationID: gl.PostingBarrierFinalizeCommandIdentity,
+			Database:                     pool,
+			Coordinator:                  platformidempotency.NewPostgresCoordinator(),
+			Policy:                       platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute},
+			EnterOperationID:             glSoftCloseGateEnterOperationID,
+			ExitOperationID:              glSoftCloseGateExitOperationID,
+			OpenScopedReopenOperationID:  glScopedReopenGateOpenOperationID,
+			CloseScopedReopenOperationID: glScopedReopenGateCloseOperationID,
+			AcquireOperationID:           gl.PostingBarrierAcquireCommandIdentity,
+			ReleaseOperationID:           gl.PostingBarrierReleaseCommandIdentity,
+			FinalizeOperationID:          gl.PostingBarrierFinalizeCommandIdentity,
 		},
 	)
 	if err != nil {
@@ -504,6 +508,9 @@ func postgresGLSoftCloseGateAuditWriter(auditWriter identity.PostgresAuditWriter
 			PolicyReference:               record.PolicyReference,
 			PolicyVersion:                 record.PolicyVersion,
 			DecisionReference:             record.DecisionReference,
+			ApprovalRequestID:             record.ApprovalRequestID,
+			ApprovalDecisionID:            record.ApprovalDecisionID,
+			ApproverUserID:                record.ApproverUserID,
 			RevisionVersion:               record.RevisionNumber,
 			BeforeFingerprint:             record.BeforeFingerprint,
 			AfterFingerprint:              record.AfterFingerprint,
@@ -1012,6 +1019,10 @@ func (authorizer evaluatorGLSoftCloseGateAuthorizer) AuthorizeSoftCloseGate(ctx 
 		permission = gl.SoftCloseGateEnterPermission
 	case gl.SoftCloseGateExitOperation:
 		permission = gl.SoftCloseGateExitPermission
+	case gl.ScopedReopenGateOpenOperation:
+		permission = gl.ScopedReopenGateOpenPermission
+	case gl.ScopedReopenGateCloseOperation:
+		permission = gl.ScopedReopenGateClosePermission
 	case gl.PostingBarrierAcquireOperation:
 		permission = gl.PostingBarrierAcquirePermission
 	case gl.PostingBarrierReleaseOperation:

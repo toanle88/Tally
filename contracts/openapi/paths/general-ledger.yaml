@@ -121,6 +121,10 @@
                   periodStateVersion: 2
                   postingGateVersion: 4
                   postingAuthorizationId: 00000000-0000-0000-0000-000000000105
+                  # Required when the reversal is a ReopenCorrection admitted by
+                  # an active scoped-reopen gate.
+                  reopenRequestId: 00000000-0000-0000-0000-000000000107
+                  controlAuthorityEpoch: 9
                   sourceContext: general-ledger
                   sourceAggregateType: journal-correction
                   sourceAggregateId: 00000000-0000-0000-0000-000000000106
