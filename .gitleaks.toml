@@ -9,3 +9,10 @@ condition = "AND"
 paths = ['''^internal/gl/configuration_test\.go$''']
 regexTarget = "line"
 regexes = ['''IdempotencyKey:\s*"ledger-duplicate-[12]"''']
+
+[[allowlists]]
+description = "Deterministic GL approval integration fixture"
+condition = "AND"
+paths = ['''^internal/platform/database/gl_posting_integration_test\.go$''']
+regexTarget = "line"
+regexes = ['''IdempotencyKey:\s*"approval-integration-1"''']
