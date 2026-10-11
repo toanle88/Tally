@@ -128,6 +128,10 @@ func establishedGlPostingResult(result gl.PostingResult, correlationID uuid.UUID
 	if result.ApprovalRequestID != uuid.Nil {
 		data.ApprovalRequestId = generated.NewOptUUID(generated.UUID(result.ApprovalRequestID))
 	}
+	if result.Journal != nil && result.Journal.Approval != nil {
+		data.PolicyReference = generated.NewOptString(result.Journal.Approval.PolicyReference)
+		data.PolicyVersion = generated.NewOptString(result.Journal.Approval.PolicyVersion)
+	}
 	if result.NextAction != "" {
 		data.NextAction = generated.NewOptString(result.NextAction)
 	}

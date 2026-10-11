@@ -493,6 +493,13 @@ Required test evidence:
 - [ ] API and UI tests prove permission/scope/segregation enforcement,
   decision-reference display, safe rejection, and accessible next actions.
 
+#### User Story 4 implementation evidence — 2026-10-11
+
+The implementation is on branch `feat/gl-us4-apply-journal-approval-decision`.
+Evidence, acceptance traceability, verification commands, and remaining
+production/browser qualification boundaries are recorded in
+[`docs/verification/DLV-FR-GL-002-us4-apply-journal-approval-decision.md`](../../verification/DLV-FR-GL-002-us4-apply-journal-approval-decision.md).
+
 ### User Story 5 — Reverse a posted journal entry
 
 **Delivery item:** `DLV-FR-GL-003` / `FR-GL-003`

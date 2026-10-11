@@ -88,6 +88,77 @@ func TestGLPostingHandlerRequiresActorAndFailsClosedWithoutService(t *testing.T)
 	}
 }
 
+func TestGLPostingHandlerAppliesPendingApprovalDecision(t *testing.T) {
+	registry, err := money.NewCurrencyRegistry([]money.CurrencyMetadata{{Code: "USD", Scale: 2}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	repository := gl.NewMemoryPostingRepository()
+	audit := &gl.MemoryPostingAuditRecorder{}
+	postingAuthorizer := gl.MemoryPostingAuthorizer{Decision: gl.PostingAuthorizationDecision{Allowed: true, ApprovalRequired: true, PolicyReference: "http-policy", PolicyVersion: "http-v1"}}
+	clock := func() time.Time { return time.Date(2026, 8, 15, 8, 0, 0, 0, time.UTC) }
+	posting, err := gl.NewPostingService(repository, postingAuthorizer, gl.AllowAllPostingReferenceValidator{}, gl.MemoryPostingGateValidator{}, httpRequiredApprovalValidator{approval: gl.PostingApproval{Required: true, ApprovalRequestID: uuid.New(), PolicyReference: "http-policy", PolicyVersion: "http-v1"}}, audit, registry, clock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	apply, err := gl.NewPostingApprovalDecisionService(repository, gl.MemoryPostingApprovalDecisionVerifier{}, gl.MemoryPostingApprovalDecisionAuthorizer{Decision: gl.PostingApprovalDecisionAuthorization{Allowed: true, PolicyReference: "http-policy", PolicyVersion: "http-v1"}}, postingAuthorizer, gl.AllowAllPostingReferenceValidator{}, gl.MemoryPostingGateValidator{}, registry, clock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	handler := IdentityHandler{PostingService: posting, PostingApprovalDecisionService: apply}
+	actorContext, err := identity.WithActor(context.Background(), identity.ApplicationActor{UserID: uuid.New(), Subject: identity.AuthenticationSubject{OID: "oid", TID: "tid", Sub: "subject"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	submitRequest := newHTTPPostingRequest()
+	submitParams := generated.GlSubmitPostingRequestParams{IdempotencyKey: "posting-http-pending", XCorrelationID: generated.NewOptUUID(generated.UUID(uuid.New()))}
+	pendingResponse, err := handler.GlSubmitPostingRequest(actorContext, submitRequest, submitParams)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pendingEstablished, ok := pendingResponse.(*generated.GlSubmitPostingRequestEstablishedResult)
+	if !ok || !pendingEstablished.Data.PolicyVersion.Set || pendingEstablished.Data.PolicyVersion.Value != "http-v1" {
+		t.Fatalf("pending approval policy evidence = %#v", pendingResponse)
+	}
+	pending := repository.Journals()[0]
+	if pending.Approval == nil {
+		t.Fatal("pending journal did not retain approval request")
+	}
+	decisionID, approverID := uuid.New(), uuid.UUID(submitRequest.CommandId)
+	applyRequest := &generated.CommandRequest{
+		CommandId: generated.UUID(uuid.New()), ExpectedVersion: generated.NewOptInt(1), AccountingScopeId: generated.NewOptUUID(submitRequest.AccountingScopeId),
+		Data: generated.CommandRequestData{
+			"journalId": mustRaw(pending.ID.String()), "outcome": mustRaw("approved"), "approvalRequestId": mustRaw(pending.Approval.ApprovalRequestID.String()),
+			"decisionId": mustRaw(decisionID.String()), "policyVersion": mustRaw(pending.Approval.PolicyVersion), "decisionVersion": mustRaw(1), "subjectVersion": mustRaw(1),
+			"candidateFingerprint": mustRaw(pending.RequestFingerprint), "approverUserId": mustRaw(approverID.String()),
+		},
+	}
+	applyParams := generated.GlApplyJournalApprovalDecisionParams{IdempotencyKey: "approval-http-1", XCorrelationID: generated.NewOptUUID(generated.UUID(uuid.New())), XAccountingScopeID: generated.NewOptUUID(submitRequest.AccountingScopeId)}
+	response, err := handler.GlApplyJournalApprovalDecision(actorContext, applyRequest, applyParams)
+	if err != nil {
+		t.Fatal(err)
+	}
+	established, ok := response.(*generated.EstablishedResult)
+	if !ok || established.AggregateId != generated.UUID(pending.ID) || established.AggregateVersion != 2 {
+		t.Fatalf("approval response = %#v", response)
+	}
+	replay, err := handler.GlApplyJournalApprovalDecision(actorContext, applyRequest, applyParams)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if replayResult, ok := replay.(*generated.EstablishedResult); !ok || replayResult.AggregateVersion != 2 {
+		t.Fatalf("approval replay = %#v", replay)
+	}
+}
+
+type httpRequiredApprovalValidator struct {
+	approval gl.PostingApproval
+}
+
+func (validator httpRequiredApprovalValidator) EvaluatePostingApproval(context.Context, gl.Actor, gl.PostingRequest, gl.PostingAuthorizationDecision) (gl.PostingApproval, error) {
+	return validator.approval, nil
+}
+
 func newHTTPPostingService(t *testing.T, allowed bool) (*gl.PostingService, error) {
 	t.Helper()
 	registry, err := money.NewCurrencyRegistry([]money.CurrencyMetadata{{Code: "USD", Scale: 2}})

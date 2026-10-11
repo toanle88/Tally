@@ -5932,6 +5932,8 @@ type GlSubmitPostingRequestResultData struct {
 	JournalVersion    OptInt                                          `json:"journalVersion"`
 	LedgerPosition    OptInt                                          `json:"ledgerPosition"`
 	ApprovalRequestId OptUUID                                         `json:"approvalRequestId"`
+	PolicyReference   OptString                                       `json:"policyReference"`
+	PolicyVersion     OptString                                       `json:"policyVersion"`
 	NextAction        OptString                                       `json:"nextAction"`
 	ValidationOutcome string                                          `json:"validationOutcome"`
 	ApprovalStatus    string                                          `json:"approvalStatus"`
@@ -5975,6 +5977,16 @@ func (s *GlSubmitPostingRequestResultData) GetLedgerPosition() OptInt {
 // GetApprovalRequestId returns the value of ApprovalRequestId.
 func (s *GlSubmitPostingRequestResultData) GetApprovalRequestId() OptUUID {
 	return s.ApprovalRequestId
+}
+
+// GetPolicyReference returns the value of PolicyReference.
+func (s *GlSubmitPostingRequestResultData) GetPolicyReference() OptString {
+	return s.PolicyReference
+}
+
+// GetPolicyVersion returns the value of PolicyVersion.
+func (s *GlSubmitPostingRequestResultData) GetPolicyVersion() OptString {
+	return s.PolicyVersion
 }
 
 // GetNextAction returns the value of NextAction.
@@ -6052,6 +6064,16 @@ func (s *GlSubmitPostingRequestResultData) SetApprovalRequestId(val OptUUID) {
 	s.ApprovalRequestId = val
 }
 
+// SetPolicyReference sets the value of PolicyReference.
+func (s *GlSubmitPostingRequestResultData) SetPolicyReference(val OptString) {
+	s.PolicyReference = val
+}
+
+// SetPolicyVersion sets the value of PolicyVersion.
+func (s *GlSubmitPostingRequestResultData) SetPolicyVersion(val OptString) {
+	s.PolicyVersion = val
+}
+
 // SetNextAction sets the value of NextAction.
 func (s *GlSubmitPostingRequestResultData) SetNextAction(val OptString) {
 	s.NextAction = val
@@ -6097,6 +6119,7 @@ type GlSubmitPostingRequestResultDataLifecycleStatus string
 const (
 	GlSubmitPostingRequestResultDataLifecycleStatusPendingApproval GlSubmitPostingRequestResultDataLifecycleStatus = "PendingApproval"
 	GlSubmitPostingRequestResultDataLifecycleStatusPosted          GlSubmitPostingRequestResultDataLifecycleStatus = "Posted"
+	GlSubmitPostingRequestResultDataLifecycleStatusCancelled       GlSubmitPostingRequestResultDataLifecycleStatus = "Cancelled"
 )
 
 // AllValues returns all GlSubmitPostingRequestResultDataLifecycleStatus values.
@@ -6104,6 +6127,7 @@ func (GlSubmitPostingRequestResultDataLifecycleStatus) AllValues() []GlSubmitPos
 	return []GlSubmitPostingRequestResultDataLifecycleStatus{
 		GlSubmitPostingRequestResultDataLifecycleStatusPendingApproval,
 		GlSubmitPostingRequestResultDataLifecycleStatusPosted,
+		GlSubmitPostingRequestResultDataLifecycleStatusCancelled,
 	}
 }
 
@@ -6113,6 +6137,8 @@ func (s GlSubmitPostingRequestResultDataLifecycleStatus) MarshalText() ([]byte, 
 	case GlSubmitPostingRequestResultDataLifecycleStatusPendingApproval:
 		return []byte(s), nil
 	case GlSubmitPostingRequestResultDataLifecycleStatusPosted:
+		return []byte(s), nil
+	case GlSubmitPostingRequestResultDataLifecycleStatusCancelled:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -6128,6 +6154,9 @@ func (s *GlSubmitPostingRequestResultDataLifecycleStatus) UnmarshalText(data []b
 	case GlSubmitPostingRequestResultDataLifecycleStatusPosted:
 		*s = GlSubmitPostingRequestResultDataLifecycleStatusPosted
 		return nil
+	case GlSubmitPostingRequestResultDataLifecycleStatusCancelled:
+		*s = GlSubmitPostingRequestResultDataLifecycleStatusCancelled
+		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
@@ -6138,6 +6167,7 @@ type GlSubmitPostingRequestResultDataOutcome string
 const (
 	GlSubmitPostingRequestResultDataOutcomeJournalEntryPosted     GlSubmitPostingRequestResultDataOutcome = "JournalEntryPosted"
 	GlSubmitPostingRequestResultDataOutcomePostingPendingApproval GlSubmitPostingRequestResultDataOutcome = "PostingPendingApproval"
+	GlSubmitPostingRequestResultDataOutcomePostingRejected        GlSubmitPostingRequestResultDataOutcome = "PostingRejected"
 )
 
 // AllValues returns all GlSubmitPostingRequestResultDataOutcome values.
@@ -6145,6 +6175,7 @@ func (GlSubmitPostingRequestResultDataOutcome) AllValues() []GlSubmitPostingRequ
 	return []GlSubmitPostingRequestResultDataOutcome{
 		GlSubmitPostingRequestResultDataOutcomeJournalEntryPosted,
 		GlSubmitPostingRequestResultDataOutcomePostingPendingApproval,
+		GlSubmitPostingRequestResultDataOutcomePostingRejected,
 	}
 }
 
@@ -6154,6 +6185,8 @@ func (s GlSubmitPostingRequestResultDataOutcome) MarshalText() ([]byte, error) {
 	case GlSubmitPostingRequestResultDataOutcomeJournalEntryPosted:
 		return []byte(s), nil
 	case GlSubmitPostingRequestResultDataOutcomePostingPendingApproval:
+		return []byte(s), nil
+	case GlSubmitPostingRequestResultDataOutcomePostingRejected:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -6168,6 +6201,9 @@ func (s *GlSubmitPostingRequestResultDataOutcome) UnmarshalText(data []byte) err
 		return nil
 	case GlSubmitPostingRequestResultDataOutcomePostingPendingApproval:
 		*s = GlSubmitPostingRequestResultDataOutcomePostingPendingApproval
+		return nil
+	case GlSubmitPostingRequestResultDataOutcomePostingRejected:
+		*s = GlSubmitPostingRequestResultDataOutcomePostingRejected
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

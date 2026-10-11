@@ -1,8 +1,8 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
-import { glSubmitPostingRequest } from '@/generated/api/sdk.gen'
-import type { GlPostingRequestLine, GlSubmitPostingRequestEstablishedResult } from '@/generated/api/types.gen'
+import { glApplyJournalApprovalDecision, glSubmitPostingRequest } from '@/generated/api/sdk.gen'
+import type { EstablishedResult, GlPostingRequestLine, GlSubmitPostingRequestEstablishedResult } from '@/generated/api/types.gen'
 import { Button, Field, Panel, Select, StatusBadge, type SemanticState } from '@/components/ui'
 import type { AccountingScopeFixture } from '@/lib/auth/auth-scope-adapter'
 import { useScopeContext } from '@/lib/scope/scope-context'
@@ -10,6 +10,7 @@ import { useScopeContext } from '@/lib/scope/scope-context'
 export type GlPostingView = 'workbench' | 'request' | 'result'
 
 type PostingResult = GlSubmitPostingRequestEstablishedResult
+type ApprovalResult = EstablishedResult
 
 type PostingLineDraft = Pick<GlPostingRequestLine, 'debitOrCredit' | 'lineCurrencyMode' | 'transactionAmount' | 'functionalAmount'> & {
   accountId: string
@@ -223,20 +224,118 @@ function PostingRequestForm({ scope, onAccepted }: { scope: AccountingScopeFixtu
 
 function PostingResultPanel({ result }: { result: PostingResult | null }) {
   if (!result) return <Panel title="Posting result" description="This screen receives the established result from a submitted request."><p role="note" className="text-sm text-base-content/75">No result is loaded. Submit a request from <NavLink className="link link-primary" to="/general-ledger/gl-scr-01">GL-SCR-01</NavLink>, then return here using the established result link.</p></Panel>
-  const state: SemanticState = result.data.lifecycleStatus === 'Posted' ? 'success' : 'pending'
-  return <Panel title="Posting result" description="This is the authoritative result returned by the posting command; no local journal projection is substituted."><div className="flex flex-wrap items-center gap-3"><StatusBadge state={state} label={`${result.data.outcome} · ${result.data.lifecycleStatus}`} announce /><span className="text-sm text-base-content/70">Request {result.aggregateId} · version {result.aggregateVersion}</span></div><dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><div><dt className="text-sm text-base-content/65">Journal</dt><dd className="font-mono">{result.data.journalNumber ?? result.data.journalId ?? 'Not established'}</dd></div><div><dt className="text-sm text-base-content/65">Journal version</dt><dd>{result.data.journalVersion ?? '—'}</dd></div><div><dt className="text-sm text-base-content/65">Ledger position</dt><dd>{result.data.ledgerPosition ?? 'No ledger effect'}</dd></div><div><dt className="text-sm text-base-content/65">Approval reference</dt><dd className="font-mono">{result.data.approvalRequestId ?? 'Not required'}</dd></div><div><dt className="text-sm text-base-content/65">Gate evidence</dt><dd>{result.data.gateEvidence.gateMode} · period v{result.data.gateEvidence.periodStateVersion} · gate v{result.data.gateEvidence.postingGateVersion}</dd></div><div><dt className="text-sm text-base-content/65">Audit reference</dt><dd className="font-mono">{result.data.auditReference ?? 'Unavailable in result'}</dd></div><div><dt className="text-sm text-base-content/65">Source reference</dt><dd className="font-mono break-all">{result.data.sourceReference}</dd></div><div><dt className="text-sm text-base-content/65">Next action</dt><dd>{result.data.nextAction ?? 'None'}</dd></div><div><dt className="text-sm text-base-content/65">Replay</dt><dd>{result.data.replayed ? 'Existing result returned' : 'First establishment'}</dd></div></dl>{result.data.issues?.length ? <div className="mt-5 rounded-box border border-warning/40 bg-warning/10 p-4"><h3 className="font-semibold">Validation evidence</h3><ul className="mt-2 space-y-2 text-sm">{result.data.issues.map((issue) => <li key={`${issue.code}-${issue.field}`}><span className="font-mono">{issue.code}</span> · {issue.field}: {issue.message}</li>)}</ul></div> : null}</Panel>
+  const state: SemanticState = result.data.lifecycleStatus === 'Posted' ? 'success' : result.data.lifecycleStatus === 'Cancelled' ? 'error' : 'pending'
+  return <Panel title="Posting result" description="This is the authoritative result returned by the posting command; no local journal projection is substituted."><div className="flex flex-wrap items-center gap-3"><StatusBadge state={state} label={`${result.data.outcome} · ${result.data.lifecycleStatus}`} announce /><span className="text-sm text-base-content/70">Request {result.aggregateId} · version {result.aggregateVersion}</span></div><dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><div><dt className="text-sm text-base-content/65">Journal</dt><dd className="font-mono">{result.data.journalNumber ?? result.data.journalId ?? 'Not established'}</dd></div><div><dt className="text-sm text-base-content/65">Journal version</dt><dd>{result.data.journalVersion ?? '—'}</dd></div><div><dt className="text-sm text-base-content/65">Ledger position</dt><dd>{result.data.ledgerPosition ?? 'No ledger effect'}</dd></div><div><dt className="text-sm text-base-content/65">Approval reference</dt><dd className="font-mono">{result.data.approvalRequestId ?? 'Not required'}</dd></div><div><dt className="text-sm text-base-content/65">Approval policy</dt><dd>{result.data.policyReference ? `${result.data.policyReference} · v${result.data.policyVersion ?? '—'}` : 'Not required'}</dd></div><div><dt className="text-sm text-base-content/65">Gate evidence</dt><dd>{result.data.gateEvidence.gateMode} · period v{result.data.gateEvidence.periodStateVersion} · gate v{result.data.gateEvidence.postingGateVersion}</dd></div><div><dt className="text-sm text-base-content/65">Audit reference</dt><dd className="font-mono">{result.data.auditReference ?? 'Unavailable in result'}</dd></div><div><dt className="text-sm text-base-content/65">Source reference</dt><dd className="font-mono break-all">{result.data.sourceReference}</dd></div><div><dt className="text-sm text-base-content/65">Next action</dt><dd>{result.data.nextAction ?? 'None'}</dd></div><div><dt className="text-sm text-base-content/65">Replay</dt><dd>{result.data.replayed ? 'Existing result returned' : 'First establishment'}</dd></div></dl>{result.data.issues?.length ? <div className="mt-5 rounded-box border border-warning/40 bg-warning/10 p-4"><h3 className="font-semibold">Validation evidence</h3><ul className="mt-2 space-y-2 text-sm">{result.data.issues.map((issue) => <li key={`${issue.code}-${issue.field}`}><span className="font-mono">{issue.code}</span> · {issue.field}: {issue.message}</li>)}</ul></div> : null}</Panel>
+}
+
+function approvalDataString(result: ApprovalResult | null, key: string) {
+  const value = result?.data[key]
+  return typeof value === 'string' ? value : value == null ? '—' : String(value)
+}
+
+function PostingApprovalDecisionPanel({ result, scope, appliedResult, onApplied }: { result: PostingResult | null; scope: AccountingScopeFixture; appliedResult: ApprovalResult | null; onApplied: (result: ApprovalResult) => void }) {
+  const [outcome, setOutcome] = useState<'approved' | 'rejected'>('approved')
+  const [approvalRequestId, setApprovalRequestId] = useState(result?.data.approvalRequestId ?? '')
+  const [decisionId, setDecisionId] = useState<string>(newIdentifier())
+  const [policyVersion] = useState(result?.data.policyVersion ?? '')
+  const [decisionVersion, setDecisionVersion] = useState('1')
+  const [subjectVersion, setSubjectVersion] = useState(String(result?.data.journalVersion ?? result?.aggregateVersion ?? 1))
+  const [candidateFingerprint, setCandidateFingerprint] = useState('')
+  const [approverUserId, setApproverUserId] = useState('')
+  const [reason, setReason] = useState('')
+  const [notice, setNotice] = useState('The pending journal has no ledger effect until an immutable approval decision is verified and applied.')
+  const [saving, setSaving] = useState(false)
+  const submissionIdentity = useRef<{ contentFingerprint: string; commandId: string; idempotencyKey: string; correlationId: string } | null>(null)
+
+  if (!result || result.data.lifecycleStatus !== 'PendingApproval') return null
+
+  const journalId = result.data.journalId ?? result.aggregateId
+  const currentVersion = result.data.journalVersion ?? result.aggregateVersion
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!approvalRequestId.trim() || !decisionId.trim() || !policyVersion.trim() || !candidateFingerprint.trim() || !approverUserId.trim() || !Number(decisionVersion) || !Number(subjectVersion)) {
+      setNotice('Approval request, decision, policy, subject-version, candidate-fingerprint, and approver references are required.')
+      return
+    }
+    const contentFingerprint = JSON.stringify({ journalId, outcome, approvalRequestId, decisionId, policyVersion, decisionVersion, subjectVersion, candidateFingerprint, approverUserId, reason })
+    const identity = submissionIdentity.current?.contentFingerprint === contentFingerprint
+      ? submissionIdentity.current
+      : { contentFingerprint, commandId: newIdentifier(), idempotencyKey: newIdentifier(), correlationId: newIdentifier() }
+    submissionIdentity.current = identity
+    setSaving(true)
+    setNotice('Verifying the immutable Workflow decision and revalidating the current journal and gate…')
+    try {
+      const response = await glApplyJournalApprovalDecision({
+        body: {
+          commandId: identity.commandId,
+          expectedVersion: currentVersion,
+          accountingScopeId: scope.id,
+          data: {
+            journalId,
+            outcome,
+            approvalRequestId,
+            decisionId,
+            policyVersion,
+            decisionVersion: Number(decisionVersion),
+            subjectVersion: Number(subjectVersion),
+            candidateFingerprint,
+            approverUserId,
+            reason: reason.trim() || undefined,
+          },
+        },
+        headers: { 'Idempotency-Key': identity.idempotencyKey, 'X-Accounting-Scope-Id': scope.id, 'X-Correlation-Id': identity.correlationId },
+      })
+      if (response.error) {
+        setNotice(errorDetail(response.error))
+        return
+      }
+      if (!response.data) {
+        setNotice('The approval decision returned no established result. Keep the command identity and retry safely.')
+        return
+      }
+      submissionIdentity.current = null
+      onApplied(response.data)
+      setNotice(`Authoritative approval result established: ${approvalDataString(response.data, 'outcome')}.`)
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'The approval decision could not reach the live API. Keep the command identity and retry.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return <Panel title="Apply journal approval decision" description="This panel accepts immutable Workflow decision evidence only. It does not edit approval policy or replace the submitted journal facts.">
+    <div className="rounded-box border border-warning/40 bg-warning/10 p-4 text-sm"><p><span className="font-semibold">Current journal:</span> <span className="font-mono">{journalId}</span> · version {currentVersion}</p><p className="mt-1"><span className="font-semibold">Approval request:</span> <span className="font-mono">{approvalRequestId || 'Not returned by the submit result'}</span></p><p className="mt-1">The pending journal has no ledger position. GL will revalidate scope, references, currency, balance, period, gate, authorization, and decision identity before applying it.</p></div>
+    {appliedResult ? <div role="status" className={`mt-4 rounded-box border p-4 ${approvalDataString(appliedResult, 'lifecycleStatus') === 'Cancelled' ? 'border-error/40 bg-error/10' : 'border-success/40 bg-success/10'}`}><p className="font-semibold">Decision applied</p><dl className="mt-2 grid gap-2 sm:grid-cols-2"><div><dt className="text-sm text-base-content/65">Outcome</dt><dd>{approvalDataString(appliedResult, 'outcome')} · {approvalDataString(appliedResult, 'lifecycleStatus')}</dd></div><div><dt className="text-sm text-base-content/65">Decision reference</dt><dd className="font-mono">{approvalDataString(appliedResult, 'approvalDecisionId')}</dd></div><div><dt className="text-sm text-base-content/65">Applied subject version</dt><dd>{approvalDataString(appliedResult, 'subjectVersion')}</dd></div><div><dt className="text-sm text-base-content/65">Next action</dt><dd>{approvalDataString(appliedResult, 'nextAction')}</dd></div></dl></div> : <form className="mt-5" onSubmit={(event) => void submit(event)}>
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="form-control w-full gap-2"><span className="label font-medium">Decision outcome</span><Select aria-label="Decision outcome" value={outcome} onChange={(event) => setOutcome(event.target.value as typeof outcome)}><option value="approved">Approve</option><option value="rejected">Reject</option></Select></label>
+        <Field id="gl-approval-request-id" label="Approval request ID" value={approvalRequestId} onChange={(event) => setApprovalRequestId(event.target.value)} required />
+        <Field id="gl-approval-decision-id" label="Decision ID" value={decisionId} onChange={(event) => setDecisionId(event.target.value)} required />
+        <Field id="gl-approval-policy-reference" label="Approval policy" value={result.data.policyReference ?? 'Unavailable from submit result'} readOnly />
+        <Field id="gl-approval-policy-version" label="Policy version" value={policyVersion || 'Unavailable from submit result'} readOnly required />
+        <Field id="gl-approval-decision-version" label="Decision version" type="number" min="1" value={decisionVersion} onChange={(event) => setDecisionVersion(event.target.value)} required />
+        <Field id="gl-approval-subject-version" label="Subject version" type="number" min="1" value={subjectVersion} onChange={(event) => setSubjectVersion(event.target.value)} required />
+        <Field id="gl-approval-candidate-fingerprint" label="Candidate fingerprint" value={candidateFingerprint} onChange={(event) => setCandidateFingerprint(event.target.value)} required />
+        <Field id="gl-approval-approver-user-id" label="Approver user ID" value={approverUserId} onChange={(event) => setApproverUserId(event.target.value)} required />
+        <Field id="gl-approval-reason" label="Decision reason" value={reason} onChange={(event) => setReason(event.target.value)} />
+      </div>
+      <p role="status" aria-live="polite" className="mt-4 text-sm text-base-content/75">{notice}</p>
+      <div className="mt-4"><Button type="submit" loading={saving}>{outcome === 'approved' ? 'Apply approval' : 'Apply rejection'}</Button></div>
+    </form>}
+  </Panel>
 }
 
 function PostingEvidencePanel({ result }: { result: PostingResult | null }) {
-  return <Panel title="Validation, ownership, and recovery" description="Every state shown here remains tied to the command result or an explicit dependency boundary."><dl className="grid gap-4 sm:grid-cols-2"><div><dt className="text-sm text-base-content/65">State</dt><dd className="font-medium">{result?.data.lifecycleStatus ?? 'Not submitted'}</dd></div><div><dt className="text-sm text-base-content/65">Owner</dt><dd className="font-medium">General Ledger</dd></div><div><dt className="text-sm text-base-content/65">Validation</dt><dd className="font-medium">{result?.data.validationOutcome ?? 'Awaiting authoritative validation'}</dd></div><div><dt className="text-sm text-base-content/65">Authorization</dt><dd className="font-mono text-sm">finance.gl.submit.posting.request</dd></div><div><dt className="text-sm text-base-content/65">Evidence</dt><dd>{result ? 'Gate, source, audit, and idempotency evidence returned by GL.' : 'Current scope, period, and typed request fields are visible before submission.'}</dd></div><div><dt className="text-sm text-base-content/65">Correction / recovery</dt><dd>{result?.data.nextAction ?? 'Correct the identified field or dependency, then retry with the same request identity only when the business content is unchanged.'}</dd></div></dl></Panel>
+  const permission = result?.data.lifecycleStatus === 'PendingApproval' ? 'finance.gl.apply.journal.approval.decision' : 'finance.gl.submit.posting.request'
+  return <Panel title="Validation, ownership, and recovery" description="Every state shown here remains tied to the command result or an explicit dependency boundary."><dl className="grid gap-4 sm:grid-cols-2"><div><dt className="text-sm text-base-content/65">State</dt><dd className="font-medium">{result?.data.lifecycleStatus ?? 'Not submitted'}</dd></div><div><dt className="text-sm text-base-content/65">Owner</dt><dd className="font-medium">General Ledger</dd></div><div><dt className="text-sm text-base-content/65">Validation</dt><dd className="font-medium">{result?.data.validationOutcome ?? 'Awaiting authoritative validation'}</dd></div><div><dt className="text-sm text-base-content/65">Authorization</dt><dd className="font-mono text-sm">{permission}</dd></div><div><dt className="text-sm text-base-content/65">Evidence</dt><dd>{result ? 'Gate, source, audit, and idempotency evidence returned by GL.' : 'Current scope, period, and typed request fields are visible before submission.'}</dd></div><div><dt className="text-sm text-base-content/65">Correction / recovery</dt><dd>{result?.data.nextAction ?? 'Correct the identified field or dependency, then retry with the same request identity only when the business content is unchanged.'}</dd></div></dl></Panel>
 }
 
 export function GlPostingWorkspace({ view }: { view: GlPostingView }) {
   const { currentScope } = useScopeContext()
   const location = useLocation()
   const navigate = useNavigate()
-  const locationState = location.state as { postingResult?: PostingResult } | null
+  const locationState = location.state as { postingResult?: PostingResult; approvalResult?: ApprovalResult } | null
   const [result, setResult] = useState<PostingResult | null>(locationState?.postingResult ?? null)
+  const [approvalResult, setApprovalResult] = useState<ApprovalResult | null>(locationState?.approvalResult ?? null)
   const [recentResults, setRecentResults] = useState<PostingResult[]>([])
 
   if (!currentScope) {
@@ -253,5 +352,5 @@ export function GlPostingWorkspace({ view }: { view: GlPostingView }) {
     }
   }
 
-  return <section aria-labelledby="gl-posting-title" className="space-y-6"><div><p className="text-sm font-semibold uppercase tracking-wide text-primary">{screenId}</p><h1 id="gl-posting-title" className="mt-1 text-2xl font-semibold">{title}</h1><p className="mt-2 max-w-3xl text-base-content/75">Submit and validate one balanced posting request in the selected accounting scope. GL remains the owner of validation, authorization, journal establishment, audit evidence, and safe retry outcomes.</p><nav aria-label="Posting screens" className="mt-4 flex flex-wrap gap-3 text-sm"><NavLink className="link link-primary" to="/general-ledger/gl-ws-01">GL-WS-01 workbench</NavLink><NavLink className="link link-primary" to="/general-ledger/gl-scr-01">GL-SCR-01 request</NavLink><NavLink className="link link-primary" to="/general-ledger/gl-scr-02">GL-SCR-02 result</NavLink></nav></div><p role="note" className="rounded-box border border-warning/40 bg-warning/10 p-4 text-sm">Scope: {currentScope.legalEntity.name} · {currentScope.ledger.name} · {currentScope.accountingBook.name} · {currentScope.functionalCurrency} · {currentScope.period?.label ?? 'No fiscal period selected'}. Read source: selected-scope fixture; mutation source: typed <code>glSubmitPostingRequest</code> API. No local journal is treated as authoritative.</p>{view !== 'result' ? <PostingRequestForm scope={currentScope} onAccepted={onAccepted} /> : null}{view === 'workbench' ? <Panel title="Recent established results" description="This local list is a safe session view of returned results, not a substitute for a GL journal read endpoint.">{recentResults.length ? <ul className="space-y-3">{recentResults.map((entry) => <li key={`${entry.aggregateId}-${entry.correlationId}`} className="rounded-box border border-base-300 p-3"><p className="font-semibold">{entry.data.outcome} · {entry.data.journalNumber ?? entry.data.journalId ?? 'pending journal'}</p><p className="mt-1 text-sm text-base-content/70">{entry.data.replayed ? 'Replayed existing result' : 'New established result'} · source {entry.data.sourceReference}</p></li>)}</ul> : <p className="text-sm text-base-content/70">No posting result has been returned in this session.</p>}</Panel> : null}<PostingResultPanel result={result} /><PostingEvidencePanel result={result} /></section>
+  return <section aria-labelledby="gl-posting-title" className="space-y-6"><div><p className="text-sm font-semibold uppercase tracking-wide text-primary">{screenId}</p><h1 id="gl-posting-title" className="mt-1 text-2xl font-semibold">{title}</h1><p className="mt-2 max-w-3xl text-base-content/75">Submit and validate one balanced posting request in the selected accounting scope. GL remains the owner of validation, authorization, journal establishment, audit evidence, and safe retry outcomes.</p><nav aria-label="Posting screens" className="mt-4 flex flex-wrap gap-3 text-sm"><NavLink className="link link-primary" to="/general-ledger/gl-ws-01">GL-WS-01 workbench</NavLink><NavLink className="link link-primary" to="/general-ledger/gl-scr-01">GL-SCR-01 request</NavLink><NavLink className="link link-primary" to="/general-ledger/gl-scr-02">GL-SCR-02 result</NavLink></nav></div><p role="note" className="rounded-box border border-warning/40 bg-warning/10 p-4 text-sm">Scope: {currentScope.legalEntity.name} · {currentScope.ledger.name} · {currentScope.accountingBook.name} · {currentScope.functionalCurrency} · {currentScope.period?.label ?? 'No fiscal period selected'}. Read source: selected-scope fixture; mutation source: typed <code>glSubmitPostingRequest</code> API. No local journal is treated as authoritative.</p>{view !== 'result' ? <PostingRequestForm scope={currentScope} onAccepted={onAccepted} /> : null}{view === 'workbench' ? <Panel title="Recent established results" description="This local list is a safe session view of returned results, not a substitute for a GL journal read endpoint.">{recentResults.length ? <ul className="space-y-3">{recentResults.map((entry) => <li key={`${entry.aggregateId}-${entry.correlationId}`} className="rounded-box border border-base-300 p-3"><p className="font-semibold">{entry.data.outcome} · {entry.data.journalNumber ?? entry.data.journalId ?? 'pending journal'}</p><p className="mt-1 text-sm text-base-content/70">{entry.data.replayed ? 'Replayed existing result' : 'New established result'} · source {entry.data.sourceReference}</p></li>)}</ul> : <p className="text-sm text-base-content/70">No posting result has been returned in this session.</p>}</Panel> : null}<PostingResultPanel result={result} /><PostingApprovalDecisionPanel result={result} scope={currentScope} appliedResult={approvalResult} onApplied={(nextResult) => { setApprovalResult(nextResult); void navigate('/general-ledger/gl-scr-02', { state: { postingResult: result, approvalResult: nextResult } }) }} /><PostingEvidencePanel result={result} /></section>
 }

@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	PostingPermission = "finance.gl.submit.posting.request"
+	PostingPermission         = "finance.gl.submit.posting.request"
+	PostingApprovalPermission = "finance.gl.apply.journal.approval.decision"
 
 	PostingContractVersion = 2
 
@@ -40,6 +41,7 @@ const (
 
 	PostingStatusPendingApproval = "PendingApproval"
 	PostingStatusPosted          = "Posted"
+	PostingStatusCancelled       = "Cancelled"
 
 	PostingOutcomeJournalEntryPosted     = "JournalEntryPosted"
 	PostingOutcomePostingRejected        = "PostingRejected"
@@ -132,10 +134,15 @@ type PostingGateEvidence struct {
 }
 
 type PostingApproval struct {
-	Required          bool
-	ApprovalRequestID uuid.UUID
-	PolicyReference   string
-	PolicyVersion     string
+	Required               bool                       `json:"required"`
+	ApprovalRequestID      uuid.UUID                  `json:"approvalRequestId"`
+	PolicyReference        string                     `json:"policyReference"`
+	PolicyVersion          string                     `json:"policyVersion"`
+	Decision               *ApprovalDecisionReference `json:"decision,omitempty"`
+	DecisionOutcome        string                     `json:"decisionOutcome,omitempty"`
+	DecisionReason         string                     `json:"decisionReason,omitempty"`
+	AppliedAt              *time.Time                 `json:"appliedAt,omitempty"`
+	AuthorizationReference uuid.UUID                  `json:"authorizationReference,omitempty"`
 }
 
 type PostingIssue struct {
@@ -168,6 +175,7 @@ type PostingJournal struct {
 	RequestFingerprint string              `json:"-"`
 	GateEvidence       PostingGateEvidence `json:"gateEvidence"`
 	AuditReference     uuid.UUID           `json:"auditReference"`
+	SubmittedByUserID  uuid.UUID           `json:"-"`
 }
 
 type PostingResult struct {
@@ -231,27 +239,37 @@ type PostingApprovalValidator interface {
 }
 
 type PostingAuditRecord struct {
-	AttemptID             uuid.UUID
-	JournalID             uuid.UUID
-	ActorUserID           uuid.UUID
-	ActorSubjectReference string
-	Outcome               string
-	AccountingScope       accountingscope.AccountingScope
-	AccountingScopeID     uuid.UUID
-	SourceContext         string
-	SourceAggregateType   string
-	SourceAggregateID     uuid.UUID
-	SourceVersion         int64
-	RequestID             uuid.UUID
-	IdempotencyKey        string
-	RequestFingerprint    string
-	Permission            string
-	PolicyReference       string
-	PolicyVersion         string
-	DecisionReference     uuid.UUID
-	CorrelationID         string
-	CausationID           string
-	Issues                []PostingIssue
+	AttemptID                    uuid.UUID
+	JournalID                    uuid.UUID
+	ActorUserID                  uuid.UUID
+	ActorSubjectReference        string
+	Outcome                      string
+	AccountingScope              accountingscope.AccountingScope
+	AccountingScopeID            uuid.UUID
+	SourceContext                string
+	SourceAggregateType          string
+	SourceAggregateID            uuid.UUID
+	SourceVersion                int64
+	RequestID                    uuid.UUID
+	IdempotencyKey               string
+	RequestFingerprint           string
+	Permission                   string
+	PolicyReference              string
+	PolicyVersion                string
+	DecisionReference            uuid.UUID
+	GateEvidence                 PostingGateEvidence
+	ApprovalRequestID            uuid.UUID
+	ApprovalDecisionID           uuid.UUID
+	ApprovalDecisionVersion      int64
+	ApprovalSubjectVersion       int64
+	ApprovalCandidateFingerprint string
+	ApprovalApproverUserID       uuid.UUID
+	ApprovalOutcome              string
+	ApprovalDecisionReason       string
+	ApplicationFingerprint       string
+	CorrelationID                string
+	CausationID                  string
+	Issues                       []PostingIssue
 }
 
 type PostingAuditRecorder interface {

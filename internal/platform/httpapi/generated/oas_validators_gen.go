@@ -6230,6 +6230,8 @@ func (s GlSubmitPostingRequestResultDataLifecycleStatus) Validate() error {
 		return nil
 	case "Posted":
 		return nil
+	case "Cancelled":
+		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}
@@ -6240,6 +6242,8 @@ func (s GlSubmitPostingRequestResultDataOutcome) Validate() error {
 	case "JournalEntryPosted":
 		return nil
 	case "PostingPendingApproval":
+		return nil
+	case "PostingRejected":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)

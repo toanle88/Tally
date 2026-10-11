@@ -25983,6 +25983,18 @@ func (s *GlSubmitPostingRequestResultData) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.PolicyReference.Set {
+			e.FieldStart("policyReference")
+			s.PolicyReference.Encode(e)
+		}
+	}
+	{
+		if s.PolicyVersion.Set {
+			e.FieldStart("policyVersion")
+			s.PolicyVersion.Encode(e)
+		}
+	}
+	{
 		if s.NextAction.Set {
 			e.FieldStart("nextAction")
 			s.NextAction.Encode(e)
@@ -26026,7 +26038,7 @@ func (s *GlSubmitPostingRequestResultData) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfGlSubmitPostingRequestResultData = [15]string{
+var jsonFieldsNameOfGlSubmitPostingRequestResultData = [17]string{
 	0:  "outcome",
 	1:  "lifecycleStatus",
 	2:  "journalId",
@@ -26034,14 +26046,16 @@ var jsonFieldsNameOfGlSubmitPostingRequestResultData = [15]string{
 	4:  "journalVersion",
 	5:  "ledgerPosition",
 	6:  "approvalRequestId",
-	7:  "nextAction",
-	8:  "validationOutcome",
-	9:  "approvalStatus",
-	10: "sourceReference",
-	11: "gateEvidence",
-	12: "auditReference",
-	13: "replayed",
-	14: "issues",
+	7:  "policyReference",
+	8:  "policyVersion",
+	9:  "nextAction",
+	10: "validationOutcome",
+	11: "approvalStatus",
+	12: "sourceReference",
+	13: "gateEvidence",
+	14: "auditReference",
+	15: "replayed",
+	16: "issues",
 }
 
 // Decode decodes GlSubmitPostingRequestResultData from json.
@@ -26049,7 +26063,7 @@ func (s *GlSubmitPostingRequestResultData) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode GlSubmitPostingRequestResultData to nil")
 	}
-	var requiredBitSet [2]uint8
+	var requiredBitSet [3]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
@@ -26123,6 +26137,26 @@ func (s *GlSubmitPostingRequestResultData) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"approvalRequestId\"")
 			}
+		case "policyReference":
+			if err := func() error {
+				s.PolicyReference.Reset()
+				if err := s.PolicyReference.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"policyReference\"")
+			}
+		case "policyVersion":
+			if err := func() error {
+				s.PolicyVersion.Reset()
+				if err := s.PolicyVersion.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"policyVersion\"")
+			}
 		case "nextAction":
 			if err := func() error {
 				s.NextAction.Reset()
@@ -26134,7 +26168,7 @@ func (s *GlSubmitPostingRequestResultData) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"nextAction\"")
 			}
 		case "validationOutcome":
-			requiredBitSet[1] |= 1 << 0
+			requiredBitSet[1] |= 1 << 2
 			if err := func() error {
 				v, err := d.Str()
 				s.ValidationOutcome = string(v)
@@ -26146,7 +26180,7 @@ func (s *GlSubmitPostingRequestResultData) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"validationOutcome\"")
 			}
 		case "approvalStatus":
-			requiredBitSet[1] |= 1 << 1
+			requiredBitSet[1] |= 1 << 3
 			if err := func() error {
 				v, err := d.Str()
 				s.ApprovalStatus = string(v)
@@ -26158,7 +26192,7 @@ func (s *GlSubmitPostingRequestResultData) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"approvalStatus\"")
 			}
 		case "sourceReference":
-			requiredBitSet[1] |= 1 << 2
+			requiredBitSet[1] |= 1 << 4
 			if err := func() error {
 				v, err := d.Str()
 				s.SourceReference = string(v)
@@ -26170,7 +26204,7 @@ func (s *GlSubmitPostingRequestResultData) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"sourceReference\"")
 			}
 		case "gateEvidence":
-			requiredBitSet[1] |= 1 << 3
+			requiredBitSet[1] |= 1 << 5
 			if err := func() error {
 				if err := s.GateEvidence.Decode(d); err != nil {
 					return err
@@ -26190,7 +26224,7 @@ func (s *GlSubmitPostingRequestResultData) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"auditReference\"")
 			}
 		case "replayed":
-			requiredBitSet[1] |= 1 << 5
+			requiredBitSet[1] |= 1 << 7
 			if err := func() error {
 				v, err := d.Bool()
 				s.Replayed = bool(v)
@@ -26227,9 +26261,10 @@ func (s *GlSubmitPostingRequestResultData) Decode(d *jx.Decoder) error {
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
-	for i, mask := range [2]uint8{
+	for i, mask := range [3]uint8{
 		0b00000011,
-		0b00101111,
+		0b10111100,
+		0b00000000,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -26295,6 +26330,8 @@ func (s *GlSubmitPostingRequestResultDataLifecycleStatus) Decode(d *jx.Decoder) 
 		*s = GlSubmitPostingRequestResultDataLifecycleStatusPendingApproval
 	case GlSubmitPostingRequestResultDataLifecycleStatusPosted:
 		*s = GlSubmitPostingRequestResultDataLifecycleStatusPosted
+	case GlSubmitPostingRequestResultDataLifecycleStatusCancelled:
+		*s = GlSubmitPostingRequestResultDataLifecycleStatusCancelled
 	default:
 		*s = GlSubmitPostingRequestResultDataLifecycleStatus(v)
 	}
@@ -26335,6 +26372,8 @@ func (s *GlSubmitPostingRequestResultDataOutcome) Decode(d *jx.Decoder) error {
 		*s = GlSubmitPostingRequestResultDataOutcomeJournalEntryPosted
 	case GlSubmitPostingRequestResultDataOutcomePostingPendingApproval:
 		*s = GlSubmitPostingRequestResultDataOutcomePostingPendingApproval
+	case GlSubmitPostingRequestResultDataOutcomePostingRejected:
+		*s = GlSubmitPostingRequestResultDataOutcomePostingRejected
 	default:
 		*s = GlSubmitPostingRequestResultDataOutcome(v)
 	}
