@@ -17,6 +17,8 @@
 	db-migrate-create \
 	db-migrate-check \
 	db-migrate-inventory \
+	check-fast \
+	check-slow \
 	check \
 	ci-check \
 	repository-integrity-check \
@@ -81,6 +83,12 @@
 DB_SERVICE := postgres
 DB_WAIT_ATTEMPTS := 50
 DB_WAIT_INTERVAL_SECONDS := 1
+
+# Agent execution guidance:
+# - Use focused tests, `pnpm test:fast`, or `make check-fast` during iterative work.
+# - Do not invoke `check-slow`, `persistence-check`, `persistence-integration-test`,
+#   or `api-check` automatically. They are opt-in release/CI checks and require
+#   an explicit user request.
 
 db-config:
 	docker compose version >/dev/null 2>&1 || { echo "Docker Compose is required. Install from https://docs.docker.com/compose/install/" >&2; exit 1; }
@@ -187,6 +195,14 @@ db-migrate-inventory:
 		xargs -0 sha256sum > db/migrations/checksums.sha256
 	@echo "Updated db/migrations/checksums.sha256"
 
+# Fast local gate: migration metadata plus the default non-integration Go suite.
+check-fast: db-migrate-validate db-migrate-check
+	go test ./...
+
+# Slow opt-in gate: PostgreSQL/Testcontainers persistence and OpenAPI drift.
+# Agents must not run this target unless the user explicitly requests it.
+check-slow: persistence-check api-check
+
 check: db-migrate-validate db-migrate-check
 	go test ./...
 
@@ -239,6 +255,8 @@ sqlc-compile:
 sqlc-check:
 	@$(SQLC) -f sqlc.yaml diff
 
+# Slow opt-in check. Agents must not run this target during normal iterative
+# work unless the user explicitly requests PostgreSQL/Testcontainers coverage.
 ## Run all database integration tests, including clean migration and
 ## generated-query verification, against PostgreSQL 18 Testcontainers.
 persistence-integration-test:
@@ -248,6 +266,7 @@ persistence-integration-test:
 		-timeout=10m \
 		./internal/platform/database
 
+# Slow opt-in release gate. Agents must not run this target automatically.
 ## Run the complete local persistence release gate used by CI.
 persistence-check:
 	@bash scripts/db/persistence-check.sh
@@ -268,6 +287,9 @@ api-ts-generate:
 api-ts-check:
 	@bash scripts/openapi/typescript-client-check.sh
 
+# Slow opt-in contract/release gate. Agents must not run this target
+# automatically because it repeats generation and runs the full Go build/test
+# stages.
 api-check:
 	@bash scripts/openapi/api-check.sh
 

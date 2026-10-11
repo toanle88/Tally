@@ -1,7 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
-import { glApplyJournalApprovalDecision, glSubmitPostingRequest } from '@/generated/api/sdk.gen'
+import { glApplyJournalApprovalDecision, glReverseJournalEntry, glSubmitPostingRequest } from '@/generated/api/sdk.gen'
 import type { EstablishedResult, GlPostingRequestLine, GlSubmitPostingRequestEstablishedResult } from '@/generated/api/types.gen'
 import { Button, Field, Panel, Select, StatusBadge, type SemanticState } from '@/components/ui'
 import type { AccountingScopeFixture } from '@/lib/auth/auth-scope-adapter'
@@ -11,6 +11,7 @@ export type GlPostingView = 'workbench' | 'request' | 'result'
 
 type PostingResult = GlSubmitPostingRequestEstablishedResult
 type ApprovalResult = EstablishedResult
+type ReversalResult = EstablishedResult
 
 type PostingLineDraft = Pick<GlPostingRequestLine, 'debitOrCredit' | 'lineCurrencyMode' | 'transactionAmount' | 'functionalAmount'> & {
   accountId: string
@@ -329,13 +330,104 @@ function PostingEvidencePanel({ result }: { result: PostingResult | null }) {
   return <Panel title="Validation, ownership, and recovery" description="Every state shown here remains tied to the command result or an explicit dependency boundary."><dl className="grid gap-4 sm:grid-cols-2"><div><dt className="text-sm text-base-content/65">State</dt><dd className="font-medium">{result?.data.lifecycleStatus ?? 'Not submitted'}</dd></div><div><dt className="text-sm text-base-content/65">Owner</dt><dd className="font-medium">General Ledger</dd></div><div><dt className="text-sm text-base-content/65">Validation</dt><dd className="font-medium">{result?.data.validationOutcome ?? 'Awaiting authoritative validation'}</dd></div><div><dt className="text-sm text-base-content/65">Authorization</dt><dd className="font-mono text-sm">{permission}</dd></div><div><dt className="text-sm text-base-content/65">Evidence</dt><dd>{result ? 'Gate, source, audit, and idempotency evidence returned by GL.' : 'Current scope, period, and typed request fields are visible before submission.'}</dd></div><div><dt className="text-sm text-base-content/65">Correction / recovery</dt><dd>{result?.data.nextAction ?? 'Correct the identified field or dependency, then retry with the same request identity only when the business content is unchanged.'}</dd></div></dl></Panel>
 }
 
+function oppositeDirection(direction: GlPostingRequestLine['debitOrCredit']) {
+  return direction === 'debit' ? 'credit' : 'debit'
+}
+
+function reversalDataString(result: ReversalResult | null, key: string) {
+  const value = result?.data[key]
+  return typeof value === 'string' || typeof value === 'number' ? String(value) : value == null ? '—' : JSON.stringify(value)
+}
+
+function PostingReversalPanel({ result, scope, reversalResult, onReversed }: { result: PostingResult | null; scope: AccountingScopeFixture; reversalResult: ReversalResult | null; onReversed: (result: ReversalResult) => void }) {
+  const [reason, setReason] = useState('')
+  const [effectivePostingDate, setEffectivePostingDate] = useState('2026-08-20')
+  const [postingAuthorizationId, setPostingAuthorizationId] = useState('')
+  const [sourceContext, setSourceContext] = useState('general-ledger')
+  const [sourceAggregateType, setSourceAggregateType] = useState('journal-correction')
+  const [sourceAggregateId, setSourceAggregateId] = useState<string>(() => newIdentifier())
+  const [sourceVersion, setSourceVersion] = useState('1')
+  const [notice, setNotice] = useState('Review the exact original lines before submitting the linked correction.')
+  const [saving, setSaving] = useState(false)
+  const submissionIdentity = useRef<{ contentFingerprint: string; commandId: string; idempotencyKey: string; correlationId: string } | null>(null)
+
+  if (!result || result.data.lifecycleStatus !== 'Posted') return null
+  const journalId = result.data.journalId ?? result.aggregateId
+  const journalVersion = result.data.journalVersion ?? result.aggregateVersion
+  const lines = result.data.lines ?? []
+  const gateEvidence = result.data.gateEvidence
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!scope.period || !reason.trim() || !postingAuthorizationId.trim() || !sourceContext.trim() || !sourceAggregateType.trim() || !sourceAggregateId.trim() || !Number(sourceVersion) || Number(sourceVersion) < 1) {
+      setNotice('Reason, effective posting date, authorization evidence, source identity, source ID, and positive source version are required.')
+      return
+    }
+    const contentFingerprint = JSON.stringify({ journalId, journalVersion, reason: reason.trim(), effectivePostingDate, postingAuthorizationId: postingAuthorizationId.trim(), sourceContext: sourceContext.trim(), sourceAggregateType: sourceAggregateType.trim(), sourceAggregateId: sourceAggregateId.trim(), sourceVersion: Number(sourceVersion) })
+    const identity = submissionIdentity.current?.contentFingerprint === contentFingerprint
+      ? submissionIdentity.current
+      : { contentFingerprint, commandId: newIdentifier(), idempotencyKey: newIdentifier(), correlationId: newIdentifier() }
+    submissionIdentity.current = identity
+    setSaving(true)
+    setNotice('Submitting the reversal command for current gate validation and authoritative linkage…')
+    try {
+      const response = await glReverseJournalEntry({
+        body: {
+          commandId: identity.commandId,
+          expectedVersion: journalVersion,
+          accountingScopeId: scope.id,
+          data: {
+            journalId,
+            reason: reason.trim(),
+            effectivePostingDate,
+            fiscalPeriodId: gateEvidence.fiscalPeriodId,
+            periodStateVersion: gateEvidence.periodStateVersion,
+            postingGateVersion: gateEvidence.postingGateVersion,
+            postingAuthorizationId: postingAuthorizationId.trim(),
+            sourceContext: sourceContext.trim(),
+            sourceAggregateType: sourceAggregateType.trim(),
+            sourceAggregateId: sourceAggregateId.trim(),
+            sourceVersion: Number(sourceVersion),
+          },
+        },
+        headers: { 'Idempotency-Key': identity.idempotencyKey, 'X-Accounting-Scope-Id': scope.id, 'X-Correlation-Id': identity.correlationId },
+      })
+      if (response.error) {
+        setNotice(errorDetail(response.error))
+        return
+      }
+      if (!response.data) {
+        setNotice('The reversal returned no established result. Keep the command identity and retry safely.')
+        return
+      }
+      submissionIdentity.current = null
+      onReversed(response.data)
+      setNotice(`Authoritative reversal established: ${reversalDataString(response.data, 'outcome')}.`)
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'The reversal could not reach the live API. Keep the command identity and retry.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return <Panel title="Reverse posted journal" description="The original posted fact remains immutable. GL will append a separate PolicyAdjustment journal with the same exact amounts and inverted debit/credit directions, linked to this journal and the correction owner’s source identity.">
+    <div className="rounded-box border border-warning/40 bg-warning/10 p-4 text-sm"><p><span className="font-semibold">Original journal:</span> <span className="font-mono">{result.data.journalNumber ?? journalId}</span> · version {journalVersion}</p><p className="mt-1"><span className="font-semibold">Gate evidence:</span> {gateEvidence.gateMode} · period v{gateEvidence.periodStateVersion} · gate v{gateEvidence.postingGateVersion}</p><p className="mt-1">The correction owner supplies a reason, authorization reference, effective date, and explicit source identity. A successful result returns the original and linked reversal lineage.</p></div>
+    <div className="mt-5"><h3 className="font-semibold">Equal-and-opposite preview</h3><p className="mt-1 text-sm text-base-content/70">Amounts are displayed as exact strings; only debit/credit direction changes.</p><div className="mt-3 overflow-x-auto rounded-box border border-base-300"><table className="table table-sm"><caption className="sr-only">Original and proposed reversal lines</caption><thead><tr><th>Account</th><th>Original</th><th>Reversal</th><th>Transaction</th><th>Functional</th></tr></thead><tbody>{lines.length ? lines.map((line, index) => <tr key={`${line.accountId}-${index}`}><td className="font-mono">{line.accountId}</td><td>{line.debitOrCredit}</td><td>{oppositeDirection(line.debitOrCredit)}</td><td className="font-mono">{line.transactionAmount}</td><td className="font-mono">{line.functionalAmount}</td></tr>) : <tr><td colSpan={5}>The established result did not include lines; refresh the authoritative journal before reversing.</td></tr>}</tbody></table></div></div>
+    {reversalResult ? <div role="status" className="mt-5 rounded-box border border-success/40 bg-success/10 p-4"><p className="font-semibold">Linked reversal established</p><dl className="mt-2 grid gap-2 sm:grid-cols-2"><div><dt className="text-sm text-base-content/65">Reversal journal</dt><dd className="font-mono">{reversalDataString(reversalResult, 'reversalJournalNumber')}</dd></div><div><dt className="text-sm text-base-content/65">Reversal ID</dt><dd className="font-mono">{reversalDataString(reversalResult, 'reversalJournalId')}</dd></div><div><dt className="text-sm text-base-content/65">Reason</dt><dd>{reversalDataString(reversalResult, 'correctionReason')}</dd></div><div><dt className="text-sm text-base-content/65">Audit reference</dt><dd className="font-mono">{reversalDataString(reversalResult, 'auditReference')}</dd></div></dl></div> : <form className="mt-5" onSubmit={(event) => void submit(event)}>
+      <div className="grid gap-4 md:grid-cols-2"><Field id="gl-reversal-reason" label="Correction reason" value={reason} onChange={(event) => setReason(event.target.value)} required /><Field id="gl-reversal-date" label="Effective posting date" type="date" value={effectivePostingDate} onChange={(event) => setEffectivePostingDate(event.target.value)} required /><Field id="gl-reversal-authorization" label="Authorization evidence ID" value={postingAuthorizationId} onChange={(event) => setPostingAuthorizationId(event.target.value)} required /><Field id="gl-reversal-source-context" label="Source context" value={sourceContext} onChange={(event) => setSourceContext(event.target.value)} required /><Field id="gl-reversal-source-type" label="Source aggregate type" value={sourceAggregateType} onChange={(event) => setSourceAggregateType(event.target.value)} required /><Field id="gl-reversal-source-id" label="Source aggregate ID" value={sourceAggregateId} onChange={(event) => setSourceAggregateId(event.target.value)} required /><Field id="gl-reversal-source-version" label="Source version" type="number" min="1" value={sourceVersion} onChange={(event) => setSourceVersion(event.target.value)} required /></div>
+      <p role="status" aria-live="polite" className="mt-4 text-sm text-base-content/75">{notice}</p><div className="mt-4"><Button type="submit" loading={saving}>Reverse posted journal</Button></div>
+    </form>}
+  </Panel>
+}
+
 export function GlPostingWorkspace({ view }: { view: GlPostingView }) {
   const { currentScope } = useScopeContext()
   const location = useLocation()
   const navigate = useNavigate()
-  const locationState = location.state as { postingResult?: PostingResult; approvalResult?: ApprovalResult } | null
+  const locationState = location.state as { postingResult?: PostingResult; approvalResult?: ApprovalResult; reversalResult?: ReversalResult } | null
   const [result, setResult] = useState<PostingResult | null>(locationState?.postingResult ?? null)
   const [approvalResult, setApprovalResult] = useState<ApprovalResult | null>(locationState?.approvalResult ?? null)
+  const [reversalResult, setReversalResult] = useState<ReversalResult | null>(locationState?.reversalResult ?? null)
   const [recentResults, setRecentResults] = useState<PostingResult[]>([])
 
   if (!currentScope) {
@@ -352,5 +444,5 @@ export function GlPostingWorkspace({ view }: { view: GlPostingView }) {
     }
   }
 
-  return <section aria-labelledby="gl-posting-title" className="space-y-6"><div><p className="text-sm font-semibold uppercase tracking-wide text-primary">{screenId}</p><h1 id="gl-posting-title" className="mt-1 text-2xl font-semibold">{title}</h1><p className="mt-2 max-w-3xl text-base-content/75">Submit and validate one balanced posting request in the selected accounting scope. GL remains the owner of validation, authorization, journal establishment, audit evidence, and safe retry outcomes.</p><nav aria-label="Posting screens" className="mt-4 flex flex-wrap gap-3 text-sm"><NavLink className="link link-primary" to="/general-ledger/gl-ws-01">GL-WS-01 workbench</NavLink><NavLink className="link link-primary" to="/general-ledger/gl-scr-01">GL-SCR-01 request</NavLink><NavLink className="link link-primary" to="/general-ledger/gl-scr-02">GL-SCR-02 result</NavLink></nav></div><p role="note" className="rounded-box border border-warning/40 bg-warning/10 p-4 text-sm">Scope: {currentScope.legalEntity.name} · {currentScope.ledger.name} · {currentScope.accountingBook.name} · {currentScope.functionalCurrency} · {currentScope.period?.label ?? 'No fiscal period selected'}. Read source: selected-scope fixture; mutation source: typed <code>glSubmitPostingRequest</code> API. No local journal is treated as authoritative.</p>{view !== 'result' ? <PostingRequestForm scope={currentScope} onAccepted={onAccepted} /> : null}{view === 'workbench' ? <Panel title="Recent established results" description="This local list is a safe session view of returned results, not a substitute for a GL journal read endpoint.">{recentResults.length ? <ul className="space-y-3">{recentResults.map((entry) => <li key={`${entry.aggregateId}-${entry.correlationId}`} className="rounded-box border border-base-300 p-3"><p className="font-semibold">{entry.data.outcome} · {entry.data.journalNumber ?? entry.data.journalId ?? 'pending journal'}</p><p className="mt-1 text-sm text-base-content/70">{entry.data.replayed ? 'Replayed existing result' : 'New established result'} · source {entry.data.sourceReference}</p></li>)}</ul> : <p className="text-sm text-base-content/70">No posting result has been returned in this session.</p>}</Panel> : null}<PostingResultPanel result={result} /><PostingApprovalDecisionPanel result={result} scope={currentScope} appliedResult={approvalResult} onApplied={(nextResult) => { setApprovalResult(nextResult); void navigate('/general-ledger/gl-scr-02', { state: { postingResult: result, approvalResult: nextResult } }) }} /><PostingEvidencePanel result={result} /></section>
+  return <section aria-labelledby="gl-posting-title" className="space-y-6"><div><p className="text-sm font-semibold uppercase tracking-wide text-primary">{screenId}</p><h1 id="gl-posting-title" className="mt-1 text-2xl font-semibold">{title}</h1><p className="mt-2 max-w-3xl text-base-content/75">Submit and validate one balanced posting request in the selected accounting scope. GL remains the owner of validation, authorization, journal establishment, audit evidence, and safe retry outcomes.</p><nav aria-label="Posting screens" className="mt-4 flex flex-wrap gap-3 text-sm"><NavLink className="link link-primary" to="/general-ledger/gl-ws-01">GL-WS-01 workbench</NavLink><NavLink className="link link-primary" to="/general-ledger/gl-scr-01">GL-SCR-01 request</NavLink><NavLink className="link link-primary" to="/general-ledger/gl-scr-02">GL-SCR-02 result</NavLink></nav></div><p role="note" className="rounded-box border border-warning/40 bg-warning/10 p-4 text-sm">Scope: {currentScope.legalEntity.name} · {currentScope.ledger.name} · {currentScope.accountingBook.name} · {currentScope.functionalCurrency} · {currentScope.period?.label ?? 'No fiscal period selected'}. Read source: selected-scope fixture; mutation source: typed <code>glSubmitPostingRequest</code> API. No local journal is treated as authoritative.</p>{view !== 'result' ? <PostingRequestForm scope={currentScope} onAccepted={onAccepted} /> : null}{view === 'workbench' ? <Panel title="Recent established results" description="This local list is a safe session view of returned results, not a substitute for a GL journal read endpoint.">{recentResults.length ? <ul className="space-y-3">{recentResults.map((entry) => <li key={`${entry.aggregateId}-${entry.correlationId}`} className="rounded-box border border-base-300 p-3"><p className="font-semibold">{entry.data.outcome} · {entry.data.journalNumber ?? entry.data.journalId ?? 'pending journal'}</p><p className="mt-1 text-sm text-base-content/70">{entry.data.replayed ? 'Replayed existing result' : 'New established result'} · source {entry.data.sourceReference}</p></li>)}</ul> : <p className="text-sm text-base-content/70">No posting result has been returned in this session.</p>}</Panel> : null}<PostingResultPanel result={result} /><PostingApprovalDecisionPanel result={result} scope={currentScope} appliedResult={approvalResult} onApplied={(nextResult) => { setApprovalResult(nextResult); void navigate('/general-ledger/gl-scr-02', { state: { postingResult: result, approvalResult: nextResult } }) }} /><PostingReversalPanel result={result} scope={currentScope} reversalResult={reversalResult} onReversed={(nextResult) => { setReversalResult(nextResult); void navigate('/general-ledger/gl-scr-02', { state: { postingResult: result, reversalResult: nextResult } }) }} /><PostingEvidencePanel result={result} /></section>
 }

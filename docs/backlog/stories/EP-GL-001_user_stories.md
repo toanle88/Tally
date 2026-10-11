@@ -553,6 +553,13 @@ Required test evidence:
 - [ ] WF-6.6 reversal scenarios pass without presenting the original as
   editable.
 
+#### User Story 5 implementation evidence — 2026-10-11
+
+The implementation is on branch `feat/gl-us5-reverse-posted-journal-entry`.
+Evidence, acceptance traceability, verification commands, and remaining
+production/browser qualification boundaries are recorded in
+[`docs/verification/DLV-FR-GL-003-us5-reverse-posted-journal-entry.md`](../../verification/DLV-FR-GL-003-us5-reverse-posted-journal-entry.md).
+
 ### User Story 6 — Enter and exit a soft-close gate
 
 **Delivery items:** `DLV-FR-GL-004` / `FR-GL-004`; `DLV-FR-GL-005` / `FR-GL-005`

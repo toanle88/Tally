@@ -137,6 +137,9 @@ type GlJournalEntry struct {
 	ApprovalApplicationFingerprint pgtype.Text
 	ApprovalDecisionID             pgtype.UUID
 	ApprovalAppliedAt              pgtype.Timestamptz
+	PostingGateMode                string
+	ReversalOfJournalEntryID       pgtype.UUID
+	CorrectionReason               pgtype.Text
 }
 
 type GlJournalEntryLine struct {

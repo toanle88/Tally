@@ -79,8 +79,8 @@ pnpm dev-api
 # Start the frontend dev server (separate terminal)
 pnpm dev-web
 
-# Run all checks (tests + build)
-pnpm check
+# Run the fast local checks (unit/component tests with bounded workers)
+pnpm test:fast
 ```
 
 Browser authentication configuration is separate: copy `web/.env.example` to
@@ -105,8 +105,11 @@ All commands must be run from the repository root.
 | `pnpm build:api` | `go build ./cmd/api` |
 | `pnpm build:web` | `tsc -b && vite build` (via `pnpm -C web run build`) |
 | `pnpm test` | Run all tests (API + web) |
+| `pnpm test:fast` | Iterative API and frontend tests with bounded Vitest workers |
 | `pnpm test:api` | `go test ./...` |
 | `pnpm test:web` | `vitest run` (via `pnpm -C web run test`) |
+| `pnpm test:web:fast` | Frontend Vitest with bounded worker/file parallelism |
+| `pnpm test:slow` | Full tests, accessibility checks, persistence, and OpenAPI release gates; opt-in |
 | `pnpm test:a11y` | Non-watch Playwright + axe checks for contrast, visual reflow, reduced motion, routed-shell semantics, and keyboard/focus behavior |
 | `pnpm test:a11y:negative` | Controlled negative proof that an unlabeled button fails the axe assertion |
 | `pnpm test:a11y:qualification` | Full or focused accessibility qualification rerun with target-to-evidence mapping |
@@ -146,6 +149,8 @@ All commands must be run from the repository root.
 | `make sqlc-check` | Compare committed sqlc output with deterministic generated output |
 | `make persistence-integration-test` | Run PostgreSQL 18 Testcontainers persistence integration tests |
 | `make persistence-check` | Run the focused persistence drift gate used by CI |
+| `make check-fast` | Fast migration/checksum validation and the default non-integration Go suite |
+| `make check-slow` | Opt-in persistence and OpenAPI release gates; do not run automatically from an agent |
 | `make api-generate` | Generate Go server interfaces and transport types from the OpenAPI contract |
 | `make api-generate-check` | Validate deterministic Go generation, markers, compilation, and working-tree output |
 | `make api-negative-check` | Run isolated negative checks for generated Go and TypeScript output |

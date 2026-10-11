@@ -225,6 +225,124 @@ func TestGLPostingRepositoryAppliesApprovalDecisionAtomicallyAndReplays(t *testi
 	}
 }
 
+func TestGLPostingRepositoryReversesPostedJournalAtomicallyAndReplays(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+	defer cancel()
+
+	fixture := startIntegrationFixture(t, ctx)
+	applyAndVerifyMigrations(t, ctx, fixture.databaseURL, fixture.migrationSets)
+	fixture.openPool(t, ctx)
+	request, references := integrationPostingRequest()
+	if err := insertPostingReferenceFixture(ctx, fixture.pool, references); err != nil {
+		t.Fatal(err)
+	}
+	auditReference := uuid.New()
+	auditRecords := make([]gl.PostingAuditRecord, 0, 3)
+	repository, err := gl.NewPostgresPostingRepository(fixture.pool, func(_ context.Context, _ pgx.Tx, record gl.PostingAuditRecord) (uuid.UUID, error) {
+		auditRecords = append(auditRecords, record)
+		return auditReference, nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	posting := integrationPostingService(t, repository)
+	actor := gl.Actor{UserID: uuid.New(), SubjectReference: "reversal-integration-actor"}
+	original, err := posting.Execute(ctx, actor, request)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	registry, err := money.NewCurrencyRegistry([]money.CurrencyMetadata{{Code: "USD", Scale: 2}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	reversalGate := &integrationReversalGateValidator{}
+	reversalService, err := gl.NewJournalReversalService(
+		repository,
+		gl.MemoryJournalReversalAuthorizer{Decision: gl.PostingAuthorizationDecision{Allowed: true, PolicyReference: "reversal-integration-policy", PolicyVersion: "reversal-integration-v1", DecisionReference: uuid.New()}},
+		gl.AllowAllPostingReferenceValidator{},
+		reversalGate,
+		registry,
+		func() time.Time { return time.Date(2026, 8, 15, 8, 0, 0, 0, time.UTC) },
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	authorizationID := uuid.New()
+	command := gl.ReverseJournalEntryCommand{
+		CommandID: uuid.New(), OriginalJournalID: original.AggregateID(), AccountingScopeID: references.scopeID, ExpectedJournalVersion: original.AggregateVersion(),
+		CorrectionReason: "Correct integration classification", EffectivePostingDate: request.PostingDate, FiscalPeriodID: references.periodID,
+		PeriodStateVersion: 1, PostingGateVersion: 1, PostingAuthorizationID: authorizationID,
+		SourceContext: "general-ledger", SourceAggregateType: "journal-correction", SourceAggregateID: uuid.New(), SourceVersion: 1,
+		IdempotencyKey: "reversal-integration-1", CorrelationID: uuid.NewString(), CausationID: uuid.NewString(),
+	}
+	first, err := reversalService.Execute(ctx, actor, command)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if first.Outcome != gl.PostingOutcomeJournalEntryReversed || first.Reversal.Journal.Status != gl.PostingStatusPosted || first.Reversal.Journal.LedgerPosition != 2 {
+		t.Fatalf("reversal result = %#v", first)
+	}
+	if first.Reversal.Journal.ReversalOfJournalEntryID == nil || *first.Reversal.Journal.ReversalOfJournalEntryID != original.AggregateID() {
+		t.Fatalf("reversal lineage = %#v", first.Reversal.Journal)
+	}
+	if len(first.Original.Lines) != 2 || len(first.Reversal.Lines) != 2 {
+		t.Fatalf("reversal lines = %#v / %#v", first.Original.Lines, first.Reversal.Lines)
+	}
+	for index := range first.Original.Lines {
+		if first.Original.Lines[index].TransactionAmount != first.Reversal.Lines[index].TransactionAmount || first.Original.Lines[index].FunctionalAmount != first.Reversal.Lines[index].FunctionalAmount || first.Original.Lines[index].DebitOrCredit == first.Reversal.Lines[index].DebitOrCredit {
+			t.Fatalf("line %d was not inverted exactly: original=%#v reversal=%#v", index, first.Original.Lines[index], first.Reversal.Lines[index])
+		}
+	}
+	if first.Original.Journal.CorrectionReason != "" || first.Original.Journal.ReversalOfJournalEntryID != nil {
+		t.Fatalf("original was changed by reversal: %#v", first.Original.Journal)
+	}
+	assertPostingCounts(t, ctx, fixture, 2, 4, 2, 2, 3)
+	if len(auditRecords) != 2 || auditRecords[1].Operation != gl.JournalReversalOperation || auditRecords[1].OriginalJournalID != original.AggregateID() || auditRecords[1].GateEvidence.GateMode != gl.PostingGateOpen {
+		t.Fatalf("audit records = %#v", auditRecords)
+	}
+	var outboxOriginalID, outboxReversalID, outboxReason string
+	if err := fixture.pool.QueryRow(ctx, `SELECT payload->>'originalJournalId', payload->>'reversalJournalId', payload->>'correctionReason' FROM integration.outbox WHERE event_type = $1`, gl.PostingOutcomeJournalEntryReversed).Scan(&outboxOriginalID, &outboxReversalID, &outboxReason); err != nil {
+		t.Fatal(err)
+	}
+	if outboxOriginalID != original.AggregateID().String() || outboxReversalID != first.Reversal.Journal.ID.String() || outboxReason != command.CorrectionReason {
+		t.Fatalf("reversal outbox = %s/%s/%s", outboxOriginalID, outboxReversalID, outboxReason)
+	}
+
+	replay, err := reversalService.Execute(ctx, actor, command)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !replay.Replayed || replay.AggregateID() != first.AggregateID() || replay.Reversal.Journal.ID != first.Reversal.Journal.ID {
+		t.Fatalf("replay = %#v", replay)
+	}
+	if reversalGate.calls != 1 {
+		t.Fatalf("gate calls = %d, want one admission call before replay", reversalGate.calls)
+	}
+	assertPostingCounts(t, ctx, fixture, 2, 4, 2, 2, 3)
+
+	duplicate := command
+	duplicate.CommandID = uuid.New()
+	duplicate.IdempotencyKey = "reversal-integration-duplicate"
+	duplicate.SourceAggregateID = uuid.New()
+	if _, err := reversalService.Execute(ctx, actor, duplicate); !errors.Is(err, gl.ErrJournalEntryAlreadyReversed) {
+		t.Fatalf("duplicate reversal = %v, want already reversed", err)
+	}
+	assertPostingCounts(t, ctx, fixture, 2, 4, 3, 3, 3)
+}
+
+type integrationReversalGateValidator struct {
+	calls int
+}
+
+func (validator *integrationReversalGateValidator) ValidatePostingGate(_ context.Context, request gl.PostingRequest) (gl.PostingGateEvidence, error) {
+	validator.calls++
+	if validator.calls > 1 {
+		return gl.PostingGateEvidence{}, gl.ErrPostingGateClosed
+	}
+	return gl.PostingGateEvidence{FiscalPeriodID: request.FiscalPeriodID, PeriodStateVersion: request.PeriodStateVersion, PostingGateVersion: request.PostingGateVersion, GateMode: gl.PostingGateOpen}, nil
+}
+
 type integrationRequiredApprovalValidator struct {
 	approval gl.PostingApproval
 }

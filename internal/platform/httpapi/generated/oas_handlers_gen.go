@@ -14537,6 +14537,10 @@ func (s *Server) handleGlReleasePostingBarrierRequest(args [0]string, argsEscape
 
 // handleGlReverseJournalEntryRequest handles glReverseJournalEntry operation.
 //
+// Creates a separate linked reversal journal with equal-and-opposite exact-decimal lines. The original
+// posted journal remains immutable; source identity and authorization evidence belong to the
+// correction owner.
+//
 // POST /general-ledger/actions/reverse-journal-entry
 func (s *Server) handleGlReverseJournalEntryRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
@@ -14627,7 +14631,7 @@ func (s *Server) handleGlReverseJournalEntryRequest(args [0]string, argsEscaped 
 		mreq := middleware.Request{
 			Context:          ctx,
 			OperationName:    GlReverseJournalEntryOperation,
-			OperationSummary: "",
+			OperationSummary: "Reverse a posted journal entry",
 			OperationID:      "glReverseJournalEntry",
 			Body:             request,
 			RawBody:          rawBody,

@@ -113,6 +113,7 @@ func establishedGlPostingResult(result gl.PostingResult, correlationID uuid.UUID
 		LifecycleStatus:   generated.GlSubmitPostingRequestResultDataLifecycleStatus(result.LifecycleStatus()),
 		ValidationOutcome: result.ValidationOutcome, ApprovalStatus: result.ApprovalStatus, SourceReference: result.SourceReference,
 		GateEvidence: generated.GlPostingGateEvidence{FiscalPeriodId: generated.UUID(result.GateEvidence.FiscalPeriodID), PeriodStateVersion: int(result.GateEvidence.PeriodStateVersion), PostingGateVersion: int(result.GateEvidence.PostingGateVersion), GateMode: result.GateEvidence.GateMode},
+		Lines:        generatedPostingResultLines(result.Journal),
 		Replayed:     result.Replayed,
 	}
 	if journalID != uuid.Nil {
@@ -148,6 +149,21 @@ func establishedGlPostingResult(result gl.PostingResult, correlationID uuid.UUID
 		Status: "established", AggregateId: generated.UUID(journalID), AggregateVersion: int(result.AggregateVersion()), CorrelationId: generated.UUID(correlationID),
 		Links: generated.Links{Self: "/api/v1/general-ledger/actions/submit-posting-request"}, Data: data,
 	}
+}
+
+func generatedPostingResultLines(journal *gl.PostingJournal) []generated.GlPostingRequestLine {
+	if journal == nil {
+		return nil
+	}
+	lines := make([]generated.GlPostingRequestLine, len(journal.Lines))
+	for index, line := range journal.Lines {
+		lines[index] = generated.GlPostingRequestLine{
+			AccountId: generated.UUID(line.AccountID), DebitOrCredit: generated.GlPostingRequestLineDebitOrCredit(line.DebitOrCredit),
+			LineCurrencyMode: generated.GlPostingRequestLineLineCurrencyMode(line.LineCurrencyMode), TransactionAmount: generated.Money(line.TransactionAmount), FunctionalAmount: generated.Money(line.FunctionalAmount),
+			SegmentCombinationId: generated.UUID(line.SegmentCombinationID), LineReference: generated.NewOptString(line.LineReference),
+		}
+	}
+	return lines
 }
 
 func mapGlPostingError(err error, correlationID uuid.UUID) generated.GlSubmitPostingRequestRes {

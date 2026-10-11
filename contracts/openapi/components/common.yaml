@@ -215,6 +215,10 @@ schemas:
       approvalStatus: { type: string }
       sourceReference: { type: string }
       gateEvidence: { $ref: '#/schemas/GlPostingGateEvidence' }
+      lines:
+        type: array
+        description: Original journal lines returned for correction preview; amounts remain exact-decimal strings.
+        items: { $ref: '#/schemas/GlPostingRequestLine' }
       auditReference: { $ref: '#/schemas/Uuid' }
       replayed: { type: boolean }
       issues:

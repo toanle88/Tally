@@ -44,6 +44,7 @@ type IdentityHandler struct {
 	AccountService                       *gl.AccountService
 	PostingService                       *gl.PostingService
 	PostingApprovalDecisionService       *gl.PostingApprovalDecisionService
+	JournalReversalService               *gl.JournalReversalService
 	Instrumentation                      *telemetry.Instrumentation
 }
 

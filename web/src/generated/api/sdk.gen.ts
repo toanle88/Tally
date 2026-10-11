@@ -110,6 +110,11 @@ export const glApplyJournalApprovalDecision = <ThrowOnError extends boolean = fa
     }
 });
 
+/**
+ * Reverse a posted journal entry
+ *
+ * Creates a separate linked reversal journal with equal-and-opposite exact-decimal lines. The original posted journal remains immutable; source identity and authorization evidence belong to the correction owner.
+ */
 export const glReverseJournalEntry = <ThrowOnError extends boolean = false>(options: Options<GlReverseJournalEntryData, ThrowOnError>): RequestResult<GlReverseJournalEntryResponses, GlReverseJournalEntryErrors, ThrowOnError> => (options.client ?? client).post<GlReverseJournalEntryResponses, GlReverseJournalEntryErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/general-ledger/actions/reverse-journal-entry',

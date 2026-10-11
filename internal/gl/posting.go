@@ -44,6 +44,7 @@ const (
 	PostingStatusCancelled       = "Cancelled"
 
 	PostingOutcomeJournalEntryPosted     = "JournalEntryPosted"
+	PostingOutcomeJournalEntryReversed   = "JournalEntryReversed"
 	PostingOutcomePostingRejected        = "PostingRejected"
 	PostingOutcomePostingPendingApproval = "PostingPendingApproval"
 	PostingOutcomeIdempotencyConflict    = "IdempotencyConflict"
@@ -165,17 +166,22 @@ func (e *PostingValidationError) Error() string {
 func (e *PostingValidationError) Unwrap() error { return ErrPostingValidation }
 
 type PostingJournal struct {
-	ID                 uuid.UUID           `json:"journalId"`
-	Number             string              `json:"journalNumber"`
-	Version            int64               `json:"journalVersion"`
-	LedgerPosition     int64               `json:"ledgerPosition"`
-	Status             string              `json:"lifecycleStatus"`
-	Approval           *PostingApproval    `json:"approval,omitempty"`
-	SourceReference    string              `json:"sourceReference"`
-	RequestFingerprint string              `json:"-"`
-	GateEvidence       PostingGateEvidence `json:"gateEvidence"`
-	AuditReference     uuid.UUID           `json:"auditReference"`
-	SubmittedByUserID  uuid.UUID           `json:"-"`
+	ID                       uuid.UUID           `json:"journalId"`
+	Number                   string              `json:"journalNumber"`
+	Version                  int64               `json:"journalVersion"`
+	LedgerPosition           int64               `json:"ledgerPosition"`
+	Status                   string              `json:"lifecycleStatus"`
+	Approval                 *PostingApproval    `json:"approval,omitempty"`
+	SourceReference          string              `json:"sourceReference"`
+	RequestFingerprint       string              `json:"-"`
+	GateEvidence             PostingGateEvidence `json:"gateEvidence"`
+	AuditReference           uuid.UUID           `json:"auditReference"`
+	SubmittedByUserID        uuid.UUID           `json:"-"`
+	PostingPurpose           string              `json:"postingPurpose,omitempty"`
+	PostingAuthorizationID   *uuid.UUID          `json:"postingAuthorizationId,omitempty"`
+	ReversalOfJournalEntryID *uuid.UUID          `json:"reversalOfJournalEntryId,omitempty"`
+	CorrectionReason         string              `json:"correctionReason,omitempty"`
+	Lines                    []PostingLine       `json:"lines,omitempty"`
 }
 
 type PostingResult struct {
@@ -244,6 +250,9 @@ type PostingAuditRecord struct {
 	ActorUserID                  uuid.UUID
 	ActorSubjectReference        string
 	Outcome                      string
+	Operation                    string
+	OriginalJournalID            uuid.UUID
+	CorrectionReason             string
 	AccountingScope              accountingscope.AccountingScope
 	AccountingScopeID            uuid.UUID
 	SourceContext                string

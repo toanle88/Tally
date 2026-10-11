@@ -47,3 +47,15 @@ Repository files show what currently exists. Successful command output shows wha
 - Do not commit generated dependencies, build output, binaries, secrets, local environment files, or alternate frontend lockfiles.
 - pnpm is the sole frontend package manager.
 - Do not stage, commit, reset, clean, or revert unless explicitly requested.
+
+## Test execution guidance
+
+- During iterative agent work, use focused tests for the changed package or
+  file, `pnpm test:fast`, or `make check-fast`.
+- Do not automatically run `pnpm test:slow`, `make check-slow`,
+  `make persistence-check`, `make persistence-integration-test`, or
+  `make api-check`. These are opt-in release/CI checks and require an explicit
+  user request.
+- Never remove finance invariant, authorization, audit, idempotency,
+  transactional-outbox, or persistence-integration tests only to reduce local
+  runtime.
