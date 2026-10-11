@@ -211,6 +211,7 @@ type PostingApprovalDecisionService struct {
 	postingAuth PostingAuthorizer
 	references  PostingReferenceValidator
 	gate        PostingGateValidator
+	policy      SoftClosePostingPolicyEvaluator
 	currency    money.CurrencyRegistry
 	clock       func() time.Time
 }
@@ -224,11 +225,16 @@ func NewPostingApprovalDecisionService(
 	gate PostingGateValidator,
 	currency money.CurrencyRegistry,
 	clock func() time.Time,
+	policy ...SoftClosePostingPolicyEvaluator,
 ) (*PostingApprovalDecisionService, error) {
 	if repository == nil || verifier == nil || authorizer == nil || postingAuth == nil || references == nil || gate == nil || clock == nil {
 		return nil, ErrInvalidPostingApprovalDecisionService
 	}
-	return &PostingApprovalDecisionService{repository: repository, verifier: verifier, authorizer: authorizer, postingAuth: postingAuth, references: references, gate: gate, currency: currency, clock: clock}, nil
+	var softClosePolicy SoftClosePostingPolicyEvaluator
+	if len(policy) > 0 {
+		softClosePolicy = policy[0]
+	}
+	return &PostingApprovalDecisionService{repository: repository, verifier: verifier, authorizer: authorizer, postingAuth: postingAuth, references: references, gate: gate, policy: softClosePolicy, currency: currency, clock: clock}, nil
 }
 
 func (service *PostingApprovalDecisionService) Execute(ctx context.Context, actor Actor, command ApplyJournalApprovalDecisionCommand) (PostingApprovalDecisionResult, error) {
@@ -311,6 +317,11 @@ func (service *PostingApprovalDecisionService) Execute(ctx context.Context, acto
 	}
 	if err := validatePostingApprovalGateEvidence(request, gateEvidence, command.Decision.Outcome); err != nil {
 		return PostingApprovalDecisionResult{}, err
+	}
+	if command.Decision.Outcome == PostingApprovalOutcomeApproved {
+		if err := evaluateSoftClosePostingPolicy(ctx, actor, request, gateEvidence, service.policy); err != nil {
+			return PostingApprovalDecisionResult{}, err
+		}
 	}
 
 	return service.repository.CommitPostingApprovalDecision(ctx, PostingApprovalDecisionCommit{

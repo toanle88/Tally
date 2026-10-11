@@ -400,7 +400,7 @@ func insertPostingReferenceFixture(ctx context.Context, pool *pgxpool.Pool, refe
 			return err
 		}
 	}
-	_, err := pool.Exec(ctx, `INSERT INTO gl.period_posting_gate (accounting_scope_id, fiscal_period_id, gate_mode, period_state_version, gate_version, next_ledger_position, created_at, updated_at) VALUES ($1,$2,'Open',1,1,1,$3,$3)`, references.scopeID, references.periodID, now)
+	_, err := pool.Exec(ctx, `INSERT INTO gl.period_posting_gate (period_posting_gate_id, accounting_scope_id, fiscal_period_id, gate_mode, period_state_version, gate_version, next_ledger_position, created_at, updated_at) VALUES ($1,$2,$3,'Open',1,1,1,$4,$4)`, uuid.New(), references.scopeID, references.periodID, now)
 	return err
 }
 

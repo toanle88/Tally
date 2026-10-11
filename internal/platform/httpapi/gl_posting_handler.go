@@ -174,7 +174,7 @@ func mapGlPostingError(err error, correlationID uuid.UUID) generated.GlSubmitPos
 	switch {
 	case errors.Is(err, gl.ErrPostingAuthorizationDenied):
 		return glPostingProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The posting actor is not authorized for this accounting effect.", correlationID, nil)
-	case errors.Is(err, gl.ErrPostingAuthorizationUnavailable), errors.Is(err, gl.ErrPostingReferenceUnavailable), errors.Is(err, gl.ErrPostingApprovalUnavailable), errors.Is(err, gl.ErrPostingAuditUnavailable), errors.Is(err, gl.ErrPostingOutboxUnavailable), errors.Is(err, gl.ErrInvalidPostingService):
+	case errors.Is(err, gl.ErrPostingAuthorizationUnavailable), errors.Is(err, gl.ErrPostingReferenceUnavailable), errors.Is(err, gl.ErrPostingApprovalUnavailable), errors.Is(err, gl.ErrPostingGatePolicyUnavailable), errors.Is(err, gl.ErrPostingAuditUnavailable), errors.Is(err, gl.ErrPostingOutboxUnavailable), errors.Is(err, gl.ErrInvalidPostingService):
 		return glPostingProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The posting operation could not be completed.", correlationID, nil)
 	case errors.Is(err, gl.ErrPostingIdempotencyConflict):
 		return glPostingProblem(http.StatusConflict, "IDEMPOTENCY_CONFLICT", "The idempotency key was already used for different posting data.", correlationID, nil)
@@ -184,7 +184,7 @@ func mapGlPostingError(err error, correlationID uuid.UUID) generated.GlSubmitPos
 		return glPostingProblem(http.StatusConflict, "SOURCE_DUPLICATE", "The source aggregate already owns an accounting effect.", correlationID, nil)
 	case errors.Is(err, gl.ErrPostingPeriodConflict), errors.Is(err, gl.ErrPostingGateConflict):
 		return glPostingProblem(http.StatusConflict, "VERSION_CONFLICT", "The period or posting gate changed. Refresh and retry.", correlationID, nil)
-	case errors.Is(err, gl.ErrPostingGateClosed), errors.Is(err, gl.ErrPostingReferenceInvalid), errors.Is(err, gl.ErrPostingValidation):
+	case errors.Is(err, gl.ErrPostingGateClosed), errors.Is(err, gl.ErrPostingGatePolicyRejected), errors.Is(err, gl.ErrPostingReferenceInvalid), errors.Is(err, gl.ErrPostingValidation):
 		return glPostingProblem(http.StatusUnprocessableEntity, "VALIDATION_FAILED", "The posting request violates a general-ledger rule.", correlationID, nil)
 	case errors.Is(err, gl.ErrInvalidPostingRequest):
 		return glPostingProblem(http.StatusBadRequest, "INVALID_REQUEST", "The posting request is invalid.", correlationID, nil)

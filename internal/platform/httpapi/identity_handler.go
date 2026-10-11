@@ -45,6 +45,7 @@ type IdentityHandler struct {
 	PostingService                       *gl.PostingService
 	PostingApprovalDecisionService       *gl.PostingApprovalDecisionService
 	JournalReversalService               *gl.JournalReversalService
+	SoftCloseGateService                 *gl.SoftCloseGateService
 	Instrumentation                      *telemetry.Instrumentation
 }
 

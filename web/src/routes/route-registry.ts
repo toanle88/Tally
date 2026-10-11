@@ -8,7 +8,7 @@ export type NavigationArea =
   | 'Administration'
   | 'Audit'
 
-export type ScreenId = 'XCT-WS-01' | 'XCT-SCR-01' | 'CON-SCR-01' | 'IAM-WS-01' | 'IAM-SCR-01' | 'IAM-SCR-04' | 'OMD-WS-01' | 'OMD-SCR-01' | 'OMD-SCR-02' | 'OMD-SCR-03' | 'OMD-SCR-04' | 'OMD-SCR-05' | 'COA-WS-01' | 'COA-SCR-01' | 'COA-SCR-02' | 'COA-SCR-03' | 'COA-SCR-04' | 'GL-WS-01' | 'GL-SCR-01' | 'GL-SCR-02' | 'GL-SCR-04' | 'GL-SCR-05'
+export type ScreenId = 'XCT-WS-01' | 'XCT-SCR-01' | 'CON-SCR-01' | 'IAM-WS-01' | 'IAM-SCR-01' | 'IAM-SCR-04' | 'OMD-WS-01' | 'OMD-SCR-01' | 'OMD-SCR-02' | 'OMD-SCR-03' | 'OMD-SCR-04' | 'OMD-SCR-05' | 'COA-WS-01' | 'COA-SCR-01' | 'COA-SCR-02' | 'COA-SCR-03' | 'COA-SCR-04' | 'GL-WS-01' | 'GL-SCR-01' | 'GL-SCR-02' | 'GL-SCR-03' | 'GL-SCR-04' | 'GL-SCR-05'
 
 export type RouteId =
   | 'home'
@@ -34,6 +34,7 @@ export type RouteId =
   | 'glPostingWorkbench'
   | 'glPostingRequest'
   | 'glPostingResult'
+  | 'glPostingGate'
   | 'glConfiguration'
   | 'glChartAccountConfiguration'
   | 'audit'
@@ -76,6 +77,7 @@ export const routeRegistry = [
   { id: 'glPostingWorkbench', path: '/general-ledger/gl-ws-01', title: 'Posting request workbench', kind: 'operational', navigationArea: 'Records', screenId: 'GL-WS-01', requiresScope: true },
   { id: 'glPostingRequest', path: '/general-ledger/gl-scr-01', title: 'Posting request', kind: 'operational', navigationArea: 'Records', screenId: 'GL-SCR-01', requiresScope: true },
   { id: 'glPostingResult', path: '/general-ledger/gl-scr-02', title: 'Posting result', kind: 'operational', navigationArea: 'Records', screenId: 'GL-SCR-02', requiresScope: true },
+  { id: 'glPostingGate', path: '/general-ledger/gl-scr-03', title: 'Posting-gate monitor', kind: 'operational', navigationArea: 'Records', screenId: 'GL-SCR-03', requiresScope: true },
   { id: 'glConfiguration', path: '/general-ledger/gl-scr-04', title: 'Ledger and accounting-book configuration', kind: 'operational', navigationArea: 'Records', screenId: 'GL-SCR-04', requiresScope: true },
   { id: 'glChartAccountConfiguration', path: '/general-ledger/gl-scr-05', title: 'Chart and account configuration', kind: 'operational', navigationArea: 'Records', screenId: 'GL-SCR-05', requiresScope: true },
   { id: 'audit', path: '/audit', title: 'Audit', kind: 'area', navigationArea: 'Audit', requiresScope: true },

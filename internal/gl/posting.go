@@ -60,6 +60,8 @@ var (
 	ErrPostingPeriodConflict           = errors.New("posting period version conflict")
 	ErrPostingGateConflict             = errors.New("posting gate version conflict")
 	ErrPostingGateClosed               = errors.New("posting gate rejects this request")
+	ErrPostingGatePolicyUnavailable    = errors.New("posting gate policy evaluator unavailable")
+	ErrPostingGatePolicyRejected       = errors.New("posting gate policy rejected this request")
 	ErrPostingSourceDuplicate          = errors.New("posting source already owns an accounting effect")
 	ErrPostingIdempotencyConflict      = errors.New("posting idempotency conflict")
 	ErrPostingCommandInProgress        = errors.New("posting command is already in progress")
@@ -128,10 +130,12 @@ type PostingLine struct {
 }
 
 type PostingGateEvidence struct {
-	FiscalPeriodID     uuid.UUID `json:"fiscalPeriodId"`
-	PeriodStateVersion int64     `json:"periodStateVersion"`
-	PostingGateVersion int64     `json:"postingGateVersion"`
-	GateMode           string    `json:"gateMode"`
+	FiscalPeriodID         uuid.UUID       `json:"fiscalPeriodId"`
+	PeriodStateVersion     int64           `json:"periodStateVersion"`
+	PostingGateVersion     int64           `json:"postingGateVersion"`
+	GateMode               string          `json:"gateMode"`
+	SoftClosePolicyVersion string          `json:"softClosePolicyVersion,omitempty"`
+	SoftCloseRestrictions  json.RawMessage `json:"softCloseRestrictions,omitempty"`
 }
 
 type PostingApproval struct {
@@ -240,6 +244,13 @@ type PostingGateValidator interface {
 	ValidatePostingGate(context.Context, PostingRequest) (PostingGateEvidence, error)
 }
 
+// SoftClosePostingPolicyEvaluator is the GL-owned policy port used at journal
+// admission. The policy payload is intentionally opaque to GL; the evaluator
+// validates the approved policy and decides whether this request is admitted.
+type SoftClosePostingPolicyEvaluator interface {
+	EvaluateSoftClosePosting(context.Context, Actor, PostingRequest, SoftCloseGatePolicy) error
+}
+
 type PostingApprovalValidator interface {
 	EvaluatePostingApproval(context.Context, Actor, PostingRequest, PostingAuthorizationDecision) (PostingApproval, error)
 }
@@ -313,6 +324,7 @@ type PostingService struct {
 	authorizer PostingAuthorizer
 	references PostingReferenceValidator
 	gate       PostingGateValidator
+	policy     SoftClosePostingPolicyEvaluator
 	approval   PostingApprovalValidator
 	audit      PostingAuditRecorder
 	currency   money.CurrencyRegistry
@@ -328,6 +340,7 @@ func NewPostingService(
 	audit PostingAuditRecorder,
 	currency money.CurrencyRegistry,
 	clock func() time.Time,
+	policy ...SoftClosePostingPolicyEvaluator,
 ) (*PostingService, error) {
 	if repository == nil || authorizer == nil || references == nil || gate == nil || approval == nil || audit == nil || clock == nil {
 		return nil, ErrInvalidPostingService
@@ -335,7 +348,11 @@ func NewPostingService(
 	if binder, ok := repository.(interface{ BindPostingAuditRecorder(PostingAuditRecorder) }); ok {
 		binder.BindPostingAuditRecorder(audit)
 	}
-	return &PostingService{repository: repository, authorizer: authorizer, references: references, gate: gate, approval: approval, audit: audit, currency: currency, clock: clock}, nil
+	var softClosePolicy SoftClosePostingPolicyEvaluator
+	if len(policy) > 0 {
+		softClosePolicy = policy[0]
+	}
+	return &PostingService{repository: repository, authorizer: authorizer, references: references, gate: gate, policy: softClosePolicy, approval: approval, audit: audit, currency: currency, clock: clock}, nil
 }
 
 func (service *PostingService) Execute(ctx context.Context, actor Actor, request PostingRequest) (PostingResult, error) {
@@ -409,6 +426,14 @@ func (service *PostingService) Execute(ctx context.Context, actor Actor, request
 		}
 		return PostingResult{}, err
 	}
+	if err := evaluateSoftClosePostingPolicy(ctx, actor, request, gateEvidence, service.policy); err != nil {
+		if isPostingRejection(err) {
+			if auditErr := service.recordRejected(ctx, request, actor, postingIssues(err)); auditErr != nil {
+				return PostingResult{}, auditErr
+			}
+		}
+		return PostingResult{}, err
+	}
 
 	approval, err := service.approval.EvaluatePostingApproval(ctx, actor, request, authorization)
 	if err != nil {
@@ -429,6 +454,16 @@ func (service *PostingService) Execute(ctx context.Context, actor Actor, request
 		return PostingResult{}, err
 	}
 	return result, nil
+}
+
+func evaluateSoftClosePostingPolicy(ctx context.Context, actor Actor, request PostingRequest, evidence PostingGateEvidence, evaluator SoftClosePostingPolicyEvaluator) error {
+	if request.PostingPurpose != PostingPurposeOrdinary || evidence.GateMode != PostingGateSoftClosePolicy {
+		return nil
+	}
+	if evaluator == nil {
+		return ErrPostingGatePolicyUnavailable
+	}
+	return evaluator.EvaluateSoftClosePosting(ctx, actor, request, SoftCloseGatePolicy{Version: evidence.SoftClosePolicyVersion, Restrictions: append(json.RawMessage(nil), evidence.SoftCloseRestrictions...)})
 }
 
 func (request PostingRequest) Canonical() PostingRequest {
@@ -737,6 +772,7 @@ func isPostingRejection(err error) bool {
 		errors.Is(err, ErrPostingPeriodConflict) ||
 		errors.Is(err, ErrPostingGateConflict) ||
 		errors.Is(err, ErrPostingGateClosed) ||
+		errors.Is(err, ErrPostingGatePolicyRejected) ||
 		errors.Is(err, ErrPostingValidation)
 }
 
@@ -786,6 +822,20 @@ type UnavailablePostingReferenceValidator struct{}
 
 func (UnavailablePostingReferenceValidator) ValidatePostingReferences(context.Context, Actor, PostingRequest) error {
 	return ErrPostingReferenceUnavailable
+}
+
+func (e AllowAllSoftClosePolicyEvaluator) EvaluateSoftClosePosting(_ context.Context, _ Actor, _ PostingRequest, policy SoftCloseGatePolicy) error {
+	if strings.TrimSpace(policy.Version) == "" {
+		return ErrPostingGatePolicyRejected
+	}
+	if _, err := canonicalSoftCloseRestrictions(policy.Restrictions); err != nil {
+		return fmt.Errorf("%w: %v", ErrPostingGatePolicyRejected, err)
+	}
+	return nil
+}
+
+func (UnavailableSoftClosePolicyEvaluator) EvaluateSoftClosePosting(context.Context, Actor, PostingRequest, SoftCloseGatePolicy) error {
+	return ErrPostingGatePolicyUnavailable
 }
 
 type MemoryPostingGateValidator struct {

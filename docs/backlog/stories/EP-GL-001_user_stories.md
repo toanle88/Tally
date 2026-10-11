@@ -577,18 +577,18 @@ approved policy and the control epoch has durable admission evidence.
 
 Acceptance criteria:
 
-- [ ] `EnterSoftCloseGate` changes an eligible `Open` gate to
+- [x] `EnterSoftCloseGate` changes an eligible `Open` gate to
   `SoftClosePolicy`, records restrictions, owner, control epoch, policy
   version, expected gate version, and zero active counters.
-- [ ] Only the matching soft-close process and epoch can exit the gate.
+- [x] Only the matching soft-close process and epoch can exit the gate.
   `ExitSoftCloseGate` freezes and returns the epoch-qualified admission
   summary, restores the eligible mode, and clears ownership atomically.
-- [ ] Conflicting process identifiers, policy versions, scopes, fingerprints,
+- [x] Conflicting process identifiers, policy versions, scopes, fingerprints,
   expected versions, or epochs return typed conflicts; identical retries return
   the established result.
-- [ ] Gate transitions, counters, frozen summaries, idempotency result, audit
+- [x] Gate transitions, counters, frozen summaries, idempotency result, audit
   evidence, and outbox intent commit as one GL-owned decision.
-- [ ] The gate monitor shows mode, owner, epoch, version, restrictions,
+- [x] The gate monitor shows mode, owner, epoch, version, restrictions,
   counters, frozen summary, blocked ordinary actions, and recovery guidance.
 
 Suggested implementation steps:
@@ -605,11 +605,22 @@ Suggested implementation steps:
 Required test evidence:
 
 - [ ] Domain and PostgreSQL tests prove exclusive ownership, epoch checks,
-  counter freezing, atomic mode/version transitions, and replay safety.
-- [ ] API tests prove action permissions, explicit scope, typed conflicts,
+  counter freezing, atomic mode/version transitions, and replay safety. Domain
+  tests pass; the opt-in PostgreSQL test is added but not run under focused
+  verification.
+- [x] API tests prove action permissions, explicit scope, typed conflicts,
   correlation, audit failure, and dependency-unavailable behavior.
-- [ ] UI/accessibility tests prove current state, owner, blocking reason,
-  allowed action, and non-disruptive status updates.
+- [x] UI tests prove current state, owner, blocking reason, allowed action, and
+  non-disruptive result updates. Browser and assistive-technology qualification
+  remain open.
+
+#### User Story 6 implementation evidence — 2026-10-11
+
+The implementation is on branch `feat/gl-us6-soft-close-gate`. Evidence,
+acceptance traceability, verification commands, and remaining PostgreSQL,
+production policy/FPM, browser, and accessibility qualification boundaries are
+recorded in
+[`docs/verification/DLV-FR-GL-004-005-us6-soft-close-gate.md`](../../verification/DLV-FR-GL-004-005-us6-soft-close-gate.md).
 
 ### User Story 7 — Acquire, release, and finalize the posting barrier
 

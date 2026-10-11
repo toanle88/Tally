@@ -146,7 +146,7 @@ func mapGlApprovalDecisionError(err error, correlationID uuid.UUID) generated.Gl
 	switch {
 	case errors.Is(err, gl.ErrPostingApprovalDecisionAuthorizationDenied), errors.Is(err, gl.ErrPostingAuthorizationDenied):
 		return glApprovalDecisionProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The applying actor is not authorized for this journal approval decision.", correlationID)
-	case errors.Is(err, gl.ErrPostingApprovalDecisionUnavailable), errors.Is(err, gl.ErrPostingApprovalDecisionAuthorizationMissing), errors.Is(err, gl.ErrPostingApprovalDecisionAuditUnavailable), errors.Is(err, gl.ErrPostingApprovalDecisionOutboxUnavailable), errors.Is(err, gl.ErrInvalidPostingApprovalDecisionService), errors.Is(err, gl.ErrPostingAuthorizationUnavailable), errors.Is(err, gl.ErrPostingReferenceUnavailable):
+	case errors.Is(err, gl.ErrPostingApprovalDecisionUnavailable), errors.Is(err, gl.ErrPostingApprovalDecisionAuthorizationMissing), errors.Is(err, gl.ErrPostingApprovalDecisionAuditUnavailable), errors.Is(err, gl.ErrPostingApprovalDecisionOutboxUnavailable), errors.Is(err, gl.ErrInvalidPostingApprovalDecisionService), errors.Is(err, gl.ErrPostingAuthorizationUnavailable), errors.Is(err, gl.ErrPostingReferenceUnavailable), errors.Is(err, gl.ErrPostingGatePolicyUnavailable):
 		return glApprovalDecisionProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The journal approval decision could not be completed.", correlationID)
 	case errors.Is(err, gl.ErrPostingApprovalDecisionIdempotencyConflict):
 		return glApprovalDecisionProblem(http.StatusConflict, "IDEMPOTENCY_CONFLICT", "The idempotency key was already used for different approval-decision data.", correlationID)
@@ -160,7 +160,7 @@ func mapGlApprovalDecisionError(err error, correlationID uuid.UUID) generated.Gl
 		return glApprovalDecisionProblem(http.StatusConflict, "VERSION_CONFLICT", "The pending journal or posting gate changed. Refresh and retry.", correlationID)
 	case errors.Is(err, gl.ErrPostingApprovalDecisionReferenceInvalid):
 		return glApprovalDecisionProblem(http.StatusUnprocessableEntity, "INVALID_APPROVAL_REFERENCE", "The Workflow approval decision does not match the stored journal proposal.", correlationID)
-	case errors.Is(err, gl.ErrPostingGateClosed), errors.Is(err, gl.ErrPostingReferenceInvalid), errors.Is(err, gl.ErrPostingValidation), errors.Is(err, gl.ErrPostingApprovalDecisionValidation):
+	case errors.Is(err, gl.ErrPostingGateClosed), errors.Is(err, gl.ErrPostingGatePolicyRejected), errors.Is(err, gl.ErrPostingReferenceInvalid), errors.Is(err, gl.ErrPostingValidation), errors.Is(err, gl.ErrPostingApprovalDecisionValidation):
 		return glApprovalDecisionProblem(http.StatusUnprocessableEntity, "VALIDATION_FAILED", "The approval decision violates a general-ledger rule.", correlationID)
 	case errors.Is(err, gl.ErrInvalidPostingApprovalDecisionCommand):
 		return glApprovalDecisionProblem(http.StatusBadRequest, "INVALID_REQUEST", "The approval decision command is invalid.", correlationID)

@@ -184,14 +184,23 @@ type GlLedgerRevision struct {
 }
 
 type GlPeriodPostingGate struct {
-	AccountingScopeID  pgtype.UUID
-	FiscalPeriodID     pgtype.UUID
-	GateMode           string
-	PeriodStateVersion int64
-	GateVersion        int64
-	NextLedgerPosition int64
-	CreatedAt          pgtype.Timestamptz
-	UpdatedAt          pgtype.Timestamptz
+	AccountingScopeID             pgtype.UUID
+	FiscalPeriodID                pgtype.UUID
+	GateMode                      string
+	PeriodStateVersion            int64
+	GateVersion                   int64
+	NextLedgerPosition            int64
+	CreatedAt                     pgtype.Timestamptz
+	UpdatedAt                     pgtype.Timestamptz
+	PeriodPostingGateID           pgtype.UUID
+	AggregateVersion              int64
+	ActiveSoftCloseRunID          pgtype.UUID
+	ActiveSoftCloseControlEpoch   pgtype.Int8
+	SoftClosePolicyVersion        pgtype.Text
+	SoftCloseRestrictions         []byte
+	ActiveGateAdmissionCounters   []byte
+	LastFrozenAdmissionSummary    []byte
+	FrozenAdmissionSummaryHistory []byte
 }
 
 type GlPostingAttempt struct {
