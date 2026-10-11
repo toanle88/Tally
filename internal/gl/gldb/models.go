@@ -184,23 +184,33 @@ type GlLedgerRevision struct {
 }
 
 type GlPeriodPostingGate struct {
-	AccountingScopeID             pgtype.UUID
-	FiscalPeriodID                pgtype.UUID
-	GateMode                      string
-	PeriodStateVersion            int64
-	GateVersion                   int64
-	NextLedgerPosition            int64
-	CreatedAt                     pgtype.Timestamptz
-	UpdatedAt                     pgtype.Timestamptz
-	PeriodPostingGateID           pgtype.UUID
-	AggregateVersion              int64
-	ActiveSoftCloseRunID          pgtype.UUID
-	ActiveSoftCloseControlEpoch   pgtype.Int8
-	SoftClosePolicyVersion        pgtype.Text
-	SoftCloseRestrictions         []byte
-	ActiveGateAdmissionCounters   []byte
-	LastFrozenAdmissionSummary    []byte
-	FrozenAdmissionSummaryHistory []byte
+	AccountingScopeID              pgtype.UUID
+	FiscalPeriodID                 pgtype.UUID
+	GateMode                       string
+	PeriodStateVersion             int64
+	GateVersion                    int64
+	NextLedgerPosition             int64
+	CreatedAt                      pgtype.Timestamptz
+	UpdatedAt                      pgtype.Timestamptz
+	PeriodPostingGateID            pgtype.UUID
+	AggregateVersion               int64
+	ActiveSoftCloseRunID           pgtype.UUID
+	ActiveSoftCloseControlEpoch    pgtype.Int8
+	SoftClosePolicyVersion         pgtype.Text
+	SoftCloseRestrictions          []byte
+	ActiveGateAdmissionCounters    []byte
+	LastFrozenAdmissionSummary     []byte
+	FrozenAdmissionSummaryHistory  []byte
+	ActiveCloseRunID               pgtype.UUID
+	ActiveCloseType                pgtype.Text
+	PriorControlProcessID          pgtype.UUID
+	PriorControlProcessType        pgtype.Text
+	PriorControlEpoch              pgtype.Int8
+	PriorGateMode                  pgtype.Text
+	BarrierLedgerPosition          int64
+	FinalLedgerWatermark           pgtype.Int8
+	FinalizedCloseRunID            pgtype.UUID
+	FinalizationCommandFingerprint pgtype.Text
 }
 
 type GlPostingAttempt struct {

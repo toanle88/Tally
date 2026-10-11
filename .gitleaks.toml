@@ -19,3 +19,15 @@ regexes = [
   '''IdempotencyKey:\s*"approval-integration-1"''',
   '''IdempotencyKey:\s*"reversal-integration-1"''',
 ]
+
+[[allowlists]]
+description = "Deterministic GL posting barrier integration fixtures"
+condition = "AND"
+paths = ['''^internal/platform/database/gl_soft_close_gate_integration_test\.go$''']
+regexTarget = "line"
+regexes = [
+  '''IdempotencyKey:\s*"integration-barrier-enter"''',
+  '''IdempotencyKey:\s*"integration-barrier-acquire-[12]"''',
+  '''IdempotencyKey:\s*"integration-barrier-release-1"''',
+  '''IdempotencyKey:\s*"integration-barrier-finalize-1"''',
+]

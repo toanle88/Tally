@@ -30,7 +30,7 @@ func TestSoftCloseGateEnterAndExitPreserveBoundaryEvidence(t *testing.T) {
 	if enter.Gate.ActiveSoftCloseRunID == nil || *enter.Gate.ActiveSoftCloseRunID != runID || enter.Gate.ActiveSoftCloseControlEpoch != 7 {
 		t.Fatalf("entry owner = %#v", enter.Gate)
 	}
-	if enter.Gate.ActiveAdmissionCounters.ControlOwnerType != SoftCloseGateOwnerType || enter.Gate.ActiveAdmissionCounters.ControlOwnerID != runID || enter.Gate.ActiveAdmissionCounters.ControlOwnerEpoch != 7 {
+	if enter.Gate.ActiveAdmissionCounters.ControlOwnerType != SoftCloseGateOwnerType || enter.Gate.ActiveAdmissionCounters.ControlOwnerID != runID || enter.Gate.ActiveAdmissionCounters.ControlOwnerEpoch == nil || *enter.Gate.ActiveAdmissionCounters.ControlOwnerEpoch != 7 {
 		t.Fatalf("entry counters = %#v", enter.Gate.ActiveAdmissionCounters)
 	}
 	if string(enter.Gate.SoftCloseRestrictions) != `{"closePosting":false,"ordinaryPosting":"evaluator-controlled"}` {
@@ -54,7 +54,7 @@ func TestSoftCloseGateEnterAndExitPreserveBoundaryEvidence(t *testing.T) {
 	if exit.Gate.LastFrozenAdmissionSummary == nil || exit.Gate.LastFrozenAdmissionSummary.FrozenAtGateVersion != 3 || len(exit.Gate.FrozenAdmissionSummaryHistory) != 1 {
 		t.Fatalf("frozen summary = %#v", exit.Gate)
 	}
-	if exit.Gate.LastFrozenAdmissionSummary.ControlOwnerID != runID || exit.Gate.LastFrozenAdmissionSummary.ControlOwnerEpoch != 7 {
+	if exit.Gate.LastFrozenAdmissionSummary.ControlOwnerID != runID || exit.Gate.LastFrozenAdmissionSummary.ControlOwnerEpoch == nil || *exit.Gate.LastFrozenAdmissionSummary.ControlOwnerEpoch != 7 {
 		t.Fatalf("frozen owner = %#v", exit.Gate.LastFrozenAdmissionSummary)
 	}
 

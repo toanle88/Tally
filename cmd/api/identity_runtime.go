@@ -369,11 +369,14 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 		gl.UnavailableSoftClosePolicyEvaluator{},
 		time.Now,
 		gl.DurableSoftCloseGateServiceConfig{
-			Database:         pool,
-			Coordinator:      platformidempotency.NewPostgresCoordinator(),
-			Policy:           platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute},
-			EnterOperationID: glSoftCloseGateEnterOperationID,
-			ExitOperationID:  glSoftCloseGateExitOperationID,
+			Database:            pool,
+			Coordinator:         platformidempotency.NewPostgresCoordinator(),
+			Policy:              platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute},
+			EnterOperationID:    glSoftCloseGateEnterOperationID,
+			ExitOperationID:     glSoftCloseGateExitOperationID,
+			AcquireOperationID:  gl.PostingBarrierAcquireCommandIdentity,
+			ReleaseOperationID:  gl.PostingBarrierReleaseCommandIdentity,
+			FinalizeOperationID: gl.PostingBarrierFinalizeCommandIdentity,
 		},
 	)
 	if err != nil {
@@ -1003,9 +1006,20 @@ func (authorizer evaluatorGLSoftCloseGateAuthorizer) AuthorizeSoftCloseGate(ctx 
 	if authorizer.evaluator == nil {
 		return gl.AuthorizationDecision{}, gl.ErrSoftCloseGateAuthorizationUnavailable
 	}
-	permission := gl.SoftCloseGateExitPermission
-	if operation == gl.SoftCloseGateEnterOperation {
+	permission := ""
+	switch operation {
+	case gl.SoftCloseGateEnterOperation:
 		permission = gl.SoftCloseGateEnterPermission
+	case gl.SoftCloseGateExitOperation:
+		permission = gl.SoftCloseGateExitPermission
+	case gl.PostingBarrierAcquireOperation:
+		permission = gl.PostingBarrierAcquirePermission
+	case gl.PostingBarrierReleaseOperation:
+		permission = gl.PostingBarrierReleasePermission
+	case gl.PostingBarrierFinalizeOperation:
+		permission = gl.PostingBarrierFinalizePermission
+	default:
+		return gl.AuthorizationDecision{}, gl.ErrSoftCloseGateAuthorizationDenied
 	}
 	decision, err := authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{ActorID: actor.UserID, Permission: permission, RequestedScopeIDs: []string{scopeID.String()}})
 	if err != nil {

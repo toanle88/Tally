@@ -135,34 +135,46 @@ func glSoftCloseGateCorrelation(value generated.OptUUID) uuid.UUID {
 func establishedGlSoftCloseGateResult(result gl.SoftCloseGateResult, correlationID uuid.UUID, self string) *generated.EstablishedResult {
 	gate := result.Gate
 	data := generated.EstablishedResultData{
-		"operation":                     mustRaw(result.Operation),
-		"gate":                          mustRaw(gate),
-		"gateMode":                      mustRaw(gate.GateMode),
-		"accountingScopeId":             mustRaw(gate.AccountingScopeID.String()),
-		"fiscalPeriodId":                mustRaw(gate.FiscalPeriodID.String()),
-		"ownerType":                     mustRaw(ownerType(gate)),
-		"ownerId":                       mustRaw(ownerID(gate)),
-		"controlEpoch":                  mustRaw(gate.ActiveSoftCloseControlEpoch),
-		"gateVersion":                   mustRaw(gate.GateVersion),
-		"periodStateVersion":            mustRaw(gate.PeriodStateVersion),
-		"policyVersion":                 mustRaw(gate.SoftClosePolicyVersion),
-		"restrictions":                  mustRaw(gate.SoftCloseRestrictions),
-		"activeAdmissionCounters":       mustRaw(gate.ActiveAdmissionCounters),
-		"lastFrozenAdmissionSummary":    mustRaw(gate.LastFrozenAdmissionSummary),
-		"frozenAdmissionSummaryHistory": mustRaw(gate.FrozenAdmissionSummaryHistory),
-		"decisionReference":             mustRaw(result.DecisionReference.String()),
-		"policyReference":               mustRaw(result.PolicyReference),
-		"authorizationPolicyVersion":    mustRaw(result.AuthorizationPolicyVersion),
-		"validationOutcome":             mustRaw(result.ValidationOutcome),
-		"auditReference":                mustRaw(result.AuditReference.String()),
-		"nextAction":                    mustRaw(result.NextAction),
-		"ordinaryPostingAdmission":      mustRaw(ordinaryPostingAdmission(gate)),
-		"replayed":                      mustRaw(result.Replayed),
+		"operation":                      mustRaw(result.Operation),
+		"gate":                           mustRaw(gate),
+		"gateMode":                       mustRaw(gate.GateMode),
+		"accountingScopeId":              mustRaw(gate.AccountingScopeID.String()),
+		"fiscalPeriodId":                 mustRaw(gate.FiscalPeriodID.String()),
+		"ownerType":                      mustRaw(ownerType(gate)),
+		"ownerId":                        mustRaw(ownerID(gate)),
+		"controlEpoch":                   mustRaw(gate.ActiveSoftCloseControlEpoch),
+		"closeType":                      mustRaw(gate.ActiveCloseType),
+		"priorOwnerType":                 mustRaw(gate.PriorControlProcessType),
+		"priorOwnerId":                   mustRaw(uuidPointerString(gate.PriorControlProcessID)),
+		"priorControlEpoch":              mustRaw(gate.PriorControlEpoch),
+		"priorGateMode":                  mustRaw(gate.PriorGateMode),
+		"barrierLedgerPosition":          mustRaw(gate.BarrierLedgerPosition),
+		"finalLedgerWatermark":           mustRaw(gate.FinalLedgerWatermark),
+		"finalizedCloseRunId":            mustRaw(uuidPointerString(gate.FinalizedCloseRunID)),
+		"finalizationCommandFingerprint": mustRaw(gate.FinalizationCommandFingerprint),
+		"gateVersion":                    mustRaw(gate.GateVersion),
+		"periodStateVersion":             mustRaw(gate.PeriodStateVersion),
+		"policyVersion":                  mustRaw(gate.SoftClosePolicyVersion),
+		"restrictions":                   mustRaw(gate.SoftCloseRestrictions),
+		"activeAdmissionCounters":        mustRaw(gate.ActiveAdmissionCounters),
+		"lastFrozenAdmissionSummary":     mustRaw(gate.LastFrozenAdmissionSummary),
+		"frozenAdmissionSummaryHistory":  mustRaw(gate.FrozenAdmissionSummaryHistory),
+		"decisionReference":              mustRaw(result.DecisionReference.String()),
+		"policyReference":                mustRaw(result.PolicyReference),
+		"authorizationPolicyVersion":     mustRaw(result.AuthorizationPolicyVersion),
+		"validationOutcome":              mustRaw(result.ValidationOutcome),
+		"auditReference":                 mustRaw(result.AuditReference.String()),
+		"nextAction":                     mustRaw(result.NextAction),
+		"ordinaryPostingAdmission":       mustRaw(ordinaryPostingAdmission(gate)),
+		"replayed":                       mustRaw(result.Replayed),
 	}
 	return &generated.EstablishedResult{Status: "established", AggregateId: generated.UUID(gate.ID), AggregateVersion: int(result.AggregateVersion()), CorrelationId: generated.UUID(correlationID), Links: generated.Links{Self: self}, Data: data}
 }
 
 func ownerType(gate gl.PeriodPostingGate) string {
+	if gate.ActiveCloseRunID != nil {
+		return gl.PostingBarrierOwnerType
+	}
 	if gate.ActiveSoftCloseRunID == nil {
 		return ""
 	}
@@ -170,6 +182,9 @@ func ownerType(gate gl.PeriodPostingGate) string {
 }
 
 func ownerID(gate gl.PeriodPostingGate) any {
+	if gate.ActiveCloseRunID != nil {
+		return gate.ActiveCloseRunID.String()
+	}
 	if gate.ActiveSoftCloseRunID == nil {
 		return nil
 	}
@@ -180,7 +195,20 @@ func ordinaryPostingAdmission(gate gl.PeriodPostingGate) map[string]string {
 	if gate.GateMode == gl.PostingGateSoftClosePolicy {
 		return map[string]string{"status": "policy-evaluated", "blockedAction": "ordinary-posting", "reason": "The active soft-close policy controls ordinary posting admission."}
 	}
+	if gate.GateMode == gl.PostingGateCloseOnly {
+		return map[string]string{"status": "blocked", "blockedAction": "ordinary-posting", "reason": "The posting barrier admits only authorized close postings."}
+	}
+	if gate.GateMode == gl.PostingGateHardClosed {
+		return map[string]string{"status": "blocked", "blockedAction": "ordinary-posting", "reason": "The posting gate is hard closed; correction requires an approved reopen workflow."}
+	}
 	return map[string]string{"status": "allowed", "reason": "The posting gate is open."}
+}
+
+func uuidPointerString(value *uuid.UUID) any {
+	if value == nil {
+		return nil
+	}
+	return value.String()
 }
 
 func mapGlEnterSoftCloseGateError(err error, correlationID uuid.UUID) generated.GlEnterSoftCloseGateRes {
@@ -213,6 +241,8 @@ func softCloseGateErrorOutcome(err error) (int, string, string) {
 		return http.StatusConflict, "COMMAND_IN_PROGRESS", "The soft-close gate command is still being finalized. Retry with the same idempotency key."
 	case errors.Is(err, gl.ErrSoftCloseGateVersionConflict), errors.Is(err, gl.ErrSoftCloseGateScopeConflict), errors.Is(err, gl.ErrSoftCloseGateOwnerConflict), errors.Is(err, gl.ErrSoftCloseGateEpochConflict), errors.Is(err, gl.ErrSoftCloseGateModeConflict), errors.Is(err, gl.ErrSoftCloseGatePolicyConflict):
 		return http.StatusConflict, "VERSION_CONFLICT", "The posting gate changed or the supplied owner and control epoch do not match. Refresh and retry safely."
+	case errors.Is(err, gl.ErrPostingBarrierNotReleasable), errors.Is(err, gl.ErrPostingBarrierAdmissionConflict), errors.Is(err, gl.ErrPostingBarrierWatermarkConflict), errors.Is(err, gl.ErrPostingBarrierFinalized):
+		return http.StatusConflict, "BARRIER_CONFLICT", "The posting barrier changed or the requested recovery action is not allowed. Use the authoritative gate result before retrying."
 	case errors.Is(err, gl.ErrSoftCloseGatePolicyRejected):
 		return http.StatusUnprocessableEntity, "VALIDATION_FAILED", "The soft-close policy was rejected by the GL policy evaluator."
 	case errors.Is(err, gl.ErrInvalidSoftCloseGateCommand):

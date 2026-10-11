@@ -59,6 +59,19 @@ func TestPostingServiceRejectsChangedIdempotencyFingerprint(t *testing.T) {
 	}
 }
 
+func TestPostingGateAdmissionCountersTrackOnlyControlledPostingPurposes(t *testing.T) {
+	for _, purpose := range []string{PostingPurposeClose, PostingPurposeReopenCorrection, PostingPurposeOperationalReopen} {
+		if !tracksPostingGateAdmission(purpose) {
+			t.Errorf("tracksPostingGateAdmission(%q) = false, want true", purpose)
+		}
+	}
+	for _, purpose := range []string{PostingPurposeOrdinary, PostingPurposePolicyAdjustment} {
+		if tracksPostingGateAdmission(purpose) {
+			t.Errorf("tracksPostingGateAdmission(%q) = true, want false", purpose)
+		}
+	}
+}
+
 func TestPostingServiceReplaysBeforeCurrentGateRejection(t *testing.T) {
 	repository := NewMemoryPostingRepository()
 	audit := &MemoryPostingAuditRecorder{}

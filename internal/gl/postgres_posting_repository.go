@@ -52,9 +52,6 @@ func (repository *PostgresPostingRepository) CommitPosting(ctx context.Context, 
 	if err != nil {
 		return PostingResult{}, err
 	}
-	if err := validatePostingGateEvidence(commit.Request, gate.Evidence); err != nil {
-		return PostingResult{}, err
-	}
 	if existing, found, err := repository.findJournalByIdempotency(ctx, tx, commit.Request); err != nil {
 		return PostingResult{}, err
 	} else if found {
@@ -74,6 +71,12 @@ func (repository *PostgresPostingRepository) CommitPosting(ctx context.Context, 
 		existing = withCurrentPostingGate(existing, gate.Evidence)
 		existing.Replayed = true
 		return existing, nil
+	}
+	if err := validatePostingGateEvidence(commit.Request, gate.Evidence); err != nil {
+		return PostingResult{}, err
+	}
+	if err := validatePostingGateAdmissionOwner(commit.Request, gate); err != nil {
+		return PostingResult{}, err
 	}
 	if err := repository.validateReferences(ctx, tx, commit.Request); err != nil {
 		return PostingResult{}, err
@@ -106,8 +109,8 @@ func (repository *PostgresPostingRepository) CommitPosting(ctx context.Context, 
 		position := gate.LedgerPosition
 		ledgerPosition = &position
 		journalNumber = fmt.Sprintf("JE-%08d", position)
-		if _, err := tx.Exec(ctx, `UPDATE gl.period_posting_gate SET next_ledger_position = next_ledger_position + 1, updated_at = $3 WHERE accounting_scope_id = $1 AND fiscal_period_id = $2`, commit.Request.AccountingScopeID, commit.Request.FiscalPeriodID, now); err != nil {
-			return PostingResult{}, mapPostingPostgresError(err)
+		if err := repository.advancePostingGateAdmission(ctx, tx, commit.Request, gate, position, now); err != nil {
+			return PostingResult{}, err
 		}
 	}
 	storedStatus := status
@@ -274,15 +277,18 @@ func (repository *PostgresPostingRepository) ResolveExistingPosting(ctx context.
 }
 
 type postgresPostingGate struct {
-	Evidence       PostingGateEvidence
-	LedgerPosition int64
+	Evidence                PostingGateEvidence
+	LedgerPosition          int64
+	ActiveAdmissionCounters ActiveGateAdmissionCounters
+	ActiveCloseRunID        *uuid.UUID
+	ActiveCloseType         string
 }
 
 func (repository *PostgresPostingRepository) lockGate(ctx context.Context, tx pgx.Tx, request PostingRequest) (postgresPostingGate, error) {
 	var gate postgresPostingGate
 	var policyVersion string
-	var restrictions []byte
-	err := tx.QueryRow(ctx, `SELECT gate_mode, period_state_version, gate_version, next_ledger_position, COALESCE(soft_close_policy_version, ''), soft_close_restrictions FROM gl.period_posting_gate WHERE accounting_scope_id = $1 AND fiscal_period_id = $2 FOR UPDATE`, request.AccountingScopeID, request.FiscalPeriodID).Scan(&gate.Evidence.GateMode, &gate.Evidence.PeriodStateVersion, &gate.Evidence.PostingGateVersion, &gate.LedgerPosition, &policyVersion, &restrictions)
+	var restrictions, countersJSON []byte
+	err := tx.QueryRow(ctx, `SELECT gate_mode, period_state_version, gate_version, next_ledger_position, COALESCE(soft_close_policy_version, ''), soft_close_restrictions, active_close_run_id, COALESCE(active_close_type, ''), active_gate_admission_counters FROM gl.period_posting_gate WHERE accounting_scope_id = $1 AND fiscal_period_id = $2 FOR UPDATE`, request.AccountingScopeID, request.FiscalPeriodID).Scan(&gate.Evidence.GateMode, &gate.Evidence.PeriodStateVersion, &gate.Evidence.PostingGateVersion, &gate.LedgerPosition, &policyVersion, &restrictions, &gate.ActiveCloseRunID, &gate.ActiveCloseType, &countersJSON)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return postgresPostingGate{}, ErrPostingReferenceUnavailable
 	}
@@ -292,7 +298,68 @@ func (repository *PostgresPostingRepository) lockGate(ctx context.Context, tx pg
 	gate.Evidence.FiscalPeriodID = request.FiscalPeriodID
 	gate.Evidence.SoftClosePolicyVersion = policyVersion
 	gate.Evidence.SoftCloseRestrictions = append(json.RawMessage(nil), restrictions...)
+	if len(countersJSON) > 0 && string(countersJSON) != "null" {
+		if err := json.Unmarshal(countersJSON, &gate.ActiveAdmissionCounters); err != nil {
+			return postgresPostingGate{}, err
+		}
+	}
 	return gate, nil
+}
+
+func validatePostingGateAdmissionOwner(request PostingRequest, gate postgresPostingGate) error {
+	switch request.PostingPurpose {
+	case PostingPurposeClose:
+		if gate.ActiveCloseRunID == nil || request.CloseRunID == nil || *gate.ActiveCloseRunID != *request.CloseRunID || gate.ActiveCloseType == "" {
+			return fmt.Errorf("%w: close run does not own the posting barrier", ErrPostingGateClosed)
+		}
+	case PostingPurposeReopenCorrection:
+		if gate.ActiveAdmissionCounters.ControlOwnerType != "ReopenRequest" || gate.ActiveAdmissionCounters.ControlOwnerID != uuidValue(request.ReopenRequestID) {
+			return fmt.Errorf("%w: reopen request does not own the posting gate", ErrPostingGateClosed)
+		}
+	case PostingPurposeOperationalReopen:
+		if gate.ActiveAdmissionCounters.ControlOwnerType != "ReopenRequest" || gate.ActiveAdmissionCounters.ControlOwnerID != uuidValue(request.OperationalReopenRequestID) {
+			return fmt.Errorf("%w: operational reopen request does not own the posting gate", ErrPostingGateClosed)
+		}
+	}
+	return nil
+}
+
+func (repository *PostgresPostingRepository) advancePostingGateAdmission(ctx context.Context, tx pgx.Tx, request PostingRequest, gate postgresPostingGate, position int64, now time.Time) error {
+	counters := gate.ActiveAdmissionCounters
+	if counters.ControlOwnerType != "" && tracksPostingGateAdmission(request.PostingPurpose) {
+		counters.AdmittedPostingCount++
+		if counters.FirstAdmittedLedgerPosition == 0 {
+			counters.FirstAdmittedLedgerPosition = position
+		}
+		counters.LastAdmittedLedgerPosition = position
+		switch request.PostingPurpose {
+		case PostingPurposeClose:
+			counters.ClosePostingAdmitted = true
+		case PostingPurposeReopenCorrection, PostingPurposeOperationalReopen:
+			counters.ReopenPostingAdmitted = true
+		}
+	}
+	countersJSON, err := json.Marshal(counters)
+	if err != nil {
+		return err
+	}
+	commandTag, err := tx.Exec(ctx, `UPDATE gl.period_posting_gate SET next_ledger_position = next_ledger_position + 1, active_gate_admission_counters = $3, updated_at = $4 WHERE accounting_scope_id = $1 AND fiscal_period_id = $2`, request.AccountingScopeID, request.FiscalPeriodID, countersJSON, now)
+	if err := mapPostingPostgresError(err); err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() != 1 {
+		return ErrPostingGateConflict
+	}
+	return nil
+}
+
+func tracksPostingGateAdmission(postingPurpose string) bool {
+	switch postingPurpose {
+	case PostingPurposeClose, PostingPurposeReopenCorrection, PostingPurposeOperationalReopen:
+		return true
+	default:
+		return false
+	}
 }
 
 func (repository *PostgresPostingRepository) findJournalByIdempotency(ctx context.Context, tx pgx.Tx, request PostingRequest) (PostingResult, bool, error) {

@@ -640,23 +640,23 @@ recovery point, and final ledger watermark.
 
 Acceptance criteria:
 
-- [ ] `AcquirePostingBarrier` verifies the active soft-close epoch, freezes its
+- [x] `AcquirePostingBarrier` verifies the active soft-close epoch, freezes its
   counters, records prior ownership and barrier position, transfers ownership
   to the initial close run, changes the gate to `CloseOnly`, and initializes
   close counters atomically.
-- [ ] A stale soft-close epoch, active competing owner, invalid close type,
+- [x] A stale soft-close epoch, active competing owner, invalid close type,
   scope, or expected gate version is rejected without partial transfer.
-- [ ] `ReleasePostingBarrier` is valid only for an initial hard close with zero
+- [x] `ReleasePostingBarrier` is valid only for an initial hard close with zero
   close admissions. It restores the prior mode/owner, increments the next soft
   close epoch, returns the new epoch, and clears close ownership.
-- [ ] A reclose barrier cannot be released. Any admitted close posting or
+- [x] A reclose barrier cannot be released. Any admitted close posting or
   conflicting owner prevents release and leaves authoritative evidence.
-- [ ] `FinalizePostingGate` freezes counters, records the final ledger
+- [x] `FinalizePostingGate` freezes counters, records the final ledger
   watermark, changes the gate to `HardClosed`, clears active ownership only
   after the summary is authoritative, and retains immutable command results.
 - [ ] Interrupted finalization is recoverable through `GetPostingGateStatus`;
   a finalized gate is never converted into an abort or released state.
-- [ ] The UI shows barrier position, owner, counters, watermark, current mode,
+- [x] The UI shows barrier position, owner, counters, watermark, current mode,
   finalization state, blocked actions, and recovery next action.
 
 Suggested implementation steps:
@@ -673,13 +673,25 @@ Suggested implementation steps:
 
 Required test evidence:
 
-- [ ] Domain tests for barrier ownership, zero-admission release, non-releasable
+- [x] Domain tests for barrier ownership, zero-admission release, non-releasable
   reclose, final watermark, stale version, and duplicate command behavior.
 - [ ] PostgreSQL concurrency/failure tests for atomic transfer, journal
   admission at the cutoff, frozen summaries, outbox/audit durability, and
   recovery by status query.
 - [ ] API/UI/accessibility tests for authorization, blocked actions, evidence,
   and safe recovery guidance.
+
+Implementation status and evidence:
+
+The implementation is on branch `feat/gl-us7-posting-barrier`. The GL aggregate,
+typed command port, PostgreSQL migration/repository, posting-admission counter
+updates, existing action handlers, and action-result-driven `GL-SCR-03` workflow
+are implemented. Focused domain, API, and component tests pass; the
+integration-tagged PostgreSQL coverage compiles but its runtime is an opt-in
+qualification check. Public `GetPostingGateStatus` remains Story 10 scope.
+Acceptance traceability, exact verification commands, qualification limits, and
+the M2/M3 source milestone conflict are recorded in
+[`docs/verification/DLV-FR-GL-006-008-us7-posting-barrier.md`](../../verification/DLV-FR-GL-006-008-us7-posting-barrier.md).
 
 ### User Story 8 — Open and close a scoped reopen gate
 
