@@ -33,7 +33,7 @@ func TestGLPostingRepositoryPostsAtomicallyAndSerializesGateAdmission(t *testing
 
 	var auditCalls int32
 	auditReference := uuid.New()
-	repository, err := gl.NewPostgresPostingRepository(fixture.pool, func(context.Context, pgx.Tx, gl.PostingAuditRecord) (uuid.UUID, error) {
+	repository, err := gl.NewPostgresPostingRepository(fixture.pool, func(_ context.Context, _ pgx.Tx, _ gl.PostingAuditRecord) (uuid.UUID, error) {
 		atomic.AddInt32(&auditCalls, 1)
 		return auditReference, nil
 	})
@@ -136,6 +136,101 @@ func TestGLPostingRepositoryPostsAtomicallyAndSerializesGateAdmission(t *testing
 		t.Fatalf("audit failure = %v, want audit write failure", err)
 	}
 	assertPostingCounts(t, ctx, fixture, 3, 6, 5, 5, 4)
+}
+
+func TestGLPostingRepositoryAppliesApprovalDecisionAtomicallyAndReplays(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+	defer cancel()
+
+	fixture := startIntegrationFixture(t, ctx)
+	applyAndVerifyMigrations(t, ctx, fixture.databaseURL, fixture.migrationSets)
+	fixture.openPool(t, ctx)
+	request, references := integrationPostingRequest()
+	request.IdempotencyKey = "posting-approval-integration"
+	if err := insertPostingReferenceFixture(ctx, fixture.pool, references); err != nil {
+		t.Fatal(err)
+	}
+	auditReference := uuid.New()
+	auditRecords := make([]gl.PostingAuditRecord, 0, 2)
+	repository, err := gl.NewPostgresPostingRepository(fixture.pool, func(_ context.Context, _ pgx.Tx, record gl.PostingAuditRecord) (uuid.UUID, error) {
+		auditRecords = append(auditRecords, record)
+		return auditReference, nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	registry, err := money.NewCurrencyRegistry([]money.CurrencyMetadata{{Code: "USD", Scale: 2}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	authorizer := gl.MemoryPostingAuthorizer{Decision: gl.PostingAuthorizationDecision{Allowed: true, ApprovalRequired: true, PolicyReference: "integration-policy", PolicyVersion: "integration-v1"}}
+	clock := func() time.Time { return time.Date(2026, 8, 15, 8, 0, 0, 0, time.UTC) }
+	posting, err := gl.NewPostingService(repository, authorizer, gl.AllowAllPostingReferenceValidator{}, gl.MemoryPostingGateValidator{}, integrationRequiredApprovalValidator{approval: gl.PostingApproval{Required: true, ApprovalRequestID: uuid.New(), PolicyReference: "integration-policy", PolicyVersion: "integration-v1"}}, &gl.MemoryPostingAuditRecorder{}, registry, clock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	approvalService, err := gl.NewPostingApprovalDecisionService(repository, gl.MemoryPostingApprovalDecisionVerifier{}, gl.MemoryPostingApprovalDecisionAuthorizer{Decision: gl.PostingApprovalDecisionAuthorization{Allowed: true, PolicyReference: "integration-policy", PolicyVersion: "integration-v1"}}, authorizer, gl.AllowAllPostingReferenceValidator{}, gl.MemoryPostingGateValidator{}, registry, clock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	actor := gl.Actor{UserID: uuid.New(), SubjectReference: "approval-integration-actor"}
+	pending, err := posting.Execute(ctx, actor, request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if pending.Outcome != gl.PostingOutcomePostingPendingApproval || pending.Journal == nil || pending.Journal.LedgerPosition != 0 {
+		t.Fatalf("pending result = %#v", pending)
+	}
+	decision := gl.ApplyJournalApprovalDecisionCommand{
+		CommandID: uuid.New(), JournalID: pending.AggregateID(), AccountingScopeID: references.scopeID, ExpectedJournalVersion: pending.AggregateVersion(),
+		Decision:       gl.PostingApprovalDecision{Outcome: gl.PostingApprovalOutcomeApproved, Reason: "approved by integration decision", Reference: gl.ApprovalDecisionReference{ApprovalRequestID: pending.Journal.Approval.ApprovalRequestID, DecisionID: uuid.New(), PolicyVersion: pending.Journal.Approval.PolicyVersion, DecisionVersion: 1, SubjectVersion: pending.AggregateVersion(), CandidateFingerprint: pending.Journal.RequestFingerprint, ApproverUserID: actor.UserID}},
+		IdempotencyKey: "approval-integration-1", CorrelationID: uuid.NewString(), CausationID: uuid.NewString(),
+	}
+	first, err := approvalService.Execute(ctx, actor, decision)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if first.Outcome != gl.PostingOutcomeJournalEntryPosted || first.LifecycleStatus() != gl.PostingStatusPosted || first.AggregateVersion() != 2 || first.Journal == nil || first.Journal.LedgerPosition != 1 {
+		t.Fatalf("applied result = %#v", first)
+	}
+	if len(auditRecords) != 2 {
+		t.Fatalf("audit records = %d, want submission and approval application", len(auditRecords))
+	}
+	if audit := auditRecords[1]; audit.ApprovalDecisionID != decision.Decision.Reference.DecisionID || audit.ApprovalRequestID != decision.Decision.Reference.ApprovalRequestID || audit.GateEvidence.GateMode != gl.PostingGateOpen {
+		t.Fatalf("approval audit = %#v, want immutable decision and gate evidence", audit)
+	}
+	var outboxDecisionOutcome, outboxDecisionID, outboxDecisionReason string
+	if err := fixture.pool.QueryRow(ctx, `SELECT payload->'approval'->>'decisionOutcome', payload->'approval'->'decision'->>'decisionId', payload->'approval'->>'decisionReason' FROM integration.outbox WHERE aggregate_id = $1 AND event_type = $2`, first.AggregateID(), gl.PostingOutcomeJournalEntryPosted).Scan(&outboxDecisionOutcome, &outboxDecisionID, &outboxDecisionReason); err != nil {
+		t.Fatal(err)
+	}
+	if outboxDecisionOutcome != gl.PostingApprovalOutcomeApproved || outboxDecisionID != decision.Decision.Reference.DecisionID.String() || outboxDecisionReason != decision.Decision.Reason {
+		t.Fatalf("approval outbox evidence = %s/%s/%s, want approved decision %s and reason %q", outboxDecisionOutcome, outboxDecisionID, outboxDecisionReason, decision.Decision.Reference.DecisionID, decision.Decision.Reason)
+	}
+	assertPostingCounts(t, ctx, fixture, 1, 2, 2, 2, 2)
+	replay, err := approvalService.Execute(ctx, actor, decision)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !replay.Replayed || replay.AggregateID() != first.AggregateID() || replay.AggregateVersion() != first.AggregateVersion() {
+		t.Fatalf("approval replay = %#v", replay)
+	}
+	assertPostingCounts(t, ctx, fixture, 1, 2, 2, 2, 2)
+	changed := decision
+	changed.Decision.Reason = "changed after decision"
+	if _, err := approvalService.Execute(ctx, actor, changed); !errors.Is(err, gl.ErrPostingApprovalDecisionIdempotencyConflict) {
+		t.Fatalf("changed approval delivery = %v, want idempotency conflict", err)
+	}
+	if _, err := fixture.pool.Exec(ctx, `UPDATE gl.journal_entry SET description = 'tampered' WHERE journal_entry_id = $1`, first.AggregateID()); err == nil {
+		t.Fatal("posted journal mutation succeeded after approval")
+	}
+}
+
+type integrationRequiredApprovalValidator struct {
+	approval gl.PostingApproval
+}
+
+func (validator integrationRequiredApprovalValidator) EvaluatePostingApproval(context.Context, gl.Actor, gl.PostingRequest, gl.PostingAuthorizationDecision) (gl.PostingApproval, error) {
+	return validator.approval, nil
 }
 
 type integrationPostingReferences struct {

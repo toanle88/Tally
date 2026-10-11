@@ -132,14 +132,14 @@ func (repository *PostgresPostingRepository) CommitPosting(ctx context.Context, 
 			idempotency_key, request_fingerprint, posting_date, fiscal_period_id, period_state_version, posting_gate_version,
 			posting_purpose, adjustment_period_indicator, posting_authorization_id, close_run_id, reopen_request_id, operational_reopen_request_id, control_authority_epoch,
 			transaction_currency, conversion_evidence, description, lifecycle_status, approval_reference, aggregate_version,
-			ledger_position, audit_reference, correlation_id, causation_id, created_at
-		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37)`,
+			ledger_position, audit_reference, correlation_id, causation_id, submitted_by_user_id, created_at
+		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38)`,
 		journalID, journalNumber, commit.Request.AccountingScopeID, commit.Request.AccountingScope.TenantID(), commit.Request.AccountingScope.LegalEntityID(), commit.Request.AccountingScope.LedgerID(), commit.Request.AccountingScope.AccountingBookID(),
 		commit.Request.AccountingScope.FunctionalCurrency(), commit.Request.SourceContext, commit.Request.SourceAggregateType, commit.Request.SourceAggregateID, commit.Request.SourceVersion, commit.Request.RequestID,
 		commit.Request.IdempotencyKey, commit.Request.RequestFingerprint, commit.Request.PostingDate, commit.Request.FiscalPeriodID, commit.Request.PeriodStateVersion, commit.Request.PostingGateVersion,
 		commit.Request.PostingPurpose, commit.Request.AdjustmentPeriodIndicator, nullablePostingUUID(commit.Request.PostingAuthorizationID), nullablePostingUUID(commit.Request.CloseRunID), nullablePostingUUID(commit.Request.ReopenRequestID), nullablePostingUUID(commit.Request.OperationalReopenRequestID), nullablePostingInt64(commit.Request.ControlAuthorityEpoch),
 		commit.Request.TransactionCurrency, nullablePostingJSON(conversionJSON), commit.Request.Description, storedStatus, nullablePostingJSON(approvalJSON), 1,
-		ledgerPosition, auditReference, correlationID, causationID, now)
+		ledgerPosition, auditReference, correlationID, causationID, commit.Actor.UserID, now)
 	if err != nil {
 		return PostingResult{}, mapPostingPostgresError(err)
 	}
@@ -327,6 +327,12 @@ func (repository *PostgresPostingRepository) findJournal(ctx context.Context, tx
 		outcome = PostingOutcomePostingPendingApproval
 		nextAction = "Approval decision required"
 		approvalStatus = "pending"
+	} else if status == PostingStatusCancelled || approval.DecisionOutcome == PostingApprovalOutcomeRejected {
+		outcome = PostingOutcomePostingRejected
+		nextAction = "Review the rejection and submit a new posting request if correction is required"
+		approvalStatus = PostingApprovalOutcomeRejected
+	} else if approval.DecisionOutcome == PostingApprovalOutcomeApproved {
+		approvalStatus = PostingApprovalOutcomeApproved
 	}
 	result := PostingResult{Outcome: outcome, ApprovalRequestID: approval.ApprovalRequestID, NextAction: nextAction, ValidationOutcome: "valid", ApprovalStatus: approvalStatus, SourceReference: fmt.Sprintf("%s:%s:%s:%d", sourceContext, sourceAggregateType, sourceAggregateID, sourceVersion), GateEvidence: PostingGateEvidence{FiscalPeriodID: periodID, PeriodStateVersion: periodVersion, PostingGateVersion: gateVersion, GateMode: "Open"}, AuditReference: auditReference}
 	result.Journal = &PostingJournal{ID: journalID, Number: journalNumber, Version: version, LedgerPosition: position, Status: status, Approval: &approval, SourceReference: result.SourceReference, RequestFingerprint: fingerprint, GateEvidence: result.GateEvidence, AuditReference: auditReference}
@@ -406,8 +412,9 @@ func (repository *PostgresPostingRepository) writeEvent(ctx context.Context, tx 
 		LifecycleStatus string              `json:"lifecycleStatus"`
 		SourceReference string              `json:"sourceReference"`
 		GateEvidence    PostingGateEvidence `json:"gateEvidence"`
+		Approval        *PostingApproval    `json:"approval,omitempty"`
 		Issues          []PostingIssue      `json:"issues,omitempty"`
-	}{Outcome: result.Outcome, JournalID: result.AggregateID(), JournalNumber: journalNumber(result), LifecycleStatus: result.LifecycleStatus(), SourceReference: result.SourceReference, GateEvidence: result.GateEvidence, Issues: result.Issues})
+	}{Outcome: result.Outcome, JournalID: result.AggregateID(), JournalNumber: journalNumber(result), LifecycleStatus: result.LifecycleStatus(), SourceReference: result.SourceReference, GateEvidence: result.GateEvidence, Approval: postingApprovalFromResult(result), Issues: result.Issues})
 	if err != nil {
 		return err
 	}
@@ -423,7 +430,23 @@ func (repository *PostgresPostingRepository) writeEvent(ctx context.Context, tx 
 }
 
 func postingAuditRecord(commit PostingCommit, attemptID, journalID uuid.UUID, outcome string, issues []PostingIssue) PostingAuditRecord {
-	return PostingAuditRecord{AttemptID: attemptID, JournalID: journalID, ActorUserID: commit.Actor.UserID, ActorSubjectReference: commit.Actor.SubjectReference, Outcome: outcome, AccountingScope: commit.Request.AccountingScope, AccountingScopeID: commit.Request.AccountingScopeID, SourceContext: commit.Request.SourceContext, SourceAggregateType: commit.Request.SourceAggregateType, SourceAggregateID: commit.Request.SourceAggregateID, SourceVersion: commit.Request.SourceVersion, RequestID: commit.Request.RequestID, IdempotencyKey: commit.Request.IdempotencyKey, RequestFingerprint: commit.Request.RequestFingerprint, Permission: PostingPermission, PolicyReference: commit.Authorization.PolicyReference, PolicyVersion: commit.Authorization.PolicyVersion, DecisionReference: commit.Authorization.DecisionReference, CorrelationID: commit.Request.CorrelationID, CausationID: commit.Request.CausationID, Issues: issues}
+	return PostingAuditRecord{AttemptID: attemptID, JournalID: journalID, ActorUserID: commit.Actor.UserID, ActorSubjectReference: commit.Actor.SubjectReference, Outcome: outcome, AccountingScope: commit.Request.AccountingScope, AccountingScopeID: commit.Request.AccountingScopeID, SourceContext: commit.Request.SourceContext, SourceAggregateType: commit.Request.SourceAggregateType, SourceAggregateID: commit.Request.SourceAggregateID, SourceVersion: commit.Request.SourceVersion, RequestID: commit.Request.RequestID, IdempotencyKey: commit.Request.IdempotencyKey, RequestFingerprint: commit.Request.RequestFingerprint, Permission: PostingPermission, PolicyReference: commit.Authorization.PolicyReference, PolicyVersion: commit.Authorization.PolicyVersion, DecisionReference: commit.Authorization.DecisionReference, GateEvidence: commit.GateEvidence, CorrelationID: commit.Request.CorrelationID, CausationID: commit.Request.CausationID, Issues: issues}
+}
+
+func postingApprovalFromResult(result PostingResult) *PostingApproval {
+	if result.Journal == nil || result.Journal.Approval == nil {
+		return nil
+	}
+	approval := *result.Journal.Approval
+	if approval.Decision != nil {
+		decision := *approval.Decision
+		approval.Decision = &decision
+	}
+	if approval.AppliedAt != nil {
+		appliedAt := *approval.AppliedAt
+		approval.AppliedAt = &appliedAt
+	}
+	return &approval
 }
 
 func nullablePostingJSON(value []byte) any {
@@ -499,6 +522,8 @@ func mapPostingPostgresError(err error) error {
 			return ErrPostingIdempotencyConflict
 		case "journal_entry_source_unique":
 			return ErrPostingSourceDuplicate
+		case "journal_entry_approval_application_unique", "journal_entry_approval_decision_unique":
+			return ErrPostingApprovalDecisionIdempotencyConflict
 		case "journal_entry_ledger_fk", "journal_entry_book_fk", "journal_entry_line_account_fk":
 			return ErrPostingReferenceInvalid
 		case "journal_entry_line_amount_check", "journal_entry_line_functional_only_check":

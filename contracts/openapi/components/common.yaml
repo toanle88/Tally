@@ -201,13 +201,15 @@ schemas:
     additionalProperties: false
     required: [outcome, lifecycleStatus, validationOutcome, approvalStatus, sourceReference, gateEvidence, replayed]
     properties:
-      outcome: { type: string, enum: [JournalEntryPosted, PostingPendingApproval] }
-      lifecycleStatus: { type: string, enum: [PendingApproval, Posted] }
+      outcome: { type: string, enum: [JournalEntryPosted, PostingPendingApproval, PostingRejected] }
+      lifecycleStatus: { type: string, enum: [PendingApproval, Posted, Cancelled] }
       journalId: { $ref: '#/schemas/Uuid' }
       journalNumber: { type: string }
       journalVersion: { type: integer, minimum: 1 }
       ledgerPosition: { type: integer, minimum: 1 }
       approvalRequestId: { $ref: '#/schemas/Uuid' }
+      policyReference: { type: string }
+      policyVersion: { type: string }
       nextAction: { type: string }
       validationOutcome: { type: string }
       approvalStatus: { type: string }

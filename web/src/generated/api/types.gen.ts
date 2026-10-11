@@ -160,13 +160,15 @@ export type GlPostingValidationIssue = {
 };
 
 export type GlSubmitPostingRequestResultData = {
-    outcome: 'JournalEntryPosted' | 'PostingPendingApproval';
-    lifecycleStatus: 'PendingApproval' | 'Posted';
+    outcome: 'JournalEntryPosted' | 'PostingPendingApproval' | 'PostingRejected';
+    lifecycleStatus: 'PendingApproval' | 'Posted' | 'Cancelled';
     journalId?: Uuid;
     journalNumber?: string;
     journalVersion?: number;
     ledgerPosition?: number;
     approvalRequestId?: Uuid;
+    policyReference?: string;
+    policyVersion?: string;
     nextAction?: string;
     validationOutcome: string;
     approvalStatus: string;

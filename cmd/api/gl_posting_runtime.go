@@ -8,6 +8,11 @@ import (
 )
 
 func newMemoryPostingService() (*gl.PostingService, error) {
+	postingService, _, err := newMemoryPostingServices()
+	return postingService, err
+}
+
+func newMemoryPostingServices() (*gl.PostingService, *gl.PostingApprovalDecisionService, error) {
 	currencyRegistry, err := money.NewCurrencyRegistry([]money.CurrencyMetadata{
 		{Code: "USD", Scale: 2},
 		{Code: "EUR", Scale: 2},
@@ -17,13 +22,14 @@ func newMemoryPostingService() (*gl.PostingService, error) {
 		{Code: "JPY", Scale: 0},
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	repository := gl.NewMemoryPostingRepository()
 	audit := &gl.MemoryPostingAuditRecorder{}
-	return gl.NewPostingService(
+	postingAuthorizer := gl.MemoryPostingAuthorizer{Decision: gl.PostingAuthorizationDecision{Allowed: true, PolicyReference: "memory-permissive", PolicyVersion: "memory-v1"}}
+	postingService, err := gl.NewPostingService(
 		repository,
-		gl.MemoryPostingAuthorizer{Decision: gl.PostingAuthorizationDecision{Allowed: true, PolicyReference: "memory-permissive", PolicyVersion: "memory-v1"}},
+		postingAuthorizer,
 		gl.AllowAllPostingReferenceValidator{},
 		gl.MemoryPostingGateValidator{},
 		gl.AllowAllPostingApprovalValidator{},
@@ -31,4 +37,21 @@ func newMemoryPostingService() (*gl.PostingService, error) {
 		currencyRegistry,
 		time.Now,
 	)
+	if err != nil {
+		return nil, nil, err
+	}
+	approvalService, err := gl.NewPostingApprovalDecisionService(
+		repository,
+		gl.MemoryPostingApprovalDecisionVerifier{},
+		gl.MemoryPostingApprovalDecisionAuthorizer{Decision: gl.PostingApprovalDecisionAuthorization{Allowed: true, PolicyReference: "memory-permissive", PolicyVersion: "memory-v1"}},
+		postingAuthorizer,
+		gl.AllowAllPostingReferenceValidator{},
+		gl.MemoryPostingGateValidator{},
+		currencyRegistry,
+		time.Now,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+	return postingService, approvalService, nil
 }

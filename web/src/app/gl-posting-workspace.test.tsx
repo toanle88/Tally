@@ -3,18 +3,19 @@ import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { glSubmitPostingRequest } from '@/generated/api/sdk.gen'
+import { glApplyJournalApprovalDecision, glSubmitPostingRequest } from '@/generated/api/sdk.gen'
 import { ScopeProvider } from '@/lib/scope/scope-context'
 
 import { developmentScopes } from './app'
 import { GlPostingWorkspace } from './gl-posting-workspace'
 
 vi.mock('@/generated/api/sdk.gen', () => ({
+  glApplyJournalApprovalDecision: vi.fn(),
   glSubmitPostingRequest: vi.fn(),
 }))
 
-function renderWithScope(ui: ReactNode) {
-  return render(<MemoryRouter><ScopeProvider availableScopes={developmentScopes} initialScopeId={developmentScopes[0].id} effects={{ cancelInFlightWork: vi.fn(), clearScopeBoundQueryState: vi.fn() }}>{ui}</ScopeProvider></MemoryRouter>)
+function renderWithScope(ui: ReactNode, initialEntries?: Array<string | { pathname: string; state?: unknown }>) {
+  return render(<MemoryRouter initialEntries={initialEntries}><ScopeProvider availableScopes={developmentScopes} initialScopeId={developmentScopes[0].id} effects={{ cancelInFlightWork: vi.fn(), clearScopeBoundQueryState: vi.fn() }}>{ui}</ScopeProvider></MemoryRouter>)
 }
 
 const establishedResult = {
@@ -41,6 +42,7 @@ const establishedResult = {
 
 describe('GL posting workbench', () => {
   beforeEach(() => {
+    vi.mocked(glApplyJournalApprovalDecision).mockReset()
     vi.mocked(glSubmitPostingRequest).mockReset()
   })
 
@@ -92,5 +94,48 @@ describe('GL posting workbench', () => {
     expect(second.body.data.conversionEvidence?.rateSetId).toBe(first.body.data.conversionEvidence?.rateSetId)
     expect(second.headers['Idempotency-Key']).toBe(first.headers['Idempotency-Key'])
     expect(second.headers['X-Correlation-Id']).toBe(first.headers['X-Correlation-Id'])
+  })
+
+  it('shows immutable decision evidence and applies a pending journal through the generic command route', async () => {
+    const pendingResult = {
+      ...establishedResult,
+      aggregateVersion: 1,
+      data: {
+        ...establishedResult.data,
+        outcome: 'PostingPendingApproval',
+        lifecycleStatus: 'PendingApproval',
+        journalNumber: 'PJE-2026-000001',
+        journalVersion: 1,
+        ledgerPosition: undefined,
+        approvalRequestId: 'approval-request-1',
+        policyReference: 'workflow-policy',
+        policyVersion: '1',
+      },
+    }
+    const appliedResult = {
+      status: 'established',
+      aggregateId: 'journal-1',
+      aggregateVersion: 2,
+      correlationId: 'correlation-apply-1',
+      links: { self: '/api/v1/general-ledger/actions/apply-journal-approval-decision' },
+      data: { outcome: 'JournalEntryPosted', lifecycleStatus: 'Posted', approvalDecisionId: 'decision-1', subjectVersion: 1, journalVersion: 2, nextAction: 'No action required' },
+    }
+    vi.mocked(glApplyJournalApprovalDecision).mockResolvedValue({ data: appliedResult, error: undefined } as never)
+    renderWithScope(<GlPostingWorkspace view="result" />, [{ pathname: '/general-ledger/gl-scr-02', state: { postingResult: pendingResult } }])
+
+    expect(screen.getByText('Apply journal approval decision')).toBeInTheDocument()
+    fireEvent.change(screen.getByRole('textbox', { name: 'Candidate fingerprint' }), { target: { value: 'sha256:pending-candidate' } })
+    fireEvent.change(screen.getByRole('textbox', { name: 'Approver user ID' }), { target: { value: 'approver-1' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Apply approval' }))
+
+    await waitFor(() => expect(glApplyJournalApprovalDecision).toHaveBeenCalledTimes(1))
+    const request = vi.mocked(glApplyJournalApprovalDecision).mock.calls[0][0] as { body: { commandId: string; expectedVersion: number; data: { journalId: string; outcome: string; approvalRequestId: string; candidateFingerprint: string } }; headers: { 'Idempotency-Key': string } }
+    expect(request.body.expectedVersion).toBe(1)
+    expect(request.body.data.journalId).toBe('journal-1')
+    expect(request.body.data.outcome).toBe('approved')
+    expect(request.body.data.approvalRequestId).toBe('approval-request-1')
+    expect(request.body.data.candidateFingerprint).toBe('sha256:pending-candidate')
+    expect(request.headers['Idempotency-Key']).toBeTruthy()
+    expect(screen.getByText('Decision applied')).toBeInTheDocument()
   })
 })
