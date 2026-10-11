@@ -3,15 +3,18 @@ import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { glEnterSoftCloseGate, glExitSoftCloseGate } from '@/generated/api/sdk.gen'
+import { glAcquirePostingBarrier, glEnterSoftCloseGate, glExitSoftCloseGate, glFinalizePostingGate, glReleasePostingBarrier } from '@/generated/api/sdk.gen'
 import { ScopeProvider } from '@/lib/scope/scope-context'
 
 import { developmentScopes } from './app'
 import { GlPostingGateWorkspace } from './gl-posting-gate-workspace'
 
 vi.mock('@/generated/api/sdk.gen', () => ({
+  glAcquirePostingBarrier: vi.fn(),
   glEnterSoftCloseGate: vi.fn(),
   glExitSoftCloseGate: vi.fn(),
+  glFinalizePostingGate: vi.fn(),
+  glReleasePostingBarrier: vi.fn(),
 }))
 
 function renderWithScope(ui: ReactNode) {
@@ -55,10 +58,48 @@ const exitedResult = {
   },
 }
 
+const acquiredResult = {
+  ...enteredResult,
+  aggregateVersion: 4,
+  correlationId: 'correlation-acquire',
+  links: { self: '/api/v1/general-ledger/actions/acquire-posting-barrier' },
+  data: {
+    ...enteredResult.data,
+    gateMode: 'CloseOnly',
+    gateVersion: 4,
+    ownerType: 'CloseRun',
+    ownerId: 'close-run-1',
+    closeType: 'InitialHardClose',
+    barrierLedgerPosition: 10,
+    priorOwnerId: 'run-1',
+    activeAdmissionCounters: { controlOwnerType: 'CloseRun', admittedPostingCount: 0 },
+    nextAction: 'Finalize or release the posting barrier under the authoritative rules.',
+  },
+}
+
+const finalizedResult = {
+  ...acquiredResult,
+  aggregateVersion: 5,
+  correlationId: 'correlation-finalize',
+  links: { self: '/api/v1/general-ledger/actions/finalize-posting-gate' },
+  data: {
+    ...acquiredResult.data,
+    gateMode: 'HardClosed',
+    gateVersion: 5,
+    ownerId: null,
+    finalLedgerWatermark: 12,
+    finalizedCloseRunId: 'close-run-1',
+    nextAction: 'Use the final watermark for downstream close and sealing work.',
+  },
+}
+
 describe('GL posting-gate monitor', () => {
   beforeEach(() => {
     vi.mocked(glEnterSoftCloseGate).mockReset()
     vi.mocked(glExitSoftCloseGate).mockReset()
+    vi.mocked(glAcquirePostingBarrier).mockReset()
+    vi.mocked(glFinalizePostingGate).mockReset()
+    vi.mocked(glReleasePostingBarrier).mockReset()
   })
 
   it('renders only the latest action result and uses its version for exit', async () => {
@@ -99,5 +140,32 @@ describe('GL posting-gate monitor', () => {
     expect(second.body.commandId).toBe(first.body.commandId)
     expect(second.headers['Idempotency-Key']).toBe(first.headers['Idempotency-Key'])
     expect(second.headers['X-Correlation-Id']).toBe(first.headers['X-Correlation-Id'])
+  })
+
+  it('acquires and finalizes the barrier from authoritative command results', async () => {
+    vi.mocked(glEnterSoftCloseGate).mockResolvedValue({ data: enteredResult, error: undefined } as never)
+    vi.mocked(glAcquirePostingBarrier).mockResolvedValue({ data: acquiredResult, error: undefined } as never)
+    vi.mocked(glFinalizePostingGate).mockResolvedValue({ data: finalizedResult, error: undefined } as never)
+    renderWithScope(<GlPostingGateWorkspace />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enter soft-close gate' }))
+    await waitFor(() => expect(glEnterSoftCloseGate).toHaveBeenCalledTimes(1))
+    fireEvent.click(screen.getByRole('button', { name: 'Acquire posting barrier' }))
+    await waitFor(() => expect(glAcquirePostingBarrier).toHaveBeenCalledTimes(1))
+    const acquire = vi.mocked(glAcquirePostingBarrier).mock.calls[0][0]
+    expect(acquire.body.expectedVersion).toBe(2)
+    expect(acquire.body.data.closeRunId).toBe('close-run-1')
+    expect(acquire.body.data.closeType).toBe('InitialHardClose')
+    expect(screen.getByRole('status', { name: 'CloseOnly' })).toBeInTheDocument()
+    const finalWatermark = screen.getByDisplayValue('0')
+    expect(finalWatermark).not.toBeDisabled()
+    fireEvent.change(finalWatermark, { target: { value: '12' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Finalize posting gate' }))
+    await waitFor(() => expect(glFinalizePostingGate).toHaveBeenCalledTimes(1))
+    const finalize = vi.mocked(glFinalizePostingGate).mock.calls[0][0]
+    expect(finalize.body.expectedVersion).toBe(4)
+    expect(finalize.body.data.finalLedgerWatermark).toBe(12)
+    expect(screen.getByRole('status', { name: 'HardClosed' })).toBeInTheDocument()
+    expect(screen.getAllByText(/final watermark/).length).toBeGreaterThan(0)
   })
 })

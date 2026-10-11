@@ -153,6 +153,9 @@ func (repository *PostgresPostingRepository) CommitJournalReversal(ctx context.C
 	if err := validatePostingGateEvidence(commit.Request, gate.Evidence); err != nil {
 		return JournalReversalResult{}, err
 	}
+	if err := validatePostingGateAdmissionOwner(commit.Request, gate); err != nil {
+		return JournalReversalResult{}, err
+	}
 	if _, _, found, err := repository.findExistingReversalForOriginal(ctx, tx, commit.Command); err != nil {
 		return JournalReversalResult{}, err
 	} else if found {
@@ -172,8 +175,8 @@ func (repository *PostgresPostingRepository) CommitJournalReversal(ctx context.C
 	now := commit.Now.UTC()
 	reversalID = uuid.New()
 	journalNumber := fmt.Sprintf("JE-%08d", gate.LedgerPosition)
-	if _, err := tx.Exec(ctx, `UPDATE gl.period_posting_gate SET next_ledger_position = next_ledger_position + 1, updated_at = $3 WHERE accounting_scope_id = $1 AND fiscal_period_id = $2`, commit.Request.AccountingScopeID, commit.Request.FiscalPeriodID, now); err != nil {
-		return JournalReversalResult{}, mapPostingPostgresError(err)
+	if err := repository.advancePostingGateAdmission(ctx, tx, commit.Request, gate, gate.LedgerPosition, now); err != nil {
+		return JournalReversalResult{}, err
 	}
 	attemptID := uuid.New()
 	auditReference, err := repository.auditWriter(ctx, tx, journalReversalAuditRecord(commit, attemptID, reversalID, PostingOutcomeJournalEntryReversed, nil))

@@ -159,6 +159,9 @@ func (repository *PostgresPostingRepository) CommitPostingApprovalDecision(ctx c
 	if err := validatePostingApprovalGateEvidence(subject.Request, gate.Evidence, commit.Decision.Decision.Outcome); err != nil {
 		return PostingApprovalDecisionResult{}, err
 	}
+	if err := validatePostingGateAdmissionOwner(subject.Request, gate); err != nil {
+		return PostingApprovalDecisionResult{}, err
+	}
 	commit.GateEvidence = gate.Evidence
 	approval := *subject.Journal.Approval
 	decisionReference := commit.Decision.Decision.Reference
@@ -187,8 +190,8 @@ func (repository *PostgresPostingRepository) CommitPostingApprovalDecision(ctx c
 		position := gate.LedgerPosition
 		ledgerPosition = position
 		journalNumber = fmt.Sprintf("JE-%08d", position)
-		if _, err := tx.Exec(ctx, `UPDATE gl.period_posting_gate SET next_ledger_position = next_ledger_position + 1, updated_at = $3 WHERE accounting_scope_id = $1 AND fiscal_period_id = $2`, subject.Request.AccountingScopeID, subject.Request.FiscalPeriodID, commit.Now.UTC()); err != nil {
-			return PostingApprovalDecisionResult{}, mapPostingPostgresError(err)
+		if err := repository.advancePostingGateAdmission(ctx, tx, subject.Request, gate, position, commit.Now.UTC()); err != nil {
+			return PostingApprovalDecisionResult{}, err
 		}
 	}
 
