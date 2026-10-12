@@ -196,6 +196,9 @@ schemas:
     type: object
     additionalProperties: false
     properties:
+      actorIds:
+        type: array
+        items: { $ref: '#/schemas/Uuid' }
       accountIds:
         type: array
         items: { $ref: '#/schemas/Uuid' }

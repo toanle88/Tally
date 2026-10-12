@@ -315,7 +315,7 @@ func (service *PostingApprovalDecisionService) Execute(ctx context.Context, acto
 	if err != nil {
 		return PostingApprovalDecisionResult{}, err
 	}
-	if err := validatePostingApprovalGateEvidence(request, gateEvidence, command.Decision.Outcome); err != nil {
+	if err := validatePostingApprovalGateEvidenceForActor(request, gateEvidence, command.Decision.Outcome, actor); err != nil {
 		return PostingApprovalDecisionResult{}, err
 	}
 	if command.Decision.Outcome == PostingApprovalOutcomeApproved {
@@ -331,10 +331,18 @@ func (service *PostingApprovalDecisionService) Execute(ctx context.Context, acto
 }
 
 func validatePostingApprovalGateEvidence(request PostingRequest, evidence PostingGateEvidence, outcome string) error {
-	return validatePostingApprovalGateEvidenceAt(request, evidence, outcome, time.Now().UTC())
+	return validatePostingApprovalGateEvidenceForActorAt(request, evidence, outcome, Actor{}, time.Now().UTC())
 }
 
 func validatePostingApprovalGateEvidenceAt(request PostingRequest, evidence PostingGateEvidence, outcome string, now time.Time) error {
+	return validatePostingApprovalGateEvidenceForActorAt(request, evidence, outcome, Actor{}, now)
+}
+
+func validatePostingApprovalGateEvidenceForActor(request PostingRequest, evidence PostingGateEvidence, outcome string, actor Actor) error {
+	return validatePostingApprovalGateEvidenceForActorAt(request, evidence, outcome, actor, time.Now().UTC())
+}
+
+func validatePostingApprovalGateEvidenceForActorAt(request PostingRequest, evidence PostingGateEvidence, outcome string, actor Actor, now time.Time) error {
 	if evidence.FiscalPeriodID != request.FiscalPeriodID {
 		return fmt.Errorf("%w: fiscal period does not match", ErrPostingPeriodConflict)
 	}
@@ -345,7 +353,7 @@ func validatePostingApprovalGateEvidenceAt(request PostingRequest, evidence Post
 		return fmt.Errorf("%w: expected %d, current %d", ErrPostingGateConflict, request.PostingGateVersion, evidence.PostingGateVersion)
 	}
 	if outcome == PostingApprovalOutcomeApproved {
-		return validatePostingGateEvidenceAt(request, evidence, now)
+		return validatePostingGateEvidenceForActorAt(request, evidence, actor, now)
 	}
 	return nil
 }

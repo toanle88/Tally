@@ -780,26 +780,26 @@ that outage recovery cannot broaden posting authority or bypass a new close.
 
 Acceptance criteria:
 
-- [ ] `OpenOperationalReopenGate` changes `HardClosed` to
+- [x] `OpenOperationalReopenGate` changes `HardClosed` to
   `OperationalReopen`, recording permitted classes, actor scope, authority
   epoch, expiry, request owner, expected gate version, and zero counters.
-- [ ] Operational-reopen postings require the active request identifier,
+- [x] Operational-reopen postings require the active request identifier,
   authority epoch, permitted class/actor, `OperationalReopen` purpose, valid
   scope, and unexpired authorization at the GL admission boundary.
-- [ ] `CloseOperationalReopenGate` freezes and returns counters. A permitted
+- [x] `CloseOperationalReopenGate` freezes and returns counters. A permitted
   no-change result restores `HardClosed`; any admission changes the gate to
   `CloseOnly` and retains the owner and summary.
-- [ ] Expiry stops new operational-reopen admissions while retaining ownership
+- [x] Expiry stops new operational-reopen admissions while retaining ownership
   until an authoritative close result. Conflicting actor scope, epoch, expiry,
   process, or fingerprint is a typed conflict.
-- [ ] `BeginRecloseGate` requires a positive retained reopen summary, transfers
+- [x] `BeginRecloseGate` requires a positive retained reopen summary, transfers
   ownership from the reopen request to the reclose run, records the reclose
   barrier position, initializes reclose counters, and returns the prior frozen
   summary. The reclose barrier cannot be released.
-- [ ] Recovery after interruption uses the authoritative gate status and
+- [x] Recovery after interruption uses the authoritative gate status and
   command fingerprint; a later frozen summary cannot be mistaken for the
   earlier command result.
-- [ ] The UI distinguishes operational reopen authority from ordinary or
+- [x] The UI distinguishes operational reopen authority from ordinary or
   scoped reopen authority and shows the mandatory reclose path.
 
 Suggested implementation steps:
@@ -814,12 +814,23 @@ Suggested implementation steps:
 
 Required test evidence:
 
-- [ ] Domain tests for operational authority, epoch, class, actor, expiry,
+- [x] Domain tests for operational authority, epoch, class, actor, expiry,
   frozen counters, reclose ownership, and non-releasable barrier rules.
 - [ ] Integration/failure tests for FPM handoff, outbox/inbox replay,
   interruption before and after transfer, and exact summary matching.
 - [ ] API/UI/accessibility tests for least privilege, safe evidence display,
   blocking reasons, and recovery instructions.
+
+#### User Story 9 implementation evidence — 2026-10-12
+
+The implementation is on branch `feat/gl-us9-operational-reopen-reclose`.
+The GL-owned operational-reopen transitions, actor/class admission checks,
+expiry event, reclose ownership transfer, durable command mappings, generic
+API handlers, and focused API/domain/UI tests are present. PostgreSQL runtime,
+cross-context FPM handoff, outbox/inbox failure tests, browser, accessibility,
+and release qualification remain open. The exact acceptance traceability and
+verification commands are recorded in
+[`docs/verification/DLV-FR-GL-011-013-us9-operational-reopen-reclose.md`](../../verification/DLV-FR-GL-011-013-us9-operational-reopen-reclose.md).
 
 ### User Story 10 — Read authoritative posting-gate status
 

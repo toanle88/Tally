@@ -127,6 +127,12 @@ PostgreSQL runtime, cross-context, browser, accessibility, and release
 qualification. See
 [`docs/verification/DLV-FR-GL-009-010-us8-scoped-reopen-gate.md`](docs/verification/DLV-FR-GL-009-010-us8-scoped-reopen-gate.md).
 
+User Story 9 has local implementation and focused verification evidence on
+`feat/gl-us9-operational-reopen-reclose`; the delivery items remain open
+pending PostgreSQL runtime, cross-context FPM, outbox/failure, browser,
+accessibility, and release qualification. See
+[`docs/verification/DLV-FR-GL-011-013-us9-operational-reopen-reclose.md`](docs/verification/DLV-FR-GL-011-013-us9-operational-reopen-reclose.md).
+
 - [ ] `DLV-GFR-005` — GFR-005 — EP-GL-001
 - [ ] `DLV-GFR-011` — GFR-011 — EP-GL-001
 - [ ] `DLV-FR-GL-001` — FR-GL-001 — `SubmitPostingRequest`

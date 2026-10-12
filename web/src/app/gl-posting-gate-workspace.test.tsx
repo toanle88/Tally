@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { glAcquirePostingBarrier, glCloseScopedReopenGate, glEnterSoftCloseGate, glExitSoftCloseGate, glFinalizePostingGate, glOpenScopedReopenGate, glReleasePostingBarrier } from '@/generated/api/sdk.gen'
+import { glAcquirePostingBarrier, glBeginRecloseGate, glCloseOperationalReopenGate, glCloseScopedReopenGate, glEnterSoftCloseGate, glExitSoftCloseGate, glFinalizePostingGate, glOpenOperationalReopenGate, glOpenScopedReopenGate, glReleasePostingBarrier } from '@/generated/api/sdk.gen'
 import { ScopeProvider } from '@/lib/scope/scope-context'
 
 import { developmentScopes } from './app'
@@ -11,11 +11,14 @@ import { GlPostingGateWorkspace } from './gl-posting-gate-workspace'
 
 vi.mock('@/generated/api/sdk.gen', () => ({
   glAcquirePostingBarrier: vi.fn(),
+  glBeginRecloseGate: vi.fn(),
+  glCloseOperationalReopenGate: vi.fn(),
   glCloseScopedReopenGate: vi.fn(),
   glEnterSoftCloseGate: vi.fn(),
   glExitSoftCloseGate: vi.fn(),
   glFinalizePostingGate: vi.fn(),
   glOpenScopedReopenGate: vi.fn(),
+  glOpenOperationalReopenGate: vi.fn(),
   glReleasePostingBarrier: vi.fn(),
 }))
 
@@ -129,6 +132,57 @@ const scopedReopenClosedResult = {
   },
 }
 
+const operationalReopenedResult = {
+  ...finalizedResult,
+  aggregateVersion: 6,
+  correlationId: 'correlation-operational-open',
+  links: { self: '/api/v1/general-ledger/actions/open-operational-reopen-gate' },
+  data: {
+    ...finalizedResult.data,
+    gateMode: 'OperationalReopen',
+    gateVersion: 6,
+    ownerType: 'ReopenRequest',
+    ownerId: 'reopen-request-1',
+    reopenRequestId: 'reopen-request-1',
+    authorizationScope: { actorIds: ['00000000-0000-0000-0000-000000000001'], transactionClasses: ['operational-recovery'] },
+    authorizationExpiry: '2026-12-31T23:59:00Z',
+    controlAuthorityEpoch: 3,
+    activeAdmissionCounters: { controlOwnerType: 'ReopenRequest', admittedPostingCount: 0 },
+    nextAction: 'Close the operational reopen gate when recovery is complete.',
+  },
+}
+
+const operationalReopenClosedResult = {
+  ...operationalReopenedResult,
+  aggregateVersion: 7,
+  correlationId: 'correlation-operational-close',
+  links: { self: '/api/v1/general-ledger/actions/close-operational-reopen-gate' },
+  data: {
+    ...operationalReopenedResult.data,
+    gateMode: 'CloseOnly',
+    gateVersion: 7,
+    lastFrozenAdmissionSummary: { controlOwnerType: 'ReopenRequest', admittedPostingCount: 1, reopenPostingAdmitted: true },
+    nextAction: 'Begin mandatory reclose.',
+  },
+}
+
+const recloseBegunResult = {
+  ...operationalReopenClosedResult,
+  aggregateVersion: 8,
+  correlationId: 'correlation-reclose-begin',
+  links: { self: '/api/v1/general-ledger/actions/begin-reclose-gate' },
+  data: {
+    ...operationalReopenClosedResult.data,
+    gateMode: 'CloseOnly',
+    gateVersion: 8,
+    ownerType: 'CloseRun',
+    ownerId: 'reclose-run-1',
+    closeType: 'Reclose',
+    activeAdmissionCounters: { controlOwnerType: 'CloseRun', admittedPostingCount: 0 },
+    nextAction: 'Finalize the reclose gate.',
+  },
+}
+
 describe('GL posting-gate monitor', () => {
   beforeEach(() => {
     vi.mocked(glEnterSoftCloseGate).mockReset()
@@ -137,7 +191,10 @@ describe('GL posting-gate monitor', () => {
     vi.mocked(glFinalizePostingGate).mockReset()
     vi.mocked(glReleasePostingBarrier).mockReset()
     vi.mocked(glOpenScopedReopenGate).mockReset()
+    vi.mocked(glOpenOperationalReopenGate).mockReset()
     vi.mocked(glCloseScopedReopenGate).mockReset()
+    vi.mocked(glCloseOperationalReopenGate).mockReset()
+    vi.mocked(glBeginRecloseGate).mockReset()
   })
 
   it('renders only the latest action result and uses its version for exit', async () => {
@@ -236,5 +293,41 @@ describe('GL posting-gate monitor', () => {
     expect(closeRequest.body.expectedVersion).toBe(6)
     expect(closeRequest.body.data.reopenRequestId).toBe('reopen-request-1')
     expect(screen.getByText('Corrections were admitted. Mandatory reclose handoff is required before finalization.', { selector: 'p' })).toBeInTheDocument()
+  })
+
+  it('opens operational reopen, closes it, and begins an exclusive reclose run', async () => {
+    vi.mocked(glEnterSoftCloseGate).mockResolvedValue({ data: enteredResult, error: undefined } as never)
+    vi.mocked(glAcquirePostingBarrier).mockResolvedValue({ data: acquiredResult, error: undefined } as never)
+    vi.mocked(glFinalizePostingGate).mockResolvedValue({ data: finalizedResult, error: undefined } as never)
+    vi.mocked(glOpenOperationalReopenGate).mockResolvedValue({ data: operationalReopenedResult, error: undefined } as never)
+    vi.mocked(glCloseOperationalReopenGate).mockResolvedValue({ data: operationalReopenClosedResult, error: undefined } as never)
+    vi.mocked(glBeginRecloseGate).mockResolvedValue({ data: recloseBegunResult, error: undefined } as never)
+    renderWithScope(<GlPostingGateWorkspace />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enter soft-close gate' }))
+    await waitFor(() => expect(glEnterSoftCloseGate).toHaveBeenCalledTimes(1))
+    fireEvent.click(screen.getByRole('button', { name: 'Acquire posting barrier' }))
+    await waitFor(() => expect(glAcquirePostingBarrier).toHaveBeenCalledTimes(1))
+    fireEvent.change(screen.getByDisplayValue('0'), { target: { value: '12' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Finalize posting gate' }))
+    await waitFor(() => expect(glFinalizePostingGate).toHaveBeenCalledTimes(1))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open operational reopen gate' }))
+    await waitFor(() => expect(glOpenOperationalReopenGate).toHaveBeenCalledTimes(1))
+    const openRequest = vi.mocked(glOpenOperationalReopenGate).mock.calls[0][0]
+    expect(openRequest.body.data.authorizationScope).toEqual({ actorIds: ['00000000-0000-0000-0000-000000000001'], transactionClasses: ['operational-recovery'] })
+    expect(screen.getByRole('status', { name: 'OperationalReopen' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close operational reopen gate' }))
+    await waitFor(() => expect(glCloseOperationalReopenGate).toHaveBeenCalledTimes(1))
+    expect(screen.getByText('Corrections were admitted. Mandatory reclose handoff is required before finalization.', { selector: 'p' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Begin mandatory reclose' }))
+    await waitFor(() => expect(glBeginRecloseGate).toHaveBeenCalledTimes(1))
+    const beginRequest = vi.mocked(glBeginRecloseGate).mock.calls[0][0]
+    expect(beginRequest.body.data.recloseRunId).toBe('reclose-run-1')
+    expect(screen.getByRole('status', { name: 'CloseOnly' })).toBeInTheDocument()
+    expect(screen.getByText('Reclose owns the barrier. Release is unavailable until the reclose run finalizes.', { selector: 'p' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Release posting barrier' })).not.toBeInTheDocument()
   })
 })

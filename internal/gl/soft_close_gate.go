@@ -69,6 +69,7 @@ var (
 	ErrSoftCloseGateIdempotencyConflict      = errors.New("soft-close gate idempotency conflict")
 	ErrSoftCloseGateCommandInProgress        = errors.New("soft-close gate command is already in progress")
 	ErrSoftCloseGateDurableCommandFailed     = errors.New("durable soft-close gate command failed")
+	ErrSoftCloseGateRecloseSummaryConflict   = errors.New("reclose handoff summary conflict")
 	ErrPostingBarrierNotReleasable           = errors.New("posting barrier is not releasable")
 	ErrPostingBarrierAdmissionConflict       = errors.New("posting barrier has admitted close postings")
 	ErrPostingBarrierWatermarkConflict       = errors.New("posting gate watermark conflict")
@@ -342,6 +343,12 @@ func (authorizer MemorySoftCloseGateAuthorizer) AuthorizeSoftCloseGate(_ context
 			decision.Permission = ScopedReopenGateOpenPermission
 		case ScopedReopenGateCloseOperation:
 			decision.Permission = ScopedReopenGateClosePermission
+		case OperationalReopenGateOpenOperation:
+			decision.Permission = OperationalReopenGateOpenPermission
+		case OperationalReopenGateCloseOperation:
+			decision.Permission = OperationalReopenGateClosePermission
+		case BeginRecloseGateOperation:
+			decision.Permission = BeginRecloseGatePermission
 		case PostingBarrierAcquireOperation:
 			decision.Permission = PostingBarrierAcquirePermission
 		case PostingBarrierReleaseOperation:
@@ -380,15 +387,16 @@ type SoftCloseGateAuditRecorder interface {
 }
 
 type SoftCloseGateMutation struct {
-	Before             PeriodPostingGate
-	After              PeriodPostingGate
-	Operation          string
-	CommandID          uuid.UUID
-	CommandFingerprint string
-	Actor              Actor
-	Authorization      AuthorizationDecision
-	Audit              SoftCloseGateAuditRecord
-	Now                time.Time
+	Before               PeriodPostingGate
+	After                PeriodPostingGate
+	Operation            string
+	AdditionalEventTypes []string
+	CommandID            uuid.UUID
+	CommandFingerprint   string
+	Actor                Actor
+	Authorization        AuthorizationDecision
+	Audit                SoftCloseGateAuditRecord
+	Now                  time.Time
 }
 
 type SoftCloseGateRepository interface {
@@ -410,16 +418,19 @@ type DurableSoftCloseGateRepository interface {
 }
 
 type DurableSoftCloseGateServiceConfig struct {
-	Database                     platformidempotency.TxBeginner
-	Coordinator                  platformidempotency.DurableCoordinator
-	Policy                       platformidempotency.IdempotencyPolicy
-	EnterOperationID             string
-	ExitOperationID              string
-	AcquireOperationID           string
-	ReleaseOperationID           string
-	FinalizeOperationID          string
-	OpenScopedReopenOperationID  string
-	CloseScopedReopenOperationID string
+	Database                          platformidempotency.TxBeginner
+	Coordinator                       platformidempotency.DurableCoordinator
+	Policy                            platformidempotency.IdempotencyPolicy
+	EnterOperationID                  string
+	ExitOperationID                   string
+	AcquireOperationID                string
+	ReleaseOperationID                string
+	FinalizeOperationID               string
+	OpenScopedReopenOperationID       string
+	CloseScopedReopenOperationID      string
+	OpenOperationalReopenOperationID  string
+	CloseOperationalReopenOperationID string
+	BeginRecloseOperationID           string
 }
 
 type SoftCloseGateResult struct {
@@ -599,6 +610,10 @@ func (service *SoftCloseGateService) execute(ctx context.Context, actor Actor, o
 		return SoftCloseGateResult{}, err
 	}
 	now := service.clock().UTC()
+	var additionalEventTypes []string
+	if operation == OperationalReopenGateCloseOperation && before.GateMode == PostingGateOperationalReopen && before.ReopenAuthorizationExpiry != nil && !now.Before(before.ReopenAuthorizationExpiry.UTC()) {
+		additionalEventTypes = []string{OperationalReopenGateExpiredEventType}
+	}
 	approval := after.ReopenApproval
 	if approval == nil {
 		approval = before.ReopenApproval
@@ -609,7 +624,7 @@ func (service *SoftCloseGateService) execute(ctx context.Context, actor Actor, o
 		audit.ApprovalDecisionID = approval.DecisionID
 		audit.ApproverUserID = approval.ApproverUserID
 	}
-	mutation := SoftCloseGateMutation{Before: before, After: after, Operation: operation, CommandID: commandID, CommandFingerprint: fingerprint, Actor: actor, Authorization: authorization, Audit: audit, Now: now}
+	mutation := SoftCloseGateMutation{Before: before, After: after, Operation: operation, AdditionalEventTypes: additionalEventTypes, CommandID: commandID, CommandFingerprint: fingerprint, Actor: actor, Authorization: authorization, Audit: audit, Now: now}
 
 	var result SoftCloseGateResult
 	if service.durable != nil {
@@ -654,6 +669,18 @@ func (service *SoftCloseGateService) durableOperationID(operation, fallback stri
 		if strings.TrimSpace(service.durable.CloseScopedReopenOperationID) != "" {
 			return service.durable.CloseScopedReopenOperationID
 		}
+	case OperationalReopenGateOpenOperation:
+		if strings.TrimSpace(service.durable.OpenOperationalReopenOperationID) != "" {
+			return service.durable.OpenOperationalReopenOperationID
+		}
+	case OperationalReopenGateCloseOperation:
+		if strings.TrimSpace(service.durable.CloseOperationalReopenOperationID) != "" {
+			return service.durable.CloseOperationalReopenOperationID
+		}
+	case BeginRecloseGateOperation:
+		if strings.TrimSpace(service.durable.BeginRecloseOperationID) != "" {
+			return service.durable.BeginRecloseOperationID
+		}
 	case PostingBarrierAcquireOperation:
 		if strings.TrimSpace(service.durable.AcquireOperationID) != "" {
 			return service.durable.AcquireOperationID
@@ -681,6 +708,12 @@ func authorizeSoftCloseGateDecision(decision AuthorizationDecision, operation st
 		expectedPermission = ScopedReopenGateOpenPermission
 	case ScopedReopenGateCloseOperation:
 		expectedPermission = ScopedReopenGateClosePermission
+	case OperationalReopenGateOpenOperation:
+		expectedPermission = OperationalReopenGateOpenPermission
+	case OperationalReopenGateCloseOperation:
+		expectedPermission = OperationalReopenGateClosePermission
+	case BeginRecloseGateOperation:
+		expectedPermission = BeginRecloseGatePermission
 	case PostingBarrierAcquireOperation:
 		expectedPermission = PostingBarrierAcquirePermission
 	case PostingBarrierReleaseOperation:
@@ -1040,8 +1073,10 @@ func (repository *MemorySoftCloseGateRepository) CommitSoftCloseGateMutation(ctx
 		return SoftCloseGateResult{}, ErrSoftCloseGateAuditUnavailable
 	}
 	repository.gates[key] = clonePeriodPostingGate(mutation.After)
-	eventType := softCloseGateEventType(mutation.Operation)
-	repository.events = append(repository.events, SoftCloseGateEvent{EventType: eventType, Version: 1, Gate: clonePeriodPostingGate(mutation.After), AuditReference: auditReference, CommandFingerprint: mutation.CommandFingerprint, CorrelationID: mutation.Audit.CorrelationID, CausationID: mutation.Audit.CausationID})
+	eventTypes := append(append([]string(nil), mutation.AdditionalEventTypes...), softCloseGateEventType(mutation.Operation))
+	for _, eventType := range eventTypes {
+		repository.events = append(repository.events, SoftCloseGateEvent{EventType: eventType, Version: 1, Gate: clonePeriodPostingGate(mutation.After), AuditReference: auditReference, CommandFingerprint: mutation.CommandFingerprint, CorrelationID: mutation.Audit.CorrelationID, CausationID: mutation.Audit.CausationID})
+	}
 	return SoftCloseGateResult{Operation: mutation.Operation, Gate: clonePeriodPostingGate(mutation.After), DecisionReference: mutation.Authorization.DecisionReference, PolicyReference: mutation.Authorization.PolicyReference, AuthorizationPolicyVersion: mutation.Authorization.PolicyVersion, ValidationOutcome: "valid", AuditReference: auditReference, NextAction: softCloseGateNextAction(mutation.Operation)}, nil
 }
 
@@ -1082,6 +1117,12 @@ func softCloseGateNextAction(operation string) string {
 		return "The scoped reopen gate is active. Admit only authorized ReopenCorrection postings within the recorded scope and expiry."
 	case ScopedReopenGateCloseOperation:
 		return "The scoped reopen gate is closed. Review the frozen correction summary; hard-close or mandatory reclose follows the authoritative result."
+	case OperationalReopenGateOpenOperation:
+		return "The operational reopen gate is active. Admit only the approved actor and transaction-class combination before closing into the mandatory reclose decision."
+	case OperationalReopenGateCloseOperation:
+		return "The operational reopen gate is closed. Review the frozen operational summary; hard-close or mandatory reclose follows the authoritative result."
+	case BeginRecloseGateOperation:
+		return "The reclose barrier is active. The reclose owner must complete close-only work and finalize; release is unavailable."
 	case PostingBarrierAcquireOperation:
 		return "The posting barrier is acquired. Complete close-only work and finalize or release only under the authoritative barrier rules."
 	case PostingBarrierReleaseOperation:
@@ -1102,6 +1143,12 @@ func softCloseGateEventType(operation string) string {
 		return ScopedReopenGateOpenedEventType
 	case ScopedReopenGateCloseOperation:
 		return ScopedReopenGateClosedEventType
+	case OperationalReopenGateOpenOperation:
+		return OperationalReopenGateOpenedEventType
+	case OperationalReopenGateCloseOperation:
+		return OperationalReopenGateClosedEventType
+	case BeginRecloseGateOperation:
+		return RecloseGateBegunEventType
 	case PostingBarrierAcquireOperation:
 		return PostingBarrierAcquiredEventType
 	case PostingBarrierReleaseOperation:
@@ -1153,7 +1200,7 @@ func softCloseGateFailureCode(err error) string {
 		return "AUTHORIZATION_DENIED"
 	case errors.Is(err, ErrSoftCloseGateAuthorizationUnavailable), errors.Is(err, ErrSoftCloseGateAuthorizationStale), errors.Is(err, ErrSoftCloseGatePolicyUnavailable), errors.Is(err, ErrSoftCloseGateAuditUnavailable), errors.Is(err, ErrSoftCloseGateOutboxUnavailable), errors.Is(err, ErrSoftCloseGateReferenceUnavailable):
 		return "SERVICE_UNAVAILABLE"
-	case errors.Is(err, ErrSoftCloseGateVersionConflict), errors.Is(err, ErrSoftCloseGateScopeConflict), errors.Is(err, ErrSoftCloseGateOwnerConflict), errors.Is(err, ErrSoftCloseGateEpochConflict), errors.Is(err, ErrSoftCloseGateModeConflict), errors.Is(err, ErrSoftCloseGatePolicyConflict), errors.Is(err, ErrSoftCloseGateAuthorizationExpired), errors.Is(err, ErrSoftCloseGateIdempotencyConflict):
+	case errors.Is(err, ErrSoftCloseGateVersionConflict), errors.Is(err, ErrSoftCloseGateScopeConflict), errors.Is(err, ErrSoftCloseGateOwnerConflict), errors.Is(err, ErrSoftCloseGateEpochConflict), errors.Is(err, ErrSoftCloseGateModeConflict), errors.Is(err, ErrSoftCloseGatePolicyConflict), errors.Is(err, ErrSoftCloseGateAuthorizationExpired), errors.Is(err, ErrSoftCloseGateRecloseSummaryConflict), errors.Is(err, ErrSoftCloseGateIdempotencyConflict):
 		return "VERSION_CONFLICT"
 	case errors.Is(err, ErrPostingBarrierNotReleasable), errors.Is(err, ErrPostingBarrierAdmissionConflict), errors.Is(err, ErrPostingBarrierWatermarkConflict), errors.Is(err, ErrPostingBarrierFinalized):
 		return "VERSION_CONFLICT"

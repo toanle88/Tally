@@ -21,29 +21,32 @@ import (
 )
 
 const (
-	identityOperationID                 = "identity.manage-users.v1"
-	roleOperationID                     = "identity.manage-roles.v1"
-	segregationOperationID              = "identity.manage-segregation-rules.v1"
-	emergencyAccessOperationID          = "identity.emergency-access.v1"
-	organizationOperationID             = "organization.maintain-legal-entities.v1"
-	partyOperationID                    = "organization.maintain-parties.v1"
-	customerProfileOperationID          = "organization.maintain-customer-profiles.v1"
-	vendorProfileOperationID            = "organization.maintain-vendor-profiles.v1"
-	fiscalCalendarOperationID           = "organization.maintain-fiscal-calendars.v1"
-	publicationOperationID              = "organization.publish-approved-master-data-changes.v1"
-	coaSegmentDefinitionOperationID     = "coa.maintain-segment-definitions.v1"
-	coaSegmentValueOperationID          = "coa.maintain-segment-values.v1"
-	coaSegmentChangeRequestOperationID  = "coa.request-segment-changes.v1"
-	coaSegmentChangeApprovalOperationID = "coa.apply-segment-change-approval-decision.v1"
-	coaSegmentValidationOperationID     = "coa.validate-segment-combinations.v1"
-	glLedgerOperationID                 = "gl.maintain-ledgers.v1"
-	glAccountingBookOperationID         = "gl.maintain-accounting-books.v1"
-	glChartOfAccountsOperationID        = "gl.maintain-charts-of-accounts.v1"
-	glAccountOperationID                = "gl.maintain-accounts-and-reporting-mappings.v1"
-	glSoftCloseGateEnterOperationID     = gl.SoftCloseGateEnterCommandIdentity
-	glSoftCloseGateExitOperationID      = gl.SoftCloseGateExitCommandIdentity
-	glScopedReopenGateOpenOperationID   = gl.ScopedReopenGateOpenCommandIdentity
-	glScopedReopenGateCloseOperationID  = gl.ScopedReopenGateCloseCommandIdentity
+	identityOperationID                     = "identity.manage-users.v1"
+	roleOperationID                         = "identity.manage-roles.v1"
+	segregationOperationID                  = "identity.manage-segregation-rules.v1"
+	emergencyAccessOperationID              = "identity.emergency-access.v1"
+	organizationOperationID                 = "organization.maintain-legal-entities.v1"
+	partyOperationID                        = "organization.maintain-parties.v1"
+	customerProfileOperationID              = "organization.maintain-customer-profiles.v1"
+	vendorProfileOperationID                = "organization.maintain-vendor-profiles.v1"
+	fiscalCalendarOperationID               = "organization.maintain-fiscal-calendars.v1"
+	publicationOperationID                  = "organization.publish-approved-master-data-changes.v1"
+	coaSegmentDefinitionOperationID         = "coa.maintain-segment-definitions.v1"
+	coaSegmentValueOperationID              = "coa.maintain-segment-values.v1"
+	coaSegmentChangeRequestOperationID      = "coa.request-segment-changes.v1"
+	coaSegmentChangeApprovalOperationID     = "coa.apply-segment-change-approval-decision.v1"
+	coaSegmentValidationOperationID         = "coa.validate-segment-combinations.v1"
+	glLedgerOperationID                     = "gl.maintain-ledgers.v1"
+	glAccountingBookOperationID             = "gl.maintain-accounting-books.v1"
+	glChartOfAccountsOperationID            = "gl.maintain-charts-of-accounts.v1"
+	glAccountOperationID                    = "gl.maintain-accounts-and-reporting-mappings.v1"
+	glSoftCloseGateEnterOperationID         = gl.SoftCloseGateEnterCommandIdentity
+	glSoftCloseGateExitOperationID          = gl.SoftCloseGateExitCommandIdentity
+	glScopedReopenGateOpenOperationID       = gl.ScopedReopenGateOpenCommandIdentity
+	glScopedReopenGateCloseOperationID      = gl.ScopedReopenGateCloseCommandIdentity
+	glOperationalReopenGateOpenOperationID  = gl.OperationalReopenGateOpenCommandIdentity
+	glOperationalReopenGateCloseOperationID = gl.OperationalReopenGateCloseCommandIdentity
+	glBeginRecloseGateOperationID           = gl.BeginRecloseGateCommandIdentity
 )
 
 func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
@@ -371,16 +374,19 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 		gl.UnavailableSoftClosePolicyEvaluator{},
 		time.Now,
 		gl.DurableSoftCloseGateServiceConfig{
-			Database:                     pool,
-			Coordinator:                  platformidempotency.NewPostgresCoordinator(),
-			Policy:                       platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute},
-			EnterOperationID:             glSoftCloseGateEnterOperationID,
-			ExitOperationID:              glSoftCloseGateExitOperationID,
-			OpenScopedReopenOperationID:  glScopedReopenGateOpenOperationID,
-			CloseScopedReopenOperationID: glScopedReopenGateCloseOperationID,
-			AcquireOperationID:           gl.PostingBarrierAcquireCommandIdentity,
-			ReleaseOperationID:           gl.PostingBarrierReleaseCommandIdentity,
-			FinalizeOperationID:          gl.PostingBarrierFinalizeCommandIdentity,
+			Database:                          pool,
+			Coordinator:                       platformidempotency.NewPostgresCoordinator(),
+			Policy:                            platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute},
+			EnterOperationID:                  glSoftCloseGateEnterOperationID,
+			ExitOperationID:                   glSoftCloseGateExitOperationID,
+			OpenScopedReopenOperationID:       glScopedReopenGateOpenOperationID,
+			CloseScopedReopenOperationID:      glScopedReopenGateCloseOperationID,
+			OpenOperationalReopenOperationID:  glOperationalReopenGateOpenOperationID,
+			CloseOperationalReopenOperationID: glOperationalReopenGateCloseOperationID,
+			BeginRecloseOperationID:           glBeginRecloseGateOperationID,
+			AcquireOperationID:                gl.PostingBarrierAcquireCommandIdentity,
+			ReleaseOperationID:                gl.PostingBarrierReleaseCommandIdentity,
+			FinalizeOperationID:               gl.PostingBarrierFinalizeCommandIdentity,
 		},
 	)
 	if err != nil {
@@ -1023,6 +1029,12 @@ func (authorizer evaluatorGLSoftCloseGateAuthorizer) AuthorizeSoftCloseGate(ctx 
 		permission = gl.ScopedReopenGateOpenPermission
 	case gl.ScopedReopenGateCloseOperation:
 		permission = gl.ScopedReopenGateClosePermission
+	case gl.OperationalReopenGateOpenOperation:
+		permission = gl.OperationalReopenGateOpenPermission
+	case gl.OperationalReopenGateCloseOperation:
+		permission = gl.OperationalReopenGateClosePermission
+	case gl.BeginRecloseGateOperation:
+		permission = gl.BeginRecloseGatePermission
 	case gl.PostingBarrierAcquireOperation:
 		permission = gl.PostingBarrierAcquirePermission
 	case gl.PostingBarrierReleaseOperation:

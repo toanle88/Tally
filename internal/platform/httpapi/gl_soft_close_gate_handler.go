@@ -211,7 +211,7 @@ func ordinaryPostingAdmission(gate gl.PeriodPostingGate) map[string]string {
 	}
 	if gate.GateMode == gl.PostingGateCloseOnly {
 		if gate.ActiveReopenRequestID != nil {
-			return map[string]string{"status": "blocked", "blockedAction": "ordinary-posting", "reason": "The scoped reopen correction window is closed; mandatory reclose is required."}
+			return map[string]string{"status": "blocked", "blockedAction": "ordinary-posting", "reason": "The reopen window is closed; mandatory reclose is required."}
 		}
 		return map[string]string{"status": "blocked", "blockedAction": "ordinary-posting", "reason": "The posting barrier admits only authorized close postings."}
 	}
@@ -221,14 +221,36 @@ func ordinaryPostingAdmission(gate gl.PeriodPostingGate) map[string]string {
 	return map[string]string{"status": "allowed", "reason": "The posting gate is open."}
 }
 
-func reopenPostingAdmission(gate gl.PeriodPostingGate) map[string]string {
-	if gate.GateMode != gl.PostingGateScopedReopen || gate.ActiveReopenRequestID == nil {
-		return map[string]string{"status": "blocked", "postingPurpose": gl.PostingPurposeReopenCorrection, "reason": "An active scoped reopen gate is required for correction postings."}
+func reopenPostingAdmission(gate gl.PeriodPostingGate) map[string]any {
+	switch gate.GateMode {
+	case gl.PostingGateScopedReopen:
+		if gate.ActiveReopenRequestID == nil {
+			return map[string]any{"status": "blocked", "postingPurpose": gl.PostingPurposeReopenCorrection, "reason": "An active scoped reopen gate is required for correction postings."}
+		}
+		if gate.ReopenAuthorizationExpiry == nil || !time.Now().UTC().Before(gate.ReopenAuthorizationExpiry.UTC()) {
+			return map[string]any{"status": "expired", "postingPurpose": gl.PostingPurposeReopenCorrection, "requestId": gate.ActiveReopenRequestID.String(), "authorizationScope": gate.ReopenAuthorizationScope, "reason": "The scoped reopen authorization has expired; close the gate before reclose handoff."}
+		}
+		return map[string]any{"status": "allowed", "postingPurpose": gl.PostingPurposeReopenCorrection, "requestId": gate.ActiveReopenRequestID.String(), "authorizationScope": gate.ReopenAuthorizationScope, "reason": "Only corrections matching the approved account or transaction-class scope are admitted."}
+	case gl.PostingGateOperationalReopen:
+		if gate.ActiveReopenRequestID == nil {
+			return map[string]any{"status": "blocked", "postingPurpose": gl.PostingPurposeOperationalReopen, "reason": "An active operational reopen gate is required for recovery postings."}
+		}
+		if gate.ReopenAuthorizationExpiry == nil || !time.Now().UTC().Before(gate.ReopenAuthorizationExpiry.UTC()) {
+			return map[string]any{"status": "expired", "postingPurpose": gl.PostingPurposeOperationalReopen, "requestId": gate.ActiveReopenRequestID.String(), "authorizationScope": gate.ReopenAuthorizationScope, "controlAuthorityEpoch": gate.ReopenControlAuthorityEpoch, "reason": "The operational reopen authorization has expired; close the gate before reclose handoff."}
+		}
+		return map[string]any{"status": "allowed", "postingPurpose": gl.PostingPurposeOperationalReopen, "requestId": gate.ActiveReopenRequestID.String(), "authorizationScope": gate.ReopenAuthorizationScope, "controlAuthorityEpoch": gate.ReopenControlAuthorityEpoch, "reason": "Only the approved actor and transaction-class combination is admitted."}
+	default:
+		if gate.ActiveReopenRequestID != nil {
+			purpose := gl.PostingPurposeReopenCorrection
+			reason := "The reopen gate is closed; mandatory reclose is required before further reopen postings."
+			if gate.LastFrozenAdmissionSummary != nil && gate.LastFrozenAdmissionSummary.FrozenByCommandType == gl.OperationalReopenGateCloseCommandIdentity {
+				purpose = gl.PostingPurposeOperationalReopen
+				reason = "The operational reopen gate is closed; mandatory reclose is required before further recovery postings."
+			}
+			return map[string]any{"status": "blocked", "postingPurpose": purpose, "requestId": gate.ActiveReopenRequestID.String(), "authorizationScope": gate.ReopenAuthorizationScope, "controlAuthorityEpoch": gate.ReopenControlAuthorityEpoch, "reason": reason}
+		}
+		return map[string]any{"status": "blocked", "reason": "An active scoped or operational reopen gate is required for correction or recovery postings."}
 	}
-	if gate.ReopenAuthorizationExpiry == nil || !time.Now().UTC().Before(gate.ReopenAuthorizationExpiry.UTC()) {
-		return map[string]string{"status": "expired", "postingPurpose": gl.PostingPurposeReopenCorrection, "reason": "The scoped reopen authorization has expired; close the gate before reclose handoff."}
-	}
-	return map[string]string{"status": "allowed", "postingPurpose": gl.PostingPurposeReopenCorrection, "requestId": gate.ActiveReopenRequestID.String(), "reason": "Only corrections matching the approved account or transaction-class scope are admitted."}
 }
 
 func uuidPointerString(value *uuid.UUID) any {
@@ -266,7 +288,7 @@ func softCloseGateErrorOutcome(err error) (int, string, string) {
 		return http.StatusConflict, "IDEMPOTENCY_CONFLICT", "The idempotency key was already used for different soft-close gate data."
 	case errors.Is(err, gl.ErrSoftCloseGateCommandInProgress):
 		return http.StatusConflict, "COMMAND_IN_PROGRESS", "The soft-close gate command is still being finalized. Retry with the same idempotency key."
-	case errors.Is(err, gl.ErrSoftCloseGateVersionConflict), errors.Is(err, gl.ErrSoftCloseGateScopeConflict), errors.Is(err, gl.ErrSoftCloseGateOwnerConflict), errors.Is(err, gl.ErrSoftCloseGateEpochConflict), errors.Is(err, gl.ErrSoftCloseGateModeConflict), errors.Is(err, gl.ErrSoftCloseGatePolicyConflict), errors.Is(err, gl.ErrSoftCloseGateAuthorizationExpired):
+	case errors.Is(err, gl.ErrSoftCloseGateVersionConflict), errors.Is(err, gl.ErrSoftCloseGateScopeConflict), errors.Is(err, gl.ErrSoftCloseGateOwnerConflict), errors.Is(err, gl.ErrSoftCloseGateEpochConflict), errors.Is(err, gl.ErrSoftCloseGateModeConflict), errors.Is(err, gl.ErrSoftCloseGatePolicyConflict), errors.Is(err, gl.ErrSoftCloseGateAuthorizationExpired), errors.Is(err, gl.ErrSoftCloseGateRecloseSummaryConflict):
 		return http.StatusConflict, "VERSION_CONFLICT", "The posting gate changed or the supplied owner and control epoch do not match. Refresh and retry safely."
 	case errors.Is(err, gl.ErrPostingBarrierNotReleasable), errors.Is(err, gl.ErrPostingBarrierAdmissionConflict), errors.Is(err, gl.ErrPostingBarrierWatermarkConflict), errors.Is(err, gl.ErrPostingBarrierFinalized):
 		return http.StatusConflict, "BARRIER_CONFLICT", "The posting barrier changed or the requested recovery action is not allowed. Use the authoritative gate result before retrying."

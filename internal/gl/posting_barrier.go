@@ -22,6 +22,9 @@ type PostingGateApplicationPort interface {
 	FinalizePostingGate(context.Context, Actor, FinalizePostingGateCommand) (SoftCloseGateResult, error)
 	OpenScopedReopenGate(context.Context, Actor, OpenScopedReopenGateCommand) (SoftCloseGateResult, error)
 	CloseScopedReopenGate(context.Context, Actor, CloseScopedReopenGateCommand) (SoftCloseGateResult, error)
+	OpenOperationalReopenGate(context.Context, Actor, OpenOperationalReopenGateCommand) (SoftCloseGateResult, error)
+	CloseOperationalReopenGate(context.Context, Actor, CloseOperationalReopenGateCommand) (SoftCloseGateResult, error)
+	BeginRecloseGate(context.Context, Actor, BeginRecloseGateCommand) (SoftCloseGateResult, error)
 	GetPostingGateStatus(context.Context, uuid.UUID, uuid.UUID) (PostingGateStatus, error)
 }
 

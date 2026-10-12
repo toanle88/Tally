@@ -165,11 +165,15 @@ func generatedPostingGateEvidence(evidence gl.PostingGateEvidence) generated.GlP
 	}
 	if len(evidence.AuthorizationScope) > 0 {
 		var scope struct {
+			ActorIDs           []uuid.UUID `json:"actorIds"`
 			AccountIDs         []uuid.UUID `json:"accountIds"`
 			TransactionClasses []string    `json:"transactionClasses"`
 		}
 		if err := json.Unmarshal(evidence.AuthorizationScope, &scope); err == nil {
 			value := generated.GlPostingAuthorizationScope{}
+			for _, actorID := range scope.ActorIDs {
+				value.ActorIds = append(value.ActorIds, generated.UUID(actorID))
+			}
 			for _, accountID := range scope.AccountIDs {
 				value.AccountIds = append(value.AccountIds, generated.UUID(accountID))
 			}

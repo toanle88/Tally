@@ -5061,8 +5061,14 @@ func (*GlOpenScopedReopenGateUnprocessableEntity) glOpenScopedReopenGateRes() {}
 
 // Ref: #/components/schemas/GlPostingAuthorizationScope
 type GlPostingAuthorizationScope struct {
+	ActorIds           []UUID   `json:"actorIds"`
 	AccountIds         []UUID   `json:"accountIds"`
 	TransactionClasses []string `json:"transactionClasses"`
+}
+
+// GetActorIds returns the value of ActorIds.
+func (s *GlPostingAuthorizationScope) GetActorIds() []UUID {
+	return s.ActorIds
 }
 
 // GetAccountIds returns the value of AccountIds.
@@ -5073,6 +5079,11 @@ func (s *GlPostingAuthorizationScope) GetAccountIds() []UUID {
 // GetTransactionClasses returns the value of TransactionClasses.
 func (s *GlPostingAuthorizationScope) GetTransactionClasses() []string {
 	return s.TransactionClasses
+}
+
+// SetActorIds sets the value of ActorIds.
+func (s *GlPostingAuthorizationScope) SetActorIds(val []UUID) {
+	s.ActorIds = val
 }
 
 // SetAccountIds sets the value of AccountIds.

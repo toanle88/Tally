@@ -156,7 +156,7 @@ func (repository *PostgresPostingRepository) CommitPostingApprovalDecision(ctx c
 	if err := repository.validateReferences(ctx, tx, subject.Request); err != nil {
 		return PostingApprovalDecisionResult{}, err
 	}
-	if err := validatePostingApprovalGateEvidenceAt(subject.Request, gate.Evidence, commit.Decision.Decision.Outcome, commit.Now.UTC()); err != nil {
+	if err := validatePostingApprovalGateEvidenceForActorAt(subject.Request, gate.Evidence, commit.Decision.Decision.Outcome, commit.Actor, commit.Now.UTC()); err != nil {
 		return PostingApprovalDecisionResult{}, err
 	}
 	if err := validatePostingGateAdmissionOwner(subject.Request, gate); err != nil {

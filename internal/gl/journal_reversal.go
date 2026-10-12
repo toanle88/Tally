@@ -261,7 +261,7 @@ func (service *JournalReversalService) Execute(ctx context.Context, actor Actor,
 	if err != nil {
 		return service.reject(ctx, command, actor, "rejected", err)
 	}
-	if err := validatePostingGateEvidenceAt(validationRequest, gateEvidence, service.clock().UTC()); err != nil {
+	if err := validatePostingGateEvidenceForActorAt(validationRequest, gateEvidence, actor, service.clock().UTC()); err != nil {
 		return service.reject(ctx, command, actor, "rejected", err)
 	}
 	reversalID := command.OriginalJournalID
