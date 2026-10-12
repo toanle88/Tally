@@ -314,10 +314,15 @@ func (repository *PostgresSoftCloseGateRepository) writeSoftCloseGateEvent(ctx c
 	if err != nil {
 		return err
 	}
-	eventType := softCloseGateEventType(mutation.Operation)
-	event, err := platformevents.NewEnvelope(platformevents.EnvelopeInput{MessageID: uuid.NewString(), EventType: eventType, EventVersion: 1, OccurredAt: mutation.Now, SourceContext: "gl", AggregateID: result.AggregateID().String(), AggregateVersion: result.AggregateVersion(), AccountingScopeID: mutation.After.AccountingScopeID.String(), CorrelationID: mutation.Audit.CorrelationID, CausationID: mutation.Audit.CausationID, DataClassification: platformevents.Internal, PayloadFingerprint: payloadFingerprint, Data: payload})
-	if err != nil {
-		return err
+	eventTypes := append(append([]string(nil), mutation.AdditionalEventTypes...), softCloseGateEventType(mutation.Operation))
+	for _, eventType := range eventTypes {
+		event, err := platformevents.NewEnvelope(platformevents.EnvelopeInput{MessageID: uuid.NewString(), EventType: eventType, EventVersion: 1, OccurredAt: mutation.Now, SourceContext: "gl", AggregateID: result.AggregateID().String(), AggregateVersion: result.AggregateVersion(), AccountingScopeID: mutation.After.AccountingScopeID.String(), CorrelationID: mutation.Audit.CorrelationID, CausationID: mutation.Audit.CausationID, DataClassification: platformevents.Internal, PayloadFingerprint: payloadFingerprint, Data: payload})
+		if err != nil {
+			return err
+		}
+		if err := platformintegration.WritePublication(ctx, tx, platformintegration.Publication{Event: event, AvailableAt: mutation.Now}); err != nil {
+			return err
+		}
 	}
-	return platformintegration.WritePublication(ctx, tx, platformintegration.Publication{Event: event, AvailableAt: mutation.Now})
+	return nil
 }

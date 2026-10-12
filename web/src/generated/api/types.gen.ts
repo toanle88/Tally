@@ -147,6 +147,7 @@ export type GlSubmitPostingRequestCommandRequest = {
 };
 
 export type GlPostingAuthorizationScope = {
+    actorIds?: Array<Uuid>;
     accountIds?: Array<Uuid>;
     transactionClasses?: Array<string>;
 };

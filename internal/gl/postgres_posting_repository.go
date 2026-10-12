@@ -72,7 +72,7 @@ func (repository *PostgresPostingRepository) CommitPosting(ctx context.Context, 
 		existing.Replayed = true
 		return existing, nil
 	}
-	if err := validatePostingGateEvidenceAt(commit.Request, gate.Evidence, commit.Now.UTC()); err != nil {
+	if err := validatePostingGateEvidenceForActorAt(commit.Request, gate.Evidence, commit.Actor, commit.Now.UTC()); err != nil {
 		return PostingResult{}, err
 	}
 	if err := validatePostingGateAdmissionOwner(commit.Request, gate); err != nil {
@@ -320,7 +320,7 @@ func validatePostingGateAdmissionOwner(request PostingRequest, gate postgresPost
 			return fmt.Errorf("%w: reopen request does not own the posting gate", ErrPostingGateClosed)
 		}
 	case PostingPurposeOperationalReopen:
-		if gate.ActiveAdmissionCounters.ControlOwnerType != "ReopenRequest" || gate.ActiveAdmissionCounters.ControlOwnerID != uuidValue(request.OperationalReopenRequestID) {
+		if gate.ActiveReopenRequestID == nil || *gate.ActiveReopenRequestID != uuidValue(request.OperationalReopenRequestID) || gate.ActiveAdmissionCounters.ControlOwnerType != OperationalReopenGateOwnerType || gate.ActiveAdmissionCounters.ControlOwnerID != uuidValue(request.OperationalReopenRequestID) || gate.ActiveAdmissionCounters.ControlOwnerEpoch == nil || request.ControlAuthorityEpoch == nil || *gate.ActiveAdmissionCounters.ControlOwnerEpoch != *request.ControlAuthorityEpoch {
 			return fmt.Errorf("%w: operational reopen request does not own the posting gate", ErrPostingGateClosed)
 		}
 	}

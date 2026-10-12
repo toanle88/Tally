@@ -150,7 +150,7 @@ func (repository *PostgresPostingRepository) CommitJournalReversal(ctx context.C
 	if err != nil {
 		return JournalReversalResult{}, err
 	}
-	if err := validatePostingGateEvidenceAt(commit.Request, gate.Evidence, commit.Now.UTC()); err != nil {
+	if err := validatePostingGateEvidenceForActorAt(commit.Request, gate.Evidence, commit.Actor, commit.Now.UTC()); err != nil {
 		return JournalReversalResult{}, err
 	}
 	if err := validatePostingGateAdmissionOwner(commit.Request, gate); err != nil {

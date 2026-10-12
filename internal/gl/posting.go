@@ -424,7 +424,7 @@ func (service *PostingService) Execute(ctx context.Context, actor Actor, request
 		}
 		return PostingResult{}, err
 	}
-	if err := validatePostingGateEvidence(request, gateEvidence); err != nil {
+	if err := validatePostingGateEvidenceForActor(request, gateEvidence, actor); err != nil {
 		if auditErr := service.recordRejected(ctx, request, actor, postingIssues(err)); auditErr != nil {
 			return PostingResult{}, auditErr
 		}
@@ -671,10 +671,18 @@ func validatePostingPurpose(request PostingRequest, issue func(string, string, s
 }
 
 func validatePostingGateEvidence(request PostingRequest, evidence PostingGateEvidence) error {
-	return validatePostingGateEvidenceAt(request, evidence, time.Now().UTC())
+	return validatePostingGateEvidenceForActorAt(request, evidence, Actor{}, time.Now().UTC())
 }
 
 func validatePostingGateEvidenceAt(request PostingRequest, evidence PostingGateEvidence, now time.Time) error {
+	return validatePostingGateEvidenceForActorAt(request, evidence, Actor{}, now)
+}
+
+func validatePostingGateEvidenceForActor(request PostingRequest, evidence PostingGateEvidence, actor Actor) error {
+	return validatePostingGateEvidenceForActorAt(request, evidence, actor, time.Now().UTC())
+}
+
+func validatePostingGateEvidenceForActorAt(request PostingRequest, evidence PostingGateEvidence, actor Actor, now time.Time) error {
 	if evidence.FiscalPeriodID != request.FiscalPeriodID {
 		return fmt.Errorf("%w: fiscal period does not match", ErrPostingPeriodConflict)
 	}
@@ -715,6 +723,21 @@ func validatePostingGateEvidenceAt(request PostingRequest, evidence PostingGateE
 	case PostingPurposeOperationalReopen:
 		if evidence.GateMode != PostingGateOperationalReopen {
 			return fmt.Errorf("%w: gate mode %s does not admit operational reopen postings", ErrPostingGateClosed, evidence.GateMode)
+		}
+		if evidence.ReopenRequestID == nil || request.OperationalReopenRequestID == nil || *evidence.ReopenRequestID != *request.OperationalReopenRequestID {
+			return fmt.Errorf("%w: operational reopen request does not own the posting gate", ErrPostingGateClosed)
+		}
+		if evidence.AuthorizationExpiry == nil || !now.Before(evidence.AuthorizationExpiry.UTC()) {
+			return fmt.Errorf("%w: operational reopen authorization has expired", ErrPostingGateClosed)
+		}
+		if evidence.ControlAuthorityEpoch == nil || request.ControlAuthorityEpoch == nil || *request.ControlAuthorityEpoch != *evidence.ControlAuthorityEpoch {
+			return fmt.Errorf("%w: control authority epoch does not match", ErrPostingGateClosed)
+		}
+		if len(evidence.AuthorizationScope) == 0 {
+			return fmt.Errorf("%w: approved operational reopen scope is unavailable", ErrPostingGateClosed)
+		}
+		if err := validateOperationalReopenScope(request, actor, evidence.AuthorizationScope); err != nil {
+			return err
 		}
 	case PostingPurposePolicyAdjustment:
 		if evidence.GateMode != PostingGateOpen && evidence.GateMode != PostingGateSoftClosePolicy {

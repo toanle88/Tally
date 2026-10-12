@@ -23823,6 +23823,16 @@ func (s *GlPostingAuthorizationScope) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *GlPostingAuthorizationScope) encodeFields(e *jx.Encoder) {
 	{
+		if s.ActorIds != nil {
+			e.FieldStart("actorIds")
+			e.ArrStart()
+			for _, elem := range s.ActorIds {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
 		if s.AccountIds != nil {
 			e.FieldStart("accountIds")
 			e.ArrStart()
@@ -23844,9 +23854,10 @@ func (s *GlPostingAuthorizationScope) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfGlPostingAuthorizationScope = [2]string{
-	0: "accountIds",
-	1: "transactionClasses",
+var jsonFieldsNameOfGlPostingAuthorizationScope = [3]string{
+	0: "actorIds",
+	1: "accountIds",
+	2: "transactionClasses",
 }
 
 // Decode decodes GlPostingAuthorizationScope from json.
@@ -23857,6 +23868,23 @@ func (s *GlPostingAuthorizationScope) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
+		case "actorIds":
+			if err := func() error {
+				s.ActorIds = make([]UUID, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem UUID
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.ActorIds = append(s.ActorIds, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"actorIds\"")
+			}
 		case "accountIds":
 			if err := func() error {
 				s.AccountIds = make([]UUID, 0)
