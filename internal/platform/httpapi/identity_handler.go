@@ -19,6 +19,7 @@ import (
 	"github.com/toanle88/Tally/internal/platform/aggregateversion"
 	"github.com/toanle88/Tally/internal/platform/httpapi/generated"
 	"github.com/toanle88/Tally/internal/platform/telemetry"
+	"github.com/toanle88/Tally/internal/workflow"
 )
 
 type IdentityHandler struct {
@@ -46,6 +47,7 @@ type IdentityHandler struct {
 	PostingApprovalDecisionService       *gl.PostingApprovalDecisionService
 	JournalReversalService               *gl.JournalReversalService
 	SoftCloseGateService                 *gl.SoftCloseGateService
+	ApprovalPolicyService                *workflow.ApprovalPolicyService
 	Instrumentation                      *telemetry.Instrumentation
 }
 

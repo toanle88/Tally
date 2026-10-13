@@ -129,6 +129,11 @@ verify_migration_set \
 	"db/migrations/gl" \
 	"gl.goose_db_version"
 
+verify_migration_set \
+	"workflow" \
+	"db/migrations/workflow" \
+	"workflow.goose_db_version"
+
 verify_seed_manifest
 
 echo "Database migration and seed verification passed."

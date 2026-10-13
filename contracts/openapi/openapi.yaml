@@ -57,6 +57,18 @@ components:
     Money: { $ref: ./components/common.yaml#/schemas/Money }
     CurrencyCode: { $ref: ./components/common.yaml#/schemas/CurrencyCode }
     CommandRequest: { $ref: ./components/common.yaml#/schemas/CommandRequest }
+    WfaMaintainApprovalPoliciesCommandRequest: { $ref: ./components/common.yaml#/schemas/WfaMaintainApprovalPoliciesCommandRequest }
+    WfaMaintainApprovalPoliciesCommandData: { $ref: ./components/common.yaml#/schemas/WfaMaintainApprovalPoliciesCommandData }
+    WfaApprovalApplicability: { $ref: ./components/common.yaml#/schemas/WfaApprovalApplicability }
+    WfaApprovalScope: { $ref: ./components/common.yaml#/schemas/WfaApprovalScope }
+    WfaRoleRequirement: { $ref: ./components/common.yaml#/schemas/WfaRoleRequirement }
+    WfaDelegationConfiguration: { $ref: ./components/common.yaml#/schemas/WfaDelegationConfiguration }
+    WfaEscalationConfiguration: { $ref: ./components/common.yaml#/schemas/WfaEscalationConfiguration }
+    WfaApprovalRule: { $ref: ./components/common.yaml#/schemas/WfaApprovalRule }
+    WfaApprovalStepDefinition: { $ref: ./components/common.yaml#/schemas/WfaApprovalStepDefinition }
+    WfaApprovalPolicyProjection: { $ref: ./components/common.yaml#/schemas/WfaApprovalPolicyProjection }
+    WfaMaintainApprovalPoliciesResultData: { $ref: ./components/common.yaml#/schemas/WfaMaintainApprovalPoliciesResultData }
+    WfaMaintainApprovalPoliciesEstablishedResult: { $ref: ./components/common.yaml#/schemas/WfaMaintainApprovalPoliciesEstablishedResult }
     IamManageUsersCommandRequest: { $ref: ./components/common.yaml#/schemas/IamManageUsersCommandRequest }
     IamManageUsersCommandData: { $ref: ./components/common.yaml#/schemas/IamManageUsersCommandData }
     IamAuthenticationSubject: { $ref: ./components/common.yaml#/schemas/IamAuthenticationSubject }

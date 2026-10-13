@@ -117,7 +117,7 @@ User-story plan: [EP-COA-001 user stories](docs/backlog/stories/EP-COA-001_user_
 - [x] `DLV-FR-COA-004` — FR-COA-004 — `Request segment changes`
 - [x] `DLV-FR-COA-005` — FR-COA-005 — `ApplySegmentChangeApprovalDecision`
 
-## [ ] EP-GL-001 — General Ledger (M2)
+## [x] EP-GL-001 — General Ledger (M2)
 
 Journal validation, approval, posting, reversal, posting gates, ledgers, books, charts of accounts, accounts, and ledger inquiry.
 
@@ -132,6 +132,11 @@ User Story 9 has local implementation and focused verification evidence on
 pending PostgreSQL runtime, cross-context FPM, outbox/failure, browser,
 accessibility, and release qualification. See
 [`docs/verification/DLV-FR-GL-011-013-us9-operational-reopen-reclose.md`](docs/verification/DLV-FR-GL-011-013-us9-operational-reopen-reclose.md).
+
+Status comment — 2026-10-12: EP-GL-001 is marked done by explicit user-requested
+status override. Implementation is merged in `33a2a7b`; the child delivery
+items and qualification follow-ups remain open and are not represented as
+individually verified by this parent status.
 
 - [ ] `DLV-GFR-005` — GFR-005 — EP-GL-001
 - [ ] `DLV-GFR-011` — GFR-011 — EP-GL-001
@@ -158,6 +163,8 @@ accessibility, and release qualification. See
 ## [ ] EP-WFA-001 — Workflow and approvals (M3)
 
 Approval policies, requests, decisions, delegation, escalation, and decision application.
+
+User-story plan: [EP-WFA-001 user stories](docs/backlog/stories/EP-WFA-001_user_stories.md)
 
 - [ ] `DLV-GFR-004` — GFR-004 — EP-WFA-001
 - [ ] `DLV-FR-WFA-001` — FR-WFA-001 — `CreateApprovalRequest`

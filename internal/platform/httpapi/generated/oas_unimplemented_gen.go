@@ -1378,6 +1378,6 @@ func (UnimplementedHandler) WfaEscalateApproval(ctx context.Context, req *Comman
 // WfaMaintainApprovalPolicies implements wfaMaintainApprovalPolicies operation.
 //
 // PUT /approvals/configuration/maintain-approval-policies
-func (UnimplementedHandler) WfaMaintainApprovalPolicies(ctx context.Context, req *CommandRequest, params WfaMaintainApprovalPoliciesParams) (r WfaMaintainApprovalPoliciesRes, _ error) {
+func (UnimplementedHandler) WfaMaintainApprovalPolicies(ctx context.Context, req *WfaMaintainApprovalPoliciesCommandRequest, params WfaMaintainApprovalPoliciesParams) (r WfaMaintainApprovalPoliciesRes, _ error) {
 	return r, ht.ErrNotImplemented
 }

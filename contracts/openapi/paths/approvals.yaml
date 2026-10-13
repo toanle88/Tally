@@ -117,12 +117,16 @@
       required: true
       content:
         application/json:
-          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          schema: { $ref: ../components/common.yaml#/schemas/WfaMaintainApprovalPoliciesCommandRequest }
           examples:
             deterministic:
               $ref: ../examples/command-request.yaml
     responses:
-      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '200':
+        description: Established approval policy result
+        content:
+          application/json:
+            schema: { $ref: ../components/common.yaml#/schemas/WfaMaintainApprovalPoliciesEstablishedResult }
       '400': { $ref: ../components/common.yaml#/responses/Problem }
       '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
       '403': { $ref: ../components/common.yaml#/responses/Problem }

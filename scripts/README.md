@@ -104,9 +104,9 @@ Direct usage:
 ./scripts/db/migrate.sh check
 ```
 
-Supported migration creation schemas are `bootstrap`, `platform`, `identity`, and
-`organization`. The organization migration set is owned by the LegalEntity
-delivery and must remain the only writer of the `organization` schema.
+Supported migration creation schemas are `bootstrap`, `platform`, `identity`,
+`organization`, `coa`, `gl`, and `workflow`. Each migration set is owned by
+its bounded-context delivery and must remain the only writer of that schema.
 
 ---
 

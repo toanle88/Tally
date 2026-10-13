@@ -61,3 +61,15 @@ sql:
         package: gldb
         out: internal/gl/gldb
         sql_package: pgx/v5
+  - name: workflow
+    engine: postgresql
+    schema:
+      - db/migrations/bootstrap
+      - db/migrations/workflow
+    queries:
+      - db/queries/workflow
+    gen:
+      go:
+        package: workflowdb
+        out: internal/workflow/workflowdb
+        sql_package: pgx/v5

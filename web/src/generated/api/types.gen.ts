@@ -23,6 +23,140 @@ export type CommandRequest = {
     };
 };
 
+export type WfaMaintainApprovalPoliciesCommandRequest = {
+    commandId: Uuid;
+    expectedVersion?: number;
+    data: WfaMaintainApprovalPoliciesCommandData;
+};
+
+export type WfaMaintainApprovalPoliciesCommandData = {
+    action: 'create' | 'update' | 'submitForApproval' | 'activate';
+    policyId?: Uuid;
+    code: string;
+    name: string;
+    policyVersion?: string;
+    applicability: WfaApprovalApplicability;
+    scope: WfaApprovalScope;
+    rules: Array<WfaApprovalRule>;
+    steps: Array<WfaApprovalStepDefinition>;
+    effectiveFrom: string;
+    effectiveTo?: string;
+    approval?: IamApprovalDecisionReference;
+    submitForApproval?: boolean;
+    reason?: string;
+    dependentWorkflowImpact?: string;
+};
+
+export type WfaApprovalApplicability = {
+    sourceContext: string;
+    subjectType: string;
+    operation: string;
+    transactionTypes?: Array<string>;
+    currencies?: Array<CurrencyCode>;
+    dataClassifications?: Array<string>;
+    dimensions?: {
+        [key: string]: string;
+    };
+};
+
+export type WfaApprovalScope = {
+    scopeIds?: Array<string>;
+    accountingScopeIds?: Array<Uuid>;
+    legalEntityIds?: Array<Uuid>;
+    businessUnitIds?: Array<Uuid>;
+    segmentIds?: Array<Uuid>;
+    accountIds?: Array<Uuid>;
+    fiscalPeriodIds?: Array<Uuid>;
+};
+
+export type WfaRoleRequirement = {
+    role: string;
+    minimumApprovals: number;
+    allowDelegation: boolean;
+};
+
+export type WfaDelegationConfiguration = {
+    enabled: boolean;
+    delegateToRoles?: Array<string>;
+    maximumDepth?: number;
+    requiresIndependentApproval: boolean;
+};
+
+export type WfaEscalationConfiguration = {
+    enabled: boolean;
+    afterSeconds?: number;
+    escalateToRoles?: Array<string>;
+};
+
+export type WfaApprovalRule = {
+    id: Uuid;
+    name?: string;
+    threshold: {
+        minimum?: Money;
+        maximum?: Money;
+        currency: CurrencyCode;
+    };
+    requiredRoles: Array<WfaRoleRequirement>;
+    delegation: WfaDelegationConfiguration;
+    escalation: WfaEscalationConfiguration;
+};
+
+export type WfaApprovalStepDefinition = {
+    id: Uuid;
+    sequence: number;
+    name: string;
+    requiredRoles: Array<WfaRoleRequirement>;
+    minimumApprovals: number;
+    delegation: WfaDelegationConfiguration;
+    escalation: WfaEscalationConfiguration;
+};
+
+export type WfaApprovalPolicyProjection = {
+    id: Uuid;
+    code: string;
+    name: string;
+    policyVersion: string;
+    status: 'Draft' | 'PendingApproval' | 'Active' | 'Superseded';
+    applicability: WfaApprovalApplicability;
+    scope: WfaApprovalScope;
+    rules: Array<WfaApprovalRule>;
+    steps: Array<WfaApprovalStepDefinition>;
+    effectiveFrom: string;
+    effectiveTo?: string;
+    approval?: IamApprovalDecisionReference;
+    approvalRequestId?: Uuid;
+    activationOutcome: string;
+    candidateFingerprint: string;
+    aggregateVersion?: number;
+};
+
+export type WfaMaintainApprovalPoliciesResultData = {
+    policy: WfaApprovalPolicyProjection;
+    policyVersion: string;
+    scope: WfaApprovalScope;
+    thresholds?: Array<Money>;
+    roles?: Array<string>;
+    effectiveFrom?: string;
+    effectiveTo?: string;
+    approvalStatus: string;
+    activationOutcome: string;
+    dependentWorkflowImpact: string;
+    approvalRequestId?: Uuid;
+    decisionReference?: Uuid;
+    auditReference?: Uuid;
+    replayed?: boolean;
+};
+
+export type WfaMaintainApprovalPoliciesEstablishedResult = {
+    status: 'established';
+    aggregateId: Uuid;
+    aggregateVersion: number;
+    processId?: Uuid | null;
+    correlationId: Uuid;
+    links: Links;
+    data: WfaMaintainApprovalPoliciesResultData;
+};
+
 export type IamManageUsersCommandRequest = {
     commandId: Uuid;
     expectedVersion?: number;
@@ -9728,7 +9862,7 @@ export type WfaEscalateApprovalResponses = {
 export type WfaEscalateApprovalResponse = WfaEscalateApprovalResponses[keyof WfaEscalateApprovalResponses];
 
 export type WfaMaintainApprovalPoliciesData = {
-    body: CommandRequest;
+    body: WfaMaintainApprovalPoliciesCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
@@ -9771,9 +9905,9 @@ export type WfaMaintainApprovalPoliciesError = WfaMaintainApprovalPoliciesErrors
 
 export type WfaMaintainApprovalPoliciesResponses = {
     /**
-     * Established result
+     * Established approval policy result
      */
-    200: EstablishedResult;
+    200: WfaMaintainApprovalPoliciesEstablishedResult;
 };
 
 export type WfaMaintainApprovalPoliciesResponse = WfaMaintainApprovalPoliciesResponses[keyof WfaMaintainApprovalPoliciesResponses];

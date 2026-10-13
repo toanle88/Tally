@@ -29168,7 +29168,7 @@ func (s *Server) handleWfaMaintainApprovalPoliciesRequest(args [0]string, argsEs
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *WfaMaintainApprovalPoliciesCommandRequest
 			Params   = WfaMaintainApprovalPoliciesParams
 			Response = WfaMaintainApprovalPoliciesRes
 		)

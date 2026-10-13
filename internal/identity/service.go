@@ -143,6 +143,9 @@ type AuditRecord struct {
 	ApprovalDecisionID            uuid.UUID
 	ApproverUserID                uuid.UUID
 	RevisionVersion               int64
+	Reason                        string
+	EffectiveFrom                 time.Time
+	EffectiveTo                   *time.Time
 	BeforeFingerprint             string
 	AfterFingerprint              string
 	CorrelationID                 string
