@@ -88,6 +88,228 @@ schemas:
       accountingScopeId: { $ref: '#/schemas/Uuid' }
       businessDate: { type: string, format: date }
       data: { type: object, additionalProperties: true }
+  WfaMaintainApprovalPoliciesCommandRequest:
+    type: object
+    additionalProperties: false
+    required: [commandId, data]
+    properties:
+      commandId: { $ref: '#/schemas/Uuid' }
+      expectedVersion: { type: integer, minimum: 1 }
+      data: { $ref: '#/schemas/WfaMaintainApprovalPoliciesCommandData' }
+  WfaMaintainApprovalPoliciesCommandData:
+    type: object
+    additionalProperties: false
+    required: [action, code, name, applicability, scope, rules, steps, effectiveFrom]
+    properties:
+      action:
+        type: string
+        enum: [create, update, submitForApproval, activate]
+      policyId: { $ref: '#/schemas/Uuid' }
+      code: { type: string, minLength: 1, maxLength: 160 }
+      name: { type: string, minLength: 1, maxLength: 200 }
+      policyVersion: { type: string, minLength: 1, maxLength: 80 }
+      applicability: { $ref: '#/schemas/WfaApprovalApplicability' }
+      scope: { $ref: '#/schemas/WfaApprovalScope' }
+      rules:
+        type: array
+        minItems: 1
+        items: { $ref: '#/schemas/WfaApprovalRule' }
+      steps:
+        type: array
+        minItems: 1
+        items: { $ref: '#/schemas/WfaApprovalStepDefinition' }
+      effectiveFrom: { type: string, format: date-time }
+      effectiveTo: { type: string, format: date-time }
+      approval: { $ref: '#/schemas/IamApprovalDecisionReference' }
+      submitForApproval: { type: boolean }
+      reason: { type: string, minLength: 1, maxLength: 500 }
+      dependentWorkflowImpact: { type: string, maxLength: 500 }
+  WfaApprovalApplicability:
+    type: object
+    additionalProperties: false
+    required: [sourceContext, subjectType, operation]
+    properties:
+      sourceContext: { type: string, minLength: 1, maxLength: 120 }
+      subjectType: { type: string, minLength: 1, maxLength: 120 }
+      operation: { type: string, minLength: 1, maxLength: 160 }
+      transactionTypes:
+        type: array
+        uniqueItems: true
+        items: { type: string, minLength: 1, maxLength: 120 }
+      currencies:
+        type: array
+        uniqueItems: true
+        items: { $ref: '#/schemas/CurrencyCode' }
+      dataClassifications:
+        type: array
+        uniqueItems: true
+        items: { type: string, minLength: 1, maxLength: 80 }
+      dimensions:
+        type: object
+        additionalProperties: { type: string, minLength: 1, maxLength: 160 }
+  WfaApprovalScope:
+    type: object
+    additionalProperties: false
+    properties:
+      scopeIds:
+        type: array
+        minItems: 1
+        uniqueItems: true
+        items: { type: string, minLength: 1, maxLength: 160 }
+      accountingScopeIds:
+        type: array
+        uniqueItems: true
+        items: { $ref: '#/schemas/Uuid' }
+      legalEntityIds:
+        type: array
+        uniqueItems: true
+        items: { $ref: '#/schemas/Uuid' }
+      businessUnitIds:
+        type: array
+        uniqueItems: true
+        items: { $ref: '#/schemas/Uuid' }
+      segmentIds:
+        type: array
+        uniqueItems: true
+        items: { $ref: '#/schemas/Uuid' }
+      accountIds:
+        type: array
+        uniqueItems: true
+        items: { $ref: '#/schemas/Uuid' }
+      fiscalPeriodIds:
+        type: array
+        uniqueItems: true
+        items: { $ref: '#/schemas/Uuid' }
+  WfaRoleRequirement:
+    type: object
+    additionalProperties: false
+    required: [role, minimumApprovals, allowDelegation]
+    properties:
+      role: { type: string, minLength: 1, maxLength: 160 }
+      minimumApprovals: { type: integer, minimum: 1 }
+      allowDelegation: { type: boolean }
+  WfaDelegationConfiguration:
+    type: object
+    additionalProperties: false
+    required: [enabled, requiresIndependentApproval]
+    properties:
+      enabled: { type: boolean }
+      delegateToRoles:
+        type: array
+        uniqueItems: true
+        items: { type: string, minLength: 1, maxLength: 160 }
+      maximumDepth: { type: integer, minimum: 1 }
+      requiresIndependentApproval: { type: boolean }
+  WfaEscalationConfiguration:
+    type: object
+    additionalProperties: false
+    required: [enabled]
+    properties:
+      enabled: { type: boolean }
+      afterSeconds: { type: integer, minimum: 1 }
+      escalateToRoles:
+        type: array
+        uniqueItems: true
+        items: { type: string, minLength: 1, maxLength: 160 }
+  WfaApprovalRule:
+    type: object
+    additionalProperties: false
+    required: [id, threshold, requiredRoles, delegation, escalation]
+    properties:
+      id: { $ref: '#/schemas/Uuid' }
+      name: { type: string, maxLength: 160 }
+      threshold:
+        type: object
+        additionalProperties: false
+        required: [currency]
+        properties:
+          minimum: { $ref: '#/schemas/Money' }
+          maximum: { $ref: '#/schemas/Money' }
+          currency: { $ref: '#/schemas/CurrencyCode' }
+      requiredRoles:
+        type: array
+        minItems: 1
+        items: { $ref: '#/schemas/WfaRoleRequirement' }
+      delegation: { $ref: '#/schemas/WfaDelegationConfiguration' }
+      escalation: { $ref: '#/schemas/WfaEscalationConfiguration' }
+  WfaApprovalStepDefinition:
+    type: object
+    additionalProperties: false
+    required: [id, sequence, name, requiredRoles, minimumApprovals, delegation, escalation]
+    properties:
+      id: { $ref: '#/schemas/Uuid' }
+      sequence: { type: integer, minimum: 1 }
+      name: { type: string, minLength: 1, maxLength: 160 }
+      requiredRoles:
+        type: array
+        minItems: 1
+        items: { $ref: '#/schemas/WfaRoleRequirement' }
+      minimumApprovals: { type: integer, minimum: 1 }
+      delegation: { $ref: '#/schemas/WfaDelegationConfiguration' }
+      escalation: { $ref: '#/schemas/WfaEscalationConfiguration' }
+  WfaApprovalPolicyProjection:
+    type: object
+    additionalProperties: false
+    required: [id, code, name, policyVersion, status, applicability, scope, rules, steps, effectiveFrom, activationOutcome, candidateFingerprint]
+    properties:
+      id: { $ref: '#/schemas/Uuid' }
+      code: { type: string }
+      name: { type: string }
+      policyVersion: { type: string }
+      status: { type: string, enum: [Draft, PendingApproval, Active, Superseded] }
+      applicability: { $ref: '#/schemas/WfaApprovalApplicability' }
+      scope: { $ref: '#/schemas/WfaApprovalScope' }
+      rules:
+        type: array
+        items: { $ref: '#/schemas/WfaApprovalRule' }
+      steps:
+        type: array
+        items: { $ref: '#/schemas/WfaApprovalStepDefinition' }
+      effectiveFrom: { type: string, format: date-time }
+      effectiveTo: { type: string, format: date-time }
+      approval: { $ref: '#/schemas/IamApprovalDecisionReference' }
+      approvalRequestId: { $ref: '#/schemas/Uuid' }
+      activationOutcome: { type: string }
+      candidateFingerprint: { type: string, minLength: 1 }
+      aggregateVersion: { type: integer, minimum: 1 }
+  WfaMaintainApprovalPoliciesResultData:
+    type: object
+    additionalProperties: false
+    required: [policy, policyVersion, scope, approvalStatus, activationOutcome, dependentWorkflowImpact]
+    properties:
+      policy: { $ref: '#/schemas/WfaApprovalPolicyProjection' }
+      policyVersion: { type: string }
+      scope: { $ref: '#/schemas/WfaApprovalScope' }
+      thresholds:
+        type: array
+        items: { $ref: '#/schemas/Money' }
+      roles:
+        type: array
+        items: { type: string }
+      effectiveFrom: { type: string, format: date-time }
+      effectiveTo: { type: string, format: date-time }
+      approvalStatus: { type: string }
+      activationOutcome: { type: string }
+      dependentWorkflowImpact: { type: string }
+      approvalRequestId: { $ref: '#/schemas/Uuid' }
+      decisionReference: { $ref: '#/schemas/Uuid' }
+      auditReference: { $ref: '#/schemas/Uuid' }
+      replayed: { type: boolean }
+  WfaMaintainApprovalPoliciesEstablishedResult:
+    type: object
+    additionalProperties: false
+    required: [status, aggregateId, aggregateVersion, correlationId, links, data]
+    properties:
+      status: { type: string, const: established }
+      aggregateId: { $ref: '#/schemas/Uuid' }
+      aggregateVersion: { type: integer, minimum: 1 }
+      processId:
+        oneOf:
+          - { $ref: '#/schemas/Uuid' }
+          - { type: 'null' }
+      correlationId: { $ref: '#/schemas/Uuid' }
+      links: { $ref: '#/schemas/Links' }
+      data: { $ref: '#/schemas/WfaMaintainApprovalPoliciesResultData' }
   GlSubmitPostingRequestCommandRequest:
     type: object
     additionalProperties: false

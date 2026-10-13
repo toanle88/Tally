@@ -6,6 +6,7 @@ generated_dirs=(
   "internal/identity/identitydb"
   "internal/organization/organizationdb"
   "internal/coa/coadb"
+  "internal/workflow/workflowdb"
 )
 
 fail() {

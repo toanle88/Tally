@@ -21511,7 +21511,7 @@ func encodeWfaEscalateApprovalResponse(response WfaEscalateApprovalRes, w http.R
 
 func encodeWfaMaintainApprovalPoliciesResponse(response WfaMaintainApprovalPoliciesRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
-	case *EstablishedResult:
+	case *WfaMaintainApprovalPoliciesEstablishedResult:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 

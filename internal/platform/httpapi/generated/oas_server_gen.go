@@ -791,7 +791,7 @@ type Handler interface {
 	// WfaMaintainApprovalPolicies implements wfaMaintainApprovalPolicies operation.
 	//
 	// PUT /approvals/configuration/maintain-approval-policies
-	WfaMaintainApprovalPolicies(ctx context.Context, req *CommandRequest, params WfaMaintainApprovalPoliciesParams) (WfaMaintainApprovalPoliciesRes, error)
+	WfaMaintainApprovalPolicies(ctx context.Context, req *WfaMaintainApprovalPoliciesCommandRequest, params WfaMaintainApprovalPoliciesParams) (WfaMaintainApprovalPoliciesRes, error)
 }
 
 // Server implements http server based on OpenAPI v3 specification and

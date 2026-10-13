@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Epic | EP-GL-001 — General Ledger |
-| Status | User Story 1 implementation is present on `feat/gl-us1-ledger-book-maintenance`; see the scoped verification record for open boundaries and unrun qualification checks |
+| Status | Done by explicit user-requested status override on 2026-10-12; implementation is merged in `33a2a7b`, while child delivery and qualification follow-ups remain open |
 | Milestone | M2 — General ledger and posting control |
 | Delivery items | DLV-GFR-005, DLV-GFR-011, DLV-FR-GL-001 through DLV-FR-GL-018, DLV-WF-6.6 |
 | Owning bounded context | General Ledger — `internal/gl`, `gl` schema |
@@ -16,6 +16,11 @@ This document is the planning artifact for EP-GL-001. The roadmap epic and its
 delivery items remain unchecked until implementation and verification evidence
 exist. The stories below are intentionally grouped into coherent vertical
 slices while preserving every source requirement and operation identifier.
+
+> Status comment — 2026-10-12: The parent epic is marked done at the user's
+> explicit request. This is a status override for planning visibility; it does
+> not mark the still-open child delivery, integration, accessibility, recovery,
+> or release qualification evidence as complete.
 
 ## 1. Outcome
 
