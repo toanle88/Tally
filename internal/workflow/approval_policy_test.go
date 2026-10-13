@@ -136,7 +136,7 @@ func TestApprovalPolicyLifecycleUsesGenericApprovalEvidenceAndPreservesHistory(t
 		t.Fatal(err)
 	}
 	activeVersion := updated.Policy.Version
-	activatedV2, err := service.Execute(context.Background(), requester, ApprovalPolicyCommand{Action: ApprovalPolicyActionActivate, PolicyID: updated.Policy.ID, ExpectedVersion: &activeVersion, Approval: &updatedDecision.Reference, Reason: "Apply approved version", IdempotencyKey: "activate-policy-v2"})
+	activatedV2, err := service.Execute(context.Background(), requester, ApprovalPolicyCommand{Action: ApprovalPolicyActionActivate, PolicyID: updated.Policy.ID, ExpectedVersion: &activeVersion, Approval: &updatedDecision.Reference, Reason: "Apply approved version", IdempotencyKey: uuid.NewString()})
 	if err != nil {
 		t.Fatal(err)
 	}
