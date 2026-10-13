@@ -4,6 +4,13 @@ title = "Tally secret scanning configuration"
 useDefault = true
 
 [[allowlists]]
+description = "Deterministic workflow approval policy test fixture"
+condition = "AND"
+paths = ['''^internal/workflow/approval_policy_test\.go$''']
+regexTarget = "line"
+regexes = ['''IdempotencyKey:\s*"activate-policy-v2"''']
+
+[[allowlists]]
 description = "Historical deterministic GL idempotency fixtures"
 condition = "AND"
 paths = ['''^internal/gl/configuration_test\.go$''']
