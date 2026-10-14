@@ -120,6 +120,111 @@ func TestCreateApprovalRequestResolvesPolicyBindsEvidenceAndReplaysBeforeResolut
 	}
 }
 
+func TestDecideApprovalRequestRecordsImmutableEvidenceAndSupportsSafeReplay(t *testing.T) {
+	now := time.Date(2026, 10, 14, 0, 0, 0, 0, time.UTC)
+	request := testApprovalRequest(now, ApprovalRequestStatusPending, "scope-1")
+	policy := testActiveApprovalPolicy(now, request.PolicyVersion, "finance.approver")
+	policy.ID = request.PolicyID
+	policyRepository := NewMemoryApprovalPolicyRepository()
+	policyRepository.policies[policy.ID] = policy
+	repository := NewMemoryApprovalRequestRepository()
+	audit := &MemoryApprovalRequestAuditRecorder{}
+	events := &MemoryApprovalEventRecorder{}
+	repository.BindPorts(audit, events)
+	repository.requests[request.ID] = request
+	actor := Actor{UserID: uuid.New(), SubjectReference: "independent-approver"}
+	authorizer := MemoryApprovalRequestAuthorizer{Decision: AuthorizationDecision{Allowed: true, Outcome: AuthorizationAllowed, Permission: DecideApprovalRequestsPermission, ApprovedScopeIDs: []string{"scope-1"}, DecisionReference: uuid.New()}}
+	service, err := NewApprovalRequestService(repository, authorizer, audit, events, func() time.Time { return now })
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := service.BindPolicyRepository(policyRepository); err != nil {
+		t.Fatal(err)
+	}
+	expectedVersion := request.Version
+	command := DecideApprovalRequestCommand{
+		RequestID: request.ID, ExpectedVersion: &expectedVersion, DecisionID: uuid.New(), StepID: request.Steps[0].ID,
+		Outcome: ApprovalDecisionApproved, Reason: "Independent review complete", PolicyVersion: request.PolicyVersion,
+		SubjectVersion: request.SubjectVersion, CandidateFingerprint: request.SubjectFingerprint, IdempotencyKey: "decision-1",
+		CorrelationID: uuid.NewString(), CausationID: uuid.NewString(), DelegationReference: "delegation-audit-1",
+	}
+	result, err := service.DecideApprovalRequest(context.Background(), actor, command)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Request.Status != ApprovalRequestStatusApproved || len(result.Request.Decisions) != 1 || result.Request.Decisions[0].StepID != request.Steps[0].ID || result.Request.Decisions[0].DelegationReference != command.DelegationReference {
+		t.Fatalf("recorded request = %#v", result.Request)
+	}
+	if result.Reference.DecidedAt != now || result.Reference.AppliedAt != nil {
+		t.Fatalf("decision reference = %#v", result.Reference)
+	}
+	if len(audit.Records) != 1 || len(events.Events) != 1 || events.Events[0].StepID != request.Steps[0].ID || events.Events[0].DecidedAt != now {
+		t.Fatalf("audit/events = %#v / %#v", audit.Records, events.Events)
+	}
+
+	replayed, err := service.DecideApprovalRequest(context.Background(), actor, command)
+	if err != nil || !replayed.Replayed || replayed.Reference.DecisionID != result.Reference.DecisionID {
+		t.Fatalf("replayed decision = %#v, err = %v", replayed, err)
+	}
+	changed := command
+	changed.Reason = "Different decision content"
+	if _, err := service.DecideApprovalRequest(context.Background(), actor, changed); !errors.Is(err, ErrApprovalPolicyIdempotencyConflict) {
+		t.Fatalf("changed decision fingerprint error = %v", err)
+	}
+
+	consumer := syntheticApprovalDecisionConsumer{subjectVersion: request.SubjectVersion, candidateFingerprint: request.SubjectFingerprint, seen: make(map[uuid.UUID]ApprovalEvent)}
+	replayedEvent, err := consumer.Apply(events.Events[0])
+	if err != nil || replayedEvent {
+		t.Fatalf("first consumer application = replayed %t, err %v", replayedEvent, err)
+	}
+	replayedEvent, err = consumer.Apply(events.Events[0])
+	if err != nil || !replayedEvent || consumer.applications != 1 {
+		t.Fatalf("duplicate consumer application = replayed %t, applications %d, err %v", replayedEvent, consumer.applications, err)
+	}
+	staleEvent := events.Events[0]
+	staleEvent.SubjectVersion++
+	if _, err := consumer.Apply(staleEvent); !errors.Is(err, ErrApprovalPolicySubjectConflict) {
+		t.Fatalf("stale consumer evidence error = %v", err)
+	}
+}
+
+func TestDecideApprovalRequestRejectsNonCurrentStepAndExpiredPolicy(t *testing.T) {
+	now := time.Date(2026, 10, 14, 0, 0, 0, 0, time.UTC)
+	request := testApprovalRequest(now, ApprovalRequestStatusPending, "scope-1")
+	request.Steps = append(request.Steps, ApprovalRequestStep{ID: uuid.New(), Sequence: 2, Name: "Controller", RequiredRoles: []RoleRequirement{{Role: "finance.controller", MinimumApprovals: 1}}, MinimumApprovals: 1, Status: ApprovalRequestStatusPending})
+	policy := testActiveApprovalPolicy(now, request.PolicyVersion, "finance.approver")
+	policy.ID = request.PolicyID
+	policyRepository := NewMemoryApprovalPolicyRepository()
+	policyRepository.policies[policy.ID] = policy
+	repository := NewMemoryApprovalRequestRepository()
+	audit := &MemoryApprovalRequestAuditRecorder{}
+	events := &MemoryApprovalEventRecorder{}
+	repository.BindPorts(audit, events)
+	repository.requests[request.ID] = request
+	actor := Actor{UserID: uuid.New(), SubjectReference: "approver"}
+	authorizer := MemoryApprovalRequestAuthorizer{Decision: AuthorizationDecision{Allowed: true, Outcome: AuthorizationAllowed, Permission: DecideApprovalRequestsPermission, ApprovedScopeIDs: []string{"scope-1"}, DecisionReference: uuid.New()}}
+	service, err := NewApprovalRequestService(repository, authorizer, audit, events, func() time.Time { return now })
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := service.BindPolicyRepository(policyRepository); err != nil {
+		t.Fatal(err)
+	}
+	expectedVersion := request.Version
+	command := DecideApprovalRequestCommand{RequestID: request.ID, ExpectedVersion: &expectedVersion, DecisionID: uuid.New(), StepID: request.Steps[1].ID, Outcome: ApprovalDecisionApproved, PolicyVersion: request.PolicyVersion, SubjectVersion: request.SubjectVersion, CandidateFingerprint: request.SubjectFingerprint, IdempotencyKey: "wrong-step"}
+	if _, err := service.DecideApprovalRequest(context.Background(), actor, command); !errors.Is(err, ErrApprovalPolicyStepConflict) {
+		t.Fatalf("non-current step error = %v", err)
+	}
+
+	policy.EffectiveTo = ptrTime(now.Add(-time.Second))
+	policyRepository.policies[policy.ID] = policy
+	command.StepID = request.Steps[0].ID
+	command.IdempotencyKey = "expired-policy"
+	if _, err := service.DecideApprovalRequest(context.Background(), actor, command); !errors.Is(err, ErrApprovalPolicyExpired) {
+		t.Fatalf("expired policy error = %v", err)
+	}
+}
+
 func TestApprovalRequestQueryServiceAuthorizesFiltersAndPages(t *testing.T) {
 	now := time.Date(2026, 10, 14, 0, 0, 0, 0, time.UTC)
 	repository := NewMemoryApprovalRequestRepository()
@@ -241,6 +346,31 @@ func testApprovalRequest(createdAt time.Time, status, scopeID string) ApprovalRe
 func ptrTime(value time.Time) *time.Time { return &value }
 
 type unavailableApprovalPolicyRepository struct{}
+
+type syntheticApprovalDecisionConsumer struct {
+	subjectVersion       int64
+	candidateFingerprint string
+	seen                 map[uuid.UUID]ApprovalEvent
+	applications         int
+}
+
+func (consumer *syntheticApprovalDecisionConsumer) Apply(event ApprovalEvent) (bool, error) {
+	if event.Type != ApprovalDecisionRecordedEventType {
+		return false, ErrApprovalPolicyApprovalRejected
+	}
+	if event.SubjectVersion != consumer.subjectVersion || event.CandidateFingerprint != consumer.candidateFingerprint {
+		return false, ErrApprovalPolicySubjectConflict
+	}
+	if previous, ok := consumer.seen[event.DecisionID]; ok {
+		if previous.SubjectVersion != event.SubjectVersion || previous.CandidateFingerprint != event.CandidateFingerprint {
+			return false, ErrApprovalPolicyIdempotencyConflict
+		}
+		return true, nil
+	}
+	consumer.seen[event.DecisionID] = event
+	consumer.applications++
+	return false, nil
+}
 
 func (unavailableApprovalPolicyRepository) Get(context.Context, uuid.UUID) (ApprovalPolicy, error) {
 	return ApprovalPolicy{}, ErrApprovalPolicyNotFound

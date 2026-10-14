@@ -177,9 +177,9 @@ WHERE id = sqlc.arg(id)
 INSERT INTO workflow.approval_decision (
     id, approval_request_id, decision_version, outcome, approver_user_id,
     approver_subject_reference, reason, policy_version, subject_version,
-    candidate_fingerprint, recorded_at
+    candidate_fingerprint, step_id, delegation_reference, recorded_at
 ) VALUES (
     sqlc.arg(id), sqlc.arg(approval_request_id), sqlc.arg(decision_version), sqlc.arg(outcome), sqlc.arg(approver_user_id),
     sqlc.arg(approver_subject_reference), sqlc.arg(reason), sqlc.arg(policy_version), sqlc.arg(subject_version),
-    sqlc.arg(candidate_fingerprint), sqlc.arg(recorded_at)
+    sqlc.arg(candidate_fingerprint), sqlc.narg(step_id), sqlc.arg(delegation_reference), sqlc.arg(recorded_at)
 );

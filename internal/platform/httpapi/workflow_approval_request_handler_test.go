@@ -141,6 +141,87 @@ func TestApprovalRequestHandlerFailsClosedForAuthorizationAndPolicyConflicts(t *
 	}
 }
 
+func TestApprovalDecisionHandlerRecordsAndExposesDecisionHistory(t *testing.T) {
+	now := time.Date(2026, 10, 14, 0, 0, 0, 0, time.UTC)
+	policy := httpApprovalRequestPolicy(now)
+	decision := workflow.AuthorizationDecision{Allowed: true, Outcome: workflow.AuthorizationAllowed, Permission: workflow.DecideApprovalRequestsPermission, ApprovedScopeIDs: []string{"scope-1"}, DecisionReference: uuid.New()}
+	authorizer := workflow.MemoryApprovalRequestAuthorizer{
+		Decision:       workflow.AuthorizationDecision{Allowed: true, Outcome: workflow.AuthorizationAllowed, Permission: workflow.CreateApprovalRequestsPermission, ApprovedScopeIDs: []string{"scope-1"}, DecisionReference: uuid.New()},
+		DecideDecision: &decision,
+	}
+	approvalWorkflow, err := workflow.NewMemoryApprovalWorkflowWithAuthorizer(authorizer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resolver, err := workflow.NewEffectiveApprovalPolicyResolver(staticApprovalPolicyRepository{policies: []workflow.ApprovalPolicy{policy}}, func() time.Time { return now })
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := approvalWorkflow.Service.BindPolicyResolver(resolver); err != nil {
+		t.Fatal(err)
+	}
+	handler := IdentityHandler{ApprovalRequestService: approvalWorkflow.Service}
+	requesterContext, err := identity.WithActor(context.Background(), identity.ApplicationActor{UserID: uuid.New(), Subject: identity.AuthenticationSubject{OID: "oid", TID: "tid", Sub: "requester"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	createParams := generated.WfaCreateApprovalRequestParams{IdempotencyKey: "handler-create-decision"}
+	createdResponse, err := handler.WfaCreateApprovalRequest(requesterContext, newHTTPApprovalRequestCreateRequest(), createParams)
+	if err != nil {
+		t.Fatal(err)
+	}
+	created, ok := createdResponse.(*generated.WfaCreateApprovalRequestEstablishedResult)
+	if !ok {
+		t.Fatalf("create response = %#v", createdResponse)
+	}
+	stepID := created.Data.Request.CurrentStepId.Value
+	approverContext, err := identity.WithActor(context.Background(), identity.ApplicationActor{UserID: uuid.New(), Subject: identity.AuthenticationSubject{OID: "oid", TID: "tid", Sub: "approver"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	decisionRequest := &generated.CommandRequest{
+		CommandId:       generated.UUID(uuid.New()),
+		ExpectedVersion: generated.NewOptInt(created.AggregateVersion),
+		Data: generated.CommandRequestData{
+			"requestId":            mustRaw(uuid.UUID(created.AggregateId).String()),
+			"decisionId":           mustRaw(uuid.NewString()),
+			"stepId":               mustRaw(uuid.UUID(stepID).String()),
+			"outcome":              mustRaw("approved"),
+			"reason":               mustRaw("Independent review complete"),
+			"policyVersion":        mustRaw(created.Data.Request.PolicyVersion),
+			"subjectVersion":       mustRaw(created.Data.Request.SubjectVersion),
+			"candidateFingerprint": mustRaw(created.Data.Request.SubjectFingerprint),
+		},
+	}
+	params := generated.WfaDecideApprovalRequestParams{IdempotencyKey: "handler-decision", XCorrelationID: generated.NewOptUUID(generated.UUID(uuid.New()))}
+	response, err := handler.WfaDecideApprovalRequest(approverContext, decisionRequest, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+	established, ok := response.(*generated.WfaApprovalRequestEstablishedResult)
+	if !ok || established.Data.Request.Status != generated.WfaApprovalRequestProjectionStatusApproved || len(established.Data.Request.Decisions) != 1 || !established.Data.DecisionReference.Set || established.Data.ApplicationStatus != generated.WfaApprovalRequestResultDataApplicationStatusNotReported {
+		t.Fatalf("decision response = %#v", response)
+	}
+
+	replayed, err := handler.WfaDecideApprovalRequest(approverContext, decisionRequest, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if replay, ok := replayed.(*generated.WfaApprovalRequestEstablishedResult); !ok || !replay.Data.Replayed {
+		t.Fatalf("replayed decision response = %#v", replayed)
+	}
+
+	unknown := *decisionRequest
+	unknown.Data = generated.CommandRequestData{"requestId": mustRaw(uuid.UUID(created.AggregateId).String()), "decisionId": mustRaw(uuid.NewString()), "stepId": mustRaw(uuid.UUID(stepID).String()), "outcome": mustRaw("approved"), "policyVersion": mustRaw(created.Data.Request.PolicyVersion), "subjectVersion": mustRaw(created.Data.Request.SubjectVersion), "candidateFingerprint": mustRaw(created.Data.Request.SubjectFingerprint), "unexpected": mustRaw("reject")}
+	invalid, err := handler.WfaDecideApprovalRequest(approverContext, &unknown, generated.WfaDecideApprovalRequestParams{IdempotencyKey: "handler-unknown-field"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if problem, ok := invalid.(*generated.WfaDecideApprovalRequestBadRequest); !ok || problem.Code != "INVALID_REQUEST" {
+		t.Fatalf("unknown-field response = %#v", invalid)
+	}
+}
+
 type staticApprovalPolicyRepository struct {
 	policies []workflow.ApprovalPolicy
 }

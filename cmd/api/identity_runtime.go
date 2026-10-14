@@ -397,7 +397,8 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err != nil {
 		return identityUnavailableHandler("workflow approval-policy persistence unavailable"), nil
 	}
-	workflowApprovalWorkflow, err := workflow.NewPostgresApprovalWorkflowWithDurableIdempotency(pool, postgresWorkflowRequestAuditWriter(auditWriter), postgresWorkflowEventWriter, evaluatorWorkflowRequestAuthorizer{evaluator: policyEvaluator, segregation: segregationEvaluator}, time.Now, workflow.DurableApprovalRequestServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, CreateOperationID: "workflow.create-approval-request.v1", DecideOperationID: "workflow.decide-approval-request.v1"})
+	workflowRequestAuthorizer := evaluatorWorkflowRequestAuthorizer{evaluator: policyEvaluator, segregation: segregationEvaluator, users: repository, roles: roleRepository}
+	workflowApprovalWorkflow, err := workflow.NewPostgresApprovalWorkflowWithDurableIdempotency(pool, postgresWorkflowRequestAuditWriter(auditWriter), postgresWorkflowEventWriter, workflowRequestAuthorizer, time.Now, workflow.DurableApprovalRequestServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, CreateOperationID: "workflow.create-approval-request.v1", DecideOperationID: "workflow.decide-approval-request.v1"})
 	if err != nil {
 		return identityUnavailableHandler("workflow approval-request persistence unavailable"), nil
 	}
@@ -408,7 +409,10 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err := workflowApprovalWorkflow.Service.BindPolicyResolver(workflowPolicyResolver); err != nil {
 		return identityUnavailableHandler("workflow approval-request resolver unavailable"), nil
 	}
-	workflowRequestQueries, err := workflow.NewApprovalRequestQueryService(workflowApprovalWorkflow.Requests, evaluatorWorkflowRequestAuthorizer{evaluator: policyEvaluator, segregation: segregationEvaluator}, time.Now)
+	if err := workflowApprovalWorkflow.Service.BindPolicyRepository(workflowPolicyRepository); err != nil {
+		return identityUnavailableHandler("workflow approval-request policy validator unavailable"), nil
+	}
+	workflowRequestQueries, err := workflow.NewApprovalRequestQueryService(workflowApprovalWorkflow.Requests, workflowRequestAuthorizer, time.Now)
 	if err != nil {
 		return identityUnavailableHandler("workflow approval-request query service unavailable"), nil
 	}
@@ -969,7 +973,8 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err != nil {
 		return identityUnavailableHandler("general-ledger soft-close gate service unavailable"), nil
 	}
-	workflowApprovalWorkflow, err := workflow.NewMemoryApprovalWorkflowWithAuthorizer(evaluatorWorkflowRequestAuthorizer{evaluator: authorizer.evaluator, segregation: segregationEvaluator})
+	workflowRequestAuthorizer := evaluatorWorkflowRequestAuthorizer{evaluator: authorizer.evaluator, segregation: segregationEvaluator, users: repository, roles: roleRepository}
+	workflowApprovalWorkflow, err := workflow.NewMemoryApprovalWorkflowWithAuthorizer(workflowRequestAuthorizer)
 	if err != nil {
 		return identityUnavailableHandler("workflow approval-request service unavailable"), nil
 	}
@@ -981,7 +986,10 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err := workflowApprovalWorkflow.Service.BindPolicyResolver(workflowPolicyResolver); err != nil {
 		return identityUnavailableHandler("workflow approval-request resolver unavailable"), nil
 	}
-	workflowRequestQueries, err := workflow.NewApprovalRequestQueryService(workflowApprovalWorkflow.Requests, evaluatorWorkflowRequestAuthorizer{evaluator: authorizer.evaluator, segregation: segregationEvaluator}, time.Now)
+	if err := workflowApprovalWorkflow.Service.BindPolicyRepository(workflowPolicyRepository); err != nil {
+		return identityUnavailableHandler("workflow approval-request policy validator unavailable"), nil
+	}
+	workflowRequestQueries, err := workflow.NewApprovalRequestQueryService(workflowApprovalWorkflow.Requests, workflowRequestAuthorizer, time.Now)
 	if err != nil {
 		return identityUnavailableHandler("workflow approval-request query service unavailable"), nil
 	}

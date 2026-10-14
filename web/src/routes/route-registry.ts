@@ -8,7 +8,7 @@ export type NavigationArea =
   | 'Administration'
   | 'Audit'
 
-export type ScreenId = 'XCT-WS-01' | 'XCT-SCR-01' | 'CON-SCR-01' | 'IAM-WS-01' | 'IAM-SCR-01' | 'IAM-SCR-04' | 'OMD-WS-01' | 'OMD-SCR-01' | 'OMD-SCR-02' | 'OMD-SCR-03' | 'OMD-SCR-04' | 'OMD-SCR-05' | 'COA-WS-01' | 'COA-SCR-01' | 'COA-SCR-02' | 'COA-SCR-03' | 'COA-SCR-04' | 'GL-WS-01' | 'GL-SCR-01' | 'GL-SCR-02' | 'GL-SCR-03' | 'GL-SCR-04' | 'GL-SCR-05' | 'WFA-WS-01' | 'WFA-SCR-01' | 'WFA-SCR-03'
+export type ScreenId = 'XCT-WS-01' | 'XCT-SCR-01' | 'CON-SCR-01' | 'IAM-WS-01' | 'IAM-SCR-01' | 'IAM-SCR-04' | 'OMD-WS-01' | 'OMD-SCR-01' | 'OMD-SCR-02' | 'OMD-SCR-03' | 'OMD-SCR-04' | 'OMD-SCR-05' | 'COA-WS-01' | 'COA-SCR-01' | 'COA-SCR-02' | 'COA-SCR-03' | 'COA-SCR-04' | 'GL-WS-01' | 'GL-SCR-01' | 'GL-SCR-02' | 'GL-SCR-03' | 'GL-SCR-04' | 'GL-SCR-05' | 'WFA-WS-01' | 'WFA-SCR-01' | 'WFA-SCR-02' | 'WFA-SCR-03'
 
 export type RouteId =
   | 'home'
@@ -17,6 +17,7 @@ export type RouteId =
   | 'approvals'
   | 'wfaWorklist'
   | 'wfaRequestDetail'
+  | 'wfaDecisionWorkspace'
   | 'wfaPolicyEditor'
   | 'exceptions'
   | 'reports'
@@ -63,6 +64,7 @@ export const routeRegistry = [
   { id: 'approvals', path: '/approvals', title: 'Approvals', kind: 'area', navigationArea: 'Approvals', requiresScope: true },
   { id: 'wfaWorklist', path: '/approvals/wfa-ws-01', title: 'Approval-request worklist', kind: 'operational', navigationArea: 'Approvals', screenId: 'WFA-WS-01', requiresScope: true },
   { id: 'wfaRequestDetail', path: '/approvals/wfa-scr-01', title: 'Approval-request detail', kind: 'operational', navigationArea: 'Approvals', screenId: 'WFA-SCR-01', requiresScope: true },
+  { id: 'wfaDecisionWorkspace', path: '/approvals/wfa-scr-02', title: 'Record approval decision', kind: 'operational', navigationArea: 'Approvals', screenId: 'WFA-SCR-02', requiresScope: true },
   { id: 'wfaPolicyEditor', path: '/approvals/wfa-scr-03', title: 'Approval-policy editor', kind: 'operational', navigationArea: 'Approvals', screenId: 'WFA-SCR-03', requiresScope: true },
   { id: 'exceptions', path: '/exceptions', title: 'Exceptions', kind: 'area', navigationArea: 'Exceptions', requiresScope: true },
   { id: 'reports', path: '/reports', title: 'Reports', kind: 'area', navigationArea: 'Reports', requiresScope: true },

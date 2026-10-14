@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 
-import { wfaCreateApprovalRequest, wfaGetApprovalRequest, wfaListApprovalRequests } from '@/generated/api/sdk.gen'
+import { wfaCreateApprovalRequest, wfaDecideApprovalRequest, wfaGetApprovalRequest, wfaListApprovalRequests } from '@/generated/api/sdk.gen'
 import type {
+	WfaApprovalDecisionProjection,
   WfaApprovalRequestProjection,
   WfaApprovalRequestStep,
   WfaCreateApprovalRequestEstablishedResult,
@@ -74,7 +75,8 @@ type SubmissionIdentity = {
   correlationId: string
 }
 
-export function WorkflowApprovalWorkspace({ detail = false }: { detail?: boolean }) {
+export function WorkflowApprovalWorkspace({ detail = false, decision = false }: { detail?: boolean; decision?: boolean }) {
+  if (decision) return <ApprovalDecisionWorkspace />
   return detail ? <ApprovalRequestDetail /> : <ApprovalRequestWorklist />
 }
 
@@ -258,7 +260,133 @@ function ApprovalRequestDetail() {
       {!loading && !request ? <p className="rounded-box border border-base-300 p-4 text-sm">{requestID ? 'The detail could not be loaded.' : 'Return to the WFA worklist and choose a request.'}</p> : null}
       {request ? <div className="space-y-5"><div className="flex flex-wrap items-center gap-3"><StatusBadge state={requestState(request.status)} label={request.status} announce /><span className="text-sm text-base-content/70">Aggregate version {request.aggregateVersion}</span></div><div className="grid gap-4 md:grid-cols-2"><Evidence label="Request ID" value={request.id} /><Evidence label="Subject" value={`${request.subjectType} / ${request.subjectId} / v${request.subjectVersion}`} /><Evidence label="Subject fingerprint" value={request.subjectFingerprint} /><Evidence label="Snapshot fingerprint" value={request.snapshotFingerprint ?? '—'} /><Evidence label="Source operation" value={`${request.sourceContext ?? '—'} / ${request.operation ?? '—'}`} /><Evidence label="Policy binding" value={`${request.policyId} / ${request.policyVersion}`} /><Evidence label="Responsible roles" value={request.responsibleRoles.join(', ') || '—'} /><Evidence label="Due at" value={formatDate(request.dueAt)} /></div><Panel title="Safe subject snapshot" description="Allow-listed review evidence only."><dl className="grid gap-3 text-sm sm:grid-cols-2"><Evidence label="Label" value={request.subjectSnapshot?.label ?? '—'} /><Evidence label="Reference" value={request.subjectSnapshot?.reference ?? '—'} /><Evidence label="Summary" value={request.subjectSnapshot?.summary ?? '—'} /><Evidence label="Amount" value={request.subjectSnapshot?.amount ? `${request.subjectSnapshot.amount} ${request.subjectSnapshot.currency ?? ''}` : '—'} /></dl></Panel><Panel title="Copied approval steps" description="Policy-defined step configuration copied at request creation."><ol className="space-y-3">{request.steps.map((step) => <ApprovalStep key={step.id} step={step} />)}</ol></Panel><div className="flex flex-wrap gap-3"><RouterLink className="btn btn-secondary" to="/approvals/wfa-ws-01">Back to worklist</RouterLink></div></div> : null}
     </Panel>
+    {request ? <Panel title="Decision history and application status" description="Workflow exposes immutable decisions. The owning consumer application result is intentionally not reported here."><div className="flex flex-wrap items-center gap-3"><StatusBadge state="info" label={`Application: ${request.applicationStatus}`} /><span className="text-sm text-base-content/70">Recorded decisions: {request.decisions.length}</span></div>{request.decisions.length > 0 ? <div className="mt-4"><DecisionHistory decisions={request.decisions} /></div> : <p className="mt-4 text-sm text-base-content/70">No prior decision has been recorded.</p>}{request.status === 'Pending' ? <RouterLink className="btn btn-primary mt-4" to={`/approvals/wfa-scr-02?approvalRequestId=${encodeURIComponent(request.id)}`}>Open decision workspace</RouterLink> : null}</Panel> : null}
   </div>
+}
+
+type DecisionSubmissionIdentity = {
+  fingerprint: string
+  commandId: string
+  decisionId: string
+  idempotencyKey: string
+  correlationId: string
+}
+
+function ApprovalDecisionWorkspace() {
+  const [searchParams] = useSearchParams()
+  const requestID = searchParams.get('approvalRequestId') ?? ''
+  const [request, setRequest] = useState<WfaApprovalRequestProjection | null>(null)
+  const [loading, setLoading] = useState(Boolean(requestID))
+  const [submitting, setSubmitting] = useState(false)
+  const [outcome, setOutcome] = useState<'approved' | 'rejected'>('approved')
+  const [reason, setReason] = useState('')
+  const [delegationReference, setDelegationReference] = useState('')
+  const [notice, setNotice] = useState(requestID ? 'Loading the authorized decision workspace.' : 'Choose an approval request from the worklist.')
+  const submissionIdentity = useRef<DecisionSubmissionIdentity | null>(null)
+
+  const load = async () => {
+    if (!requestID) {
+      setLoading(false)
+      setRequest(null)
+      return
+    }
+    setLoading(true)
+    try {
+      const response = await wfaGetApprovalRequest({ path: { approvalRequestId: requestID }, headers: { 'X-Correlation-Id': newIdentifier() } })
+      if (response.error) {
+        setRequest(null)
+        setNotice(errorDetail(response.error))
+      } else if (response.data) {
+        setRequest(response.data.data.request)
+        setNotice('Authorized decision workspace loaded. The application result remains not reported by Workflow.')
+      } else {
+        setRequest(null)
+        setNotice('No established detail result was returned.')
+      }
+    } catch (error) {
+      setRequest(null)
+      setNotice(error instanceof Error ? error.message : 'The approval decision workspace could not reach the live API.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void load()
+    // The request identifier is the authoritative read key for this screen.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requestID])
+
+  const currentStep = request?.currentStepId
+    ? request.steps.find((step) => step.id === request.currentStepId)
+    : request?.steps.find((step) => step.status === 'Pending')
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!request || !currentStep) {
+      setNotice('The request has no current actionable step. Refresh before retrying.')
+      return
+    }
+    if (outcome === 'rejected' && !reason.trim()) {
+      setNotice('A rejected decision requires a reason.')
+      return
+    }
+    const fingerprint = JSON.stringify({ requestID: request.id, aggregateVersion: request.aggregateVersion, stepID: currentStep.id, outcome, reason: reason.trim(), delegationReference: delegationReference.trim(), policyVersion: request.policyVersion, subjectVersion: request.subjectVersion, candidateFingerprint: request.subjectFingerprint })
+    const identity = submissionIdentity.current?.fingerprint === fingerprint
+      ? submissionIdentity.current
+      : { fingerprint, commandId: newIdentifier(), decisionId: newIdentifier(), idempotencyKey: newIdentifier(), correlationId: newIdentifier() }
+    submissionIdentity.current = identity
+    setSubmitting(true)
+    setNotice('Recording the immutable approval decision and waiting for the authoritative result…')
+    try {
+      const response = await wfaDecideApprovalRequest({
+        body: {
+          commandId: identity.commandId,
+          expectedVersion: request.aggregateVersion,
+          data: {
+            requestId: request.id,
+            decisionId: identity.decisionId,
+            stepId: currentStep.id,
+            outcome,
+            reason: reason.trim() || undefined,
+            delegationReference: delegationReference.trim() || undefined,
+            policyVersion: request.policyVersion,
+            subjectVersion: request.subjectVersion,
+            candidateFingerprint: request.subjectFingerprint,
+          },
+        },
+        headers: { 'Idempotency-Key': identity.idempotencyKey, 'X-Correlation-Id': identity.correlationId },
+      })
+      if (response.error) {
+        setNotice(errorDetail(response.error))
+        return
+      }
+      if (!response.data) {
+        setNotice('No established result was returned. No local decision state was substituted.')
+        return
+      }
+      setRequest(response.data.data.request)
+      setNotice(response.data.data.replayed ? 'The established decision was safely replayed from the idempotency key.' : 'Decision recorded. Application status remains not reported until an owning consumer revalidates it.')
+      submissionIdentity.current = null
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'The approval decision could not reach the live API. The idempotency identity is retained for safe retry.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return <div className="space-y-6">
+    <div><p className="text-sm font-semibold uppercase tracking-wide text-primary">WFA-SCR-02</p><h1 className="mt-1 text-2xl font-semibold">Record approval decision</h1><p className="mt-2 max-w-3xl text-base-content/75">Record an authorized approve or reject decision against the current policy step. Workflow exposes the immutable evidence; the owning finance consumer remains responsible for application revalidation.</p></div>
+    <Panel title="Decision workspace" description={notice}>
+      {loading ? <p role="status" aria-busy="true">Loading authoritative decision evidence. No local result is implied.</p> : null}
+      {!loading && !request ? <p className="rounded-box border border-base-300 p-4 text-sm">{requestID ? 'The decision workspace could not be loaded.' : 'Return to the WFA worklist and choose a request.'}</p> : null}
+      {request ? <div className="space-y-5"><div className="flex flex-wrap items-center gap-3"><StatusBadge state={requestState(request.status)} label={request.status} announce /><StatusBadge state="info" label={`Application: ${request.applicationStatus}`} /><span className="text-sm text-base-content/70">Aggregate version {request.aggregateVersion}</span></div><div className="grid gap-4 md:grid-cols-2"><Evidence label="Request ID" value={request.id} /><Evidence label="Subject" value={`${request.subjectType} / ${request.subjectId} / v${request.subjectVersion}`} /><Evidence label="Subject fingerprint" value={request.subjectFingerprint} /><Evidence label="Policy binding" value={`${request.policyId} / ${request.policyVersion}`} /><Evidence label="Safe snapshot" value={`${request.subjectSnapshot?.label ?? '—'} · ${request.subjectSnapshot?.summary ?? '—'}`} /><Evidence label="Current step" value={currentStep ? `${currentStep.name ?? `Step ${currentStep.sequence}`} / ${currentStep.id}` : 'No actionable step'} /></div>{currentStep ? <Panel title="Current policy step" description="Eligibility is revalidated by IAM and segregation-of-duties controls at decision time."><p className="text-sm">Roles: {currentStep.requiredRoles.map((role) => role.role).join(', ') || '—'} · Minimum approvals: {currentStep.minimumApprovals}</p><p className="mt-2 text-sm text-base-content/70">Delegation: {currentStep.delegation?.enabled ? 'configured; provide a reference when acting as a delegate' : 'not configured'}</p></Panel> : null}<Panel title="Prior immutable decisions" description="Recorded decisions are history, not editable form state.">{request.decisions.length === 0 ? <p className="text-sm text-base-content/70">No prior decision has been recorded.</p> : <DecisionHistory decisions={request.decisions} />}</Panel>{request.status === 'Pending' && currentStep ? <form onSubmit={(event) => void submit(event)} noValidate className="space-y-4"><fieldset className="rounded-box border border-base-300 p-4"><legend className="px-2 font-semibold">Record decision</legend><div className="grid gap-4 md:grid-cols-2"><label className="form-control gap-2"><span className="font-medium">Outcome</span><Select aria-label="Decision outcome" value={outcome} onChange={(event) => setOutcome(event.target.value as typeof outcome)}><option value="approved">Approve</option><option value="rejected">Reject</option></Select></label><Field id="wfa-decision-reason" label="Reason" value={reason} onChange={(event) => setReason(event.target.value)} required={outcome === 'rejected'} description="Keep the reason safe and review-oriented; established evidence is immutable." /><Field id="wfa-decision-delegation-reference" label="Delegation reference" value={delegationReference} onChange={(event) => setDelegationReference(event.target.value)} description="Optional unless the current step permits delegated approval." /></div><div className="mt-4 grid gap-3 text-sm sm:grid-cols-2"><Evidence label="Decision ID" value={submissionIdentity.current?.decisionId ?? 'Generated on submit and retained for retry'} /><Evidence label="Expected request version" value={`v${request.aggregateVersion}`} /><Evidence label="Candidate fingerprint" value={request.subjectFingerprint} /></div></fieldset><div className="flex flex-wrap items-center gap-3"><Button type="submit" loading={submitting}>Record {outcome} decision</Button><span className="text-sm text-base-content/70">The retry identity remains stable after transport or timeout failures.</span></div></form> : <p className="rounded-box border border-info/30 bg-info/5 p-4 text-sm">This request is not actionable. Refresh the detail or follow the recorded next action.</p>}<div className="flex flex-wrap gap-3"><RouterLink className="btn btn-secondary" to={`/approvals/wfa-scr-01?approvalRequestId=${encodeURIComponent(request.id)}`}>Back to request detail</RouterLink><RouterLink className="btn btn-ghost" to="/approvals/wfa-ws-01">Back to worklist</RouterLink></div></div> : null}
+    </Panel>
+  </div>
+}
+
+function DecisionHistory({ decisions }: { decisions: WfaApprovalDecisionProjection[] }) {
+  return <div className="overflow-x-auto"><table className="table min-w-full"><caption className="caption-top pb-3 text-left text-sm font-semibold">Immutable decision history</caption><thead><tr><th scope="col">Outcome</th><th scope="col">Approver</th><th scope="col">Step</th><th scope="col">Reason</th><th scope="col">Recorded</th></tr></thead><tbody>{decisions.map((decision) => <tr key={decision.id}><th scope="row"><StatusBadge state={decision.outcome === 'approved' ? 'success' : 'error'} label={decision.outcome} /></th><td><span className="font-mono">{decision.approverUserId}</span><div className="text-xs text-base-content/60">{decision.approverSubjectReference}</div></td><td className="font-mono">{decision.stepId ?? '—'}</td><td>{decision.reason || '—'}</td><td>{formatDate(decision.recordedAt)}</td></tr>)}</tbody></table></div>
 }
 
 function Evidence({ label, value }: { label: string; value: string }) {
