@@ -12,17 +12,77 @@
       required: true
       content:
         application/json:
-          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          schema: { $ref: ../components/common.yaml#/schemas/WfaCreateApprovalRequestCommandRequest }
           examples:
             deterministic:
               $ref: ../examples/command-request.yaml
     responses:
-      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '200':
+        description: Established approval-request result
+        content:
+          application/json:
+            schema: { $ref: ../components/common.yaml#/schemas/WfaCreateApprovalRequestEstablishedResult }
       '400': { $ref: ../components/common.yaml#/responses/Problem }
       '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
       '403': { $ref: ../components/common.yaml#/responses/Problem }
       '409': { $ref: ../components/common.yaml#/responses/Problem }
       '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/approvals/reference/requests:
+  get:
+    tags: [approvals]
+    operationId: wfaListApprovalRequests
+    x-owner-capability: approvals
+    x-permission: finance.wfa.read.approval.requests
+    parameters:
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/X-Accounting-Scope-Id
+      - name: assignment
+        in: query
+        schema: { type: string, enum: [assigned, all], default: assigned }
+      - name: due
+        in: query
+        schema: { type: string, enum: [due, all], default: all }
+      - name: state
+        in: query
+        schema: { type: string, enum: [all, blocked, delegated, escalated, completed], default: all }
+      - $ref: ../components/common.yaml#/parameters/PageSize
+      - $ref: ../components/common.yaml#/parameters/PageAfter
+    responses:
+      '200':
+        description: Authorized approval-request worklist
+        content:
+          application/json:
+            schema: { $ref: ../components/common.yaml#/schemas/WfaApprovalRequestListEstablishedResult }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/approvals/reference/requests/{approvalRequestId}:
+  get:
+    tags: [approvals]
+    operationId: wfaGetApprovalRequest
+    x-owner-capability: approvals
+    x-permission: finance.wfa.read.approval.requests
+    parameters:
+      - name: approvalRequestId
+        in: path
+        required: true
+        schema: { $ref: ../components/common.yaml#/schemas/Uuid }
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/X-Accounting-Scope-Id
+    responses:
+      '200':
+        description: Authorized approval-request detail
+        content:
+          application/json:
+            schema: { $ref: ../components/common.yaml#/schemas/WfaApprovalRequestEstablishedResult }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '404': { $ref: ../components/common.yaml#/responses/Problem }
       '503': { $ref: ../components/common.yaml#/responses/Problem }
 /approvals/actions/decide-approval-request:
   post:

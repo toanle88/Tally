@@ -261,13 +261,17 @@ func (q *Queries) CreateWorkflowApprovalPolicyVersionIdentity(ctx context.Contex
 const createWorkflowApprovalRequest = `-- name: CreateWorkflowApprovalRequest :exec
 INSERT INTO workflow.approval_request (
     id, subject_type, subject_id, subject_version, subject_fingerprint,
-    policy_id, policy_version, scope, steps, status, aggregate_version,
+    subject_snapshot, snapshot_fingerprint, source_context, operation,
+    transaction_type, data_classification, dimensions, amount, currency,
+    due_at, responsible_roles, policy_id, policy_version, scope, steps, status, aggregate_version,
     requester_user_id, requester_subject_reference, correlation_id,
     causation_id, created_at, updated_at
 ) VALUES (
     $1, $2, $3, $4, $5,
-    $6, $7, $8::jsonb, $9::jsonb, $10, $11,
-    $12, $13, $14, $15, $16, $17
+    $6::jsonb, $7, $8, $9,
+    $10, $11, $12::jsonb, $13, $14,
+    $15, $16::jsonb, $17, $18, $19::jsonb, $20::jsonb, $21, $22,
+    $23, $24, $25, $26, $27, $28
 )
 `
 
@@ -277,6 +281,17 @@ type CreateWorkflowApprovalRequestParams struct {
 	SubjectID                 string
 	SubjectVersion            int64
 	SubjectFingerprint        string
+	SubjectSnapshot           []byte
+	SnapshotFingerprint       string
+	SourceContext             string
+	Operation                 string
+	TransactionType           string
+	DataClassification        string
+	Dimensions                []byte
+	Amount                    pgtype.Numeric
+	Currency                  string
+	DueAt                     pgtype.Timestamptz
+	ResponsibleRoles          []byte
 	PolicyID                  pgtype.UUID
 	PolicyVersion             string
 	Scope                     []byte
@@ -298,6 +313,17 @@ func (q *Queries) CreateWorkflowApprovalRequest(ctx context.Context, arg CreateW
 		arg.SubjectID,
 		arg.SubjectVersion,
 		arg.SubjectFingerprint,
+		arg.SubjectSnapshot,
+		arg.SnapshotFingerprint,
+		arg.SourceContext,
+		arg.Operation,
+		arg.TransactionType,
+		arg.DataClassification,
+		arg.Dimensions,
+		arg.Amount,
+		arg.Currency,
+		arg.DueAt,
+		arg.ResponsibleRoles,
 		arg.PolicyID,
 		arg.PolicyVersion,
 		arg.Scope,
@@ -403,22 +429,66 @@ func (q *Queries) GetWorkflowApprovalPolicyRevision(ctx context.Context, arg Get
 const getWorkflowApprovalRequest = `-- name: GetWorkflowApprovalRequest :one
 SELECT
     id, subject_type, subject_id, subject_version, subject_fingerprint,
-    policy_id, policy_version, scope, steps, status, aggregate_version,
+    subject_snapshot, snapshot_fingerprint, source_context, operation,
+    transaction_type, data_classification, dimensions, amount, currency,
+    due_at, responsible_roles, policy_id, policy_version, scope, steps, status, aggregate_version,
     requester_user_id, requester_subject_reference, correlation_id,
     causation_id, created_at, updated_at
 FROM workflow.approval_request
 WHERE id = $1
 `
 
-func (q *Queries) GetWorkflowApprovalRequest(ctx context.Context, id pgtype.UUID) (WorkflowApprovalRequest, error) {
+type GetWorkflowApprovalRequestRow struct {
+	ID                        pgtype.UUID
+	SubjectType               string
+	SubjectID                 string
+	SubjectVersion            int64
+	SubjectFingerprint        string
+	SubjectSnapshot           []byte
+	SnapshotFingerprint       string
+	SourceContext             string
+	Operation                 string
+	TransactionType           string
+	DataClassification        string
+	Dimensions                []byte
+	Amount                    pgtype.Numeric
+	Currency                  string
+	DueAt                     pgtype.Timestamptz
+	ResponsibleRoles          []byte
+	PolicyID                  pgtype.UUID
+	PolicyVersion             string
+	Scope                     []byte
+	Steps                     []byte
+	Status                    string
+	AggregateVersion          int64
+	RequesterUserID           pgtype.UUID
+	RequesterSubjectReference string
+	CorrelationID             pgtype.UUID
+	CausationID               pgtype.UUID
+	CreatedAt                 pgtype.Timestamptz
+	UpdatedAt                 pgtype.Timestamptz
+}
+
+func (q *Queries) GetWorkflowApprovalRequest(ctx context.Context, id pgtype.UUID) (GetWorkflowApprovalRequestRow, error) {
 	row := q.db.QueryRow(ctx, getWorkflowApprovalRequest, id)
-	var i WorkflowApprovalRequest
+	var i GetWorkflowApprovalRequestRow
 	err := row.Scan(
 		&i.ID,
 		&i.SubjectType,
 		&i.SubjectID,
 		&i.SubjectVersion,
 		&i.SubjectFingerprint,
+		&i.SubjectSnapshot,
+		&i.SnapshotFingerprint,
+		&i.SourceContext,
+		&i.Operation,
+		&i.TransactionType,
+		&i.DataClassification,
+		&i.Dimensions,
+		&i.Amount,
+		&i.Currency,
+		&i.DueAt,
+		&i.ResponsibleRoles,
 		&i.PolicyID,
 		&i.PolicyVersion,
 		&i.Scope,

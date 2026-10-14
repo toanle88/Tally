@@ -33,8 +33,9 @@ The domain baseline defines 19 bounded contexts:
 | Generic/control | Workflow & Approvals; Identity & Access |
 
 The table describes the approved domain target. The current repository has
-implemented platform foundations and a growing Identity & Access slice; it has
-not implemented all 19 business modules.
+implemented platform, Identity & Access, organization/master-data, COA,
+General Ledger, and initial workflow policy/request slices; it has not
+implemented all 19 business modules.
 
 ## Request and data flow
 
@@ -76,11 +77,12 @@ one identity are treated as integrity problems.
 ## Current implementation boundary
 
 The runtime currently demonstrates health, authenticated API boundaries,
-Identity & Access operations, and platform coordination. The OpenAPI contract
-catalogues the wider future API surface, but contract entries are not proof
-that every capability route is implemented. The web application similarly
-contains shared and synthetic operational screens; its placeholder capability
-routes do not own finance records.
+Identity & Access, organization/master-data, COA, General Ledger, and
+workflow policy/request operations, together with platform coordination. The
+OpenAPI contract catalogues the wider future API surface, but contract entries
+are not proof that every capability route is implemented. The web application
+contains shared components plus authorized GL and workflow workspaces; future
+placeholder capability routes do not own finance records.
 
 See the [solution architecture overview](https://github.com/toanle88/Tally/blob/main/docs/specs/system_design/01_solution_architecture_overview_v1.0.md),
 [application/module design](https://github.com/toanle88/Tally/blob/main/docs/specs/system_design/02_application_module_design_v1.0.md),

@@ -14709,7 +14709,7 @@ func (s *Server) decodeTaxSubmitTaxReturnRequest(r *http.Request) (
 }
 
 func (s *Server) decodeWfaCreateApprovalRequestRequest(r *http.Request) (
-	req *CommandRequest,
+	req *WfaCreateApprovalRequestCommandRequest,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -14756,7 +14756,7 @@ func (s *Server) decodeWfaCreateApprovalRequestRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request CommandRequest
+		var request WfaCreateApprovalRequestCommandRequest
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err

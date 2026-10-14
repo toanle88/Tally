@@ -401,6 +401,17 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err != nil {
 		return identityUnavailableHandler("workflow approval-request persistence unavailable"), nil
 	}
+	workflowPolicyResolver, err := workflow.NewEffectiveApprovalPolicyResolver(workflowPolicyRepository, time.Now)
+	if err != nil {
+		return identityUnavailableHandler("workflow approval-policy resolver unavailable"), nil
+	}
+	if err := workflowApprovalWorkflow.Service.BindPolicyResolver(workflowPolicyResolver); err != nil {
+		return identityUnavailableHandler("workflow approval-request resolver unavailable"), nil
+	}
+	workflowRequestQueries, err := workflow.NewApprovalRequestQueryService(workflowApprovalWorkflow.Requests, evaluatorWorkflowRequestAuthorizer{evaluator: policyEvaluator, segregation: segregationEvaluator}, time.Now)
+	if err != nil {
+		return identityUnavailableHandler("workflow approval-request query service unavailable"), nil
+	}
 	workflowPolicyService, err := workflow.NewApprovalPolicyServiceWithDurableIdempotency(
 		workflowPolicyRepository,
 		evaluatorWorkflowAuthorizer{evaluator: policyEvaluator},
@@ -413,7 +424,7 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 		return identityUnavailableHandler("workflow approval-policy service unavailable"), nil
 	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, ApprovalPolicyService: workflowPolicyService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, ApprovalPolicyService: workflowPolicyService, ApprovalRequestService: workflowApprovalWorkflow.Service, ApprovalRequestQueries: workflowRequestQueries, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -963,6 +974,17 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 		return identityUnavailableHandler("workflow approval-request service unavailable"), nil
 	}
 	workflowPolicyRepository := workflow.NewMemoryApprovalPolicyRepository()
+	workflowPolicyResolver, err := workflow.NewEffectiveApprovalPolicyResolver(workflowPolicyRepository, time.Now)
+	if err != nil {
+		return identityUnavailableHandler("workflow approval-policy resolver unavailable"), nil
+	}
+	if err := workflowApprovalWorkflow.Service.BindPolicyResolver(workflowPolicyResolver); err != nil {
+		return identityUnavailableHandler("workflow approval-request resolver unavailable"), nil
+	}
+	workflowRequestQueries, err := workflow.NewApprovalRequestQueryService(workflowApprovalWorkflow.Requests, evaluatorWorkflowRequestAuthorizer{evaluator: authorizer.evaluator, segregation: segregationEvaluator}, time.Now)
+	if err != nil {
+		return identityUnavailableHandler("workflow approval-request query service unavailable"), nil
+	}
 	workflowPolicyService, err := workflow.NewApprovalPolicyService(
 		workflowPolicyRepository,
 		evaluatorWorkflowAuthorizer{evaluator: authorizer.evaluator},
@@ -974,7 +996,7 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 		return identityUnavailableHandler("workflow approval-policy service unavailable"), nil
 	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, ApprovalPolicyService: workflowPolicyService, PostingService: postingService, PostingApprovalDecisionService: postingApprovalDecisionService, JournalReversalService: journalReversalService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, ApprovalPolicyService: workflowPolicyService, ApprovalRequestService: workflowApprovalWorkflow.Service, ApprovalRequestQueries: workflowRequestQueries, PostingService: postingService, PostingApprovalDecisionService: postingApprovalDecisionService, JournalReversalService: journalReversalService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {

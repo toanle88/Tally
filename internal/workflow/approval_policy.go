@@ -17,6 +17,8 @@ import (
 )
 
 const MaintainApprovalPoliciesPermission = "finance.wfa.maintain.approval.policies"
+const CreateApprovalRequestsPermission = "finance.wfa.create.approval.request"
+const ReadApprovalRequestsPermission = "finance.wfa.read.approval.requests"
 
 const (
 	ApprovalPolicyActionCreate            = "create"
@@ -60,6 +62,12 @@ var (
 	ErrApprovalPolicyDuplicate                = errors.New("duplicate approval policy identity")
 	ErrInvalidApprovalPolicyService           = errors.New("invalid approval policy service")
 	ErrApprovalPolicyDurableCommandFailed     = errors.New("approval policy command previously failed")
+	ErrApprovalPolicyNotApplicable            = errors.New("no applicable approval policy was found")
+	ErrApprovalPolicyAmbiguous                = errors.New("multiple applicable approval policies were found")
+	ErrApprovalPolicyResolverUnavailable      = errors.New("approval policy resolver dependency unavailable")
+	ErrApprovalPolicySubjectUnavailable       = errors.New("approval subject evidence is unavailable")
+	ErrApprovalPolicySubjectConflict          = errors.New("approval subject evidence is stale")
+	ErrApprovalPolicyInvalidPage              = errors.New("approval request page cursor is invalid")
 )
 
 var currencyCodePattern = regexp.MustCompile(`^[A-Z]{3}$`)

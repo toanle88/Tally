@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/shopspring/decimal"
 	"github.com/toanle88/Tally/internal/platform/aggregateversion"
 	platformidempotency "github.com/toanle88/Tally/internal/platform/idempotency"
 )
@@ -55,11 +56,14 @@ type AuthorizationDecision struct {
 }
 
 type ApprovalRequestStep struct {
-	ID               uuid.UUID         `json:"id"`
-	Sequence         int               `json:"sequence"`
-	RequiredRoles    []RoleRequirement `json:"requiredRoles"`
-	MinimumApprovals int               `json:"minimumApprovals"`
-	Status           string            `json:"status"`
+	ID               uuid.UUID               `json:"id"`
+	Sequence         int                     `json:"sequence"`
+	Name             string                  `json:"name,omitempty"`
+	RequiredRoles    []RoleRequirement       `json:"requiredRoles"`
+	MinimumApprovals int                     `json:"minimumApprovals"`
+	Delegation       DelegationConfiguration `json:"delegation,omitempty"`
+	Escalation       EscalationConfiguration `json:"escalation,omitempty"`
+	Status           string                  `json:"status"`
 }
 
 type ApprovalDecision struct {
@@ -75,23 +79,34 @@ type ApprovalDecision struct {
 }
 
 type ApprovalRequest struct {
-	ID                 uuid.UUID                         `json:"id"`
-	SubjectType        string                            `json:"subjectType"`
-	SubjectID          string                            `json:"subjectId"`
-	SubjectVersion     int64                             `json:"subjectVersion"`
-	SubjectFingerprint string                            `json:"subjectFingerprint"`
-	PolicyID           uuid.UUID                         `json:"policyId"`
-	PolicyVersion      string                            `json:"policyVersion"`
-	Scope              ApprovalPolicyScope               `json:"scope"`
-	Requester          Actor                             `json:"requester"`
-	Steps              []ApprovalRequestStep             `json:"steps"`
-	Decisions          []ApprovalDecision                `json:"decisions"`
-	Status             string                            `json:"status"`
-	Version            aggregateversion.AggregateVersion `json:"version"`
-	CorrelationID      string                            `json:"correlationId"`
-	CausationID        string                            `json:"causationId"`
-	CreatedAt          time.Time                         `json:"createdAt"`
-	UpdatedAt          time.Time                         `json:"updatedAt"`
+	ID                  uuid.UUID                         `json:"id"`
+	SubjectType         string                            `json:"subjectType"`
+	SubjectID           string                            `json:"subjectId"`
+	SubjectVersion      int64                             `json:"subjectVersion"`
+	SubjectFingerprint  string                            `json:"subjectFingerprint"`
+	SubjectSnapshot     ApprovalSubjectSnapshot           `json:"subjectSnapshot,omitempty"`
+	SnapshotFingerprint string                            `json:"snapshotFingerprint,omitempty"`
+	SourceContext       string                            `json:"sourceContext,omitempty"`
+	Operation           string                            `json:"operation,omitempty"`
+	TransactionType     string                            `json:"transactionType,omitempty"`
+	DataClassification  string                            `json:"dataClassification,omitempty"`
+	Dimensions          map[string]string                 `json:"dimensions,omitempty"`
+	Amount              *decimal.Decimal                  `json:"amount,omitempty"`
+	Currency            string                            `json:"currency,omitempty"`
+	DueAt               *time.Time                        `json:"dueAt,omitempty"`
+	ResponsibleRoles    []string                          `json:"responsibleRoles,omitempty"`
+	PolicyID            uuid.UUID                         `json:"policyId"`
+	PolicyVersion       string                            `json:"policyVersion"`
+	Scope               ApprovalPolicyScope               `json:"scope"`
+	Requester           Actor                             `json:"requester"`
+	Steps               []ApprovalRequestStep             `json:"steps"`
+	Decisions           []ApprovalDecision                `json:"decisions"`
+	Status              string                            `json:"status"`
+	Version             aggregateversion.AggregateVersion `json:"version"`
+	CorrelationID       string                            `json:"correlationId"`
+	CausationID         string                            `json:"causationId"`
+	CreatedAt           time.Time                         `json:"createdAt"`
+	UpdatedAt           time.Time                         `json:"updatedAt"`
 }
 
 func (request ApprovalRequest) Validate() error {
@@ -100,6 +115,20 @@ func (request ApprovalRequest) Validate() error {
 	}
 	if request.SubjectVersion < 1 || strings.TrimSpace(request.SubjectFingerprint) == "" || request.Version.Value() < 1 {
 		return fmt.Errorf("%w: approval request subject evidence is incomplete", ErrInvalidApprovalPolicyCommand)
+	}
+	if request.SnapshotFingerprint != "" {
+		if err := request.SubjectSnapshot.Validate(); err != nil {
+			return err
+		}
+		if request.SnapshotFingerprint != request.SubjectSnapshot.Fingerprint() {
+			return fmt.Errorf("%w: approval request snapshot fingerprint is invalid", ErrInvalidApprovalPolicyCommand)
+		}
+	}
+	if request.Amount != nil && request.Amount.IsNegative() {
+		return fmt.Errorf("%w: approval request amount cannot be negative", ErrInvalidApprovalPolicyCommand)
+	}
+	if request.Currency != "" && !currencyCodePattern.MatchString(request.Currency) {
+		return fmt.Errorf("%w: approval request currency is invalid", ErrInvalidApprovalPolicyCommand)
 	}
 	if err := request.Scope.Validate(); err != nil {
 		return err
@@ -149,17 +178,52 @@ type CreateApprovalRequestCommand struct {
 	PolicyVersion      string
 	Scope              ApprovalPolicyScope
 	Steps              []ApprovalStepDefinition
+	ResolvePolicy      bool
+	Applicability      ApprovalApplicability
+	TransactionType    string
+	DataClassification string
+	Dimensions         map[string]string
+	Amount             *decimal.Decimal
+	Currency           string
+	SubjectSnapshot    ApprovalSubjectSnapshot
 	IdempotencyKey     string
 	CorrelationID      string
 	CausationID        string
 }
 
 func (command CreateApprovalRequestCommand) Validate() error {
-	if strings.TrimSpace(command.IdempotencyKey) == "" || strings.TrimSpace(command.SubjectType) == "" || strings.TrimSpace(command.SubjectID) == "" || command.SubjectVersion < 1 || strings.TrimSpace(command.SubjectFingerprint) == "" || command.PolicyID == uuid.Nil || strings.TrimSpace(command.PolicyVersion) == "" {
+	if strings.TrimSpace(command.IdempotencyKey) == "" || strings.TrimSpace(command.SubjectType) == "" || strings.TrimSpace(command.SubjectID) == "" || command.SubjectVersion < 1 || strings.TrimSpace(command.SubjectFingerprint) == "" {
 		return fmt.Errorf("%w: approval request command identity and idempotency evidence are required", ErrInvalidApprovalPolicyCommand)
 	}
 	if err := command.Scope.Validate(); err != nil {
 		return err
+	}
+	if command.ResolvePolicy {
+		if command.PolicyID != uuid.Nil || strings.TrimSpace(command.PolicyVersion) != "" || len(command.Steps) != 0 {
+			return fmt.Errorf("%w: resolved approval request must not provide a policy snapshot", ErrInvalidApprovalPolicyCommand)
+		}
+		if err := command.Applicability.Validate(); err != nil {
+			return err
+		}
+		if err := command.SubjectSnapshot.Validate(); err != nil {
+			return err
+		}
+		if command.Amount == nil {
+			return fmt.Errorf("%w: resolved approval request amount is required", ErrInvalidApprovalPolicyCommand)
+		}
+		if command.Currency == "" || !currencyCodePattern.MatchString(command.Currency) {
+			return fmt.Errorf("%w: resolved approval request currency is invalid", ErrInvalidApprovalPolicyCommand)
+		}
+		if command.SubjectSnapshot.Currency != "" && command.SubjectSnapshot.Currency != command.Currency {
+			return fmt.Errorf("%w: approval subject snapshot currency must match the request currency", ErrInvalidApprovalPolicyCommand)
+		}
+		if command.SubjectSnapshot.Amount != nil && !command.SubjectSnapshot.Amount.Equal(*command.Amount) {
+			return fmt.Errorf("%w: approval subject snapshot amount must match the request amount", ErrInvalidApprovalPolicyCommand)
+		}
+		return nil
+	}
+	if command.PolicyID == uuid.Nil || strings.TrimSpace(command.PolicyVersion) == "" {
+		return fmt.Errorf("%w: approval request policy identity is required", ErrInvalidApprovalPolicyCommand)
 	}
 	if len(command.Steps) == 0 {
 		return fmt.Errorf("%w: approval request requires steps", ErrInvalidApprovalPolicyCommand)
@@ -238,6 +302,7 @@ type ApprovalEvent struct {
 	SubjectVersion       int64
 	CandidateFingerprint string
 	ScopeIDs             []string
+	DataClassification   string
 	OccurredAt           time.Time
 	CorrelationID        string
 	CausationID          string
@@ -250,6 +315,14 @@ type ApprovalEventRecorder interface {
 type ApprovalRequestRepository interface {
 	Get(context.Context, uuid.UUID) (ApprovalRequest, error)
 	Save(context.Context, ApprovalRequest, *ApprovalRequest, ApprovalRequestAuditRecord, ApprovalEvent) error
+}
+
+// ApprovalRequestReader is the read-only boundary used by the WFA worklist
+// and detail projections. It is separate from the mutation repository so
+// future projection storage can be introduced without changing command code.
+type ApprovalRequestReader interface {
+	Get(context.Context, uuid.UUID) (ApprovalRequest, error)
+	List(context.Context) ([]ApprovalRequest, error)
 }
 
 type DurableApprovalRequestServiceConfig struct {
@@ -274,6 +347,10 @@ type ApprovalRequestAuthorizer interface {
 	AuthorizeApprovalDecision(context.Context, Actor, ApprovalRequest) (AuthorizationDecision, error)
 }
 
+type ApprovalRequestReadAuthorizer interface {
+	AuthorizeApprovalRequestRead(context.Context, Actor, ApprovalRequest) (AuthorizationDecision, error)
+}
+
 type ApprovalRequestCommandResult struct {
 	Request   ApprovalRequest
 	Reference ApprovalDecisionReference
@@ -292,15 +369,26 @@ type PreparedApprovalRequest struct {
 }
 
 type ApprovalRequestService struct {
-	repository ApprovalRequestRepository
-	authorizer ApprovalRequestAuthorizer
-	audit      ApprovalRequestAuditRecorder
-	events     ApprovalEventRecorder
-	clock      func() time.Time
-	durable    *DurableApprovalRequestServiceConfig
+	repository     ApprovalRequestRepository
+	authorizer     ApprovalRequestAuthorizer
+	audit          ApprovalRequestAuditRecorder
+	events         ApprovalEventRecorder
+	clock          func() time.Time
+	durable        *DurableApprovalRequestServiceConfig
+	policyResolver ApprovalPolicyResolver
 
 	mu          sync.Mutex
 	idempotency map[string]storedApprovalRequestResult
+}
+
+// BindPolicyResolver enables the ordinary approval-bearing request path while
+// keeping the explicit policy-maintenance request path independent.
+func (service *ApprovalRequestService) BindPolicyResolver(resolver ApprovalPolicyResolver) error {
+	if service == nil || resolver == nil {
+		return ErrInvalidApprovalPolicyService
+	}
+	service.policyResolver = resolver
+	return nil
 }
 
 type storedApprovalRequestResult struct {
@@ -386,6 +474,25 @@ func (service *ApprovalRequestService) CreateApprovalRequest(ctx context.Context
 			return result, nil
 		}
 	}
+	if command.ResolvePolicy {
+		if service.policyResolver == nil {
+			return ApprovalRequestCommandResult{}, ErrApprovalPolicySubjectUnavailable
+		}
+		resolved, resolveErr := service.policyResolver.Resolve(ctx, ApprovalPolicySelection{
+			Applicability: command.Applicability,
+			Scope:         command.Scope,
+			Amount:        command.Amount,
+			Currency:      command.Currency,
+			AsOf:          service.clock().UTC(),
+		})
+		if resolveErr != nil {
+			return ApprovalRequestCommandResult{}, resolveErr
+		}
+		command.PolicyID = resolved.ID
+		command.PolicyVersion = resolved.PolicyVersion
+		command.Steps = cloneSteps(resolved.Steps)
+		command.ResolvePolicy = false
+	}
 	prepared, err := service.prepareCreateApprovalRequest(ctx, actor, command)
 	if err != nil {
 		return ApprovalRequestCommandResult{}, err
@@ -438,9 +545,13 @@ func (service *ApprovalRequestService) prepareCreateApprovalRequest(ctx context.
 	}
 	steps := make([]ApprovalRequestStep, len(command.Steps))
 	for index, step := range command.Steps {
-		steps[index] = ApprovalRequestStep{ID: step.ID, Sequence: step.Sequence, RequiredRoles: append([]RoleRequirement(nil), step.RequiredRoles...), MinimumApprovals: step.MinimumApprovals, Status: ApprovalRequestStatusPending}
+		steps[index] = ApprovalRequestStep{ID: step.ID, Sequence: step.Sequence, Name: step.Name, RequiredRoles: append([]RoleRequirement(nil), step.RequiredRoles...), MinimumApprovals: step.MinimumApprovals, Delegation: step.Delegation, Escalation: step.Escalation, Status: ApprovalRequestStatusPending}
 	}
-	request := ApprovalRequest{ID: requestID, SubjectType: strings.TrimSpace(command.SubjectType), SubjectID: strings.TrimSpace(command.SubjectID), SubjectVersion: command.SubjectVersion, SubjectFingerprint: command.SubjectFingerprint, PolicyID: command.PolicyID, PolicyVersion: command.PolicyVersion, Scope: cloneScope(command.Scope), Requester: actor, Steps: steps, Status: ApprovalRequestStatusPending, Version: aggregateversion.Initial(), CorrelationID: command.CorrelationID, CausationID: command.CausationID, CreatedAt: now, UpdatedAt: now}
+	request := ApprovalRequest{ID: requestID, SubjectType: strings.TrimSpace(command.SubjectType), SubjectID: strings.TrimSpace(command.SubjectID), SubjectVersion: command.SubjectVersion, SubjectFingerprint: command.SubjectFingerprint, PolicyID: command.PolicyID, PolicyVersion: command.PolicyVersion, SubjectSnapshot: cloneSubjectSnapshot(command.SubjectSnapshot), SourceContext: strings.TrimSpace(command.Applicability.SourceContext), Operation: strings.TrimSpace(command.Applicability.Operation), TransactionType: strings.TrimSpace(command.TransactionType), DataClassification: strings.TrimSpace(command.DataClassification), Dimensions: cloneStringMap(command.Dimensions), Amount: cloneDecimal(command.Amount), Currency: strings.TrimSpace(command.Currency), SnapshotFingerprint: command.SubjectSnapshot.Fingerprint(), Scope: cloneScope(command.Scope), Requester: actor, Steps: steps, ResponsibleRoles: approvalRequestResponsibleRoles(steps), Status: ApprovalRequestStatusPending, Version: aggregateversion.Initial(), CorrelationID: command.CorrelationID, CausationID: command.CausationID, CreatedAt: now, UpdatedAt: now}
+	if len(steps) > 0 && steps[0].Escalation.Enabled {
+		dueAt := now.Add(time.Duration(steps[0].Escalation.AfterSeconds) * time.Second)
+		request.DueAt = &dueAt
+	}
 	if err := request.Validate(); err != nil {
 		return PreparedApprovalRequest{}, err
 	}
@@ -448,11 +559,11 @@ func (service *ApprovalRequestService) prepareCreateApprovalRequest(ctx context.
 	if err != nil {
 		return PreparedApprovalRequest{}, ErrApprovalPolicyApprovalUnavailable
 	}
-	if err := validateAuthorization(decision, "finance.wfa.create.approval.request"); err != nil {
+	if err := validateAuthorization(decision, CreateApprovalRequestsPermission, request.Scope.CanonicalScopeIDs()); err != nil {
 		return PreparedApprovalRequest{}, err
 	}
 	auditRecord := ApprovalRequestAuditRecord{ApprovalRequestID: request.ID, ActorUserID: actor.UserID, ActorAuthenticationSubjectRef: actor.SubjectReference, Action: "CreateApprovalRequest", ScopeIDs: request.Scope.CanonicalScopeIDs(), Permission: decision.Permission, PolicyReference: decision.PolicyReference, DecisionReference: decision.DecisionReference, PolicyVersion: request.PolicyVersion, RevisionVersion: request.Version.Value(), SubjectVersion: request.SubjectVersion, AfterFingerprint: request.SubjectFingerprint, CorrelationID: command.CorrelationID, CausationID: command.CausationID}
-	event := ApprovalEvent{Type: ApprovalRequestedEventType, RequestID: request.ID, AggregateVersion: request.Version.Value(), PolicyID: request.PolicyID, PolicyVersion: request.PolicyVersion, SubjectID: request.SubjectID, SubjectVersion: request.SubjectVersion, CandidateFingerprint: request.SubjectFingerprint, ScopeIDs: request.Scope.CanonicalScopeIDs(), OccurredAt: now, CorrelationID: command.CorrelationID, CausationID: command.CausationID}
+	event := ApprovalEvent{Type: ApprovalRequestedEventType, RequestID: request.ID, AggregateVersion: request.Version.Value(), PolicyID: request.PolicyID, PolicyVersion: request.PolicyVersion, SubjectID: request.SubjectID, SubjectVersion: request.SubjectVersion, CandidateFingerprint: request.SubjectFingerprint, ScopeIDs: request.Scope.CanonicalScopeIDs(), DataClassification: request.DataClassification, OccurredAt: now, CorrelationID: command.CorrelationID, CausationID: command.CausationID}
 	return PreparedApprovalRequest{Request: request, Audit: auditRecord, Event: event, Result: ApprovalRequestCommandResult{Request: cloneApprovalRequest(request)}}, nil
 }
 
@@ -536,7 +647,7 @@ func (service *ApprovalRequestService) DecideApprovalRequest(ctx context.Context
 	if err != nil {
 		return ApprovalRequestCommandResult{}, ErrApprovalPolicyApprovalUnavailable
 	}
-	if err := validateAuthorization(decision, "finance.wfa.decide.approval.request"); err != nil {
+	if err := validateAuthorization(decision, "finance.wfa.decide.approval.request", request.Scope.CanonicalScopeIDs()); err != nil {
 		return ApprovalRequestCommandResult{}, err
 	}
 	nextVersion, err := request.Version.Advance()
@@ -565,7 +676,7 @@ func (service *ApprovalRequestService) DecideApprovalRequest(ctx context.Context
 	}
 	reference := ApprovalDecisionReference{ApprovalRequestID: request.ID, DecisionID: decisionID, PolicyVersion: command.PolicyVersion, DecisionVersion: request.Version.Value(), SubjectVersion: command.SubjectVersion, CandidateFingerprint: command.CandidateFingerprint, ApproverUserID: actor.UserID}
 	auditRecord := ApprovalRequestAuditRecord{ApprovalRequestID: request.ID, ApprovalDecisionID: decisionID, ActorUserID: actor.UserID, ActorAuthenticationSubjectRef: actor.SubjectReference, ApproverUserID: actor.UserID, Action: "DecideApprovalRequest", ScopeIDs: request.Scope.CanonicalScopeIDs(), Reason: command.Reason, Permission: decision.Permission, PolicyReference: decision.PolicyReference, DecisionReference: decision.DecisionReference, PolicyVersion: command.PolicyVersion, RevisionVersion: request.Version.Value(), SubjectVersion: command.SubjectVersion, BeforeFingerprint: fingerprint(requestBefore), AfterFingerprint: fingerprint(request), CorrelationID: command.CorrelationID, CausationID: command.CausationID}
-	event := ApprovalEvent{Type: ApprovalDecisionRecordedEventType, RequestID: request.ID, DecisionID: decisionID, DecisionVersion: request.Version.Value(), Outcome: command.Outcome, ApproverUserID: actor.UserID, AggregateVersion: request.Version.Value(), PolicyID: request.PolicyID, PolicyVersion: request.PolicyVersion, SubjectID: request.SubjectID, SubjectVersion: request.SubjectVersion, CandidateFingerprint: request.SubjectFingerprint, ScopeIDs: request.Scope.CanonicalScopeIDs(), OccurredAt: now, CorrelationID: command.CorrelationID, CausationID: command.CausationID}
+	event := ApprovalEvent{Type: ApprovalDecisionRecordedEventType, RequestID: request.ID, DecisionID: decisionID, DecisionVersion: request.Version.Value(), Outcome: command.Outcome, ApproverUserID: actor.UserID, AggregateVersion: request.Version.Value(), PolicyID: request.PolicyID, PolicyVersion: request.PolicyVersion, SubjectID: request.SubjectID, SubjectVersion: request.SubjectVersion, CandidateFingerprint: request.SubjectFingerprint, ScopeIDs: request.Scope.CanonicalScopeIDs(), DataClassification: request.DataClassification, OccurredAt: now, CorrelationID: command.CorrelationID, CausationID: command.CausationID}
 	result = ApprovalRequestCommandResult{Request: cloneApprovalRequest(request), Reference: reference}
 	if service.durable != nil {
 		committer, ok := service.repository.(DurableApprovalRequestRepository)
@@ -594,7 +705,7 @@ func (service *ApprovalRequestService) DecideApprovalRequest(ctx context.Context
 	return result, nil
 }
 
-func validateAuthorization(decision AuthorizationDecision, permission string) error {
+func validateAuthorization(decision AuthorizationDecision, permission string, requestedScopeIDs []string) error {
 	switch decision.Outcome {
 	case AuthorizationUnavailable:
 		return ErrApprovalPolicyAuthorizationUnavailable
@@ -608,6 +719,18 @@ func validateAuthorization(decision AuthorizationDecision, permission string) er
 	}
 	if decision.DecisionReference == uuid.Nil {
 		return fmt.Errorf("%w: authorization decision reference is required", ErrApprovalPolicyAuthorizationDenied)
+	}
+	approved := make(map[string]struct{}, len(decision.ApprovedScopeIDs))
+	for _, scopeID := range decision.ApprovedScopeIDs {
+		approved[strings.TrimSpace(scopeID)] = struct{}{}
+	}
+	for _, scopeID := range requestedScopeIDs {
+		if _, ok := approved["*"]; ok {
+			break
+		}
+		if _, ok := approved[strings.TrimSpace(scopeID)]; !ok {
+			return fmt.Errorf("%w: scope %q is outside the requesting actor scope", ErrApprovalPolicyAuthorizationDenied, scopeID)
+		}
 	}
 	return nil
 }
@@ -669,8 +792,24 @@ func durableApprovalRequestFailureCode(err error) (string, bool) {
 		return "AUTHORIZATION_UNAVAILABLE", true
 	case errors.Is(err, ErrApprovalPolicyAuthorizationStale):
 		return "AUTHORIZATION_STALE", true
+	case errors.Is(err, ErrApprovalPolicyResolverUnavailable):
+		return "POLICY_RESOLUTION_UNAVAILABLE", true
+	case errors.Is(err, ErrApprovalPolicyNotApplicable):
+		return "POLICY_NOT_APPLICABLE", true
+	case errors.Is(err, ErrApprovalPolicyAmbiguous):
+		return "POLICY_AMBIGUOUS", true
+	case errors.Is(err, ErrApprovalPolicySubjectUnavailable):
+		return "SUBJECT_UNAVAILABLE", true
+	case errors.Is(err, ErrApprovalPolicySubjectConflict):
+		return "SUBJECT_CONFLICT", true
 	case errors.Is(err, ErrApprovalPolicyVersionConflict):
 		return "VERSION_CONFLICT", true
+	case errors.Is(err, ErrApprovalPolicyDuplicate):
+		return "DUPLICATE", true
+	case errors.Is(err, ErrApprovalPolicyApprovalUnavailable):
+		return "APPROVAL_UNAVAILABLE", true
+	case errors.Is(err, ErrApprovalPolicyAuditUnavailable):
+		return "AUDIT_UNAVAILABLE", true
 	case errors.Is(err, ErrApprovalPolicySelfApproval):
 		return "SELF_APPROVAL_DENIED", true
 	case errors.Is(err, ErrApprovalPolicyApprovalRejected):
@@ -696,8 +835,24 @@ func durableApprovalRequestFailureError(body []byte) error {
 		return ErrApprovalPolicyAuthorizationUnavailable
 	case "AUTHORIZATION_STALE":
 		return ErrApprovalPolicyAuthorizationStale
+	case "POLICY_RESOLUTION_UNAVAILABLE":
+		return ErrApprovalPolicyResolverUnavailable
+	case "POLICY_NOT_APPLICABLE":
+		return ErrApprovalPolicyNotApplicable
+	case "POLICY_AMBIGUOUS":
+		return ErrApprovalPolicyAmbiguous
+	case "SUBJECT_UNAVAILABLE":
+		return ErrApprovalPolicySubjectUnavailable
+	case "SUBJECT_CONFLICT":
+		return ErrApprovalPolicySubjectConflict
 	case "VERSION_CONFLICT":
 		return ErrApprovalPolicyVersionConflict
+	case "DUPLICATE":
+		return ErrApprovalPolicyDuplicate
+	case "APPROVAL_UNAVAILABLE":
+		return ErrApprovalPolicyApprovalUnavailable
+	case "AUDIT_UNAVAILABLE":
+		return ErrApprovalPolicyAuditUnavailable
 	case "SELF_APPROVAL_DENIED":
 		return ErrApprovalPolicySelfApproval
 	case "APPROVAL_REJECTED":
@@ -748,6 +903,16 @@ func (repository *MemoryApprovalRequestRepository) Get(_ context.Context, id uui
 	return cloneApprovalRequest(request), nil
 }
 
+func (repository *MemoryApprovalRequestRepository) List(_ context.Context) ([]ApprovalRequest, error) {
+	repository.mu.RLock()
+	defer repository.mu.RUnlock()
+	requests := make([]ApprovalRequest, 0, len(repository.requests))
+	for _, request := range repository.requests {
+		requests = append(requests, cloneApprovalRequest(request))
+	}
+	return requests, nil
+}
+
 func (repository *MemoryApprovalRequestRepository) Save(ctx context.Context, request ApprovalRequest, before *ApprovalRequest, auditRecord ApprovalRequestAuditRecord, event ApprovalEvent) error {
 	if repository == nil {
 		return ErrInvalidApprovalPolicyService
@@ -781,6 +946,7 @@ func (repository *MemoryApprovalRequestRepository) Save(ctx context.Context, req
 type MemoryApprovalRequestAuthorizer struct {
 	Decision       AuthorizationDecision
 	DecideDecision *AuthorizationDecision
+	ReadDecision   *AuthorizationDecision
 	Err            error
 }
 
@@ -792,6 +958,21 @@ func (authorizer MemoryApprovalRequestAuthorizer) AuthorizeApprovalDecision(_ co
 	if authorizer.DecideDecision != nil && actor.UserID != request.Requester.UserID {
 		decision = *authorizer.DecideDecision
 	}
+	decision.ApprovedScopeIDs = append([]string(nil), decision.ApprovedScopeIDs...)
+	return decision, nil
+}
+
+func (authorizer MemoryApprovalRequestAuthorizer) AuthorizeApprovalRequestRead(_ context.Context, _ Actor, _ ApprovalRequest) (AuthorizationDecision, error) {
+	if authorizer.Err != nil {
+		return AuthorizationDecision{}, authorizer.Err
+	}
+	if authorizer.ReadDecision != nil {
+		decision := *authorizer.ReadDecision
+		decision.ApprovedScopeIDs = append([]string(nil), decision.ApprovedScopeIDs...)
+		return decision, nil
+	}
+	decision := authorizer.Decision
+	decision.Permission = ReadApprovalRequestsPermission
 	decision.ApprovedScopeIDs = append([]string(nil), decision.ApprovedScopeIDs...)
 	return decision, nil
 }
@@ -852,8 +1033,8 @@ type MemoryApprovalWorkflow struct {
 }
 
 func NewMemoryApprovalWorkflow() (*MemoryApprovalWorkflow, error) {
-	decide := AuthorizationDecision{Allowed: true, Outcome: AuthorizationAllowed, Permission: "finance.wfa.decide.approval.request", DecisionReference: uuid.New()}
-	return newMemoryApprovalWorkflow(MemoryApprovalRequestAuthorizer{Decision: AuthorizationDecision{Allowed: true, Outcome: AuthorizationAllowed, Permission: "finance.wfa.create.approval.request", DecisionReference: uuid.New()}, DecideDecision: &decide})
+	decide := AuthorizationDecision{Allowed: true, Outcome: AuthorizationAllowed, Permission: "finance.wfa.decide.approval.request", ApprovedScopeIDs: []string{"*"}, DecisionReference: uuid.New()}
+	return newMemoryApprovalWorkflow(MemoryApprovalRequestAuthorizer{Decision: AuthorizationDecision{Allowed: true, Outcome: AuthorizationAllowed, Permission: "finance.wfa.create.approval.request", ApprovedScopeIDs: []string{"*"}, DecisionReference: uuid.New()}, DecideDecision: &decide})
 }
 
 func NewMemoryApprovalWorkflowWithAuthorizer(authorizer ApprovalRequestAuthorizer) (*MemoryApprovalWorkflow, error) {
@@ -910,12 +1091,37 @@ func (workflow *MemoryApprovalWorkflow) ValidatePolicyApproval(ctx context.Conte
 
 func cloneApprovalRequest(request ApprovalRequest) ApprovalRequest {
 	request.Scope = cloneScope(request.Scope)
+	request.SubjectSnapshot = cloneSubjectSnapshot(request.SubjectSnapshot)
+	request.Dimensions = cloneStringMap(request.Dimensions)
+	request.Amount = cloneDecimal(request.Amount)
+	request.DueAt = cloneTime(request.DueAt)
+	request.ResponsibleRoles = append([]string(nil), request.ResponsibleRoles...)
 	request.Steps = append([]ApprovalRequestStep(nil), request.Steps...)
 	for index := range request.Steps {
 		request.Steps[index].RequiredRoles = append([]RoleRequirement(nil), request.Steps[index].RequiredRoles...)
+		request.Steps[index].Delegation.DelegateToRoles = append([]string(nil), request.Steps[index].Delegation.DelegateToRoles...)
+		request.Steps[index].Escalation.EscalateToRoles = append([]string(nil), request.Steps[index].Escalation.EscalateToRoles...)
 	}
 	request.Decisions = append([]ApprovalDecision(nil), request.Decisions...)
 	return request
+}
+
+func approvalRequestResponsibleRoles(steps []ApprovalRequestStep) []string {
+	if len(steps) == 0 {
+		return nil
+	}
+	seen := make(map[string]struct{})
+	roles := make([]string, 0)
+	for _, step := range steps {
+		for _, requirement := range step.RequiredRoles {
+			if _, exists := seen[requirement.Role]; exists {
+				continue
+			}
+			seen[requirement.Role] = struct{}{}
+			roles = append(roles, requirement.Role)
+		}
+	}
+	return roles
 }
 
 func cloneApprovalRequestResult(result ApprovalRequestCommandResult) ApprovalRequestCommandResult {

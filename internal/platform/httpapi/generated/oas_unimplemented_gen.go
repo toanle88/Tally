@@ -1350,7 +1350,7 @@ func (UnimplementedHandler) TaxSubmitTaxReturn(ctx context.Context, req *Command
 // WfaCreateApprovalRequest implements wfaCreateApprovalRequest operation.
 //
 // POST /approvals/actions/create-approval-request
-func (UnimplementedHandler) WfaCreateApprovalRequest(ctx context.Context, req *CommandRequest, params WfaCreateApprovalRequestParams) (r WfaCreateApprovalRequestRes, _ error) {
+func (UnimplementedHandler) WfaCreateApprovalRequest(ctx context.Context, req *WfaCreateApprovalRequestCommandRequest, params WfaCreateApprovalRequestParams) (r WfaCreateApprovalRequestRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -1372,6 +1372,20 @@ func (UnimplementedHandler) WfaDelegateApproval(ctx context.Context, req *Comman
 //
 // POST /approvals/actions/escalate-approval
 func (UnimplementedHandler) WfaEscalateApproval(ctx context.Context, req *CommandRequest, params WfaEscalateApprovalParams) (r WfaEscalateApprovalRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// WfaGetApprovalRequest implements wfaGetApprovalRequest operation.
+//
+// GET /approvals/reference/requests/{approvalRequestId}
+func (UnimplementedHandler) WfaGetApprovalRequest(ctx context.Context, params WfaGetApprovalRequestParams) (r WfaGetApprovalRequestRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// WfaListApprovalRequests implements wfaListApprovalRequests operation.
+//
+// GET /approvals/reference/requests
+func (UnimplementedHandler) WfaListApprovalRequests(ctx context.Context, params WfaListApprovalRequestsParams) (r WfaListApprovalRequestsRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

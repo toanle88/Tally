@@ -777,6 +777,14 @@ type WfaEscalateApprovalRes interface {
 	wfaEscalateApprovalRes()
 }
 
+type WfaGetApprovalRequestRes interface {
+	wfaGetApprovalRequestRes()
+}
+
+type WfaListApprovalRequestsRes interface {
+	wfaListApprovalRequestsRes()
+}
+
 type WfaMaintainApprovalPoliciesRes interface {
 	wfaMaintainApprovalPoliciesRes()
 }

@@ -108,6 +108,17 @@ type WorkflowApprovalRequest struct {
 	CausationID               pgtype.UUID
 	CreatedAt                 pgtype.Timestamptz
 	UpdatedAt                 pgtype.Timestamptz
+	SubjectSnapshot           []byte
+	SnapshotFingerprint       string
+	SourceContext             string
+	Operation                 string
+	TransactionType           string
+	DataClassification        string
+	Dimensions                []byte
+	Amount                    pgtype.Numeric
+	Currency                  string
+	DueAt                     pgtype.Timestamptz
+	ResponsibleRoles          []byte
 }
 
 type WorkflowBootstrapApprovalAuthority struct {

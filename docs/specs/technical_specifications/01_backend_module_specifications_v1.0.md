@@ -531,6 +531,7 @@ idempotency result, and integration outbox row share one transaction.
 | Requirement | Operation | Provenance | Handler | Permission |
 |---|---|---|---|---|
 | FR-WFA-001 | CreateApprovalRequest | DDD representative command | `wfaCreateApprovalRequestHandler` | finance.wfa.create.approval.request |
+| FR-WFA-001 | List/Get approval requests | Authorized reference projection | `wfaListApprovalRequestsHandler` / `wfaGetApprovalRequestHandler` | finance.wfa.read.approval.requests |
 | FR-WFA-002 | DecideApprovalRequest | DDD representative command | `wfaDecideApprovalRequestHandler` | finance.wfa.decide.approval.request |
 | FR-WFA-003 | DelegateApproval | DDD representative command | `wfaDelegateApprovalHandler` | finance.wfa.delegate.approval |
 | FR-WFA-004 | EscalateApproval | DDD representative command | `wfaEscalateApprovalHandler` | finance.wfa.escalate.approval |

@@ -69,6 +69,17 @@ components:
     WfaApprovalPolicyProjection: { $ref: ./components/common.yaml#/schemas/WfaApprovalPolicyProjection }
     WfaMaintainApprovalPoliciesResultData: { $ref: ./components/common.yaml#/schemas/WfaMaintainApprovalPoliciesResultData }
     WfaMaintainApprovalPoliciesEstablishedResult: { $ref: ./components/common.yaml#/schemas/WfaMaintainApprovalPoliciesEstablishedResult }
+    WfaCreateApprovalRequestCommandRequest: { $ref: ./components/common.yaml#/schemas/WfaCreateApprovalRequestCommandRequest }
+    WfaCreateApprovalRequestCommandData: { $ref: ./components/common.yaml#/schemas/WfaCreateApprovalRequestCommandData }
+    WfaApprovalSubjectSnapshot: { $ref: ./components/common.yaml#/schemas/WfaApprovalSubjectSnapshot }
+    WfaApprovalRequestStep: { $ref: ./components/common.yaml#/schemas/WfaApprovalRequestStep }
+    WfaApprovalRequestProjection: { $ref: ./components/common.yaml#/schemas/WfaApprovalRequestProjection }
+    WfaCreateApprovalRequestResultData: { $ref: ./components/common.yaml#/schemas/WfaCreateApprovalRequestResultData }
+    WfaCreateApprovalRequestEstablishedResult: { $ref: ./components/common.yaml#/schemas/WfaCreateApprovalRequestEstablishedResult }
+    WfaApprovalRequestResultData: { $ref: ./components/common.yaml#/schemas/WfaApprovalRequestResultData }
+    WfaApprovalRequestEstablishedResult: { $ref: ./components/common.yaml#/schemas/WfaApprovalRequestEstablishedResult }
+    WfaApprovalRequestListResultData: { $ref: ./components/common.yaml#/schemas/WfaApprovalRequestListResultData }
+    WfaApprovalRequestListEstablishedResult: { $ref: ./components/common.yaml#/schemas/WfaApprovalRequestListEstablishedResult }
     IamManageUsersCommandRequest: { $ref: ./components/common.yaml#/schemas/IamManageUsersCommandRequest }
     IamManageUsersCommandData: { $ref: ./components/common.yaml#/schemas/IamManageUsersCommandData }
     IamAuthenticationSubject: { $ref: ./components/common.yaml#/schemas/IamAuthenticationSubject }

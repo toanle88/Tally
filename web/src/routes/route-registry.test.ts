@@ -19,6 +19,8 @@ describe('route registry', () => {
 
   it('keeps operational contracts discoverable without implementing capabilities', () => {
     expect(routeRegistry.filter((route) => route.kind === 'operational').map((route) => [route.screenId, route.path])).toEqual([
+      ['WFA-WS-01', '/approvals/wfa-ws-01'],
+      ['WFA-SCR-01', '/approvals/wfa-scr-01'],
       ['WFA-SCR-03', '/approvals/wfa-scr-03'],
       ['IAM-WS-01', '/administration/identity-access'],
       ['IAM-SCR-04', '/identity-access/iam-scr-04'],

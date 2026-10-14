@@ -1,9 +1,10 @@
 # Tally
 
 A modern double-entry accounting application built as a Go modular monolith
-with a React frontend. The repository currently contains verified platform,
-identity/access, organization/master-data, and COA segment-accounting slices;
-General Ledger and the later finance capabilities remain planned.
+with a React frontend. The repository currently contains platform,
+identity/access, organization/master-data, COA, General Ledger, and workflow
+approval implementation slices; later finance capabilities and full release
+qualification remain planned.
 
 ## Current Status
 
@@ -20,31 +21,53 @@ Implemented repository slices include:
   publication under `internal/organization/`.
 - COA segment definitions, values, combination validation, governed segment
   changes, and approval-decision application under `internal/coa/`.
+- General Ledger slices for ledgers, accounting books, charts of accounts,
+  accounts, posting, journal approval, reversal, posting barriers, soft close,
+  scoped reopen, and operational reopen/reclose under `internal/gl/`.
+- Workflow policy maintenance and the approval-request create/read slice under
+  `internal/workflow/`, including effective-policy resolution, immutable
+  subject evidence, durable idempotency, audit/outbox integration, and the
+  authorized worklist/detail API and UI. Decision, delegation, escalation, and
+  full qualification remain later workflow scope.
 - A generated, authenticated API boundary under `/api/v1` for the implemented
-  identity, organization, and COA operations, plus anonymous `GET /health/live`.
+  identity, organization, COA, General Ledger, and workflow operations, plus
+  anonymous `GET /health/live`.
 - A React/Vite frontend with shared finance interaction components and
-  fixture-backed identity/access, master-data, and COA workspaces.
+  fixture-backed identity/access, master-data, COA, General Ledger, and
+  workflow workspaces.
 
-General Ledger is not implemented in the current source tree: `EP-GL-001`
-and its FR-GL delivery items remain open in [`ROADMAP.md`](./ROADMAP.md).
+`ROADMAP.md` marks the `EP-GL-001` parent locally complete by explicit status
+override, while its child delivery items and PostgreSQL, browser, accessibility,
+cross-context, and release qualification remain open. `EP-WFA-001` remains open;
+the current branch implements approval-policy management and User Story 2's
+approval-request slice without claiming the later decision, delegation, or
+escalation behavior.
+
+For the business, technology, and architecture learning guide, see the
+[TALLY docs site](./docs-site/learning-notes.md).
 
 ## Verification Snapshot
 
-The following commands were run locally on 2026-10-10:
+The following commands were run locally on 2026-10-14:
 
-- `GOCACHE=/tmp/tally-go-cache go test ./...` — passed.
-- `pnpm -C web run build` — passed.
-- `pnpm docs:build` — passed.
-- `make db-migrate-validate` — passed.
-- `pnpm -C web run test` — not fully passing: 13 of 14 files and 79 of 80
-  tests passed; one emergency-access workspace test timed out and Vitest also
-  reported a worker-start timeout in `authenticated-fetch.test.ts`.
-- `make api-check` — did not complete within its repository timeout; OpenAPI
-  drift qualification is not claimed here.
+- `./scripts/db/migrate.sh validate` — passed for all migration sets.
+- `./scripts/db/migrate.sh check` — passed; the committed checksum inventory
+  includes the workflow approval-request migration.
+- `GOCACHE=/tmp/tally-go-cache go test ./internal/workflow ./internal/platform/httpapi ./cmd/api` — passed.
+- `make sqlc-check` — passed.
+- `GOCACHE=/tmp/tally-go-cache make api-generate-check` — passed; OpenAPI
+  validation and deterministic Go generation were verified.
+- `make api-ts-check` — passed; deterministic TypeScript generation was
+  verified.
+- `pnpm --dir web build` — passed.
+- Focused Vitest route and auth/session tests — passed (11 tests).
+- `pnpm docs:build` — passed after this README update.
 
-These results are local evidence only. They do not claim hosted CI, live
-Entra, production audit, PostgreSQL runtime, performance/capacity,
-disaster-recovery, or release qualification.
+The full `make persistence-check` gate was not rerun after the checksum repair,
+so PostgreSQL/Testcontainers persistence and release qualification are not
+claimed here. These results are local evidence only; they do not claim hosted
+CI, live Entra, production audit, performance/capacity, disaster recovery, or
+release qualification.
 
 ---
 
@@ -130,14 +153,14 @@ All commands must be run from the repository root.
 | `make db-shell` | Open `psql` against the configured local database |
 | `make db-version` | Query `SHOW server_version` inside the container |
 | `make db-down` | Stop the PostgreSQL container (preserves data volume) |
-| `make db-migrate` | Apply all pending Goose migrations (bootstrap, platform, identity, organization, and COA schemas) |
+| `make db-migrate` | Apply all pending Goose migrations (bootstrap, platform, identity, organization, COA, GL, and workflow schemas) |
 | `make db-seed` | Apply the committed synthetic seed data |
 | `make db-verify` | Verify migration status and seed checksum |
 | `make db-prepare` | Run db-migrate → db-seed → db-verify in order, stop on failure |
 | `make db-reset` | Destroy and recreate the PostgreSQL volume from scratch |
 | `make db-migrate-status` | Show applied and pending Goose migrations per schema |
 | `make db-migrate-validate` | Validate migration ordering and Goose syntax without connecting |
-| `make db-migrate-create` | Create a migration skeleton for `bootstrap`, `platform`, `identity`, `organization`, or `coa`: `make db-migrate-create SCHEMA=coa NAME=desc` |
+| `make db-migrate-create` | Create a migration skeleton for `bootstrap`, `platform`, `identity`, `organization`, `coa`, `gl`, or `workflow`: `make db-migrate-create SCHEMA=workflow NAME=desc` |
 | `make db-migrate-check` | Verify migration checksum inventory matches committed migrations |
 | `make db-migrate-inventory` | Regenerate `db/migrations/checksums.sha256` |
 | `make db-sqlc-version` | Show the pinned sqlc version |
@@ -488,13 +511,13 @@ The technology baseline (from the approved solution architecture):
 
 | Area | Current | Planned |
 |---|---|---|
-| Backend | Go 1.26.3 + chi/v5 5.3.1; generated API boundary, liveness endpoint, and runtime wiring for identity, organization, and COA services | Remaining bounded-context modules and finance capability handlers |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, daisyUI 5, shared semantic UI primitives, routed shell, fixture-backed scope context, operational route seams, record-context/lifecycle/money/evidence/privacy wrappers, TanStack Table-backed operational worklist/process fixtures, and identity/access, master-data, and COA workspaces | General Ledger and later capability screens |
+| Backend | Go 1.26.3 + chi/v5 5.3.1; generated API boundary, liveness endpoint, and runtime wiring for identity, organization, COA, General Ledger, and workflow services | Remaining bounded-context modules and finance capability handlers |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, daisyUI 5, shared semantic UI primitives, routed shell, fixture-backed scope context, operational route seams, record-context/lifecycle/money/evidence/privacy wrappers, TanStack Table-backed operational worklist/process fixtures, and identity/access, master-data, COA, General Ledger, and workflow workspaces | Later capability screens and full qualification |
 | Package manager | pnpm 11.9.0 | — |
-| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform, identity, organization, and COA queries, synthetic seed/verify scripts, migration checksum inventory, focused persistence drift command and aggregate PR quality workflow | GL and later bounded-context schemas |
+| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform, identity, organization, COA, GL, and workflow queries, synthetic seed/verify scripts, migration checksum inventory, focused persistence drift command and aggregate PR quality workflow | Later bounded-context schemas and release qualification |
 | Styling | Tailwind CSS 4 as the primary styling/layout system with daisyUI 5 theme and wrapper support | — |
 | Client state | — | TanStack Query |
-| API contract | OpenAPI 3.1 source with generated Go and TypeScript artifacts; runtime exposes `GET /health/live` and authenticated `/api/v1` operations for implemented identity, organization, and COA slices | Future capability operations, including General Ledger |
+| API contract | OpenAPI 3.1 source with generated Go and TypeScript artifacts; runtime exposes `GET /health/live` and authenticated `/api/v1` operations for implemented identity, organization, COA, General Ledger, and workflow slices | Future capability operations and full contract qualification |
 | Infrastructure | Terraform provider contract, per-root lockfiles, protected Blob remote-state bootstrap, isolated state keys and identities, reusable low-cost module contracts, dev/demo/prod-reference profile composition, and optional dev/demo deployment wrapper | Deferred: live Azure apply evidence and production qualification |
 | CI/CD | Aggregate pull-request quality workflow with focused push/manual verification workflows | Protected deployment and release qualification |
 
@@ -517,17 +540,21 @@ them; the complete inventory is available through `git ls-files`.
 │   └── openapi/                       # OpenAPI 3.1 source and generated-contract inputs
 ├── db/
 │   ├── migrations/
-│   │   ├── bootstrap/                 # platform, identity, organization, COA schemas
+│   │   ├── bootstrap/                 # platform, identity, organization, COA, GL, workflow schemas
 │   │   ├── platform/                  # idempotency, outbox/inbox, seed manifest
 │   │   ├── identity/                  # identity/access persistence
 │   │   ├── organization/              # OMD persistence
-│   │   └── coa/                       # segment and change-request persistence
+│   │   ├── coa/                       # segment and change-request persistence
+│   │   ├── gl/                        # ledger, posting, and gate persistence
+│   │   └── workflow/                  # policy and approval-request persistence
 │   ├── checksums.sha256               # Migration integrity checksums
 │   ├── queries/
 │   │   ├── platform/                  # outbox/inbox and seed queries
 │   │   ├── identity/                  # identity/access queries
 │   │   ├── organization/              # organization queries
-│   │   └── coa/                       # COA queries
+│   │   ├── coa/                       # COA queries
+│   │   ├── gl/                        # General Ledger queries
+│   │   └── workflow/                  # workflow and approval queries
 │   └── seeds/
 │       └── local/
 │           └── v1.sql                 # Synthetic seed data
@@ -546,8 +573,10 @@ them; the complete inventory is available through `git ls-files`.
 │   │   ├── segment_change_request.go  # Governed change requests
 │   │   ├── segment_change_approval.go # Approval decision application
 │   │   └── coadb/                      # sqlc-generated COA query package
-│   ├── identity/                       # Identity, access, segregation, emergency access
-│   ├── organization/                   # Legal entities, parties, profiles, calendars, publication
+│   ├── gl/                              # Ledgers, posting, reversal, and posting gates
+│   ├── identity/                        # Identity, access, segregation, emergency access
+│   ├── organization/                    # Legal entities, parties, profiles, calendars, publication
+│   ├── workflow/                        # Approval policies, requests, decisions, and ports
 │   └── platform/
 │       ├── aggregateversion/         # Optimistic-concurrency primitive
 │       ├── authentication/           # OIDC/JWT authentication middleware
@@ -609,6 +638,7 @@ them; the complete inventory is available through `git ls-files`.
 │   │   │   ├── record-detail-example.tsx # Synthetic record-detail composition
 │   │   │   ├── record-detail-fixtures.ts # Typed record-context fixtures
 │   │   │   ├── app-shell.tsx          # Responsive presentational shell
+│   │   │   ├── workflow-approval-workspace.tsx # WFA worklist/detail/create slice
 │   │   │   └── app.test.tsx           # Shell region and theme tests
 │   │   ├── components/accounting-scope-selector/ # Persistent scope context
 │   │   ├── components/record-context/ # Shared record-context types
@@ -652,7 +682,7 @@ them; the complete inventory is available through `git ls-files`.
 │   │   ├── epic-template.md
 │   │   ├── milestone-template.md
 │   │   ├── story-template.md
-│   │   └── stories/                   # Platform, UX, IAC, OPS, IAM, OMD, COA, GL plans
+│   │   └── stories/                   # Platform, UX, IAC, OPS, IAM, OMD, COA, GL, WFA plans
 │   ├── specs/                         # PRD, domain model, UX, NFR,
 │   │                                  # system design, technical specs
 │   └── verification/                  # Clean-clone and reproducibility evidence
@@ -717,10 +747,13 @@ The planned modules are: `organization`, `gl`, `ap`, `ar`, `payroll`,
 `workflow`, `identity`, `audit`. Capability delivery remains incremental.
 
 The current repository contains implementation slices under `internal/identity`,
-`internal/organization`, and `internal/coa`. The COA slice covers segment
-definitions, values, combination validation, governed changes, and approval
-decision application. These slices do not imply that the remaining planned
-modules, General Ledger, or full capability-level qualification are delivered.
+`internal/organization`, `internal/coa`, `internal/gl`, and `internal/workflow`.
+The COA slice covers segment definitions, values, combination validation,
+governed changes, and approval-decision application. The GL slice covers
+posting and ledger-control behavior, while the workflow slice currently covers
+policy maintenance and approval-request creation/read evidence. These slices do
+not imply that the remaining planned modules or full capability-level
+qualification are delivered.
 
 The target module layout above remains planned. Current slices use the
 repository's existing package boundaries and adapters; they are not evidence
@@ -765,9 +798,13 @@ roadmap also records local/owner-closed foundation slices for `EP-OPS-001`,
 `EP-IAM-001`, `EP-OMD-001`, and `EP-COA-001`; each closure retains explicit
 deferred qualification boundaries.
 
-`EP-GL-001` is the next open finance capability epic. Its General Ledger
-implementation is not present in the current source tree. Focused gates include
-`make shared-primitives-check`, `make outbox-dispatch-check`,
+`EP-GL-001` is marked locally complete by the explicit status override recorded
+in `ROADMAP.md`; its implementation is present in the current source tree, but
+the child delivery items and qualification follow-ups remain open. `EP-WFA-001`
+is still open. The current branch contains approval-policy management and the
+User Story 2 approval-request create/read slice; decision, delegation,
+escalation, and full workflow qualification remain future scope. Focused gates
+include `make shared-primitives-check`, `make outbox-dispatch-check`,
 `make outbox-worker-check`, and `make api-check`; the verification snapshot
 above records the commands actually run for this README update.
 The optional Terraform and Azure learning-environment epic, `EP-IAC-001`, is

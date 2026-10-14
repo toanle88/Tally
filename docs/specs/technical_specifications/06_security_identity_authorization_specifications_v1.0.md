@@ -226,6 +226,7 @@ The Identity & Access module evaluates permissions, access policies, amount/segm
 | FR-TAX-015 | finance.tax.apply.payment.return | TAX | ApplyPaymentReturn | Accounting scope plus operation-specific dimensions |
 | FR-TAX-016 | finance.tax.maintain.tax.configurations | TAX | Maintain tax configurations | Accounting scope plus operation-specific dimensions |
 | FR-WFA-001 | finance.wfa.create.approval.request | WFA | CreateApprovalRequest | Accounting scope plus operation-specific dimensions |
+| FR-WFA-001 | finance.wfa.read.approval.requests | WFA | List/Get approval requests | Accounting scope plus operation-specific dimensions |
 | FR-WFA-002 | finance.wfa.decide.approval.request | WFA | DecideApprovalRequest | Accounting scope plus operation-specific dimensions |
 | FR-WFA-003 | finance.wfa.delegate.approval | WFA | DelegateApproval | Accounting scope plus operation-specific dimensions |
 | FR-WFA-004 | finance.wfa.escalate.approval | WFA | EscalateApproval | Accounting scope plus operation-specific dimensions |

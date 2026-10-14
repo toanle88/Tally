@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Epic | `EP-WFA-001` — Workflow and approvals |
-| Status | User Story 1 implemented locally — focused evidence recorded on 2026-10-13; persistence release checks remain pending |
+| Status | User Stories 1–2 implemented locally — focused evidence recorded on 2026-10-14; persistence release checks remain pending |
 | Milestone | `M3` — Approval and period controls |
 | Delivery items | `DLV-GFR-004`, `DLV-FR-WFA-001`–`DLV-FR-WFA-005` |
 | Supporting workflows | `DLV-WF-6.1`, `DLV-WF-6.2`, `DLV-WF-7.12`; these workflows remain owned by Fiscal Period Management and GL |
@@ -141,6 +141,8 @@ The approved technical specifications identify these operation contracts:
 | Requirement | Operation | API route | API operation ID | Application handler | Permission |
 |---|---|---|---|---|---|
 | `FR-WFA-001` | `CreateApprovalRequest` | `POST /api/v1/approvals/actions/create-approval-request` | `wfaCreateApprovalRequest` | `wfaCreateApprovalRequestHandler` | `finance.wfa.create.approval.request` |
+| `FR-WFA-001` | `List approval requests` | `GET /api/v1/approvals/reference/requests` | `wfaListApprovalRequests` | `wfaListApprovalRequestsHandler` | `finance.wfa.read.approval.requests` |
+| `FR-WFA-001` | `Get approval request` | `GET /api/v1/approvals/reference/requests/{approvalRequestId}` | `wfaGetApprovalRequest` | `wfaGetApprovalRequestHandler` | `finance.wfa.read.approval.requests` |
 | `FR-WFA-002` | `DecideApprovalRequest` | `POST /api/v1/approvals/actions/decide-approval-request` | `wfaDecideApprovalRequest` | `wfaDecideApprovalRequestHandler` | `finance.wfa.decide.approval.request` |
 | `FR-WFA-003` | `DelegateApproval` | `POST /api/v1/approvals/actions/delegate-approval` | `wfaDelegateApproval` | `wfaDelegateApprovalHandler` | `finance.wfa.delegate.approval` |
 | `FR-WFA-004` | `EscalateApproval` | `POST /api/v1/approvals/actions/escalate-approval` | `wfaEscalateApproval` | `wfaEscalateApprovalHandler` | `finance.wfa.escalate.approval` |
@@ -264,31 +266,31 @@ Traceability: `DLV-FR-WFA-001`, `FR-WFA-001`, `DLV-GFR-004`,
 
 Acceptance criteria:
 
-- [ ] `CreateApprovalRequest` resolves the applicable effective policy using
+- [x] `CreateApprovalRequest` resolves the applicable effective policy using
   the action, scope, subject, amount/currency, fiscal-period, sensitivity, and
   other dimensions relevant to that policy before creating the request.
-- [ ] The request retains a stable `ApprovalRequestId`, submitting actor or
+- [x] The request retains a stable `ApprovalRequestId`, submitting actor or
   process, subject reference, subject version, applicable policy version,
   scope, and an immutable subject snapshot/reference sufficient for approver
   review. The workflow record does not become the subject aggregate owner.
-- [ ] The request contains the policy-defined approval steps and becomes an
+- [x] The request contains the policy-defined approval steps and becomes an
   actionable request state visible to the responsible owner. If policy
   applicability, authorization, or a required dependency cannot be established,
   the operation returns a typed rejection/unavailable outcome and creates no
   partial request.
-- [ ] A request remains tied to the policy version resolved at creation. A
+- [x] A request remains tied to the policy version resolved at creation. A
   later policy change does not silently rebind an existing request.
 - [ ] The result exposes the request identity, current lifecycle state,
   validation/approval status, responsible owner, policy/subject versions, and
   exception or recovery path. `WFA-WS-01` can filter assigned, due, blocked,
   delegated, escalated, and completed work as authorized.
-- [ ] Repeating the same request identity and fingerprint returns the
+- [x] Repeating the same request identity and fingerprint returns the
   established request result. Reusing that identity with changed functional
   content returns an idempotency conflict and creates no second request.
 - [ ] Concurrent creation against changed source/policy/aggregate versions
   returns a typed version or domain conflict rather than silently creating a
   request from stale facts.
-- [ ] The transaction records the request and its `ApprovalRequested` outbox
+- [x] The transaction records the request and its `ApprovalRequested` outbox
   message atomically. The published payload contains only the minimum safe
   identifiers, versions, scope, correlation/causation, and classification
   required by approved consumers.
@@ -304,7 +306,10 @@ Likely implementation areas:
   `workflow.approval_request` and its aggregate-owned child records.
 - `contracts/openapi/paths/approvals.yaml` for the create-request envelope and
   generated artifacts.
-- `web/src/capabilities/approvals/` for the approval inbox and request detail.
+- `internal/platform/httpapi/workflow_approval_request_handler.go` for the
+  typed create/list/detail boundary, and
+  `web/src/app/workflow-approval-workspace.tsx` for the approval worklist and
+  read-only request detail.
 
 Required evidence:
 
@@ -315,6 +320,41 @@ Required evidence:
   duplicate `ApprovalRequested` delivery is safe for registered consumers.
 - Worklist/detail, permission-filtering, accessibility, and error-recovery
   evidence for `WFA-WS-01` and `WFA-SCR-01`.
+
+#### User Story 2 implementation evidence (2026-10-14)
+
+- Added exact-decimal effective-policy resolution requiring exactly one active
+  match across applicability, dimensions, scope, amount, currency, and
+  effective interval. Policy identity/version, copied steps, responsible roles,
+  due evidence, actor, safe subject snapshot, and snapshot fingerprint are
+  retained on the request.
+- Added workflow-owned evidence columns and indexes, SQLC regeneration, and
+  PostgreSQL request reads/writes. Request creation records the request and
+  `approval_requested` outbox event through the existing transactional
+  repository boundary; policy binding is copied and is not re-resolved on
+  replay.
+- Added typed `wfaCreateApprovalRequest`, `wfaListApprovalRequests`, and
+  `wfaGetApprovalRequest` contracts/handlers with the new
+  `finance.wfa.read.approval.requests` permission, typed policy/idempotency/
+  authorization conflicts, and safe authorized filtering/pagination.
+- Added `WFA-WS-01` and read-only `WFA-SCR-01` routes using generated API
+  clients, exact-decimal form inputs, bounded subject evidence, and no source
+  record mutation surface.
+- The current read slice exposes role-based responsible roles, lifecycle state,
+  due filtering, subject/policy evidence, copied steps, and safe authorized
+  pagination. Concrete user assignment, decision/delegation/escalation
+  lineage, blocker panels, and exception/recovery actions remain deferred to
+  the later decision, delegation, and escalation stories.
+- Focused verification passed: `GOCACHE=/tmp/tally-go-cache go test
+  ./internal/workflow ./internal/platform/httpapi ./cmd/api`,
+  `make sqlc-check`, `GOCACHE=/tmp/tally-go-cache make api-generate-check`,
+  `make api-ts-check`, `pnpm --dir web build`, and the web unit project
+  (`4` files, `11` tests). The DOM project stalls before reporting tests in
+  this local runner.
+- Not claimed in this story slice: source-context adapters that independently
+  revalidate a source aggregate immediately before request creation, concrete
+  user-to-role assignment resolution, and PostgreSQL/Testcontainers release
+  gates (opt-in repository checks).
 
 ### 7.3 User Story 3 — Record and expose approval decisions
 

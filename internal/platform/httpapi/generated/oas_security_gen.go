@@ -228,6 +228,8 @@ var operationRolesBearerAuth = map[string][]string{
 	WfaDecideApprovalRequestOperation:                         []string{},
 	WfaDelegateApprovalOperation:                              []string{},
 	WfaEscalateApprovalOperation:                              []string{},
+	WfaGetApprovalRequestOperation:                            []string{},
+	WfaListApprovalRequestsOperation:                          []string{},
 	WfaMaintainApprovalPoliciesOperation:                      []string{},
 }
 

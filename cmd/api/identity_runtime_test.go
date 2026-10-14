@@ -6,9 +6,11 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/shopspring/decimal"
 	"github.com/toanle88/Tally/internal/coa"
 	"github.com/toanle88/Tally/internal/gl"
 	"github.com/toanle88/Tally/internal/identity"
+	"github.com/toanle88/Tally/internal/workflow"
 )
 
 func TestPostgresCoaAuditWriterPreservesAggregateIdentityPrecedence(t *testing.T) {
@@ -38,6 +40,40 @@ func TestPostgresCoaAuditWriterPreservesAggregateIdentityPrecedence(t *testing.T
 
 type recordingAuthorizationEvaluator struct {
 	inputs []identity.DecisionInput
+}
+
+func TestEvaluatorWorkflowRequestAuthorizerForwardsRequestAuthorizationDimensions(t *testing.T) {
+	evaluator := &recordingAuthorizationEvaluator{}
+	authorizer := evaluatorWorkflowRequestAuthorizer{evaluator: evaluator}
+	amount := decimal.RequireFromString("125.50")
+	actor := workflow.Actor{UserID: uuid.New(), SubjectReference: "requester-subject"}
+	request := workflow.ApprovalRequest{
+		Requester:          actor,
+		Scope:              workflow.ApprovalPolicyScope{ScopeIDs: []string{"scope-1"}},
+		TransactionType:    "ordinary",
+		Amount:             &amount,
+		Currency:           "USD",
+		DataClassification: "confidential",
+	}
+	if _, err := authorizer.AuthorizeApprovalDecision(context.Background(), actor, request); err != nil {
+		t.Fatal(err)
+	}
+	if len(evaluator.inputs) != 1 {
+		t.Fatalf("authorization evaluations = %d, want 1", len(evaluator.inputs))
+	}
+	input := evaluator.inputs[0]
+	if input.DataClassification != request.DataClassification {
+		t.Fatalf("data classification = %q, want %q", input.DataClassification, request.DataClassification)
+	}
+	if input.TransactionType == nil || *input.TransactionType != request.TransactionType {
+		t.Fatalf("transaction type = %#v, want %q", input.TransactionType, request.TransactionType)
+	}
+	if input.Amount == nil || !input.Amount.Equal(amount) {
+		t.Fatalf("amount = %#v, want %s", input.Amount, amount)
+	}
+	if input.Currency == nil || *input.Currency != request.Currency {
+		t.Fatalf("currency = %#v, want %q", input.Currency, request.Currency)
+	}
 }
 
 func (evaluator *recordingAuthorizationEvaluator) Evaluate(_ context.Context, input identity.DecisionInput) (identity.AuthorizationDecision, error) {

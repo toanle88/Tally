@@ -320,7 +320,34 @@ func (repository *PostgresApprovalPolicyRepository) insertPreparedApprovalReques
 	if err != nil {
 		return err
 	}
-	if _, err := tx.Exec(ctx, `INSERT INTO workflow.approval_request (id, subject_type, subject_id, subject_version, subject_fingerprint, policy_id, policy_version, scope, steps, status, aggregate_version, requester_user_id, requester_subject_reference, correlation_id, causation_id, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10,$11,$12,$13,$14,$15,$16,$17)`, request.ID, request.SubjectType, request.SubjectID, request.SubjectVersion, request.SubjectFingerprint, request.PolicyID, request.PolicyVersion, scope, steps, request.Status, request.Version.Value(), request.Requester.UserID, request.Requester.SubjectReference, nullableUUIDString(request.CorrelationID), nullableUUIDString(request.CausationID), request.CreatedAt, request.UpdatedAt); err != nil {
+	snapshot := []byte(`{}`)
+	if request.SnapshotFingerprint != "" {
+		snapshot, err = json.Marshal(request.SubjectSnapshot)
+		if err != nil {
+			return err
+		}
+	}
+	dimensionValues := request.Dimensions
+	if dimensionValues == nil {
+		dimensionValues = map[string]string{}
+	}
+	dimensions, err := json.Marshal(dimensionValues)
+	if err != nil {
+		return err
+	}
+	roleValues := request.ResponsibleRoles
+	if roleValues == nil {
+		roleValues = []string{}
+	}
+	roles, err := json.Marshal(roleValues)
+	if err != nil {
+		return err
+	}
+	var amount any
+	if request.Amount != nil {
+		amount = request.Amount.String()
+	}
+	if _, err := tx.Exec(ctx, `INSERT INTO workflow.approval_request (id, subject_type, subject_id, subject_version, subject_fingerprint, subject_snapshot, snapshot_fingerprint, source_context, operation, transaction_type, data_classification, dimensions, amount, currency, due_at, responsible_roles, policy_id, policy_version, scope, steps, status, aggregate_version, requester_user_id, requester_subject_reference, correlation_id, causation_id, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12::jsonb,$13,$14,$15,$16::jsonb,$17,$18,$19::jsonb,$20::jsonb,$21,$22,$23,$24,$25,$26,$27,$28)`, request.ID, request.SubjectType, request.SubjectID, request.SubjectVersion, request.SubjectFingerprint, snapshot, request.SnapshotFingerprint, request.SourceContext, request.Operation, request.TransactionType, request.DataClassification, dimensions, amount, request.Currency, request.DueAt, roles, request.PolicyID, request.PolicyVersion, scope, steps, request.Status, request.Version.Value(), request.Requester.UserID, request.Requester.SubjectReference, nullableUUIDString(request.CorrelationID), nullableUUIDString(request.CausationID), request.CreatedAt, request.UpdatedAt); err != nil {
 		return mapPostgresApprovalRequestError(err)
 	}
 	if auditReference, err := repository.requestAuditWriter(ctx, tx, prepared.Audit); err != nil {

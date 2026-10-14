@@ -775,7 +775,7 @@ type Handler interface {
 	// WfaCreateApprovalRequest implements wfaCreateApprovalRequest operation.
 	//
 	// POST /approvals/actions/create-approval-request
-	WfaCreateApprovalRequest(ctx context.Context, req *CommandRequest, params WfaCreateApprovalRequestParams) (WfaCreateApprovalRequestRes, error)
+	WfaCreateApprovalRequest(ctx context.Context, req *WfaCreateApprovalRequestCommandRequest, params WfaCreateApprovalRequestParams) (WfaCreateApprovalRequestRes, error)
 	// WfaDecideApprovalRequest implements wfaDecideApprovalRequest operation.
 	//
 	// POST /approvals/actions/decide-approval-request
@@ -788,6 +788,14 @@ type Handler interface {
 	//
 	// POST /approvals/actions/escalate-approval
 	WfaEscalateApproval(ctx context.Context, req *CommandRequest, params WfaEscalateApprovalParams) (WfaEscalateApprovalRes, error)
+	// WfaGetApprovalRequest implements wfaGetApprovalRequest operation.
+	//
+	// GET /approvals/reference/requests/{approvalRequestId}
+	WfaGetApprovalRequest(ctx context.Context, params WfaGetApprovalRequestParams) (WfaGetApprovalRequestRes, error)
+	// WfaListApprovalRequests implements wfaListApprovalRequests operation.
+	//
+	// GET /approvals/reference/requests
+	WfaListApprovalRequests(ctx context.Context, params WfaListApprovalRequestsParams) (WfaListApprovalRequestsRes, error)
 	// WfaMaintainApprovalPolicies implements wfaMaintainApprovalPolicies operation.
 	//
 	// PUT /approvals/configuration/maintain-approval-policies

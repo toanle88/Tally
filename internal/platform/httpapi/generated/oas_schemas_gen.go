@@ -863,6 +863,8 @@ func (*AuthenticationRequiredHeaders) wfaCreateApprovalRequestRes()             
 func (*AuthenticationRequiredHeaders) wfaDecideApprovalRequestRes()                         {}
 func (*AuthenticationRequiredHeaders) wfaDelegateApprovalRes()                              {}
 func (*AuthenticationRequiredHeaders) wfaEscalateApprovalRes()                              {}
+func (*AuthenticationRequiredHeaders) wfaGetApprovalRequestRes()                            {}
+func (*AuthenticationRequiredHeaders) wfaListApprovalRequestsRes()                          {}
 func (*AuthenticationRequiredHeaders) wfaMaintainApprovalPoliciesRes()                      {}
 
 type BearerAuth struct {
@@ -1450,7 +1452,6 @@ func (*EstablishedResult) taxRequestTaxPaymentRes()                             
 func (*EstablishedResult) taxReverseIncomingSettlementApplicationRes()          {}
 func (*EstablishedResult) taxSubmitTaxAmendmentRes()                            {}
 func (*EstablishedResult) taxSubmitTaxReturnRes()                               {}
-func (*EstablishedResult) wfaCreateApprovalRequestRes()                         {}
 func (*EstablishedResult) wfaDecideApprovalRequestRes()                         {}
 func (*EstablishedResult) wfaDelegateApprovalRes()                              {}
 func (*EstablishedResult) wfaEscalateApprovalRes()                              {}
@@ -7987,6 +7988,52 @@ func (o OptBool) Or(d bool) bool {
 	return d
 }
 
+// NewOptCurrencyCode returns new OptCurrencyCode with value set to v.
+func NewOptCurrencyCode(v CurrencyCode) OptCurrencyCode {
+	return OptCurrencyCode{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptCurrencyCode is optional CurrencyCode.
+type OptCurrencyCode struct {
+	Value CurrencyCode
+	Set   bool
+}
+
+// IsSet returns true if OptCurrencyCode was set.
+func (o OptCurrencyCode) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptCurrencyCode) Reset() {
+	var v CurrencyCode
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptCurrencyCode) SetTo(v CurrencyCode) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptCurrencyCode) Get() (v CurrencyCode, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptCurrencyCode) Or(d CurrencyCode) CurrencyCode {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptDate returns new OptDate with value set to v.
 func NewOptDate(v time.Time) OptDate {
 	return OptDate{
@@ -8673,6 +8720,411 @@ func (o OptWfaApprovalApplicabilityDimensions) Or(d WfaApprovalApplicabilityDime
 		return v
 	}
 	return d
+}
+
+// NewOptWfaApprovalRequestProjectionDimensions returns new OptWfaApprovalRequestProjectionDimensions with value set to v.
+func NewOptWfaApprovalRequestProjectionDimensions(v WfaApprovalRequestProjectionDimensions) OptWfaApprovalRequestProjectionDimensions {
+	return OptWfaApprovalRequestProjectionDimensions{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptWfaApprovalRequestProjectionDimensions is optional WfaApprovalRequestProjectionDimensions.
+type OptWfaApprovalRequestProjectionDimensions struct {
+	Value WfaApprovalRequestProjectionDimensions
+	Set   bool
+}
+
+// IsSet returns true if OptWfaApprovalRequestProjectionDimensions was set.
+func (o OptWfaApprovalRequestProjectionDimensions) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptWfaApprovalRequestProjectionDimensions) Reset() {
+	var v WfaApprovalRequestProjectionDimensions
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptWfaApprovalRequestProjectionDimensions) SetTo(v WfaApprovalRequestProjectionDimensions) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptWfaApprovalRequestProjectionDimensions) Get() (v WfaApprovalRequestProjectionDimensions, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptWfaApprovalRequestProjectionDimensions) Or(d WfaApprovalRequestProjectionDimensions) WfaApprovalRequestProjectionDimensions {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptWfaApprovalSubjectSnapshot returns new OptWfaApprovalSubjectSnapshot with value set to v.
+func NewOptWfaApprovalSubjectSnapshot(v WfaApprovalSubjectSnapshot) OptWfaApprovalSubjectSnapshot {
+	return OptWfaApprovalSubjectSnapshot{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptWfaApprovalSubjectSnapshot is optional WfaApprovalSubjectSnapshot.
+type OptWfaApprovalSubjectSnapshot struct {
+	Value WfaApprovalSubjectSnapshot
+	Set   bool
+}
+
+// IsSet returns true if OptWfaApprovalSubjectSnapshot was set.
+func (o OptWfaApprovalSubjectSnapshot) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptWfaApprovalSubjectSnapshot) Reset() {
+	var v WfaApprovalSubjectSnapshot
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptWfaApprovalSubjectSnapshot) SetTo(v WfaApprovalSubjectSnapshot) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptWfaApprovalSubjectSnapshot) Get() (v WfaApprovalSubjectSnapshot, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptWfaApprovalSubjectSnapshot) Or(d WfaApprovalSubjectSnapshot) WfaApprovalSubjectSnapshot {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptWfaCreateApprovalRequestCommandDataDimensions returns new OptWfaCreateApprovalRequestCommandDataDimensions with value set to v.
+func NewOptWfaCreateApprovalRequestCommandDataDimensions(v WfaCreateApprovalRequestCommandDataDimensions) OptWfaCreateApprovalRequestCommandDataDimensions {
+	return OptWfaCreateApprovalRequestCommandDataDimensions{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptWfaCreateApprovalRequestCommandDataDimensions is optional WfaCreateApprovalRequestCommandDataDimensions.
+type OptWfaCreateApprovalRequestCommandDataDimensions struct {
+	Value WfaCreateApprovalRequestCommandDataDimensions
+	Set   bool
+}
+
+// IsSet returns true if OptWfaCreateApprovalRequestCommandDataDimensions was set.
+func (o OptWfaCreateApprovalRequestCommandDataDimensions) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptWfaCreateApprovalRequestCommandDataDimensions) Reset() {
+	var v WfaCreateApprovalRequestCommandDataDimensions
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptWfaCreateApprovalRequestCommandDataDimensions) SetTo(v WfaCreateApprovalRequestCommandDataDimensions) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptWfaCreateApprovalRequestCommandDataDimensions) Get() (v WfaCreateApprovalRequestCommandDataDimensions, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptWfaCreateApprovalRequestCommandDataDimensions) Or(d WfaCreateApprovalRequestCommandDataDimensions) WfaCreateApprovalRequestCommandDataDimensions {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptWfaDelegationConfiguration returns new OptWfaDelegationConfiguration with value set to v.
+func NewOptWfaDelegationConfiguration(v WfaDelegationConfiguration) OptWfaDelegationConfiguration {
+	return OptWfaDelegationConfiguration{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptWfaDelegationConfiguration is optional WfaDelegationConfiguration.
+type OptWfaDelegationConfiguration struct {
+	Value WfaDelegationConfiguration
+	Set   bool
+}
+
+// IsSet returns true if OptWfaDelegationConfiguration was set.
+func (o OptWfaDelegationConfiguration) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptWfaDelegationConfiguration) Reset() {
+	var v WfaDelegationConfiguration
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptWfaDelegationConfiguration) SetTo(v WfaDelegationConfiguration) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptWfaDelegationConfiguration) Get() (v WfaDelegationConfiguration, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptWfaDelegationConfiguration) Or(d WfaDelegationConfiguration) WfaDelegationConfiguration {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptWfaEscalationConfiguration returns new OptWfaEscalationConfiguration with value set to v.
+func NewOptWfaEscalationConfiguration(v WfaEscalationConfiguration) OptWfaEscalationConfiguration {
+	return OptWfaEscalationConfiguration{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptWfaEscalationConfiguration is optional WfaEscalationConfiguration.
+type OptWfaEscalationConfiguration struct {
+	Value WfaEscalationConfiguration
+	Set   bool
+}
+
+// IsSet returns true if OptWfaEscalationConfiguration was set.
+func (o OptWfaEscalationConfiguration) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptWfaEscalationConfiguration) Reset() {
+	var v WfaEscalationConfiguration
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptWfaEscalationConfiguration) SetTo(v WfaEscalationConfiguration) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptWfaEscalationConfiguration) Get() (v WfaEscalationConfiguration, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptWfaEscalationConfiguration) Or(d WfaEscalationConfiguration) WfaEscalationConfiguration {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptWfaListApprovalRequestsAssignment returns new OptWfaListApprovalRequestsAssignment with value set to v.
+func NewOptWfaListApprovalRequestsAssignment(v WfaListApprovalRequestsAssignment) OptWfaListApprovalRequestsAssignment {
+	return OptWfaListApprovalRequestsAssignment{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptWfaListApprovalRequestsAssignment is optional WfaListApprovalRequestsAssignment.
+type OptWfaListApprovalRequestsAssignment struct {
+	Value WfaListApprovalRequestsAssignment
+	Set   bool
+}
+
+// IsSet returns true if OptWfaListApprovalRequestsAssignment was set.
+func (o OptWfaListApprovalRequestsAssignment) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptWfaListApprovalRequestsAssignment) Reset() {
+	var v WfaListApprovalRequestsAssignment
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptWfaListApprovalRequestsAssignment) SetTo(v WfaListApprovalRequestsAssignment) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptWfaListApprovalRequestsAssignment) Get() (v WfaListApprovalRequestsAssignment, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptWfaListApprovalRequestsAssignment) Or(d WfaListApprovalRequestsAssignment) WfaListApprovalRequestsAssignment {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptWfaListApprovalRequestsDue returns new OptWfaListApprovalRequestsDue with value set to v.
+func NewOptWfaListApprovalRequestsDue(v WfaListApprovalRequestsDue) OptWfaListApprovalRequestsDue {
+	return OptWfaListApprovalRequestsDue{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptWfaListApprovalRequestsDue is optional WfaListApprovalRequestsDue.
+type OptWfaListApprovalRequestsDue struct {
+	Value WfaListApprovalRequestsDue
+	Set   bool
+}
+
+// IsSet returns true if OptWfaListApprovalRequestsDue was set.
+func (o OptWfaListApprovalRequestsDue) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptWfaListApprovalRequestsDue) Reset() {
+	var v WfaListApprovalRequestsDue
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptWfaListApprovalRequestsDue) SetTo(v WfaListApprovalRequestsDue) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptWfaListApprovalRequestsDue) Get() (v WfaListApprovalRequestsDue, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptWfaListApprovalRequestsDue) Or(d WfaListApprovalRequestsDue) WfaListApprovalRequestsDue {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptWfaListApprovalRequestsState returns new OptWfaListApprovalRequestsState with value set to v.
+func NewOptWfaListApprovalRequestsState(v WfaListApprovalRequestsState) OptWfaListApprovalRequestsState {
+	return OptWfaListApprovalRequestsState{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptWfaListApprovalRequestsState is optional WfaListApprovalRequestsState.
+type OptWfaListApprovalRequestsState struct {
+	Value WfaListApprovalRequestsState
+	Set   bool
+}
+
+// IsSet returns true if OptWfaListApprovalRequestsState was set.
+func (o OptWfaListApprovalRequestsState) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptWfaListApprovalRequestsState) Reset() {
+	var v WfaListApprovalRequestsState
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptWfaListApprovalRequestsState) SetTo(v WfaListApprovalRequestsState) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptWfaListApprovalRequestsState) Get() (v WfaListApprovalRequestsState, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptWfaListApprovalRequestsState) Or(d WfaListApprovalRequestsState) WfaListApprovalRequestsState {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// Ref: #/components/schemas/Page
+type Page struct {
+	Size    int       `json:"size"`
+	After   OptString `json:"after"`
+	HasMore OptBool   `json:"hasMore"`
+}
+
+// GetSize returns the value of Size.
+func (s *Page) GetSize() int {
+	return s.Size
+}
+
+// GetAfter returns the value of After.
+func (s *Page) GetAfter() OptString {
+	return s.After
+}
+
+// GetHasMore returns the value of HasMore.
+func (s *Page) GetHasMore() OptBool {
+	return s.HasMore
+}
+
+// SetSize sets the value of Size.
+func (s *Page) SetSize(val int) {
+	s.Size = val
+}
+
+// SetAfter sets the value of After.
+func (s *Page) SetAfter(val OptString) {
+	s.After = val
+}
+
+// SetHasMore sets the value of HasMore.
+func (s *Page) SetHasMore(val OptBool) {
+	s.HasMore = val
 }
 
 type PayrApplyPaymentReturnBadRequest ProblemDetails
@@ -10413,6 +10865,709 @@ func (s *WfaApprovalPolicyProjectionStatus) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/components/schemas/WfaApprovalRequestEstablishedResult
+type WfaApprovalRequestEstablishedResult struct {
+	Status           string                       `json:"status"`
+	AggregateId      UUID                         `json:"aggregateId"`
+	AggregateVersion int                          `json:"aggregateVersion"`
+	ProcessId        OptNilUUID                   `json:"processId"`
+	CorrelationId    UUID                         `json:"correlationId"`
+	Links            Links                        `json:"links"`
+	Data             WfaApprovalRequestResultData `json:"data"`
+}
+
+// GetStatus returns the value of Status.
+func (s *WfaApprovalRequestEstablishedResult) GetStatus() string {
+	return s.Status
+}
+
+// GetAggregateId returns the value of AggregateId.
+func (s *WfaApprovalRequestEstablishedResult) GetAggregateId() UUID {
+	return s.AggregateId
+}
+
+// GetAggregateVersion returns the value of AggregateVersion.
+func (s *WfaApprovalRequestEstablishedResult) GetAggregateVersion() int {
+	return s.AggregateVersion
+}
+
+// GetProcessId returns the value of ProcessId.
+func (s *WfaApprovalRequestEstablishedResult) GetProcessId() OptNilUUID {
+	return s.ProcessId
+}
+
+// GetCorrelationId returns the value of CorrelationId.
+func (s *WfaApprovalRequestEstablishedResult) GetCorrelationId() UUID {
+	return s.CorrelationId
+}
+
+// GetLinks returns the value of Links.
+func (s *WfaApprovalRequestEstablishedResult) GetLinks() Links {
+	return s.Links
+}
+
+// GetData returns the value of Data.
+func (s *WfaApprovalRequestEstablishedResult) GetData() WfaApprovalRequestResultData {
+	return s.Data
+}
+
+// SetStatus sets the value of Status.
+func (s *WfaApprovalRequestEstablishedResult) SetStatus(val string) {
+	s.Status = val
+}
+
+// SetAggregateId sets the value of AggregateId.
+func (s *WfaApprovalRequestEstablishedResult) SetAggregateId(val UUID) {
+	s.AggregateId = val
+}
+
+// SetAggregateVersion sets the value of AggregateVersion.
+func (s *WfaApprovalRequestEstablishedResult) SetAggregateVersion(val int) {
+	s.AggregateVersion = val
+}
+
+// SetProcessId sets the value of ProcessId.
+func (s *WfaApprovalRequestEstablishedResult) SetProcessId(val OptNilUUID) {
+	s.ProcessId = val
+}
+
+// SetCorrelationId sets the value of CorrelationId.
+func (s *WfaApprovalRequestEstablishedResult) SetCorrelationId(val UUID) {
+	s.CorrelationId = val
+}
+
+// SetLinks sets the value of Links.
+func (s *WfaApprovalRequestEstablishedResult) SetLinks(val Links) {
+	s.Links = val
+}
+
+// SetData sets the value of Data.
+func (s *WfaApprovalRequestEstablishedResult) SetData(val WfaApprovalRequestResultData) {
+	s.Data = val
+}
+
+func (*WfaApprovalRequestEstablishedResult) wfaGetApprovalRequestRes() {}
+
+// Ref: #/components/schemas/WfaApprovalRequestListEstablishedResult
+type WfaApprovalRequestListEstablishedResult struct {
+	Status           string                           `json:"status"`
+	AggregateId      UUID                             `json:"aggregateId"`
+	AggregateVersion int                              `json:"aggregateVersion"`
+	ProcessId        OptNilUUID                       `json:"processId"`
+	CorrelationId    UUID                             `json:"correlationId"`
+	Links            Links                            `json:"links"`
+	Data             WfaApprovalRequestListResultData `json:"data"`
+}
+
+// GetStatus returns the value of Status.
+func (s *WfaApprovalRequestListEstablishedResult) GetStatus() string {
+	return s.Status
+}
+
+// GetAggregateId returns the value of AggregateId.
+func (s *WfaApprovalRequestListEstablishedResult) GetAggregateId() UUID {
+	return s.AggregateId
+}
+
+// GetAggregateVersion returns the value of AggregateVersion.
+func (s *WfaApprovalRequestListEstablishedResult) GetAggregateVersion() int {
+	return s.AggregateVersion
+}
+
+// GetProcessId returns the value of ProcessId.
+func (s *WfaApprovalRequestListEstablishedResult) GetProcessId() OptNilUUID {
+	return s.ProcessId
+}
+
+// GetCorrelationId returns the value of CorrelationId.
+func (s *WfaApprovalRequestListEstablishedResult) GetCorrelationId() UUID {
+	return s.CorrelationId
+}
+
+// GetLinks returns the value of Links.
+func (s *WfaApprovalRequestListEstablishedResult) GetLinks() Links {
+	return s.Links
+}
+
+// GetData returns the value of Data.
+func (s *WfaApprovalRequestListEstablishedResult) GetData() WfaApprovalRequestListResultData {
+	return s.Data
+}
+
+// SetStatus sets the value of Status.
+func (s *WfaApprovalRequestListEstablishedResult) SetStatus(val string) {
+	s.Status = val
+}
+
+// SetAggregateId sets the value of AggregateId.
+func (s *WfaApprovalRequestListEstablishedResult) SetAggregateId(val UUID) {
+	s.AggregateId = val
+}
+
+// SetAggregateVersion sets the value of AggregateVersion.
+func (s *WfaApprovalRequestListEstablishedResult) SetAggregateVersion(val int) {
+	s.AggregateVersion = val
+}
+
+// SetProcessId sets the value of ProcessId.
+func (s *WfaApprovalRequestListEstablishedResult) SetProcessId(val OptNilUUID) {
+	s.ProcessId = val
+}
+
+// SetCorrelationId sets the value of CorrelationId.
+func (s *WfaApprovalRequestListEstablishedResult) SetCorrelationId(val UUID) {
+	s.CorrelationId = val
+}
+
+// SetLinks sets the value of Links.
+func (s *WfaApprovalRequestListEstablishedResult) SetLinks(val Links) {
+	s.Links = val
+}
+
+// SetData sets the value of Data.
+func (s *WfaApprovalRequestListEstablishedResult) SetData(val WfaApprovalRequestListResultData) {
+	s.Data = val
+}
+
+func (*WfaApprovalRequestListEstablishedResult) wfaListApprovalRequestsRes() {}
+
+// Ref: #/components/schemas/WfaApprovalRequestListResultData
+type WfaApprovalRequestListResultData struct {
+	Requests []WfaApprovalRequestProjection `json:"requests"`
+	Page     Page                           `json:"page"`
+}
+
+// GetRequests returns the value of Requests.
+func (s *WfaApprovalRequestListResultData) GetRequests() []WfaApprovalRequestProjection {
+	return s.Requests
+}
+
+// GetPage returns the value of Page.
+func (s *WfaApprovalRequestListResultData) GetPage() Page {
+	return s.Page
+}
+
+// SetRequests sets the value of Requests.
+func (s *WfaApprovalRequestListResultData) SetRequests(val []WfaApprovalRequestProjection) {
+	s.Requests = val
+}
+
+// SetPage sets the value of Page.
+func (s *WfaApprovalRequestListResultData) SetPage(val Page) {
+	s.Page = val
+}
+
+// Ref: #/components/schemas/WfaApprovalRequestProjection
+type WfaApprovalRequestProjection struct {
+	ID                        UUID                                      `json:"id"`
+	SubjectType               string                                    `json:"subjectType"`
+	SubjectId                 string                                    `json:"subjectId"`
+	SubjectVersion            int                                       `json:"subjectVersion"`
+	SubjectFingerprint        string                                    `json:"subjectFingerprint"`
+	SubjectSnapshot           OptWfaApprovalSubjectSnapshot             `json:"subjectSnapshot"`
+	SnapshotFingerprint       OptString                                 `json:"snapshotFingerprint"`
+	SourceContext             OptString                                 `json:"sourceContext"`
+	Operation                 OptString                                 `json:"operation"`
+	TransactionType           OptString                                 `json:"transactionType"`
+	DataClassification        OptString                                 `json:"dataClassification"`
+	Dimensions                OptWfaApprovalRequestProjectionDimensions `json:"dimensions"`
+	Amount                    OptMoney                                  `json:"amount"`
+	Currency                  OptCurrencyCode                           `json:"currency"`
+	PolicyId                  UUID                                      `json:"policyId"`
+	PolicyVersion             string                                    `json:"policyVersion"`
+	Scope                     WfaApprovalScope                          `json:"scope"`
+	RequesterUserId           OptUUID                                   `json:"requesterUserId"`
+	RequesterSubjectReference OptString                                 `json:"requesterSubjectReference"`
+	Steps                     []WfaApprovalRequestStep                  `json:"steps"`
+	Status                    WfaApprovalRequestProjectionStatus        `json:"status"`
+	AggregateVersion          int                                       `json:"aggregateVersion"`
+	ResponsibleRoles          []string                                  `json:"responsibleRoles"`
+	DueAt                     OptDateTime                               `json:"dueAt"`
+	CreatedAt                 time.Time                                 `json:"createdAt"`
+	UpdatedAt                 time.Time                                 `json:"updatedAt"`
+}
+
+// GetID returns the value of ID.
+func (s *WfaApprovalRequestProjection) GetID() UUID {
+	return s.ID
+}
+
+// GetSubjectType returns the value of SubjectType.
+func (s *WfaApprovalRequestProjection) GetSubjectType() string {
+	return s.SubjectType
+}
+
+// GetSubjectId returns the value of SubjectId.
+func (s *WfaApprovalRequestProjection) GetSubjectId() string {
+	return s.SubjectId
+}
+
+// GetSubjectVersion returns the value of SubjectVersion.
+func (s *WfaApprovalRequestProjection) GetSubjectVersion() int {
+	return s.SubjectVersion
+}
+
+// GetSubjectFingerprint returns the value of SubjectFingerprint.
+func (s *WfaApprovalRequestProjection) GetSubjectFingerprint() string {
+	return s.SubjectFingerprint
+}
+
+// GetSubjectSnapshot returns the value of SubjectSnapshot.
+func (s *WfaApprovalRequestProjection) GetSubjectSnapshot() OptWfaApprovalSubjectSnapshot {
+	return s.SubjectSnapshot
+}
+
+// GetSnapshotFingerprint returns the value of SnapshotFingerprint.
+func (s *WfaApprovalRequestProjection) GetSnapshotFingerprint() OptString {
+	return s.SnapshotFingerprint
+}
+
+// GetSourceContext returns the value of SourceContext.
+func (s *WfaApprovalRequestProjection) GetSourceContext() OptString {
+	return s.SourceContext
+}
+
+// GetOperation returns the value of Operation.
+func (s *WfaApprovalRequestProjection) GetOperation() OptString {
+	return s.Operation
+}
+
+// GetTransactionType returns the value of TransactionType.
+func (s *WfaApprovalRequestProjection) GetTransactionType() OptString {
+	return s.TransactionType
+}
+
+// GetDataClassification returns the value of DataClassification.
+func (s *WfaApprovalRequestProjection) GetDataClassification() OptString {
+	return s.DataClassification
+}
+
+// GetDimensions returns the value of Dimensions.
+func (s *WfaApprovalRequestProjection) GetDimensions() OptWfaApprovalRequestProjectionDimensions {
+	return s.Dimensions
+}
+
+// GetAmount returns the value of Amount.
+func (s *WfaApprovalRequestProjection) GetAmount() OptMoney {
+	return s.Amount
+}
+
+// GetCurrency returns the value of Currency.
+func (s *WfaApprovalRequestProjection) GetCurrency() OptCurrencyCode {
+	return s.Currency
+}
+
+// GetPolicyId returns the value of PolicyId.
+func (s *WfaApprovalRequestProjection) GetPolicyId() UUID {
+	return s.PolicyId
+}
+
+// GetPolicyVersion returns the value of PolicyVersion.
+func (s *WfaApprovalRequestProjection) GetPolicyVersion() string {
+	return s.PolicyVersion
+}
+
+// GetScope returns the value of Scope.
+func (s *WfaApprovalRequestProjection) GetScope() WfaApprovalScope {
+	return s.Scope
+}
+
+// GetRequesterUserId returns the value of RequesterUserId.
+func (s *WfaApprovalRequestProjection) GetRequesterUserId() OptUUID {
+	return s.RequesterUserId
+}
+
+// GetRequesterSubjectReference returns the value of RequesterSubjectReference.
+func (s *WfaApprovalRequestProjection) GetRequesterSubjectReference() OptString {
+	return s.RequesterSubjectReference
+}
+
+// GetSteps returns the value of Steps.
+func (s *WfaApprovalRequestProjection) GetSteps() []WfaApprovalRequestStep {
+	return s.Steps
+}
+
+// GetStatus returns the value of Status.
+func (s *WfaApprovalRequestProjection) GetStatus() WfaApprovalRequestProjectionStatus {
+	return s.Status
+}
+
+// GetAggregateVersion returns the value of AggregateVersion.
+func (s *WfaApprovalRequestProjection) GetAggregateVersion() int {
+	return s.AggregateVersion
+}
+
+// GetResponsibleRoles returns the value of ResponsibleRoles.
+func (s *WfaApprovalRequestProjection) GetResponsibleRoles() []string {
+	return s.ResponsibleRoles
+}
+
+// GetDueAt returns the value of DueAt.
+func (s *WfaApprovalRequestProjection) GetDueAt() OptDateTime {
+	return s.DueAt
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *WfaApprovalRequestProjection) GetCreatedAt() time.Time {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *WfaApprovalRequestProjection) GetUpdatedAt() time.Time {
+	return s.UpdatedAt
+}
+
+// SetID sets the value of ID.
+func (s *WfaApprovalRequestProjection) SetID(val UUID) {
+	s.ID = val
+}
+
+// SetSubjectType sets the value of SubjectType.
+func (s *WfaApprovalRequestProjection) SetSubjectType(val string) {
+	s.SubjectType = val
+}
+
+// SetSubjectId sets the value of SubjectId.
+func (s *WfaApprovalRequestProjection) SetSubjectId(val string) {
+	s.SubjectId = val
+}
+
+// SetSubjectVersion sets the value of SubjectVersion.
+func (s *WfaApprovalRequestProjection) SetSubjectVersion(val int) {
+	s.SubjectVersion = val
+}
+
+// SetSubjectFingerprint sets the value of SubjectFingerprint.
+func (s *WfaApprovalRequestProjection) SetSubjectFingerprint(val string) {
+	s.SubjectFingerprint = val
+}
+
+// SetSubjectSnapshot sets the value of SubjectSnapshot.
+func (s *WfaApprovalRequestProjection) SetSubjectSnapshot(val OptWfaApprovalSubjectSnapshot) {
+	s.SubjectSnapshot = val
+}
+
+// SetSnapshotFingerprint sets the value of SnapshotFingerprint.
+func (s *WfaApprovalRequestProjection) SetSnapshotFingerprint(val OptString) {
+	s.SnapshotFingerprint = val
+}
+
+// SetSourceContext sets the value of SourceContext.
+func (s *WfaApprovalRequestProjection) SetSourceContext(val OptString) {
+	s.SourceContext = val
+}
+
+// SetOperation sets the value of Operation.
+func (s *WfaApprovalRequestProjection) SetOperation(val OptString) {
+	s.Operation = val
+}
+
+// SetTransactionType sets the value of TransactionType.
+func (s *WfaApprovalRequestProjection) SetTransactionType(val OptString) {
+	s.TransactionType = val
+}
+
+// SetDataClassification sets the value of DataClassification.
+func (s *WfaApprovalRequestProjection) SetDataClassification(val OptString) {
+	s.DataClassification = val
+}
+
+// SetDimensions sets the value of Dimensions.
+func (s *WfaApprovalRequestProjection) SetDimensions(val OptWfaApprovalRequestProjectionDimensions) {
+	s.Dimensions = val
+}
+
+// SetAmount sets the value of Amount.
+func (s *WfaApprovalRequestProjection) SetAmount(val OptMoney) {
+	s.Amount = val
+}
+
+// SetCurrency sets the value of Currency.
+func (s *WfaApprovalRequestProjection) SetCurrency(val OptCurrencyCode) {
+	s.Currency = val
+}
+
+// SetPolicyId sets the value of PolicyId.
+func (s *WfaApprovalRequestProjection) SetPolicyId(val UUID) {
+	s.PolicyId = val
+}
+
+// SetPolicyVersion sets the value of PolicyVersion.
+func (s *WfaApprovalRequestProjection) SetPolicyVersion(val string) {
+	s.PolicyVersion = val
+}
+
+// SetScope sets the value of Scope.
+func (s *WfaApprovalRequestProjection) SetScope(val WfaApprovalScope) {
+	s.Scope = val
+}
+
+// SetRequesterUserId sets the value of RequesterUserId.
+func (s *WfaApprovalRequestProjection) SetRequesterUserId(val OptUUID) {
+	s.RequesterUserId = val
+}
+
+// SetRequesterSubjectReference sets the value of RequesterSubjectReference.
+func (s *WfaApprovalRequestProjection) SetRequesterSubjectReference(val OptString) {
+	s.RequesterSubjectReference = val
+}
+
+// SetSteps sets the value of Steps.
+func (s *WfaApprovalRequestProjection) SetSteps(val []WfaApprovalRequestStep) {
+	s.Steps = val
+}
+
+// SetStatus sets the value of Status.
+func (s *WfaApprovalRequestProjection) SetStatus(val WfaApprovalRequestProjectionStatus) {
+	s.Status = val
+}
+
+// SetAggregateVersion sets the value of AggregateVersion.
+func (s *WfaApprovalRequestProjection) SetAggregateVersion(val int) {
+	s.AggregateVersion = val
+}
+
+// SetResponsibleRoles sets the value of ResponsibleRoles.
+func (s *WfaApprovalRequestProjection) SetResponsibleRoles(val []string) {
+	s.ResponsibleRoles = val
+}
+
+// SetDueAt sets the value of DueAt.
+func (s *WfaApprovalRequestProjection) SetDueAt(val OptDateTime) {
+	s.DueAt = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *WfaApprovalRequestProjection) SetCreatedAt(val time.Time) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *WfaApprovalRequestProjection) SetUpdatedAt(val time.Time) {
+	s.UpdatedAt = val
+}
+
+type WfaApprovalRequestProjectionDimensions map[string]string
+
+func (s *WfaApprovalRequestProjectionDimensions) init() WfaApprovalRequestProjectionDimensions {
+	m := *s
+	if m == nil {
+		m = map[string]string{}
+		*s = m
+	}
+	return m
+}
+
+type WfaApprovalRequestProjectionStatus string
+
+const (
+	WfaApprovalRequestProjectionStatusPending  WfaApprovalRequestProjectionStatus = "Pending"
+	WfaApprovalRequestProjectionStatusApproved WfaApprovalRequestProjectionStatus = "Approved"
+	WfaApprovalRequestProjectionStatusRejected WfaApprovalRequestProjectionStatus = "Rejected"
+)
+
+// AllValues returns all WfaApprovalRequestProjectionStatus values.
+func (WfaApprovalRequestProjectionStatus) AllValues() []WfaApprovalRequestProjectionStatus {
+	return []WfaApprovalRequestProjectionStatus{
+		WfaApprovalRequestProjectionStatusPending,
+		WfaApprovalRequestProjectionStatusApproved,
+		WfaApprovalRequestProjectionStatusRejected,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s WfaApprovalRequestProjectionStatus) MarshalText() ([]byte, error) {
+	switch s {
+	case WfaApprovalRequestProjectionStatusPending:
+		return []byte(s), nil
+	case WfaApprovalRequestProjectionStatusApproved:
+		return []byte(s), nil
+	case WfaApprovalRequestProjectionStatusRejected:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *WfaApprovalRequestProjectionStatus) UnmarshalText(data []byte) error {
+	switch WfaApprovalRequestProjectionStatus(data) {
+	case WfaApprovalRequestProjectionStatusPending:
+		*s = WfaApprovalRequestProjectionStatusPending
+		return nil
+	case WfaApprovalRequestProjectionStatusApproved:
+		*s = WfaApprovalRequestProjectionStatusApproved
+		return nil
+	case WfaApprovalRequestProjectionStatusRejected:
+		*s = WfaApprovalRequestProjectionStatusRejected
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/WfaApprovalRequestResultData
+type WfaApprovalRequestResultData struct {
+	Request          WfaApprovalRequestProjection `json:"request"`
+	ValidationStatus OptString                    `json:"validationStatus"`
+	ApprovalStatus   OptString                    `json:"approvalStatus"`
+	ResponsibleRoles []string                     `json:"responsibleRoles"`
+	Exception        OptString                    `json:"exception"`
+	RecoveryPath     OptString                    `json:"recoveryPath"`
+}
+
+// GetRequest returns the value of Request.
+func (s *WfaApprovalRequestResultData) GetRequest() WfaApprovalRequestProjection {
+	return s.Request
+}
+
+// GetValidationStatus returns the value of ValidationStatus.
+func (s *WfaApprovalRequestResultData) GetValidationStatus() OptString {
+	return s.ValidationStatus
+}
+
+// GetApprovalStatus returns the value of ApprovalStatus.
+func (s *WfaApprovalRequestResultData) GetApprovalStatus() OptString {
+	return s.ApprovalStatus
+}
+
+// GetResponsibleRoles returns the value of ResponsibleRoles.
+func (s *WfaApprovalRequestResultData) GetResponsibleRoles() []string {
+	return s.ResponsibleRoles
+}
+
+// GetException returns the value of Exception.
+func (s *WfaApprovalRequestResultData) GetException() OptString {
+	return s.Exception
+}
+
+// GetRecoveryPath returns the value of RecoveryPath.
+func (s *WfaApprovalRequestResultData) GetRecoveryPath() OptString {
+	return s.RecoveryPath
+}
+
+// SetRequest sets the value of Request.
+func (s *WfaApprovalRequestResultData) SetRequest(val WfaApprovalRequestProjection) {
+	s.Request = val
+}
+
+// SetValidationStatus sets the value of ValidationStatus.
+func (s *WfaApprovalRequestResultData) SetValidationStatus(val OptString) {
+	s.ValidationStatus = val
+}
+
+// SetApprovalStatus sets the value of ApprovalStatus.
+func (s *WfaApprovalRequestResultData) SetApprovalStatus(val OptString) {
+	s.ApprovalStatus = val
+}
+
+// SetResponsibleRoles sets the value of ResponsibleRoles.
+func (s *WfaApprovalRequestResultData) SetResponsibleRoles(val []string) {
+	s.ResponsibleRoles = val
+}
+
+// SetException sets the value of Exception.
+func (s *WfaApprovalRequestResultData) SetException(val OptString) {
+	s.Exception = val
+}
+
+// SetRecoveryPath sets the value of RecoveryPath.
+func (s *WfaApprovalRequestResultData) SetRecoveryPath(val OptString) {
+	s.RecoveryPath = val
+}
+
+// Ref: #/components/schemas/WfaApprovalRequestStep
+type WfaApprovalRequestStep struct {
+	ID               UUID                          `json:"id"`
+	Sequence         int                           `json:"sequence"`
+	Name             OptString                     `json:"name"`
+	RequiredRoles    []WfaRoleRequirement          `json:"requiredRoles"`
+	MinimumApprovals int                           `json:"minimumApprovals"`
+	Delegation       OptWfaDelegationConfiguration `json:"delegation"`
+	Escalation       OptWfaEscalationConfiguration `json:"escalation"`
+	Status           string                        `json:"status"`
+}
+
+// GetID returns the value of ID.
+func (s *WfaApprovalRequestStep) GetID() UUID {
+	return s.ID
+}
+
+// GetSequence returns the value of Sequence.
+func (s *WfaApprovalRequestStep) GetSequence() int {
+	return s.Sequence
+}
+
+// GetName returns the value of Name.
+func (s *WfaApprovalRequestStep) GetName() OptString {
+	return s.Name
+}
+
+// GetRequiredRoles returns the value of RequiredRoles.
+func (s *WfaApprovalRequestStep) GetRequiredRoles() []WfaRoleRequirement {
+	return s.RequiredRoles
+}
+
+// GetMinimumApprovals returns the value of MinimumApprovals.
+func (s *WfaApprovalRequestStep) GetMinimumApprovals() int {
+	return s.MinimumApprovals
+}
+
+// GetDelegation returns the value of Delegation.
+func (s *WfaApprovalRequestStep) GetDelegation() OptWfaDelegationConfiguration {
+	return s.Delegation
+}
+
+// GetEscalation returns the value of Escalation.
+func (s *WfaApprovalRequestStep) GetEscalation() OptWfaEscalationConfiguration {
+	return s.Escalation
+}
+
+// GetStatus returns the value of Status.
+func (s *WfaApprovalRequestStep) GetStatus() string {
+	return s.Status
+}
+
+// SetID sets the value of ID.
+func (s *WfaApprovalRequestStep) SetID(val UUID) {
+	s.ID = val
+}
+
+// SetSequence sets the value of Sequence.
+func (s *WfaApprovalRequestStep) SetSequence(val int) {
+	s.Sequence = val
+}
+
+// SetName sets the value of Name.
+func (s *WfaApprovalRequestStep) SetName(val OptString) {
+	s.Name = val
+}
+
+// SetRequiredRoles sets the value of RequiredRoles.
+func (s *WfaApprovalRequestStep) SetRequiredRoles(val []WfaRoleRequirement) {
+	s.RequiredRoles = val
+}
+
+// SetMinimumApprovals sets the value of MinimumApprovals.
+func (s *WfaApprovalRequestStep) SetMinimumApprovals(val int) {
+	s.MinimumApprovals = val
+}
+
+// SetDelegation sets the value of Delegation.
+func (s *WfaApprovalRequestStep) SetDelegation(val OptWfaDelegationConfiguration) {
+	s.Delegation = val
+}
+
+// SetEscalation sets the value of Escalation.
+func (s *WfaApprovalRequestStep) SetEscalation(val OptWfaEscalationConfiguration) {
+	s.Escalation = val
+}
+
+// SetStatus sets the value of Status.
+func (s *WfaApprovalRequestStep) SetStatus(val string) {
+	s.Status = val
+}
+
 // Ref: #/components/schemas/WfaApprovalRule
 type WfaApprovalRule struct {
 	ID            UUID                       `json:"id"`
@@ -10681,17 +11836,424 @@ func (s *WfaApprovalStepDefinition) SetEscalation(val WfaEscalationConfiguration
 	s.Escalation = val
 }
 
+// Ref: #/components/schemas/WfaApprovalSubjectSnapshot
+type WfaApprovalSubjectSnapshot struct {
+	Label     string          `json:"label"`
+	Reference OptString       `json:"reference"`
+	Summary   OptString       `json:"summary"`
+	Amount    OptMoney        `json:"amount"`
+	Currency  OptCurrencyCode `json:"currency"`
+}
+
+// GetLabel returns the value of Label.
+func (s *WfaApprovalSubjectSnapshot) GetLabel() string {
+	return s.Label
+}
+
+// GetReference returns the value of Reference.
+func (s *WfaApprovalSubjectSnapshot) GetReference() OptString {
+	return s.Reference
+}
+
+// GetSummary returns the value of Summary.
+func (s *WfaApprovalSubjectSnapshot) GetSummary() OptString {
+	return s.Summary
+}
+
+// GetAmount returns the value of Amount.
+func (s *WfaApprovalSubjectSnapshot) GetAmount() OptMoney {
+	return s.Amount
+}
+
+// GetCurrency returns the value of Currency.
+func (s *WfaApprovalSubjectSnapshot) GetCurrency() OptCurrencyCode {
+	return s.Currency
+}
+
+// SetLabel sets the value of Label.
+func (s *WfaApprovalSubjectSnapshot) SetLabel(val string) {
+	s.Label = val
+}
+
+// SetReference sets the value of Reference.
+func (s *WfaApprovalSubjectSnapshot) SetReference(val OptString) {
+	s.Reference = val
+}
+
+// SetSummary sets the value of Summary.
+func (s *WfaApprovalSubjectSnapshot) SetSummary(val OptString) {
+	s.Summary = val
+}
+
+// SetAmount sets the value of Amount.
+func (s *WfaApprovalSubjectSnapshot) SetAmount(val OptMoney) {
+	s.Amount = val
+}
+
+// SetCurrency sets the value of Currency.
+func (s *WfaApprovalSubjectSnapshot) SetCurrency(val OptCurrencyCode) {
+	s.Currency = val
+}
+
 type WfaCreateApprovalRequestBadRequest ProblemDetails
 
 func (*WfaCreateApprovalRequestBadRequest) wfaCreateApprovalRequestRes() {}
+
+// Ref: #/components/schemas/WfaCreateApprovalRequestCommandData
+type WfaCreateApprovalRequestCommandData struct {
+	RequestId          UUID                                             `json:"requestId"`
+	SubjectId          string                                           `json:"subjectId"`
+	SubjectVersion     int                                              `json:"subjectVersion"`
+	SubjectFingerprint string                                           `json:"subjectFingerprint"`
+	SubjectSnapshot    WfaApprovalSubjectSnapshot                       `json:"subjectSnapshot"`
+	Applicability      WfaApprovalApplicability                         `json:"applicability"`
+	Scope              WfaApprovalScope                                 `json:"scope"`
+	TransactionType    OptString                                        `json:"transactionType"`
+	DataClassification OptString                                        `json:"dataClassification"`
+	Dimensions         OptWfaCreateApprovalRequestCommandDataDimensions `json:"dimensions"`
+	Amount             Money                                            `json:"amount"`
+	Currency           CurrencyCode                                     `json:"currency"`
+}
+
+// GetRequestId returns the value of RequestId.
+func (s *WfaCreateApprovalRequestCommandData) GetRequestId() UUID {
+	return s.RequestId
+}
+
+// GetSubjectId returns the value of SubjectId.
+func (s *WfaCreateApprovalRequestCommandData) GetSubjectId() string {
+	return s.SubjectId
+}
+
+// GetSubjectVersion returns the value of SubjectVersion.
+func (s *WfaCreateApprovalRequestCommandData) GetSubjectVersion() int {
+	return s.SubjectVersion
+}
+
+// GetSubjectFingerprint returns the value of SubjectFingerprint.
+func (s *WfaCreateApprovalRequestCommandData) GetSubjectFingerprint() string {
+	return s.SubjectFingerprint
+}
+
+// GetSubjectSnapshot returns the value of SubjectSnapshot.
+func (s *WfaCreateApprovalRequestCommandData) GetSubjectSnapshot() WfaApprovalSubjectSnapshot {
+	return s.SubjectSnapshot
+}
+
+// GetApplicability returns the value of Applicability.
+func (s *WfaCreateApprovalRequestCommandData) GetApplicability() WfaApprovalApplicability {
+	return s.Applicability
+}
+
+// GetScope returns the value of Scope.
+func (s *WfaCreateApprovalRequestCommandData) GetScope() WfaApprovalScope {
+	return s.Scope
+}
+
+// GetTransactionType returns the value of TransactionType.
+func (s *WfaCreateApprovalRequestCommandData) GetTransactionType() OptString {
+	return s.TransactionType
+}
+
+// GetDataClassification returns the value of DataClassification.
+func (s *WfaCreateApprovalRequestCommandData) GetDataClassification() OptString {
+	return s.DataClassification
+}
+
+// GetDimensions returns the value of Dimensions.
+func (s *WfaCreateApprovalRequestCommandData) GetDimensions() OptWfaCreateApprovalRequestCommandDataDimensions {
+	return s.Dimensions
+}
+
+// GetAmount returns the value of Amount.
+func (s *WfaCreateApprovalRequestCommandData) GetAmount() Money {
+	return s.Amount
+}
+
+// GetCurrency returns the value of Currency.
+func (s *WfaCreateApprovalRequestCommandData) GetCurrency() CurrencyCode {
+	return s.Currency
+}
+
+// SetRequestId sets the value of RequestId.
+func (s *WfaCreateApprovalRequestCommandData) SetRequestId(val UUID) {
+	s.RequestId = val
+}
+
+// SetSubjectId sets the value of SubjectId.
+func (s *WfaCreateApprovalRequestCommandData) SetSubjectId(val string) {
+	s.SubjectId = val
+}
+
+// SetSubjectVersion sets the value of SubjectVersion.
+func (s *WfaCreateApprovalRequestCommandData) SetSubjectVersion(val int) {
+	s.SubjectVersion = val
+}
+
+// SetSubjectFingerprint sets the value of SubjectFingerprint.
+func (s *WfaCreateApprovalRequestCommandData) SetSubjectFingerprint(val string) {
+	s.SubjectFingerprint = val
+}
+
+// SetSubjectSnapshot sets the value of SubjectSnapshot.
+func (s *WfaCreateApprovalRequestCommandData) SetSubjectSnapshot(val WfaApprovalSubjectSnapshot) {
+	s.SubjectSnapshot = val
+}
+
+// SetApplicability sets the value of Applicability.
+func (s *WfaCreateApprovalRequestCommandData) SetApplicability(val WfaApprovalApplicability) {
+	s.Applicability = val
+}
+
+// SetScope sets the value of Scope.
+func (s *WfaCreateApprovalRequestCommandData) SetScope(val WfaApprovalScope) {
+	s.Scope = val
+}
+
+// SetTransactionType sets the value of TransactionType.
+func (s *WfaCreateApprovalRequestCommandData) SetTransactionType(val OptString) {
+	s.TransactionType = val
+}
+
+// SetDataClassification sets the value of DataClassification.
+func (s *WfaCreateApprovalRequestCommandData) SetDataClassification(val OptString) {
+	s.DataClassification = val
+}
+
+// SetDimensions sets the value of Dimensions.
+func (s *WfaCreateApprovalRequestCommandData) SetDimensions(val OptWfaCreateApprovalRequestCommandDataDimensions) {
+	s.Dimensions = val
+}
+
+// SetAmount sets the value of Amount.
+func (s *WfaCreateApprovalRequestCommandData) SetAmount(val Money) {
+	s.Amount = val
+}
+
+// SetCurrency sets the value of Currency.
+func (s *WfaCreateApprovalRequestCommandData) SetCurrency(val CurrencyCode) {
+	s.Currency = val
+}
+
+type WfaCreateApprovalRequestCommandDataDimensions map[string]string
+
+func (s *WfaCreateApprovalRequestCommandDataDimensions) init() WfaCreateApprovalRequestCommandDataDimensions {
+	m := *s
+	if m == nil {
+		m = map[string]string{}
+		*s = m
+	}
+	return m
+}
+
+// Ref: #/components/schemas/WfaCreateApprovalRequestCommandRequest
+type WfaCreateApprovalRequestCommandRequest struct {
+	CommandId UUID                                `json:"commandId"`
+	Data      WfaCreateApprovalRequestCommandData `json:"data"`
+}
+
+// GetCommandId returns the value of CommandId.
+func (s *WfaCreateApprovalRequestCommandRequest) GetCommandId() UUID {
+	return s.CommandId
+}
+
+// GetData returns the value of Data.
+func (s *WfaCreateApprovalRequestCommandRequest) GetData() WfaCreateApprovalRequestCommandData {
+	return s.Data
+}
+
+// SetCommandId sets the value of CommandId.
+func (s *WfaCreateApprovalRequestCommandRequest) SetCommandId(val UUID) {
+	s.CommandId = val
+}
+
+// SetData sets the value of Data.
+func (s *WfaCreateApprovalRequestCommandRequest) SetData(val WfaCreateApprovalRequestCommandData) {
+	s.Data = val
+}
 
 type WfaCreateApprovalRequestConflict ProblemDetails
 
 func (*WfaCreateApprovalRequestConflict) wfaCreateApprovalRequestRes() {}
 
+// Ref: #/components/schemas/WfaCreateApprovalRequestEstablishedResult
+type WfaCreateApprovalRequestEstablishedResult struct {
+	Status           string                             `json:"status"`
+	AggregateId      UUID                               `json:"aggregateId"`
+	AggregateVersion int                                `json:"aggregateVersion"`
+	ProcessId        OptNilUUID                         `json:"processId"`
+	CorrelationId    UUID                               `json:"correlationId"`
+	Links            Links                              `json:"links"`
+	Data             WfaCreateApprovalRequestResultData `json:"data"`
+}
+
+// GetStatus returns the value of Status.
+func (s *WfaCreateApprovalRequestEstablishedResult) GetStatus() string {
+	return s.Status
+}
+
+// GetAggregateId returns the value of AggregateId.
+func (s *WfaCreateApprovalRequestEstablishedResult) GetAggregateId() UUID {
+	return s.AggregateId
+}
+
+// GetAggregateVersion returns the value of AggregateVersion.
+func (s *WfaCreateApprovalRequestEstablishedResult) GetAggregateVersion() int {
+	return s.AggregateVersion
+}
+
+// GetProcessId returns the value of ProcessId.
+func (s *WfaCreateApprovalRequestEstablishedResult) GetProcessId() OptNilUUID {
+	return s.ProcessId
+}
+
+// GetCorrelationId returns the value of CorrelationId.
+func (s *WfaCreateApprovalRequestEstablishedResult) GetCorrelationId() UUID {
+	return s.CorrelationId
+}
+
+// GetLinks returns the value of Links.
+func (s *WfaCreateApprovalRequestEstablishedResult) GetLinks() Links {
+	return s.Links
+}
+
+// GetData returns the value of Data.
+func (s *WfaCreateApprovalRequestEstablishedResult) GetData() WfaCreateApprovalRequestResultData {
+	return s.Data
+}
+
+// SetStatus sets the value of Status.
+func (s *WfaCreateApprovalRequestEstablishedResult) SetStatus(val string) {
+	s.Status = val
+}
+
+// SetAggregateId sets the value of AggregateId.
+func (s *WfaCreateApprovalRequestEstablishedResult) SetAggregateId(val UUID) {
+	s.AggregateId = val
+}
+
+// SetAggregateVersion sets the value of AggregateVersion.
+func (s *WfaCreateApprovalRequestEstablishedResult) SetAggregateVersion(val int) {
+	s.AggregateVersion = val
+}
+
+// SetProcessId sets the value of ProcessId.
+func (s *WfaCreateApprovalRequestEstablishedResult) SetProcessId(val OptNilUUID) {
+	s.ProcessId = val
+}
+
+// SetCorrelationId sets the value of CorrelationId.
+func (s *WfaCreateApprovalRequestEstablishedResult) SetCorrelationId(val UUID) {
+	s.CorrelationId = val
+}
+
+// SetLinks sets the value of Links.
+func (s *WfaCreateApprovalRequestEstablishedResult) SetLinks(val Links) {
+	s.Links = val
+}
+
+// SetData sets the value of Data.
+func (s *WfaCreateApprovalRequestEstablishedResult) SetData(val WfaCreateApprovalRequestResultData) {
+	s.Data = val
+}
+
+func (*WfaCreateApprovalRequestEstablishedResult) wfaCreateApprovalRequestRes() {}
+
 type WfaCreateApprovalRequestForbidden ProblemDetails
 
 func (*WfaCreateApprovalRequestForbidden) wfaCreateApprovalRequestRes() {}
+
+// Ref: #/components/schemas/WfaCreateApprovalRequestResultData
+type WfaCreateApprovalRequestResultData struct {
+	Request          WfaApprovalRequestProjection `json:"request"`
+	ValidationStatus string                       `json:"validationStatus"`
+	ApprovalStatus   string                       `json:"approvalStatus"`
+	ResponsibleRoles []string                     `json:"responsibleRoles"`
+	Exception        OptString                    `json:"exception"`
+	RecoveryPath     OptString                    `json:"recoveryPath"`
+	AuditReference   OptUUID                      `json:"auditReference"`
+	Replayed         bool                         `json:"replayed"`
+}
+
+// GetRequest returns the value of Request.
+func (s *WfaCreateApprovalRequestResultData) GetRequest() WfaApprovalRequestProjection {
+	return s.Request
+}
+
+// GetValidationStatus returns the value of ValidationStatus.
+func (s *WfaCreateApprovalRequestResultData) GetValidationStatus() string {
+	return s.ValidationStatus
+}
+
+// GetApprovalStatus returns the value of ApprovalStatus.
+func (s *WfaCreateApprovalRequestResultData) GetApprovalStatus() string {
+	return s.ApprovalStatus
+}
+
+// GetResponsibleRoles returns the value of ResponsibleRoles.
+func (s *WfaCreateApprovalRequestResultData) GetResponsibleRoles() []string {
+	return s.ResponsibleRoles
+}
+
+// GetException returns the value of Exception.
+func (s *WfaCreateApprovalRequestResultData) GetException() OptString {
+	return s.Exception
+}
+
+// GetRecoveryPath returns the value of RecoveryPath.
+func (s *WfaCreateApprovalRequestResultData) GetRecoveryPath() OptString {
+	return s.RecoveryPath
+}
+
+// GetAuditReference returns the value of AuditReference.
+func (s *WfaCreateApprovalRequestResultData) GetAuditReference() OptUUID {
+	return s.AuditReference
+}
+
+// GetReplayed returns the value of Replayed.
+func (s *WfaCreateApprovalRequestResultData) GetReplayed() bool {
+	return s.Replayed
+}
+
+// SetRequest sets the value of Request.
+func (s *WfaCreateApprovalRequestResultData) SetRequest(val WfaApprovalRequestProjection) {
+	s.Request = val
+}
+
+// SetValidationStatus sets the value of ValidationStatus.
+func (s *WfaCreateApprovalRequestResultData) SetValidationStatus(val string) {
+	s.ValidationStatus = val
+}
+
+// SetApprovalStatus sets the value of ApprovalStatus.
+func (s *WfaCreateApprovalRequestResultData) SetApprovalStatus(val string) {
+	s.ApprovalStatus = val
+}
+
+// SetResponsibleRoles sets the value of ResponsibleRoles.
+func (s *WfaCreateApprovalRequestResultData) SetResponsibleRoles(val []string) {
+	s.ResponsibleRoles = val
+}
+
+// SetException sets the value of Exception.
+func (s *WfaCreateApprovalRequestResultData) SetException(val OptString) {
+	s.Exception = val
+}
+
+// SetRecoveryPath sets the value of RecoveryPath.
+func (s *WfaCreateApprovalRequestResultData) SetRecoveryPath(val OptString) {
+	s.RecoveryPath = val
+}
+
+// SetAuditReference sets the value of AuditReference.
+func (s *WfaCreateApprovalRequestResultData) SetAuditReference(val OptUUID) {
+	s.AuditReference = val
+}
+
+// SetReplayed sets the value of Replayed.
+func (s *WfaCreateApprovalRequestResultData) SetReplayed(val bool) {
+	s.Replayed = val
+}
 
 type WfaCreateApprovalRequestServiceUnavailable ProblemDetails
 
@@ -10844,6 +12406,178 @@ func (s *WfaEscalationConfiguration) SetAfterSeconds(val OptInt) {
 // SetEscalateToRoles sets the value of EscalateToRoles.
 func (s *WfaEscalationConfiguration) SetEscalateToRoles(val []string) {
 	s.EscalateToRoles = val
+}
+
+type WfaGetApprovalRequestBadRequest ProblemDetails
+
+func (*WfaGetApprovalRequestBadRequest) wfaGetApprovalRequestRes() {}
+
+type WfaGetApprovalRequestForbidden ProblemDetails
+
+func (*WfaGetApprovalRequestForbidden) wfaGetApprovalRequestRes() {}
+
+type WfaGetApprovalRequestNotFound ProblemDetails
+
+func (*WfaGetApprovalRequestNotFound) wfaGetApprovalRequestRes() {}
+
+type WfaGetApprovalRequestServiceUnavailable ProblemDetails
+
+func (*WfaGetApprovalRequestServiceUnavailable) wfaGetApprovalRequestRes() {}
+
+type WfaListApprovalRequestsAssignment string
+
+const (
+	WfaListApprovalRequestsAssignmentAssigned WfaListApprovalRequestsAssignment = "assigned"
+	WfaListApprovalRequestsAssignmentAll      WfaListApprovalRequestsAssignment = "all"
+)
+
+// AllValues returns all WfaListApprovalRequestsAssignment values.
+func (WfaListApprovalRequestsAssignment) AllValues() []WfaListApprovalRequestsAssignment {
+	return []WfaListApprovalRequestsAssignment{
+		WfaListApprovalRequestsAssignmentAssigned,
+		WfaListApprovalRequestsAssignmentAll,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s WfaListApprovalRequestsAssignment) MarshalText() ([]byte, error) {
+	switch s {
+	case WfaListApprovalRequestsAssignmentAssigned:
+		return []byte(s), nil
+	case WfaListApprovalRequestsAssignmentAll:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *WfaListApprovalRequestsAssignment) UnmarshalText(data []byte) error {
+	switch WfaListApprovalRequestsAssignment(data) {
+	case WfaListApprovalRequestsAssignmentAssigned:
+		*s = WfaListApprovalRequestsAssignmentAssigned
+		return nil
+	case WfaListApprovalRequestsAssignmentAll:
+		*s = WfaListApprovalRequestsAssignmentAll
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type WfaListApprovalRequestsBadRequest ProblemDetails
+
+func (*WfaListApprovalRequestsBadRequest) wfaListApprovalRequestsRes() {}
+
+type WfaListApprovalRequestsDue string
+
+const (
+	WfaListApprovalRequestsDueDue WfaListApprovalRequestsDue = "due"
+	WfaListApprovalRequestsDueAll WfaListApprovalRequestsDue = "all"
+)
+
+// AllValues returns all WfaListApprovalRequestsDue values.
+func (WfaListApprovalRequestsDue) AllValues() []WfaListApprovalRequestsDue {
+	return []WfaListApprovalRequestsDue{
+		WfaListApprovalRequestsDueDue,
+		WfaListApprovalRequestsDueAll,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s WfaListApprovalRequestsDue) MarshalText() ([]byte, error) {
+	switch s {
+	case WfaListApprovalRequestsDueDue:
+		return []byte(s), nil
+	case WfaListApprovalRequestsDueAll:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *WfaListApprovalRequestsDue) UnmarshalText(data []byte) error {
+	switch WfaListApprovalRequestsDue(data) {
+	case WfaListApprovalRequestsDueDue:
+		*s = WfaListApprovalRequestsDueDue
+		return nil
+	case WfaListApprovalRequestsDueAll:
+		*s = WfaListApprovalRequestsDueAll
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type WfaListApprovalRequestsForbidden ProblemDetails
+
+func (*WfaListApprovalRequestsForbidden) wfaListApprovalRequestsRes() {}
+
+type WfaListApprovalRequestsServiceUnavailable ProblemDetails
+
+func (*WfaListApprovalRequestsServiceUnavailable) wfaListApprovalRequestsRes() {}
+
+type WfaListApprovalRequestsState string
+
+const (
+	WfaListApprovalRequestsStateAll       WfaListApprovalRequestsState = "all"
+	WfaListApprovalRequestsStateBlocked   WfaListApprovalRequestsState = "blocked"
+	WfaListApprovalRequestsStateDelegated WfaListApprovalRequestsState = "delegated"
+	WfaListApprovalRequestsStateEscalated WfaListApprovalRequestsState = "escalated"
+	WfaListApprovalRequestsStateCompleted WfaListApprovalRequestsState = "completed"
+)
+
+// AllValues returns all WfaListApprovalRequestsState values.
+func (WfaListApprovalRequestsState) AllValues() []WfaListApprovalRequestsState {
+	return []WfaListApprovalRequestsState{
+		WfaListApprovalRequestsStateAll,
+		WfaListApprovalRequestsStateBlocked,
+		WfaListApprovalRequestsStateDelegated,
+		WfaListApprovalRequestsStateEscalated,
+		WfaListApprovalRequestsStateCompleted,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s WfaListApprovalRequestsState) MarshalText() ([]byte, error) {
+	switch s {
+	case WfaListApprovalRequestsStateAll:
+		return []byte(s), nil
+	case WfaListApprovalRequestsStateBlocked:
+		return []byte(s), nil
+	case WfaListApprovalRequestsStateDelegated:
+		return []byte(s), nil
+	case WfaListApprovalRequestsStateEscalated:
+		return []byte(s), nil
+	case WfaListApprovalRequestsStateCompleted:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *WfaListApprovalRequestsState) UnmarshalText(data []byte) error {
+	switch WfaListApprovalRequestsState(data) {
+	case WfaListApprovalRequestsStateAll:
+		*s = WfaListApprovalRequestsStateAll
+		return nil
+	case WfaListApprovalRequestsStateBlocked:
+		*s = WfaListApprovalRequestsStateBlocked
+		return nil
+	case WfaListApprovalRequestsStateDelegated:
+		*s = WfaListApprovalRequestsStateDelegated
+		return nil
+	case WfaListApprovalRequestsStateEscalated:
+		*s = WfaListApprovalRequestsStateEscalated
+		return nil
+	case WfaListApprovalRequestsStateCompleted:
+		*s = WfaListApprovalRequestsStateCompleted
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 type WfaMaintainApprovalPoliciesBadRequest ProblemDetails

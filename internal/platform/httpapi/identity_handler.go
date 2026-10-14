@@ -48,6 +48,8 @@ type IdentityHandler struct {
 	JournalReversalService               *gl.JournalReversalService
 	SoftCloseGateService                 *gl.SoftCloseGateService
 	ApprovalPolicyService                *workflow.ApprovalPolicyService
+	ApprovalRequestService               *workflow.ApprovalRequestService
+	ApprovalRequestQueries               *workflow.ApprovalRequestQueryService
 	Instrumentation                      *telemetry.Instrumentation
 }
 

@@ -4,8 +4,8 @@ This page answers the question the older site did not answer clearly: what is
 actually implemented in the current repository, what is a contract or synthetic
 fixture, and what remains unverified.
 
-**Checkpoint:** 2026-09-26, branch
-`codex/iam-us7-sensitive-access-evidence`.
+**Checkpoint:** 2026-10-14, branch
+`feat/wfa-create-approval-requests`.
 
 ## How to read the status
 
@@ -23,13 +23,13 @@ There are three different kinds of truth in this project:
 
 | Area | Current repository evidence | Boundary |
 | --- | --- | --- |
-| Runtime | Go API, optional Go worker, React/TypeScript SPA, Vite, Docker Compose PostgreSQL | No complete finance transaction is wired end to end yet |
-| Persistence | Goose migrations, `pgx`, `sqlc`, owned platform/identity schemas, seed and checksum checks | PostgreSQL-backed evidence depends on Docker/database availability |
-| API | OpenAPI 3.1 catalog, generated Go server artifacts, generated TypeScript client, typed problem outcomes, bearer security contract | The contract catalogs future capability routes; it is not proof every route is runtime-backed |
-| Finance primitives | Exact-decimal money/currency, accounting scope, aggregate version, serialization and boundary checks | No GL or subledger aggregate has been delivered |
-| Idempotency | Canonical request fingerprint, scoped metadata, durable coordinator, duplicate/result/conflict behavior | Capability commands must still adopt the shared contracts as they are built |
+| Runtime | Go API, optional Go worker, React/TypeScript SPA, Vite, Docker Compose PostgreSQL, and implemented GL/workflow runtime slices | No complete end-to-end finance suite is claimed |
+| Persistence | Goose migrations, `pgx`, `sqlc`, owned platform, identity, organization, COA, GL, and workflow schemas, seed and checksum checks | PostgreSQL-backed evidence depends on Docker/database availability |
+| API | OpenAPI 3.1 catalog, generated Go server artifacts, generated TypeScript client, typed problem outcomes, bearer security contract, and runtime identity/organization/COA/GL/workflow routes | The contract still catalogs future capability routes; it is not proof every route is runtime-backed |
+| Finance primitives | Exact-decimal money/currency, accounting scope, aggregate version, serialization and boundary checks | Broader subledger and finance aggregates remain future scope |
+| Idempotency | Canonical request fingerprint, scoped metadata, durable coordinator, duplicate/result/conflict behavior used by implemented commands | Future capability commands must continue adopting the shared contracts |
 | Integration | Event envelope, transactional outbox/inbox, atomic effects, lease/fencing, typed retry, worker lifecycle, crash recovery, ordering, and replay foundations | No external broker is required; semantic capability consumers are future work |
-| UX foundation | Routed shell, scope selector, record/workflow context, worklists, lifecycle, evidence, conflict, result, money, and operational components | Many routes are intentionally placeholders or synthetic examples |
+| UX foundation | Routed shell, scope selector, record/workflow context, worklists, lifecycle, evidence, conflict, result, money, operational components, and authorized GL/workflow workspaces | Many future capability routes remain placeholders or synthetic examples |
 | Accessibility | Automated axe, keyboard/focus, semantic, visual-adaptability, and reduced-motion coverage | Witnessed screen-reader and real 400% browser-zoom qualification remain open |
 
 Representative evidence: [platform verification](https://github.com/toanle88/Tally/tree/main/docs/verification),
@@ -52,6 +52,20 @@ The current branch contains IAM work through User Story 7:
 
 Start with the [Identity & Access page](/identity-access) and the individual
 [IAM verification records](https://github.com/toanle88/Tally/tree/main/docs/verification).
+
+## Implemented General Ledger and workflow slices
+
+The current checkout extends beyond the IAM foundation:
+
+| Slice | What is present | What is not claimed |
+| --- | --- | --- |
+| General Ledger | Ledgers, books, charts of accounts, accounts, posting, journal approval, reversal, posting barriers, soft close, scoped reopen, and operational reopen/reclose controls | Complete finance-suite coverage, full cross-context qualification, or production release qualification |
+| Workflow policy | Effective-dated policy maintenance, applicability and overlap validation, policy-version evidence, independent approval boundaries, and authorized policy UI/API states | Later decision, delegation, escalation, and full workflow qualification |
+| Approval requests | Effective-policy resolution, immutable subject evidence, copied approval steps, durable idempotency, audit/outbox integration, authorized worklist/detail reads, and User Story 2 create/read behavior | Concrete user assignment, decision/delegation/escalation lineage, blocker panels, and exception actions |
+
+The [approval-request story evidence](https://github.com/toanle88/Tally/blob/main/docs/backlog/stories/EP-WFA-001_user_stories.md)
+lists the exact routes, implementation areas, accepted behavior, and deferred
+qualification evidence for this slice.
 
 ## Operations and infrastructure
 
@@ -78,18 +92,19 @@ records](https://github.com/toanle88/Tally/tree/main/docs/verification).
 The approved domain target includes organization/master data, COA, GL, workflow
 and period controls, invoicing, AR, AP, payments, bank reconciliation, fixed
 assets, revenue, FX, intercompany, reporting, tax, payroll, audit integrity,
-and full qualification. Those contexts are represented in the source
-specifications and OpenAPI catalog, but their authoritative aggregates and
-workflow implementations are not in this checkout.
+and full qualification. The current checkout has organization/master-data, COA,
+GL, and initial workflow policy/request slices; most remaining domain
+aggregates and later workflow behavior are still represented by specifications
+and OpenAPI contracts rather than complete runtime implementations.
 
-The recommended next portfolio boundary is M2: a complete journal posting and
-reversal slice across domain, persistence, API, UI, authorization, tests,
-observability, and recovery evidence.
+The next learning boundaries are hardening and qualifying the delivered GL and
+workflow slices, then extending the same vertical-slice discipline to the
+remaining finance contexts.
 
 ## Known documentation/status caveat
 
-The live `ROADMAP.md` records EP-IAM-001 as locally complete and intentionally
-closed by owner decision on 2026-09-26. This is a local learning-scope closure:
-the evidence records and repository code do not claim live Entra behavior,
-finance-action integration, audit-chain ownership, or production security and
-release qualification.
+The live `ROADMAP.md` may record a parent epic as locally complete or closed by
+owner decision. That is a learning-scope status, not proof of live Entra
+behavior, complete finance-action integration, audit-chain ownership, or
+production security and release qualification. Check the repository evidence
+and the exact command output before treating a capability as qualified.

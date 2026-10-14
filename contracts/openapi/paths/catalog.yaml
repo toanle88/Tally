@@ -358,6 +358,10 @@
   $ref: ./tax.yaml#/~1tax~1configuration~1maintain-tax-configurations
 /approvals/actions/create-approval-request:
   $ref: ./approvals.yaml#/~1approvals~1actions~1create-approval-request
+/approvals/reference/requests:
+  $ref: ./approvals.yaml#/~1approvals~1reference~1requests
+/approvals/reference/requests/{approvalRequestId}:
+  $ref: ./approvals.yaml#/~1approvals~1reference~1requests~1{approvalRequestId}
 /approvals/actions/decide-approval-request:
   $ref: ./approvals.yaml#/~1approvals~1actions~1decide-approval-request
 /approvals/actions/delegate-approval:
