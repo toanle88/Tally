@@ -141,7 +141,9 @@ INSERT INTO workflow.approval_policy_step_definition (
 -- name: GetWorkflowApprovalRequest :one
 SELECT
     id, subject_type, subject_id, subject_version, subject_fingerprint,
-    policy_id, policy_version, scope, steps, status, aggregate_version,
+    subject_snapshot, snapshot_fingerprint, source_context, operation,
+    transaction_type, data_classification, dimensions, amount, currency,
+    due_at, responsible_roles, policy_id, policy_version, scope, steps, status, aggregate_version,
     requester_user_id, requester_subject_reference, correlation_id,
     causation_id, created_at, updated_at
 FROM workflow.approval_request
@@ -150,12 +152,16 @@ WHERE id = sqlc.arg(id);
 -- name: CreateWorkflowApprovalRequest :exec
 INSERT INTO workflow.approval_request (
     id, subject_type, subject_id, subject_version, subject_fingerprint,
-    policy_id, policy_version, scope, steps, status, aggregate_version,
+    subject_snapshot, snapshot_fingerprint, source_context, operation,
+    transaction_type, data_classification, dimensions, amount, currency,
+    due_at, responsible_roles, policy_id, policy_version, scope, steps, status, aggregate_version,
     requester_user_id, requester_subject_reference, correlation_id,
     causation_id, created_at, updated_at
 ) VALUES (
     sqlc.arg(id), sqlc.arg(subject_type), sqlc.arg(subject_id), sqlc.arg(subject_version), sqlc.arg(subject_fingerprint),
-    sqlc.arg(policy_id), sqlc.arg(policy_version), sqlc.arg(scope)::jsonb, sqlc.arg(steps)::jsonb, sqlc.arg(status), sqlc.arg(aggregate_version),
+    sqlc.arg(subject_snapshot)::jsonb, sqlc.arg(snapshot_fingerprint), sqlc.arg(source_context), sqlc.arg(operation),
+    sqlc.arg(transaction_type), sqlc.arg(data_classification), sqlc.arg(dimensions)::jsonb, sqlc.narg(amount), sqlc.arg(currency),
+    sqlc.narg(due_at), sqlc.arg(responsible_roles)::jsonb, sqlc.arg(policy_id), sqlc.arg(policy_version), sqlc.arg(scope)::jsonb, sqlc.arg(steps)::jsonb, sqlc.arg(status), sqlc.arg(aggregate_version),
     sqlc.arg(requester_user_id), sqlc.arg(requester_subject_reference), sqlc.narg(correlation_id), sqlc.narg(causation_id), sqlc.arg(created_at), sqlc.arg(updated_at)
 );
 

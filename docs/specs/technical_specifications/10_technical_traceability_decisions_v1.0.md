@@ -244,6 +244,7 @@
 | FR-TAX-015 | ApplyPaymentReturn | 01, 02, 03, 05, 06, 09 | `taxApplyPaymentReturn` / `/api/v1/tax/actions/apply-payment-return` | finance.tax.apply.payment.return |
 | FR-TAX-016 | Maintain tax configurations | 01, 02, 03, 05, 06, 09 | `taxMaintainTaxConfigurations` / `/api/v1/tax/configuration/maintain-tax-configurations` | finance.tax.maintain.tax.configurations |
 | FR-WFA-001 | CreateApprovalRequest | 01, 02, 03, 05, 06, 09 | `wfaCreateApprovalRequest` / `/api/v1/approvals/actions/create-approval-request` | finance.wfa.create.approval.request |
+| FR-WFA-001 | List/Get approval requests | 01, 02, 03, 05, 06, 09 | `wfaListApprovalRequests` / `wfaGetApprovalRequest` / `/api/v1/approvals/reference/requests` | finance.wfa.read.approval.requests |
 | FR-WFA-002 | DecideApprovalRequest | 01, 02, 03, 05, 06, 09 | `wfaDecideApprovalRequest` / `/api/v1/approvals/actions/decide-approval-request` | finance.wfa.decide.approval.request |
 | FR-WFA-003 | DelegateApproval | 01, 02, 03, 05, 06, 09 | `wfaDelegateApproval` / `/api/v1/approvals/actions/delegate-approval` | finance.wfa.delegate.approval |
 | FR-WFA-004 | EscalateApproval | 01, 02, 03, 05, 06, 09 | `wfaEscalateApproval` / `/api/v1/approvals/actions/escalate-approval` | finance.wfa.escalate.approval |

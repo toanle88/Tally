@@ -200,5 +200,7 @@ const (
 	WfaDecideApprovalRequestOperation                         OperationName = "WfaDecideApprovalRequest"
 	WfaDelegateApprovalOperation                              OperationName = "WfaDelegateApproval"
 	WfaEscalateApprovalOperation                              OperationName = "WfaEscalateApproval"
+	WfaGetApprovalRequestOperation                            OperationName = "WfaGetApprovalRequest"
+	WfaListApprovalRequestsOperation                          OperationName = "WfaListApprovalRequests"
 	WfaMaintainApprovalPoliciesOperation                      OperationName = "WfaMaintainApprovalPolicies"
 )

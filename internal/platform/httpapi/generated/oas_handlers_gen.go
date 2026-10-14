@@ -28568,7 +28568,7 @@ func (s *Server) handleWfaCreateApprovalRequestRequest(args [0]string, argsEscap
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *WfaCreateApprovalRequestCommandRequest
 			Params   = WfaCreateApprovalRequestParams
 			Response = WfaCreateApprovalRequestRes
 		)
@@ -29042,6 +29042,298 @@ func (s *Server) handleWfaEscalateApprovalRequest(args [0]string, argsEscaped bo
 	}
 
 	if err := encodeWfaEscalateApprovalResponse(response, w); err != nil {
+		defer recordError("EncodeResponse", err)
+		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
+			s.cfg.ErrorHandler(ctx, w, r, err)
+		}
+		return
+	}
+}
+
+// handleWfaGetApprovalRequestRequest handles wfaGetApprovalRequest operation.
+//
+// GET /approvals/reference/requests/{approvalRequestId}
+func (s *Server) handleWfaGetApprovalRequestRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+	statusWriter := &codeRecorder{ResponseWriter: w}
+	w = statusWriter
+	ctx := r.Context()
+
+	var (
+		err          error
+		opErrContext = ogenerrors.OperationContext{
+			Name: WfaGetApprovalRequestOperation,
+			ID:   "wfaGetApprovalRequest",
+		}
+	)
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			sctx, ok, err := s.securityBearerAuth(ctx, WfaGetApprovalRequestOperation, r)
+			if err != nil {
+				err = &ogenerrors.SecurityError{
+					OperationContext: opErrContext,
+					Security:         "BearerAuth",
+					Err:              err,
+				}
+				defer recordError("Security:BearerAuth", err)
+				s.cfg.ErrorHandler(ctx, w, r, err)
+				return
+			}
+			if ok {
+				satisfied[0] |= 1 << 0
+				ctx = sctx
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			err = &ogenerrors.SecurityError{
+				OperationContext: opErrContext,
+				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
+			}
+			defer recordError("Security", err)
+			s.cfg.ErrorHandler(ctx, w, r, err)
+			return
+		}
+	}
+	params, err := decodeWfaGetApprovalRequestParams(args, argsEscaped, r)
+	if err != nil {
+		err = &ogenerrors.DecodeParamsError{
+			OperationContext: opErrContext,
+			Err:              err,
+		}
+		defer recordError("DecodeParams", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	var rawBody []byte
+
+	var response WfaGetApprovalRequestRes
+	if m := s.cfg.Middleware; m != nil {
+		mreq := middleware.Request{
+			Context:          ctx,
+			OperationName:    WfaGetApprovalRequestOperation,
+			OperationSummary: "",
+			OperationID:      "wfaGetApprovalRequest",
+			Body:             nil,
+			RawBody:          rawBody,
+			Params: middleware.Parameters{
+				{
+					Name: "approvalRequestId",
+					In:   "path",
+				}: params.ApprovalRequestId,
+				{
+					Name: "X-Correlation-Id",
+					In:   "header",
+				}: params.XCorrelationID,
+				{
+					Name: "Accept-Language",
+					In:   "header",
+				}: params.AcceptLanguage,
+				{
+					Name: "X-Accounting-Scope-Id",
+					In:   "header",
+				}: params.XAccountingScopeID,
+			},
+			Raw: r,
+		}
+
+		type (
+			Request  = struct{}
+			Params   = WfaGetApprovalRequestParams
+			Response = WfaGetApprovalRequestRes
+		)
+		response, err = middleware.HookMiddleware[
+			Request,
+			Params,
+			Response,
+		](
+			m,
+			mreq,
+			unpackWfaGetApprovalRequestParams,
+			func(ctx context.Context, request Request, params Params) (response Response, err error) {
+				response, err = s.h.WfaGetApprovalRequest(ctx, params)
+				return response, err
+			},
+		)
+	} else {
+		response, err = s.h.WfaGetApprovalRequest(ctx, params)
+	}
+	if err != nil {
+		defer recordError("Internal", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	if err := encodeWfaGetApprovalRequestResponse(response, w); err != nil {
+		defer recordError("EncodeResponse", err)
+		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
+			s.cfg.ErrorHandler(ctx, w, r, err)
+		}
+		return
+	}
+}
+
+// handleWfaListApprovalRequestsRequest handles wfaListApprovalRequests operation.
+//
+// GET /approvals/reference/requests
+func (s *Server) handleWfaListApprovalRequestsRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+	statusWriter := &codeRecorder{ResponseWriter: w}
+	w = statusWriter
+	ctx := r.Context()
+
+	var (
+		err          error
+		opErrContext = ogenerrors.OperationContext{
+			Name: WfaListApprovalRequestsOperation,
+			ID:   "wfaListApprovalRequests",
+		}
+	)
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			sctx, ok, err := s.securityBearerAuth(ctx, WfaListApprovalRequestsOperation, r)
+			if err != nil {
+				err = &ogenerrors.SecurityError{
+					OperationContext: opErrContext,
+					Security:         "BearerAuth",
+					Err:              err,
+				}
+				defer recordError("Security:BearerAuth", err)
+				s.cfg.ErrorHandler(ctx, w, r, err)
+				return
+			}
+			if ok {
+				satisfied[0] |= 1 << 0
+				ctx = sctx
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			err = &ogenerrors.SecurityError{
+				OperationContext: opErrContext,
+				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
+			}
+			defer recordError("Security", err)
+			s.cfg.ErrorHandler(ctx, w, r, err)
+			return
+		}
+	}
+	params, err := decodeWfaListApprovalRequestsParams(args, argsEscaped, r)
+	if err != nil {
+		err = &ogenerrors.DecodeParamsError{
+			OperationContext: opErrContext,
+			Err:              err,
+		}
+		defer recordError("DecodeParams", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	var rawBody []byte
+
+	var response WfaListApprovalRequestsRes
+	if m := s.cfg.Middleware; m != nil {
+		mreq := middleware.Request{
+			Context:          ctx,
+			OperationName:    WfaListApprovalRequestsOperation,
+			OperationSummary: "",
+			OperationID:      "wfaListApprovalRequests",
+			Body:             nil,
+			RawBody:          rawBody,
+			Params: middleware.Parameters{
+				{
+					Name: "X-Correlation-Id",
+					In:   "header",
+				}: params.XCorrelationID,
+				{
+					Name: "Accept-Language",
+					In:   "header",
+				}: params.AcceptLanguage,
+				{
+					Name: "X-Accounting-Scope-Id",
+					In:   "header",
+				}: params.XAccountingScopeID,
+				{
+					Name: "assignment",
+					In:   "query",
+				}: params.Assignment,
+				{
+					Name: "due",
+					In:   "query",
+				}: params.Due,
+				{
+					Name: "state",
+					In:   "query",
+				}: params.State,
+				{
+					Name: "page[size]",
+					In:   "query",
+				}: params.PageSize,
+				{
+					Name: "page[after]",
+					In:   "query",
+				}: params.PageAfter,
+			},
+			Raw: r,
+		}
+
+		type (
+			Request  = struct{}
+			Params   = WfaListApprovalRequestsParams
+			Response = WfaListApprovalRequestsRes
+		)
+		response, err = middleware.HookMiddleware[
+			Request,
+			Params,
+			Response,
+		](
+			m,
+			mreq,
+			unpackWfaListApprovalRequestsParams,
+			func(ctx context.Context, request Request, params Params) (response Response, err error) {
+				response, err = s.h.WfaListApprovalRequests(ctx, params)
+				return response, err
+			},
+		)
+	} else {
+		response, err = s.h.WfaListApprovalRequests(ctx, params)
+	}
+	if err != nil {
+		defer recordError("Internal", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	if err := encodeWfaListApprovalRequestsResponse(response, w); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)

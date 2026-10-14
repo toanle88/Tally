@@ -41,11 +41,33 @@ func (authorizer evaluatorWorkflowRequestAuthorizer) AuthorizeApprovalDecision(c
 	if authorizer.evaluator == nil {
 		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
 	}
-	permission := "finance.wfa.create.approval.request"
+	permission := workflow.CreateApprovalRequestsPermission
 	if actor.UserID != request.Requester.UserID {
 		permission = "finance.wfa.decide.approval.request"
 	}
-	decision, err := authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{ActorID: actor.UserID, Permission: permission, RequestedScopeIDs: request.Scope.CanonicalScopeIDs(), DataClassification: "internal"})
+	classification := strings.TrimSpace(request.DataClassification)
+	if classification == "" {
+		classification = "internal"
+	}
+	transactionType := strings.TrimSpace(request.TransactionType)
+	var transactionTypePtr *string
+	if transactionType != "" {
+		transactionTypePtr = &transactionType
+	}
+	currency := strings.TrimSpace(request.Currency)
+	var currencyPtr *string
+	if currency != "" {
+		currencyPtr = &currency
+	}
+	decision, err := authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{
+		ActorID:            actor.UserID,
+		Permission:         permission,
+		RequestedScopeIDs:  request.Scope.CanonicalScopeIDs(),
+		TransactionType:    transactionTypePtr,
+		Amount:             request.Amount,
+		Currency:           currencyPtr,
+		DataClassification: classification,
+	})
 	if err != nil {
 		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
 	}
@@ -83,6 +105,26 @@ func (authorizer evaluatorWorkflowRequestAuthorizer) AuthorizeApprovalDecision(c
 		return workflow.AuthorizationDecision{Allowed: false, Outcome: workflow.AuthorizationDenied, Permission: permission, DecisionReference: segregationDecision.DecisionReference}, nil
 	}
 	return workflowDecision, nil
+}
+
+func (authorizer evaluatorWorkflowRequestAuthorizer) AuthorizeApprovalRequestRead(ctx context.Context, actor workflow.Actor, request workflow.ApprovalRequest) (workflow.AuthorizationDecision, error) {
+	if authorizer.evaluator == nil {
+		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyAuthorizationUnavailable
+	}
+	classification := request.DataClassification
+	if strings.TrimSpace(classification) == "" {
+		classification = "internal"
+	}
+	decision, err := authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{
+		ActorID:            actor.UserID,
+		Permission:         workflow.ReadApprovalRequestsPermission,
+		RequestedScopeIDs:  request.Scope.CanonicalScopeIDs(),
+		DataClassification: classification,
+	})
+	if err != nil {
+		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyAuthorizationUnavailable
+	}
+	return workflowAuthorizationDecision(decision), nil
 }
 
 func workflowAuthorizationDecision(decision identity.AuthorizationDecision) workflow.AuthorizationDecision {
@@ -183,7 +225,8 @@ func postgresWorkflowEventWriter(ctx context.Context, tx pgx.Tx, event workflow.
 		SubjectVersion       int64     `json:"subjectVersion"`
 		CandidateFingerprint string    `json:"candidateFingerprint"`
 		ScopeIDs             []string  `json:"scopeIds"`
-	}{ApprovalRequestID: event.RequestID, DecisionID: decisionID, DecisionVersion: event.DecisionVersion, Outcome: event.Outcome, ApproverUserID: approverUserID, PolicyID: event.PolicyID, PolicyVersion: event.PolicyVersion, SubjectID: event.SubjectID, SubjectVersion: event.SubjectVersion, CandidateFingerprint: event.CandidateFingerprint, ScopeIDs: append([]string(nil), event.ScopeIDs...)})
+		DataClassification   string    `json:"dataClassification"`
+	}{ApprovalRequestID: event.RequestID, DecisionID: decisionID, DecisionVersion: event.DecisionVersion, Outcome: event.Outcome, ApproverUserID: approverUserID, PolicyID: event.PolicyID, PolicyVersion: event.PolicyVersion, SubjectID: event.SubjectID, SubjectVersion: event.SubjectVersion, CandidateFingerprint: event.CandidateFingerprint, ScopeIDs: append([]string(nil), event.ScopeIDs...), DataClassification: event.DataClassification})
 	if err != nil {
 		return err
 	}
@@ -197,6 +240,10 @@ func postgresWorkflowEventWriter(ctx context.Context, tx pgx.Tx, event workflow.
 	if _, err := uuid.Parse(event.CausationID); err != nil {
 		return err
 	}
+	classification := strings.TrimSpace(event.DataClassification)
+	if classification == "" {
+		classification = string(events.Internal)
+	}
 	envelope, err := events.NewEnvelope(events.EnvelopeInput{
 		MessageID:          uuid.NewString(),
 		EventType:          event.Type,
@@ -207,7 +254,7 @@ func postgresWorkflowEventWriter(ctx context.Context, tx pgx.Tx, event workflow.
 		AggregateVersion:   event.AggregateVersion,
 		CorrelationID:      event.CorrelationID,
 		CausationID:        event.CausationID,
-		DataClassification: events.Internal,
+		DataClassification: events.Classification(classification),
 		PayloadFingerprint: fingerprint,
 		Data:               payload,
 	})

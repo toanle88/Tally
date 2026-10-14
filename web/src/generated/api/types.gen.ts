@@ -157,6 +157,133 @@ export type WfaMaintainApprovalPoliciesEstablishedResult = {
     data: WfaMaintainApprovalPoliciesResultData;
 };
 
+export type WfaCreateApprovalRequestCommandRequest = {
+    commandId: Uuid;
+    data: WfaCreateApprovalRequestCommandData;
+};
+
+export type WfaCreateApprovalRequestCommandData = {
+    requestId: Uuid;
+    subjectId: string;
+    subjectVersion: number;
+    subjectFingerprint: string;
+    subjectSnapshot: WfaApprovalSubjectSnapshot;
+    applicability: WfaApprovalApplicability;
+    scope: WfaApprovalScope;
+    transactionType?: string;
+    dataClassification?: string;
+    dimensions?: {
+        [key: string]: string;
+    };
+    amount: Money;
+    currency: CurrencyCode;
+};
+
+export type WfaApprovalSubjectSnapshot = {
+    label: string;
+    reference?: string;
+    summary?: string;
+    amount?: Money;
+    currency?: CurrencyCode;
+};
+
+export type WfaApprovalRequestStep = {
+    id: Uuid;
+    sequence: number;
+    name?: string;
+    requiredRoles: Array<WfaRoleRequirement>;
+    minimumApprovals: number;
+    delegation?: WfaDelegationConfiguration;
+    escalation?: WfaEscalationConfiguration;
+    status: string;
+};
+
+export type WfaApprovalRequestProjection = {
+    id: Uuid;
+    subjectType: string;
+    subjectId: string;
+    subjectVersion: number;
+    subjectFingerprint: string;
+    subjectSnapshot?: WfaApprovalSubjectSnapshot;
+    snapshotFingerprint?: string;
+    sourceContext?: string;
+    operation?: string;
+    transactionType?: string;
+    dataClassification?: string;
+    dimensions?: {
+        [key: string]: string;
+    };
+    amount?: Money;
+    currency?: CurrencyCode;
+    policyId: Uuid;
+    policyVersion: string;
+    scope: WfaApprovalScope;
+    requesterUserId?: Uuid;
+    requesterSubjectReference?: string;
+    steps: Array<WfaApprovalRequestStep>;
+    status: 'Pending' | 'Approved' | 'Rejected';
+    aggregateVersion: number;
+    responsibleRoles: Array<string>;
+    dueAt?: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+export type WfaCreateApprovalRequestResultData = {
+    request: WfaApprovalRequestProjection;
+    validationStatus: string;
+    approvalStatus: string;
+    responsibleRoles: Array<string>;
+    exception?: string;
+    recoveryPath?: string;
+    auditReference?: Uuid;
+    replayed: boolean;
+};
+
+export type WfaCreateApprovalRequestEstablishedResult = {
+    status: 'established';
+    aggregateId: Uuid;
+    aggregateVersion: number;
+    processId?: Uuid | null;
+    correlationId: Uuid;
+    links: Links;
+    data: WfaCreateApprovalRequestResultData;
+};
+
+export type WfaApprovalRequestResultData = {
+    request: WfaApprovalRequestProjection;
+    validationStatus?: string;
+    approvalStatus?: string;
+    responsibleRoles?: Array<string>;
+    exception?: string;
+    recoveryPath?: string;
+};
+
+export type WfaApprovalRequestEstablishedResult = {
+    status: 'established';
+    aggregateId: Uuid;
+    aggregateVersion: number;
+    processId?: Uuid | null;
+    correlationId: Uuid;
+    links: Links;
+    data: WfaApprovalRequestResultData;
+};
+
+export type WfaApprovalRequestListResultData = {
+    requests: Array<WfaApprovalRequestProjection>;
+    page: Page;
+};
+
+export type WfaApprovalRequestListEstablishedResult = {
+    status: 'established';
+    aggregateId: Uuid;
+    aggregateVersion: number;
+    processId?: Uuid | null;
+    correlationId: Uuid;
+    links: Links;
+    data: WfaApprovalRequestListResultData;
+};
+
 export type IamManageUsersCommandRequest = {
     commandId: Uuid;
     expectedVersion?: number;
@@ -9662,7 +9789,7 @@ export type TaxMaintainTaxConfigurationsResponses = {
 export type TaxMaintainTaxConfigurationsResponse = TaxMaintainTaxConfigurationsResponses[keyof TaxMaintainTaxConfigurationsResponses];
 
 export type WfaCreateApprovalRequestData = {
-    body: CommandRequest;
+    body: WfaCreateApprovalRequestCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
@@ -9704,12 +9831,108 @@ export type WfaCreateApprovalRequestError = WfaCreateApprovalRequestErrors[keyof
 
 export type WfaCreateApprovalRequestResponses = {
     /**
-     * Established result
+     * Established approval-request result
      */
-    200: EstablishedResult;
+    200: WfaCreateApprovalRequestEstablishedResult;
 };
 
 export type WfaCreateApprovalRequestResponse = WfaCreateApprovalRequestResponses[keyof WfaCreateApprovalRequestResponses];
+
+export type WfaListApprovalRequestsData = {
+    body?: never;
+    headers?: {
+        'X-Correlation-Id'?: Uuid;
+        'Accept-Language'?: string;
+        'X-Accounting-Scope-Id'?: Uuid;
+    };
+    path?: never;
+    query?: {
+        assignment?: 'assigned' | 'all';
+        due?: 'due' | 'all';
+        state?: 'all' | 'blocked' | 'delegated' | 'escalated' | 'completed';
+        'page[size]'?: number;
+        'page[after]'?: string;
+    };
+    url: '/approvals/reference/requests';
+};
+
+export type WfaListApprovalRequestsErrors = {
+    /**
+     * RFC 9457-style problem details
+     */
+    400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    403: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    503: ProblemDetails;
+};
+
+export type WfaListApprovalRequestsError = WfaListApprovalRequestsErrors[keyof WfaListApprovalRequestsErrors];
+
+export type WfaListApprovalRequestsResponses = {
+    /**
+     * Authorized approval-request worklist
+     */
+    200: WfaApprovalRequestListEstablishedResult;
+};
+
+export type WfaListApprovalRequestsResponse = WfaListApprovalRequestsResponses[keyof WfaListApprovalRequestsResponses];
+
+export type WfaGetApprovalRequestData = {
+    body?: never;
+    headers?: {
+        'X-Correlation-Id'?: Uuid;
+        'Accept-Language'?: string;
+        'X-Accounting-Scope-Id'?: Uuid;
+    };
+    path: {
+        approvalRequestId: Uuid;
+    };
+    query?: never;
+    url: '/approvals/reference/requests/{approvalRequestId}';
+};
+
+export type WfaGetApprovalRequestErrors = {
+    /**
+     * RFC 9457-style problem details
+     */
+    400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    403: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    404: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    503: ProblemDetails;
+};
+
+export type WfaGetApprovalRequestError = WfaGetApprovalRequestErrors[keyof WfaGetApprovalRequestErrors];
+
+export type WfaGetApprovalRequestResponses = {
+    /**
+     * Authorized approval-request detail
+     */
+    200: WfaApprovalRequestEstablishedResult;
+};
+
+export type WfaGetApprovalRequestResponse = WfaGetApprovalRequestResponses[keyof WfaGetApprovalRequestResponses];
 
 export type WfaDecideApprovalRequestData = {
     body: CommandRequest;

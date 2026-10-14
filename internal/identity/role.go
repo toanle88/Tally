@@ -302,6 +302,7 @@ var approvedPermissionCatalogue = map[string]struct{}{
 	"finance.tax.submit.tax.amendment":                                struct{}{},
 	"finance.tax.submit.tax.return":                                   struct{}{},
 	"finance.wfa.create.approval.request":                             struct{}{},
+	"finance.wfa.read.approval.requests":                              struct{}{},
 	"finance.wfa.decide.approval.request":                             struct{}{},
 	"finance.wfa.delegate.approval":                                   struct{}{},
 	"finance.wfa.escalate.approval":                                   struct{}{},

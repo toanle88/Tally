@@ -279,6 +279,8 @@ corresponding OpenAPI paths.
 | FR-TAX-015 | POST | `/api/v1/tax/actions/apply-payment-return` | `taxApplyPaymentReturn` | finance.tax.apply.payment.return | DDD representative command |
 | FR-TAX-016 | PUT | `/api/v1/tax/configuration/maintain-tax-configurations` | `taxMaintainTaxConfigurations` | finance.tax.maintain.tax.configurations | PRD functional action |
 | FR-WFA-001 | POST | `/api/v1/approvals/actions/create-approval-request` | `wfaCreateApprovalRequest` | finance.wfa.create.approval.request | DDD representative command |
+| FR-WFA-001 | GET | `/api/v1/approvals/reference/requests` | `wfaListApprovalRequests` | finance.wfa.read.approval.requests | Authorized WFA worklist reference |
+| FR-WFA-001 | GET | `/api/v1/approvals/reference/requests/{approvalRequestId}` | `wfaGetApprovalRequest` | finance.wfa.read.approval.requests | Authorized WFA detail reference |
 | FR-WFA-002 | POST | `/api/v1/approvals/actions/decide-approval-request` | `wfaDecideApprovalRequest` | finance.wfa.decide.approval.request | DDD representative command |
 | FR-WFA-003 | POST | `/api/v1/approvals/actions/delegate-approval` | `wfaDelegateApproval` | finance.wfa.delegate.approval | DDD representative command |
 | FR-WFA-004 | POST | `/api/v1/approvals/actions/escalate-approval` | `wfaEscalateApproval` | finance.wfa.escalate.approval | DDD representative command |

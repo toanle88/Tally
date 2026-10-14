@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 	"github.com/toanle88/Tally/internal/platform/aggregateversion"
 	platformidempotency "github.com/toanle88/Tally/internal/platform/idempotency"
 )
@@ -37,10 +39,12 @@ func (repository *PostgresApprovalRequestRepository) Get(ctx context.Context, id
 	var request ApprovalRequest
 	var requesterID uuid.UUID
 	var correlationID, causationID *uuid.UUID
-	var scope, steps []byte
+	var snapshot, dimensions, roles, scope, steps []byte
+	var amountText *string
+	var dueAt *time.Time
 	var version int64
 	var createdAt, updatedAt time.Time
-	if err := repository.pool.QueryRow(ctx, `SELECT id, subject_type, subject_id, subject_version, subject_fingerprint, policy_id, policy_version, scope, steps, status, aggregate_version, requester_user_id, requester_subject_reference, correlation_id, causation_id, created_at, updated_at FROM workflow.approval_request WHERE id=$1`, id).Scan(&request.ID, &request.SubjectType, &request.SubjectID, &request.SubjectVersion, &request.SubjectFingerprint, &request.PolicyID, &request.PolicyVersion, &scope, &steps, &request.Status, &version, &requesterID, &request.Requester.SubjectReference, &correlationID, &causationID, &createdAt, &updatedAt); err != nil {
+	if err := repository.pool.QueryRow(ctx, `SELECT id, subject_type, subject_id, subject_version, subject_fingerprint, subject_snapshot, snapshot_fingerprint, source_context, operation, transaction_type, data_classification, dimensions, amount::text, currency, due_at, responsible_roles, policy_id, policy_version, scope, steps, status, aggregate_version, requester_user_id, requester_subject_reference, correlation_id, causation_id, created_at, updated_at FROM workflow.approval_request WHERE id=$1`, id).Scan(&request.ID, &request.SubjectType, &request.SubjectID, &request.SubjectVersion, &request.SubjectFingerprint, &snapshot, &request.SnapshotFingerprint, &request.SourceContext, &request.Operation, &request.TransactionType, &request.DataClassification, &dimensions, &amountText, &request.Currency, &dueAt, &roles, &request.PolicyID, &request.PolicyVersion, &scope, &steps, &request.Status, &version, &requesterID, &request.Requester.SubjectReference, &correlationID, &causationID, &createdAt, &updatedAt); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return ApprovalRequest{}, ErrApprovalPolicyNotFound
 		}
@@ -48,6 +52,29 @@ func (repository *PostgresApprovalRequestRepository) Get(ctx context.Context, id
 	}
 	request.Requester.UserID = requesterID
 	request.Version = aggregateversion.AggregateVersion(version)
+	if len(snapshot) > 0 {
+		if err := json.Unmarshal(snapshot, &request.SubjectSnapshot); err != nil {
+			return ApprovalRequest{}, err
+		}
+	}
+	if len(dimensions) > 0 {
+		if err := json.Unmarshal(dimensions, &request.Dimensions); err != nil {
+			return ApprovalRequest{}, err
+		}
+	}
+	if len(roles) > 0 {
+		if err := json.Unmarshal(roles, &request.ResponsibleRoles); err != nil {
+			return ApprovalRequest{}, err
+		}
+	}
+	if amountText != nil && strings.TrimSpace(*amountText) != "" {
+		amount, err := decimal.NewFromString(*amountText)
+		if err != nil {
+			return ApprovalRequest{}, err
+		}
+		request.Amount = &amount
+	}
+	request.DueAt = dueAt
 	request.Scope = ApprovalPolicyScope{}
 	if err := json.Unmarshal(scope, &request.Scope); err != nil {
 		return ApprovalRequest{}, err
@@ -77,6 +104,33 @@ func (repository *PostgresApprovalRequestRepository) Get(ctx context.Context, id
 		return ApprovalRequest{}, err
 	}
 	return request, nil
+}
+
+func (repository *PostgresApprovalRequestRepository) List(ctx context.Context) ([]ApprovalRequest, error) {
+	if repository == nil || repository.pool == nil {
+		return nil, ErrInvalidApprovalPolicyService
+	}
+	rows, err := repository.pool.Query(ctx, `SELECT id FROM workflow.approval_request ORDER BY created_at DESC, id DESC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	requests := make([]ApprovalRequest, 0)
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		request, err := repository.Get(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		requests = append(requests, request)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return requests, nil
 }
 
 func (repository *PostgresApprovalRequestRepository) Save(ctx context.Context, request ApprovalRequest, before *ApprovalRequest, auditRecord ApprovalRequestAuditRecord, event ApprovalEvent) error {
@@ -116,7 +170,34 @@ func (repository *PostgresApprovalRequestRepository) save(ctx context.Context, r
 		if marshalErr != nil {
 			return marshalErr
 		}
-		_, err = tx.Exec(ctx, `INSERT INTO workflow.approval_request (id, subject_type, subject_id, subject_version, subject_fingerprint, policy_id, policy_version, scope, steps, status, aggregate_version, requester_user_id, requester_subject_reference, correlation_id, causation_id, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10,$11,$12,$13,$14,$15,$16,$17)`, request.ID, request.SubjectType, request.SubjectID, request.SubjectVersion, request.SubjectFingerprint, request.PolicyID, request.PolicyVersion, scope, steps, request.Status, request.Version.Value(), request.Requester.UserID, request.Requester.SubjectReference, nullableUUIDString(request.CorrelationID), nullableUUIDString(request.CausationID), request.CreatedAt, request.UpdatedAt)
+		snapshot := []byte(`{}`)
+		if request.SnapshotFingerprint != "" {
+			snapshot, marshalErr = json.Marshal(request.SubjectSnapshot)
+			if marshalErr != nil {
+				return marshalErr
+			}
+		}
+		dimensionValues := request.Dimensions
+		if dimensionValues == nil {
+			dimensionValues = map[string]string{}
+		}
+		dimensions, marshalErr := json.Marshal(dimensionValues)
+		if marshalErr != nil {
+			return marshalErr
+		}
+		roleValues := request.ResponsibleRoles
+		if roleValues == nil {
+			roleValues = []string{}
+		}
+		roles, marshalErr := json.Marshal(roleValues)
+		if marshalErr != nil {
+			return marshalErr
+		}
+		var amount any
+		if request.Amount != nil {
+			amount = request.Amount.String()
+		}
+		_, err = tx.Exec(ctx, `INSERT INTO workflow.approval_request (id, subject_type, subject_id, subject_version, subject_fingerprint, subject_snapshot, snapshot_fingerprint, source_context, operation, transaction_type, data_classification, dimensions, amount, currency, due_at, responsible_roles, policy_id, policy_version, scope, steps, status, aggregate_version, requester_user_id, requester_subject_reference, correlation_id, causation_id, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12::jsonb,$13,$14,$15,$16::jsonb,$17,$18,$19::jsonb,$20::jsonb,$21,$22,$23,$24,$25,$26,$27,$28)`, request.ID, request.SubjectType, request.SubjectID, request.SubjectVersion, request.SubjectFingerprint, snapshot, request.SnapshotFingerprint, request.SourceContext, request.Operation, request.TransactionType, request.DataClassification, dimensions, amount, request.Currency, request.DueAt, roles, request.PolicyID, request.PolicyVersion, scope, steps, request.Status, request.Version.Value(), request.Requester.UserID, request.Requester.SubjectReference, nullableUUIDString(request.CorrelationID), nullableUUIDString(request.CausationID), request.CreatedAt, request.UpdatedAt)
 	} else {
 		steps, marshalErr := json.Marshal(request.Steps)
 		if marshalErr != nil {
