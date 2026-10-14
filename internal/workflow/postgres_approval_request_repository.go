@@ -85,15 +85,19 @@ func (repository *PostgresApprovalRequestRepository) Get(ctx context.Context, id
 	request.CorrelationID = uuidString(correlationID)
 	request.CausationID = uuidString(causationID)
 	request.CreatedAt, request.UpdatedAt = createdAt, updatedAt
-	decisionRows, err := repository.pool.Query(ctx, `SELECT id, decision_version, outcome, approver_user_id, approver_subject_reference, reason, policy_version, subject_version, candidate_fingerprint, recorded_at FROM workflow.approval_decision WHERE approval_request_id=$1 ORDER BY decision_version`, id)
+	decisionRows, err := repository.pool.Query(ctx, `SELECT id, decision_version, outcome, approver_user_id, approver_subject_reference, reason, policy_version, subject_version, candidate_fingerprint, step_id, delegation_reference, recorded_at FROM workflow.approval_decision WHERE approval_request_id=$1 ORDER BY decision_version`, id)
 	if err != nil {
 		return ApprovalRequest{}, err
 	}
 	defer decisionRows.Close()
 	for decisionRows.Next() {
 		var decision ApprovalDecision
-		if err := decisionRows.Scan(&decision.ID, &decision.DecisionVersion, &decision.Outcome, &decision.Approver.UserID, &decision.Approver.SubjectReference, &decision.Reason, &decision.PolicyVersion, &decision.SubjectVersion, &decision.CandidateFingerprint, &decision.RecordedAt); err != nil {
+		var stepID *uuid.UUID
+		if err := decisionRows.Scan(&decision.ID, &decision.DecisionVersion, &decision.Outcome, &decision.Approver.UserID, &decision.Approver.SubjectReference, &decision.Reason, &decision.PolicyVersion, &decision.SubjectVersion, &decision.CandidateFingerprint, &stepID, &decision.DelegationReference, &decision.RecordedAt); err != nil {
 			return ApprovalRequest{}, err
+		}
+		if stepID != nil {
+			decision.StepID = *stepID
 		}
 		request.Decisions = append(request.Decisions, decision)
 	}
@@ -210,7 +214,7 @@ func (repository *PostgresApprovalRequestRepository) save(ctx context.Context, r
 		}
 		if err == nil && len(request.Decisions) > len(before.Decisions) {
 			decision := request.Decisions[len(request.Decisions)-1]
-			_, err = tx.Exec(ctx, `INSERT INTO workflow.approval_decision (id, approval_request_id, decision_version, outcome, approver_user_id, approver_subject_reference, reason, policy_version, subject_version, candidate_fingerprint, recorded_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, decision.ID, request.ID, decision.DecisionVersion, decision.Outcome, decision.Approver.UserID, decision.Approver.SubjectReference, decision.Reason, decision.PolicyVersion, decision.SubjectVersion, decision.CandidateFingerprint, decision.RecordedAt)
+			_, err = tx.Exec(ctx, `INSERT INTO workflow.approval_decision (id, approval_request_id, decision_version, outcome, approver_user_id, approver_subject_reference, reason, policy_version, subject_version, candidate_fingerprint, step_id, delegation_reference, recorded_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`, decision.ID, request.ID, decision.DecisionVersion, decision.Outcome, decision.Approver.UserID, decision.Approver.SubjectReference, decision.Reason, decision.PolicyVersion, decision.SubjectVersion, decision.CandidateFingerprint, nullableUUID(decision.StepID), decision.DelegationReference, decision.RecordedAt)
 		}
 	}
 	if err != nil {

@@ -20,6 +20,8 @@ type WorkflowApprovalDecision struct {
 	SubjectVersion           int64
 	CandidateFingerprint     string
 	RecordedAt               pgtype.Timestamptz
+	StepID                   pgtype.UUID
+	DelegationReference      string
 }
 
 type WorkflowApprovalPolicy struct {

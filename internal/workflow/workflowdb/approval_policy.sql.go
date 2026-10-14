@@ -15,11 +15,11 @@ const createWorkflowApprovalDecision = `-- name: CreateWorkflowApprovalDecision 
 INSERT INTO workflow.approval_decision (
     id, approval_request_id, decision_version, outcome, approver_user_id,
     approver_subject_reference, reason, policy_version, subject_version,
-    candidate_fingerprint, recorded_at
+    candidate_fingerprint, step_id, delegation_reference, recorded_at
 ) VALUES (
     $1, $2, $3, $4, $5,
     $6, $7, $8, $9,
-    $10, $11
+    $10, $11, $12, $13
 )
 `
 
@@ -34,6 +34,8 @@ type CreateWorkflowApprovalDecisionParams struct {
 	PolicyVersion            string
 	SubjectVersion           int64
 	CandidateFingerprint     string
+	StepID                   pgtype.UUID
+	DelegationReference      string
 	RecordedAt               pgtype.Timestamptz
 }
 
@@ -49,6 +51,8 @@ func (q *Queries) CreateWorkflowApprovalDecision(ctx context.Context, arg Create
 		arg.PolicyVersion,
 		arg.SubjectVersion,
 		arg.CandidateFingerprint,
+		arg.StepID,
+		arg.DelegationReference,
 		arg.RecordedAt,
 	)
 	return err

@@ -21135,6 +21135,18 @@ func encodeWfaCreateApprovalRequestResponse(response WfaCreateApprovalRequestRes
 
 		return nil
 
+	case *WfaCreateApprovalRequestNotFound:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.WriteHeader(404)
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *WfaCreateApprovalRequestConflict:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(409)
@@ -21178,7 +21190,7 @@ func encodeWfaCreateApprovalRequestResponse(response WfaCreateApprovalRequestRes
 
 func encodeWfaDecideApprovalRequestResponse(response WfaDecideApprovalRequestRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
-	case *EstablishedResult:
+	case *WfaApprovalRequestEstablishedResult:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
@@ -21237,6 +21249,18 @@ func encodeWfaDecideApprovalRequestResponse(response WfaDecideApprovalRequestRes
 	case *WfaDecideApprovalRequestForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *WfaDecideApprovalRequestNotFound:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.WriteHeader(404)
 
 		e := new(jx.Encoder)
 		response.Encode(e)

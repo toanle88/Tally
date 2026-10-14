@@ -19,6 +19,7 @@ import (
 const MaintainApprovalPoliciesPermission = "finance.wfa.maintain.approval.policies"
 const CreateApprovalRequestsPermission = "finance.wfa.create.approval.request"
 const ReadApprovalRequestsPermission = "finance.wfa.read.approval.requests"
+const DecideApprovalRequestsPermission = "finance.wfa.decide.approval.request"
 
 const (
 	ApprovalPolicyActionCreate            = "create"
@@ -67,6 +68,8 @@ var (
 	ErrApprovalPolicyResolverUnavailable      = errors.New("approval policy resolver dependency unavailable")
 	ErrApprovalPolicySubjectUnavailable       = errors.New("approval subject evidence is unavailable")
 	ErrApprovalPolicySubjectConflict          = errors.New("approval subject evidence is stale")
+	ErrApprovalPolicyExpired                  = errors.New("approval policy is not effective")
+	ErrApprovalPolicyStepConflict             = errors.New("approval request step is not actionable")
 	ErrApprovalPolicyInvalidPage              = errors.New("approval request page cursor is invalid")
 )
 
@@ -393,13 +396,15 @@ func (step ApprovalStepDefinition) Validate() error {
 }
 
 type ApprovalDecisionReference struct {
-	ApprovalRequestID    uuid.UUID `json:"approvalRequestId"`
-	DecisionID           uuid.UUID `json:"decisionId"`
-	PolicyVersion        string    `json:"policyVersion"`
-	DecisionVersion      int64     `json:"decisionVersion"`
-	SubjectVersion       int64     `json:"subjectVersion"`
-	CandidateFingerprint string    `json:"candidateFingerprint"`
-	ApproverUserID       uuid.UUID `json:"approverUserId"`
+	ApprovalRequestID    uuid.UUID  `json:"approvalRequestId"`
+	DecisionID           uuid.UUID  `json:"decisionId"`
+	PolicyVersion        string     `json:"policyVersion"`
+	DecisionVersion      int64      `json:"decisionVersion"`
+	SubjectVersion       int64      `json:"subjectVersion"`
+	CandidateFingerprint string     `json:"candidateFingerprint"`
+	ApproverUserID       uuid.UUID  `json:"approverUserId"`
+	DecidedAt            time.Time  `json:"decidedAt,omitempty"`
+	AppliedAt            *time.Time `json:"appliedAt,omitempty"`
 }
 
 func (reference ApprovalDecisionReference) Validate() error {
@@ -779,6 +784,7 @@ func cloneApproval(value *ApprovalDecisionReference) *ApprovalDecisionReference 
 		return nil
 	}
 	copy := *value
+	copy.AppliedAt = cloneTime(value.AppliedAt)
 	return &copy
 }
 

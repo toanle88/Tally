@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -35,15 +36,71 @@ func (authorizer evaluatorWorkflowAuthorizer) AuthorizeApprovalPolicy(ctx contex
 type evaluatorWorkflowRequestAuthorizer struct {
 	evaluator   identity.AuthorizationEvaluator
 	segregation identity.SegregationDecisionPort
+	users       identity.UserRepository
+	roles       identity.RoleRepository
 }
 
 func (authorizer evaluatorWorkflowRequestAuthorizer) AuthorizeApprovalDecision(ctx context.Context, actor workflow.Actor, request workflow.ApprovalRequest) (workflow.AuthorizationDecision, error) {
-	if authorizer.evaluator == nil {
+	roleIDs, err := authorizer.approvalRoleIDs(ctx, actor, false)
+	if err != nil {
 		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
 	}
-	permission := workflow.CreateApprovalRequestsPermission
-	if actor.UserID != request.Requester.UserID {
-		permission = "finance.wfa.decide.approval.request"
+	return authorizer.evaluateRequest(ctx, actor, request, workflow.CreateApprovalRequestsPermission, roleIDs)
+}
+
+func (authorizer evaluatorWorkflowRequestAuthorizer) AuthorizeApprovalRequestDecision(ctx context.Context, actor workflow.Actor, request workflow.ApprovalRequest, step workflow.ApprovalRequestStep, delegationReference string) (workflow.AuthorizationDecision, error) {
+	roleIDs, err := authorizer.approvalRoleIDs(ctx, actor, true)
+	if err != nil {
+		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
+	}
+	decision, err := authorizer.evaluateRequest(ctx, actor, request, workflow.DecideApprovalRequestsPermission, roleIDs)
+	if err != nil || !decision.Allowed {
+		return decision, err
+	}
+	if authorizer.users != nil && authorizer.roles != nil {
+		eligible, err := authorizer.actorEligibleForStep(ctx, actor, request, step, delegationReference)
+		if err != nil {
+			return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
+		}
+		if !eligible {
+			return workflow.AuthorizationDecision{Allowed: false, Outcome: workflow.AuthorizationDenied, Permission: workflow.DecideApprovalRequestsPermission, DecisionReference: decision.DecisionReference, ReasonCode: "approval-step-role-required"}, nil
+		}
+	}
+	if request.SubjectType != "approval-policy" || authorizer.segregation == nil {
+		return decision, nil
+	}
+	subjectID, err := uuid.Parse(request.SubjectID)
+	if err != nil {
+		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
+	}
+	segregationDecision, err := authorizer.segregation.Evaluate(ctx, identity.SegregationDecisionInput{
+		ActorID:     actor.UserID,
+		Action:      identity.SegregationActionPolicyApprove,
+		SubjectID:   subjectID,
+		ScopeIDs:    request.Scope.CanonicalScopeIDs(),
+		Permissions: []string{workflow.DecideApprovalRequestsPermission},
+		History:     []identity.SegregationHistoryEntry{},
+		ProposerID:  request.Requester.UserID,
+		ApproverID:  actor.UserID,
+	})
+	if err != nil {
+		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
+	}
+	if segregationDecision.Outcome == identity.AuthorizationUnavailable {
+		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
+	}
+	if segregationDecision.Outcome == identity.AuthorizationStale {
+		return workflow.AuthorizationDecision{Allowed: false, Outcome: workflow.AuthorizationStale, Permission: workflow.DecideApprovalRequestsPermission, DecisionReference: segregationDecision.DecisionReference}, nil
+	}
+	if !segregationDecision.Allowed {
+		return workflow.AuthorizationDecision{Allowed: false, Outcome: workflow.AuthorizationDenied, Permission: workflow.DecideApprovalRequestsPermission, DecisionReference: segregationDecision.DecisionReference}, nil
+	}
+	return decision, nil
+}
+
+func (authorizer evaluatorWorkflowRequestAuthorizer) evaluateRequest(ctx context.Context, actor workflow.Actor, request workflow.ApprovalRequest, permission string, roleIDs []uuid.UUID) (workflow.AuthorizationDecision, error) {
+	if authorizer.evaluator == nil {
+		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
 	}
 	classification := strings.TrimSpace(request.DataClassification)
 	if classification == "" {
@@ -61,6 +118,7 @@ func (authorizer evaluatorWorkflowRequestAuthorizer) AuthorizeApprovalDecision(c
 	}
 	decision, err := authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{
 		ActorID:            actor.UserID,
+		RoleIDs:            append([]uuid.UUID(nil), roleIDs...),
 		Permission:         permission,
 		RequestedScopeIDs:  request.Scope.CanonicalScopeIDs(),
 		TransactionType:    transactionTypePtr,
@@ -71,40 +129,97 @@ func (authorizer evaluatorWorkflowRequestAuthorizer) AuthorizeApprovalDecision(c
 	if err != nil {
 		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
 	}
-	workflowDecision := workflowAuthorizationDecision(decision)
-	if !workflowDecision.Allowed || actor.UserID == request.Requester.UserID || request.SubjectType != "approval-policy" {
-		return workflowDecision, nil
+	return workflowAuthorizationDecision(decision), nil
+}
+
+func (authorizer evaluatorWorkflowRequestAuthorizer) approvalRoleIDs(ctx context.Context, actor workflow.Actor, required bool) ([]uuid.UUID, error) {
+	if authorizer.users == nil || authorizer.roles == nil {
+		return nil, nil
 	}
-	if authorizer.segregation == nil {
-		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
-	}
-	subjectID, err := uuid.Parse(request.SubjectID)
+	user, err := authorizer.users.Get(ctx, actor.UserID)
 	if err != nil {
-		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
+		if required {
+			return nil, err
+		}
+		return nil, nil
 	}
-	segregationDecision, err := authorizer.segregation.Evaluate(ctx, identity.SegregationDecisionInput{
-		ActorID:     actor.UserID,
-		Action:      identity.SegregationActionPolicyApprove,
-		SubjectID:   subjectID,
-		ScopeIDs:    request.Scope.CanonicalScopeIDs(),
-		Permissions: []string{"finance.wfa.decide.approval.request"},
-		History:     []identity.SegregationHistoryEntry{},
-		ProposerID:  request.Requester.UserID,
-		ApproverID:  actor.UserID,
-	})
+	if user.Status != identity.UserStatusActive {
+		if required {
+			return nil, identity.ErrAuthorizationDenied
+		}
+		return nil, nil
+	}
+	roleIDs := make([]uuid.UUID, 0, len(user.Assignments))
+	for _, assignment := range user.Assignments {
+		role, err := authorizer.roles.Get(ctx, assignment.RoleID)
+		if err != nil {
+			if required {
+				return nil, err
+			}
+			continue
+		}
+		if role.Status == identity.RoleStatusActive {
+			roleIDs = append(roleIDs, role.ID)
+		}
+	}
+	return roleIDs, nil
+}
+
+func (authorizer evaluatorWorkflowRequestAuthorizer) actorEligibleForStep(ctx context.Context, actor workflow.Actor, request workflow.ApprovalRequest, step workflow.ApprovalRequestStep, delegationReference string) (bool, error) {
+	if authorizer.users == nil || authorizer.roles == nil {
+		return true, nil
+	}
+	user, err := authorizer.users.Get(ctx, actor.UserID)
 	if err != nil {
-		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
+		return false, err
 	}
-	if segregationDecision.Outcome == identity.AuthorizationUnavailable {
-		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
+	if user.Status != identity.UserStatusActive {
+		return false, nil
 	}
-	if segregationDecision.Outcome == identity.AuthorizationStale {
-		return workflow.AuthorizationDecision{Allowed: false, Outcome: workflow.AuthorizationStale, Permission: permission, DecisionReference: segregationDecision.DecisionReference}, nil
+	requestedScopes := request.Scope.CanonicalScopeIDs()
+	for _, assignment := range user.Assignments {
+		role, err := authorizer.roles.Get(ctx, assignment.RoleID)
+		if err != nil {
+			return false, err
+		}
+		if role.Status != identity.RoleStatusActive || !approvalAssignmentCoversScopes(assignment.Scopes, requestedScopes) {
+			continue
+		}
+		for _, requirement := range step.RequiredRoles {
+			if role.Name == requirement.Role {
+				return true, nil
+			}
+			if requirement.AllowDelegation && step.Delegation.Enabled && strings.TrimSpace(delegationReference) != "" && containsApprovalRole(step.Delegation.DelegateToRoles, role.Name) {
+				return true, nil
+			}
+		}
 	}
-	if !segregationDecision.Allowed {
-		return workflow.AuthorizationDecision{Allowed: false, Outcome: workflow.AuthorizationDenied, Permission: permission, DecisionReference: segregationDecision.DecisionReference}, nil
+	return false, nil
+}
+
+func approvalAssignmentCoversScopes(scopes []identity.EntityAccessScope, requested []string) bool {
+	allowed := make(map[string]struct{}, len(scopes))
+	for _, scope := range scopes {
+		allowed[strings.TrimSpace(scope.ScopeID)] = struct{}{}
 	}
-	return workflowDecision, nil
+	if _, ok := allowed["*"]; ok {
+		return true
+	}
+	for _, scope := range requested {
+		if _, ok := allowed[strings.TrimSpace(scope)]; !ok {
+			return false
+		}
+	}
+	return true
+}
+
+func containsApprovalRole(roles []string, candidate string) bool {
+	for _, role := range roles {
+		if strings.TrimSpace(role) == strings.TrimSpace(candidate) {
+			return true
+		}
+	}
+	return false
 }
 
 func (authorizer evaluatorWorkflowRequestAuthorizer) AuthorizeApprovalRequestRead(ctx context.Context, actor workflow.Actor, request workflow.ApprovalRequest) (workflow.AuthorizationDecision, error) {
@@ -213,20 +328,28 @@ func postgresWorkflowEventWriter(ctx context.Context, tx pgx.Tx, event workflow.
 	if event.ApproverUserID != uuid.Nil {
 		approverUserID = event.ApproverUserID.String()
 	}
+	var decidedAt *time.Time
+	if !event.DecidedAt.IsZero() {
+		value := event.DecidedAt
+		decidedAt = &value
+	}
 	payload, err := json.Marshal(struct {
-		ApprovalRequestID    uuid.UUID `json:"approvalRequestId"`
-		DecisionID           string    `json:"decisionId,omitempty"`
-		DecisionVersion      int64     `json:"decisionVersion,omitempty"`
-		Outcome              string    `json:"outcome,omitempty"`
-		ApproverUserID       string    `json:"approverUserId,omitempty"`
-		PolicyID             uuid.UUID `json:"policyId"`
-		PolicyVersion        string    `json:"policyVersion"`
-		SubjectID            string    `json:"subjectId"`
-		SubjectVersion       int64     `json:"subjectVersion"`
-		CandidateFingerprint string    `json:"candidateFingerprint"`
-		ScopeIDs             []string  `json:"scopeIds"`
-		DataClassification   string    `json:"dataClassification"`
-	}{ApprovalRequestID: event.RequestID, DecisionID: decisionID, DecisionVersion: event.DecisionVersion, Outcome: event.Outcome, ApproverUserID: approverUserID, PolicyID: event.PolicyID, PolicyVersion: event.PolicyVersion, SubjectID: event.SubjectID, SubjectVersion: event.SubjectVersion, CandidateFingerprint: event.CandidateFingerprint, ScopeIDs: append([]string(nil), event.ScopeIDs...), DataClassification: event.DataClassification})
+		ApprovalRequestID    uuid.UUID  `json:"approvalRequestId"`
+		DecisionID           string     `json:"decisionId,omitempty"`
+		DecisionVersion      int64      `json:"decisionVersion,omitempty"`
+		Outcome              string     `json:"outcome,omitempty"`
+		ApproverUserID       string     `json:"approverUserId,omitempty"`
+		StepID               string     `json:"stepId,omitempty"`
+		DelegationReference  string     `json:"delegationReference,omitempty"`
+		DecidedAt            *time.Time `json:"decidedAt,omitempty"`
+		PolicyID             uuid.UUID  `json:"policyId"`
+		PolicyVersion        string     `json:"policyVersion"`
+		SubjectID            string     `json:"subjectId"`
+		SubjectVersion       int64      `json:"subjectVersion"`
+		CandidateFingerprint string     `json:"candidateFingerprint"`
+		ScopeIDs             []string   `json:"scopeIds"`
+		DataClassification   string     `json:"dataClassification"`
+	}{ApprovalRequestID: event.RequestID, DecisionID: decisionID, DecisionVersion: event.DecisionVersion, Outcome: event.Outcome, ApproverUserID: approverUserID, StepID: nullableUUIDString(event.StepID), DelegationReference: event.DelegationReference, DecidedAt: decidedAt, PolicyID: event.PolicyID, PolicyVersion: event.PolicyVersion, SubjectID: event.SubjectID, SubjectVersion: event.SubjectVersion, CandidateFingerprint: event.CandidateFingerprint, ScopeIDs: append([]string(nil), event.ScopeIDs...), DataClassification: event.DataClassification})
 	if err != nil {
 		return err
 	}
@@ -262,6 +385,13 @@ func postgresWorkflowEventWriter(ctx context.Context, tx pgx.Tx, event workflow.
 		return err
 	}
 	return integration.WritePublication(ctx, tx, integration.Publication{Event: envelope, AvailableAt: event.OccurredAt})
+}
+
+func nullableUUIDString(value uuid.UUID) string {
+	if value == uuid.Nil {
+		return ""
+	}
+	return value.String()
 }
 
 var _ workflow.ApprovalPolicyAuthorizer = evaluatorWorkflowAuthorizer{}

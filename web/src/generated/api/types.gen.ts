@@ -221,7 +221,10 @@ export type WfaApprovalRequestProjection = {
     requesterUserId?: Uuid;
     requesterSubjectReference?: string;
     steps: Array<WfaApprovalRequestStep>;
+    decisions: Array<WfaApprovalDecisionProjection>;
+    currentStepId?: Uuid;
     status: 'Pending' | 'Approved' | 'Rejected';
+    applicationStatus: 'not-reported';
     aggregateVersion: number;
     responsibleRoles: Array<string>;
     dueAt?: string;
@@ -234,6 +237,7 @@ export type WfaCreateApprovalRequestResultData = {
     validationStatus: string;
     approvalStatus: string;
     responsibleRoles: Array<string>;
+    applicationStatus: 'not-reported';
     exception?: string;
     recoveryPath?: string;
     auditReference?: Uuid;
@@ -255,6 +259,11 @@ export type WfaApprovalRequestResultData = {
     validationStatus?: string;
     approvalStatus?: string;
     responsibleRoles?: Array<string>;
+    applicationStatus: 'not-reported';
+    decision?: WfaApprovalDecisionProjection;
+    decisionReference?: WfaApprovalDecisionReference;
+    nextAction?: string;
+    replayed: boolean;
     exception?: string;
     recoveryPath?: string;
 };
@@ -713,6 +722,33 @@ export type GlMaintainAccountsAndReportingMappingsEstablishedResult = {
     correlationId: Uuid;
     links: Links;
     data: GlMaintainAccountsAndReportingMappingsResultData;
+};
+
+export type WfaApprovalDecisionProjection = {
+    id: Uuid;
+    decisionVersion: number;
+    outcome: 'approved' | 'rejected';
+    approverUserId: Uuid;
+    approverSubjectReference: string;
+    reason: string;
+    stepId?: Uuid;
+    delegationReference?: string;
+    policyVersion: string;
+    subjectVersion: number;
+    candidateFingerprint: string;
+    recordedAt: string;
+};
+
+export type WfaApprovalDecisionReference = {
+    approvalRequestId: Uuid;
+    decisionId: Uuid;
+    policyVersion: string;
+    decisionVersion: number;
+    subjectVersion: number;
+    candidateFingerprint: string;
+    approverUserId: Uuid;
+    decidedAt: string;
+    appliedAt?: string;
 };
 
 export type IamPermissionGrant = {
@@ -9816,6 +9852,10 @@ export type WfaCreateApprovalRequestErrors = {
     /**
      * RFC 9457-style problem details
      */
+    404: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
     409: ProblemDetails;
     /**
      * RFC 9457-style problem details
@@ -9962,6 +10002,10 @@ export type WfaDecideApprovalRequestErrors = {
     /**
      * RFC 9457-style problem details
      */
+    404: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
     409: ProblemDetails;
     /**
      * RFC 9457-style problem details
@@ -9977,9 +10021,9 @@ export type WfaDecideApprovalRequestError = WfaDecideApprovalRequestErrors[keyof
 
 export type WfaDecideApprovalRequestResponses = {
     /**
-     * Established result
+     * Approval decision recorded and exposed as immutable workflow evidence
      */
-    200: EstablishedResult;
+    200: WfaApprovalRequestEstablishedResult;
 };
 
 export type WfaDecideApprovalRequestResponse = WfaDecideApprovalRequestResponses[keyof WfaDecideApprovalRequestResponses];

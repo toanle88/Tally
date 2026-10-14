@@ -368,29 +368,29 @@ Traceability: `DLV-FR-WFA-002`, `FR-WFA-002`, `DLV-GFR-004`,
 
 Acceptance criteria:
 
-- [ ] `DecideApprovalRequest` permits only an actor eligible for the current
+- [x] `DecideApprovalRequest` permits only an actor eligible for the current
   policy step, scope, effective interval, and delegation state. IAM
   authorization and segregation checks are evaluated at decision time, not
   trusted from a stale worklist result.
-- [ ] A requester cannot approve the same approval request when the applicable
+- [x] A requester cannot approve the same approval request when the applicable
   segregation rule prohibits it. Denial exposes a safe reason and permitted
   recovery path without leaking policy-sensitive values.
 - [ ] The decision workspace displays the immutable subject snapshot/reference,
   policy/version, current step, prior decisions, delegation/escalation history,
   required evidence, and current application status available through approved
   contracts.
-- [ ] A decision records an immutable `DecisionId`, `DecisionVersion`, request
+- [x] A decision records an immutable `DecisionId`, `DecisionVersion`, request
   identity, policy version, subject version, approver/authentication subject,
   decision time, policy-required reason/evidence, and delegation reference when
   applicable. It cannot be destructively edited or deleted.
-- [ ] The command validates the current request version and policy-defined
+- [x] The command validates the current request version and policy-defined
   actionable state. A terminal, stale, already-decided, expired, or changed
   subject outcome returns a typed conflict/rejection and establishes no second
   decision.
-- [ ] Repeating the same decision identity and fingerprint returns the
+- [x] Repeating the same decision identity and fingerprint returns the
   established result. Reusing the identity with different decision content
   returns an idempotency conflict with no second decision.
-- [ ] The transaction records the decision and its `ApprovalDecisionRecorded`
+- [x] The transaction records the decision and its `ApprovalDecisionRecorded`
   outbox message atomically. Event delivery contains the immutable decision
   reference needed by approved consuming contexts.
 - [ ] The consuming business context applies the decision through its own
@@ -427,6 +427,44 @@ Required evidence:
   rejected on application and that a valid decision reference is applied once.
 - UI, authorization, accessibility, notification, and safe-sensitive-data
   evidence for `WFA-SCR-02`.
+
+#### User Story 3 implementation evidence (2026-10-14)
+
+- Added immutable decision recording in `internal/workflow`, including current
+  step, outcome, reason, policy/subject versions, approver identity, decision
+  time, delegation reference, audit evidence, and the
+  `approval_decision_recorded` outbox payload. Decision-time authorization
+  rechecks IAM, active role/scope assignment, delegation policy, effective
+  policy interval, current actionable step, and applicable segregation rules.
+- Added durable schema/query support for decision step and delegation evidence
+  in migration `workflow/00003_add_approval_decision_evidence.sql`, with SQLC
+  output regenerated. Existing decision rows remain readable through nullable
+  step evidence for migration compatibility.
+- Added the typed `wfaDecideApprovalRequest` API operation with strict command
+  payload validation, typed stale/expired/step/idempotency/authorization
+  outcomes, immutable decision history in request projections, and the locked
+  `not-reported` application-status contract until an approved consuming
+  context is wired.
+- Added `WFA-SCR-02` at `/approvals/wfa-scr-02`. It loads the authoritative
+  request detail, shows subject/policy/current-step/prior-decision evidence,
+  submits stable retry-safe command identities, and preserves the command
+  identity when a retryable conflict is returned.
+- Added domain, API, and runtime authorization tests for eligible/ineligible
+  roles, scope, delegation evidence, self-approval segregation, current-step
+  enforcement, expired policy, immutable decision history, duplicate replay,
+  changed-fingerprint conflict, stale subject rejection, and a synthetic
+  consumer that applies valid evidence once while rejecting stale evidence.
+- Verified with `GOCACHE=/tmp/tally-go-cache go test
+  ./internal/identity ./internal/workflow ./internal/platform/httpapi ./cmd/api`,
+  `make sqlc-check`, `GOCACHE=/tmp/tally-go-cache make api-generate-check`,
+  `make api-ts-check`, `pnpm --dir web exec tsc --noEmit`, the focused route
+  test, `pnpm --dir web build`, and `git diff --check`. OpenAPI and TypeScript
+  generated artifacts were regenerated and verified from the canonical
+  contracts.
+- Not claimed in this story slice: a production consuming business-context
+  adapter, applied-status acknowledgements, delegation/escalation workflows,
+  notification delivery, PostgreSQL/Testcontainers release gates, or the full
+  frontend Vitest suite.
 
 ### 7.4 User Story 4 — Delegate approval responsibility
 

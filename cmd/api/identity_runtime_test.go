@@ -76,6 +76,43 @@ func TestEvaluatorWorkflowRequestAuthorizerForwardsRequestAuthorizationDimension
 	}
 }
 
+func TestEvaluatorWorkflowRequestAuthorizerRevalidatesStepRoleScopeDelegationAndSoD(t *testing.T) {
+	actor := workflow.Actor{UserID: uuid.New(), SubjectReference: "approver"}
+	roleID := uuid.New()
+	userRepository := testWorkflowUserRepository{users: map[uuid.UUID]identity.User{actor.UserID: {ID: actor.UserID, Status: identity.UserStatusActive, Assignments: []identity.RoleAssignment{{RoleID: roleID, Scopes: []identity.EntityAccessScope{{ScopeID: "scope-1"}}}}}}}
+	roleRepository := testWorkflowRoleRepository{roles: map[uuid.UUID]identity.Role{roleID: {ID: roleID, Name: "finance.approver", Status: identity.RoleStatusActive}}}
+	evaluator := &recordingAuthorizationEvaluator{}
+	authorizer := evaluatorWorkflowRequestAuthorizer{evaluator: evaluator, users: userRepository, roles: roleRepository}
+	request := workflow.ApprovalRequest{Requester: workflow.Actor{UserID: uuid.New(), SubjectReference: "requester"}, Scope: workflow.ApprovalPolicyScope{ScopeIDs: []string{"scope-1"}}, DataClassification: "internal"}
+	step := workflow.ApprovalRequestStep{ID: uuid.New(), Sequence: 1, RequiredRoles: []workflow.RoleRequirement{{Role: "finance.approver", MinimumApprovals: 1}}, MinimumApprovals: 1}
+	decision, err := authorizer.AuthorizeApprovalRequestDecision(context.Background(), actor, request, step, "")
+	if err != nil || !decision.Allowed || len(evaluator.inputs) != 1 || len(evaluator.inputs[0].RoleIDs) != 1 || evaluator.inputs[0].RoleIDs[0] != roleID {
+		t.Fatalf("eligible role decision = %#v, err = %v, inputs = %#v", decision, err, evaluator.inputs)
+	}
+
+	delegatedStep := workflow.ApprovalRequestStep{ID: uuid.New(), Sequence: 1, RequiredRoles: []workflow.RoleRequirement{{Role: "finance.approver", MinimumApprovals: 1, AllowDelegation: true}}, MinimumApprovals: 1, Delegation: workflow.DelegationConfiguration{Enabled: true, DelegateToRoles: []string{"finance.delegate"}, MaximumDepth: 1}}
+	roleRepository.roles[roleID] = identity.Role{ID: roleID, Name: "finance.delegate", Status: identity.RoleStatusActive}
+	withoutReference, err := authorizer.AuthorizeApprovalRequestDecision(context.Background(), actor, request, delegatedStep, "")
+	if err != nil || withoutReference.Allowed {
+		t.Fatalf("delegation without evidence = %#v, err = %v", withoutReference, err)
+	}
+	withReference, err := authorizer.AuthorizeApprovalRequestDecision(context.Background(), actor, request, delegatedStep, "delegation-1")
+	if err != nil || !withReference.Allowed {
+		t.Fatalf("delegation with evidence = %#v, err = %v", withReference, err)
+	}
+
+	segregation := testWorkflowSegregationPort{decision: identity.SegregationDecision{Allowed: false, Outcome: identity.AuthorizationDenied, DecisionReference: uuid.New()}}
+	selfAuthorizer := evaluatorWorkflowRequestAuthorizer{evaluator: &recordingAuthorizationEvaluator{}, users: userRepository, roles: testWorkflowRoleRepository{roles: map[uuid.UUID]identity.Role{roleID: {ID: roleID, Name: "finance.approver", Status: identity.RoleStatusActive}}}, segregation: segregation}
+	selfRequest := request
+	selfRequest.Requester = actor
+	selfRequest.SubjectType = "approval-policy"
+	selfRequest.SubjectID = uuid.NewString()
+	selfDecision, err := selfAuthorizer.AuthorizeApprovalRequestDecision(context.Background(), actor, selfRequest, step, "")
+	if err != nil || selfDecision.Allowed {
+		t.Fatalf("self approval SoD decision = %#v, err = %v", selfDecision, err)
+	}
+}
+
 func (evaluator *recordingAuthorizationEvaluator) Evaluate(_ context.Context, input identity.DecisionInput) (identity.AuthorizationDecision, error) {
 	evaluator.inputs = append(evaluator.inputs, input)
 	return identity.AuthorizationDecision{
@@ -89,6 +126,54 @@ func (evaluator *recordingAuthorizationEvaluator) Evaluate(_ context.Context, in
 
 func (recordingAuthorizationEvaluator) EvaluateField(context.Context, identity.FieldAccessInput) (identity.FieldAccessDecision, error) {
 	return identity.FieldAccessDecision{}, nil
+}
+
+type testWorkflowUserRepository struct {
+	users map[uuid.UUID]identity.User
+}
+
+func (repository testWorkflowUserRepository) Get(_ context.Context, id uuid.UUID) (identity.User, error) {
+	user, ok := repository.users[id]
+	if !ok {
+		return identity.User{}, identity.ErrUserNotFound
+	}
+	return user, nil
+}
+
+func (repository testWorkflowUserRepository) FindByAuthenticationSubject(context.Context, identity.AuthenticationSubject) (identity.User, error) {
+	return identity.User{}, identity.ErrUserNotFound
+}
+
+func (repository testWorkflowUserRepository) List(context.Context) ([]identity.User, error) {
+	return nil, nil
+}
+
+type testWorkflowRoleRepository struct {
+	roles map[uuid.UUID]identity.Role
+}
+
+func (repository testWorkflowRoleRepository) Get(_ context.Context, id uuid.UUID) (identity.Role, error) {
+	role, ok := repository.roles[id]
+	if !ok {
+		return identity.Role{}, identity.ErrRoleNotFound
+	}
+	return role, nil
+}
+
+func (repository testWorkflowRoleRepository) List(context.Context) ([]identity.Role, error) {
+	return nil, nil
+}
+
+func (repository testWorkflowRoleRepository) ValidateRoleAssignments(context.Context, []identity.RoleAssignment) error {
+	return nil
+}
+
+type testWorkflowSegregationPort struct {
+	decision identity.SegregationDecision
+}
+
+func (port testWorkflowSegregationPort) Evaluate(context.Context, identity.SegregationDecisionInput) (identity.SegregationDecision, error) {
+	return port.decision, nil
 }
 
 func TestEvaluatorGLSoftCloseGateAuthorizerUsesOperationPermissions(t *testing.T) {

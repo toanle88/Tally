@@ -323,10 +323,41 @@ schemas:
       delegation: { $ref: '#/schemas/WfaDelegationConfiguration' }
       escalation: { $ref: '#/schemas/WfaEscalationConfiguration' }
       status: { type: string }
+  WfaApprovalDecisionProjection:
+    type: object
+    additionalProperties: false
+    required: [id, decisionVersion, outcome, approverUserId, approverSubjectReference, reason, policyVersion, subjectVersion, candidateFingerprint, recordedAt]
+    properties:
+      id: { $ref: '#/schemas/Uuid' }
+      decisionVersion: { type: integer, minimum: 1 }
+      outcome: { type: string, enum: [approved, rejected] }
+      approverUserId: { $ref: '#/schemas/Uuid' }
+      approverSubjectReference: { type: string, minLength: 1 }
+      reason: { type: string }
+      stepId: { $ref: '#/schemas/Uuid' }
+      delegationReference: { type: string }
+      policyVersion: { type: string, minLength: 1 }
+      subjectVersion: { type: integer, minimum: 1 }
+      candidateFingerprint: { type: string, minLength: 1 }
+      recordedAt: { type: string, format: date-time }
+  WfaApprovalDecisionReference:
+    type: object
+    additionalProperties: false
+    required: [approvalRequestId, decisionId, policyVersion, decisionVersion, subjectVersion, candidateFingerprint, approverUserId, decidedAt]
+    properties:
+      approvalRequestId: { $ref: '#/schemas/Uuid' }
+      decisionId: { $ref: '#/schemas/Uuid' }
+      policyVersion: { type: string, minLength: 1 }
+      decisionVersion: { type: integer, minimum: 1 }
+      subjectVersion: { type: integer, minimum: 1 }
+      candidateFingerprint: { type: string, minLength: 1 }
+      approverUserId: { $ref: '#/schemas/Uuid' }
+      decidedAt: { type: string, format: date-time }
+      appliedAt: { type: string, format: date-time }
   WfaApprovalRequestProjection:
     type: object
     additionalProperties: false
-    required: [id, subjectType, subjectId, subjectVersion, subjectFingerprint, policyId, policyVersion, scope, steps, status, aggregateVersion, responsibleRoles, createdAt, updatedAt]
+    required: [id, subjectType, subjectId, subjectVersion, subjectFingerprint, policyId, policyVersion, scope, steps, decisions, status, applicationStatus, aggregateVersion, responsibleRoles, createdAt, updatedAt]
     properties:
       id: { $ref: '#/schemas/Uuid' }
       subjectType: { type: string }
@@ -352,7 +383,12 @@ schemas:
       steps:
         type: array
         items: { $ref: '#/schemas/WfaApprovalRequestStep' }
+      decisions:
+        type: array
+        items: { $ref: '#/schemas/WfaApprovalDecisionProjection' }
+      currentStepId: { $ref: '#/schemas/Uuid' }
       status: { type: string, enum: [Pending, Approved, Rejected] }
+      applicationStatus: { type: string, enum: [not-reported] }
       aggregateVersion: { type: integer, minimum: 1 }
       responsibleRoles:
         type: array
@@ -363,7 +399,7 @@ schemas:
   WfaCreateApprovalRequestResultData:
     type: object
     additionalProperties: false
-    required: [request, validationStatus, approvalStatus, responsibleRoles, replayed]
+    required: [request, validationStatus, approvalStatus, responsibleRoles, applicationStatus, replayed]
     properties:
       request: { $ref: '#/schemas/WfaApprovalRequestProjection' }
       validationStatus: { type: string }
@@ -371,6 +407,7 @@ schemas:
       responsibleRoles:
         type: array
         items: { type: string }
+      applicationStatus: { type: string, enum: [not-reported] }
       exception: { type: string }
       recoveryPath: { type: string }
       auditReference: { $ref: '#/schemas/Uuid' }
@@ -390,7 +427,7 @@ schemas:
   WfaApprovalRequestResultData:
     type: object
     additionalProperties: false
-    required: [request]
+    required: [request, applicationStatus, replayed]
     properties:
       request: { $ref: '#/schemas/WfaApprovalRequestProjection' }
       validationStatus: { type: string }
@@ -398,6 +435,11 @@ schemas:
       responsibleRoles:
         type: array
         items: { type: string }
+      applicationStatus: { type: string, enum: [not-reported] }
+      decision: { $ref: '#/schemas/WfaApprovalDecisionProjection' }
+      decisionReference: { $ref: '#/schemas/WfaApprovalDecisionReference' }
+      nextAction: { type: string }
+      replayed: { type: boolean }
       exception: { type: string }
       recoveryPath: { type: string }
   WfaApprovalRequestEstablishedResult:

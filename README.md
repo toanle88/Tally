@@ -24,24 +24,28 @@ Implemented repository slices include:
 - General Ledger slices for ledgers, accounting books, charts of accounts,
   accounts, posting, journal approval, reversal, posting barriers, soft close,
   scoped reopen, and operational reopen/reclose under `internal/gl/`.
-- Workflow policy maintenance and the approval-request create/read slice under
-  `internal/workflow/`, including effective-policy resolution, immutable
-  subject evidence, durable idempotency, audit/outbox integration, and the
-  authorized worklist/detail API and UI. Decision, delegation, escalation, and
-  full qualification remain later workflow scope.
+- Workflow policy maintenance, approval-request create/read, and the User Story
+  3 approval-decision record-and-expose slice under `internal/workflow/`, including
+  effective-policy resolution, immutable subject and decision evidence,
+  decision-time authorization, durable idempotency and PostgreSQL persistence,
+  audit/outbox integration, the authenticated decision API, and the WFA-SCR-02
+  decision workspace. Downstream decision application acknowledgement,
+  authoritative delegation lifecycle, escalation, notifications, and full
+  qualification remain later workflow scope.
 - A generated, authenticated API boundary under `/api/v1` for the implemented
-  identity, organization, COA, General Ledger, and workflow operations, plus
-  anonymous `GET /health/live`.
+  identity, organization, COA, General Ledger, and workflow policy, request,
+  and decision operations, plus anonymous `GET /health/live`.
 - A React/Vite frontend with shared finance interaction components and
   fixture-backed identity/access, master-data, COA, General Ledger, and
-  workflow workspaces.
+  workflow workspaces, including the WFA-SCR-02 decision view.
 
 `ROADMAP.md` marks the `EP-GL-001` parent locally complete by explicit status
 override, while its child delivery items and PostgreSQL, browser, accessibility,
 cross-context, and release qualification remain open. `EP-WFA-001` remains open;
-the current branch implements approval-policy management and User Story 2's
-approval-request slice without claiming the later decision, delegation, or
-escalation behavior.
+the current branch implements approval-policy management, User Story 2's
+approval-request slice, and User Story 3's workflow-owned decision recording and
+exposure without claiming downstream application acknowledgement, the complete
+delegation/escalation lifecycle, or full workflow qualification.
 
 For the business, technology, and architecture learning guide, see the
 [TALLY docs site](./docs-site/learning-notes.md).
@@ -50,24 +54,22 @@ For the business, technology, and architecture learning guide, see the
 
 The following commands were run locally on 2026-10-14:
 
-- `./scripts/db/migrate.sh validate` — passed for all migration sets.
-- `./scripts/db/migrate.sh check` — passed; the committed checksum inventory
-  includes the workflow approval-request migration.
-- `GOCACHE=/tmp/tally-go-cache go test ./internal/workflow ./internal/platform/httpapi ./cmd/api` — passed.
+- `GOCACHE=/tmp/tally-go-cache go test ./internal/identity ./internal/workflow ./internal/platform/httpapi ./cmd/api` — passed.
 - `make sqlc-check` — passed.
 - `GOCACHE=/tmp/tally-go-cache make api-generate-check` — passed; OpenAPI
   validation and deterministic Go generation were verified.
 - `make api-ts-check` — passed; deterministic TypeScript generation was
   verified.
+- `pnpm --dir web exec tsc --noEmit` — passed.
+- `timeout 45s pnpm --dir web exec vitest run src/routes/route-registry.test.ts --pool=forks --maxWorkers=1 --fileParallelism=false` — passed.
 - `pnpm --dir web build` — passed.
-- Focused Vitest route and auth/session tests — passed (11 tests).
-- `pnpm docs:build` — passed after this README update.
 
-The full `make persistence-check` gate was not rerun after the checksum repair,
-so PostgreSQL/Testcontainers persistence and release qualification are not
-claimed here. These results are local evidence only; they do not claim hosted
-CI, live Entra, production audit, performance/capacity, disaster recovery, or
-release qualification.
+The full frontend Vitest suite was attempted but interrupted after Vitest
+stalled during worker discovery, so it is not claimed as passed. PostgreSQL /
+Testcontainers persistence and release qualification were not run. These
+results are local evidence only; they do not claim hosted CI, live Entra,
+production audit, downstream decision application, performance/capacity,
+disaster recovery, or release qualification.
 
 ---
 
@@ -511,13 +513,13 @@ The technology baseline (from the approved solution architecture):
 
 | Area | Current | Planned |
 |---|---|---|
-| Backend | Go 1.26.3 + chi/v5 5.3.1; generated API boundary, liveness endpoint, and runtime wiring for identity, organization, COA, General Ledger, and workflow services | Remaining bounded-context modules and finance capability handlers |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, daisyUI 5, shared semantic UI primitives, routed shell, fixture-backed scope context, operational route seams, record-context/lifecycle/money/evidence/privacy wrappers, TanStack Table-backed operational worklist/process fixtures, and identity/access, master-data, COA, General Ledger, and workflow workspaces | Later capability screens and full qualification |
+| Backend | Go 1.26.3 + chi/v5 5.3.1; generated API boundary, liveness endpoint, and runtime wiring for identity, organization, COA, General Ledger, and workflow policy/request/decision services | Remaining bounded-context modules and finance capability handlers |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, daisyUI 5, shared semantic UI primitives, routed shell, fixture-backed scope context, operational route seams, record-context/lifecycle/money/evidence/privacy wrappers, TanStack Table-backed operational worklist/process fixtures, and identity/access, master-data, COA, General Ledger, and workflow workspaces including WFA-SCR-02 decision exposure | Later capability screens and full qualification |
 | Package manager | pnpm 11.9.0 | — |
-| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform, identity, organization, COA, GL, and workflow queries, synthetic seed/verify scripts, migration checksum inventory, focused persistence drift command and aggregate PR quality workflow | Later bounded-context schemas and release qualification |
+| Database | PostgreSQL 18 Docker Compose dev service, Goose migrations, pgx/v5 connection pool, sqlc-generated platform, identity, organization, COA, GL, and workflow queries including decision evidence, synthetic seed/verify scripts, migration checksum inventory, focused persistence drift command and aggregate PR quality workflow | Later bounded-context schemas and release qualification |
 | Styling | Tailwind CSS 4 as the primary styling/layout system with daisyUI 5 theme and wrapper support | — |
 | Client state | — | TanStack Query |
-| API contract | OpenAPI 3.1 source with generated Go and TypeScript artifacts; runtime exposes `GET /health/live` and authenticated `/api/v1` operations for implemented identity, organization, COA, General Ledger, and workflow slices | Future capability operations and full contract qualification |
+| API contract | OpenAPI 3.1 source with generated Go and TypeScript artifacts; runtime exposes `GET /health/live` and authenticated `/api/v1` operations for implemented identity, organization, COA, General Ledger, and workflow policy/request/decision slices | Future capability operations and full contract qualification |
 | Infrastructure | Terraform provider contract, per-root lockfiles, protected Blob remote-state bootstrap, isolated state keys and identities, reusable low-cost module contracts, dev/demo/prod-reference profile composition, and optional dev/demo deployment wrapper | Deferred: live Azure apply evidence and production qualification |
 | CI/CD | Aggregate pull-request quality workflow with focused push/manual verification workflows | Protected deployment and release qualification |
 
@@ -546,7 +548,7 @@ them; the complete inventory is available through `git ls-files`.
 │   │   ├── organization/              # OMD persistence
 │   │   ├── coa/                       # segment and change-request persistence
 │   │   ├── gl/                        # ledger, posting, and gate persistence
-│   │   └── workflow/                  # policy and approval-request persistence
+│   │   └── workflow/                  # policy, request, and decision persistence
 │   ├── checksums.sha256               # Migration integrity checksums
 │   ├── queries/
 │   │   ├── platform/                  # outbox/inbox and seed queries
@@ -638,7 +640,7 @@ them; the complete inventory is available through `git ls-files`.
 │   │   │   ├── record-detail-example.tsx # Synthetic record-detail composition
 │   │   │   ├── record-detail-fixtures.ts # Typed record-context fixtures
 │   │   │   ├── app-shell.tsx          # Responsive presentational shell
-│   │   │   ├── workflow-approval-workspace.tsx # WFA worklist/detail/create slice
+│   │   │   ├── workflow-approval-workspace.tsx # WFA worklist/detail/create/decision slice
 │   │   │   └── app.test.tsx           # Shell region and theme tests
 │   │   ├── components/accounting-scope-selector/ # Persistent scope context
 │   │   ├── components/record-context/ # Shared record-context types
@@ -750,10 +752,11 @@ The current repository contains implementation slices under `internal/identity`,
 `internal/organization`, `internal/coa`, `internal/gl`, and `internal/workflow`.
 The COA slice covers segment definitions, values, combination validation,
 governed changes, and approval-decision application. The GL slice covers
-posting and ledger-control behavior, while the workflow slice currently covers
-policy maintenance and approval-request creation/read evidence. These slices do
-not imply that the remaining planned modules or full capability-level
-qualification are delivered.
+posting and ledger-control behavior, while the workflow slice covers policy
+maintenance, approval-request creation/read evidence, and User Story 3
+decision recording/exposure. Downstream decision application acknowledgement,
+the full delegation/escalation lifecycle, the remaining planned modules, and
+full capability-level qualification are not delivered by these slices.
 
 The target module layout above remains planned. Current slices use the
 repository's existing package boundaries and adapters; they are not evidence
@@ -801,9 +804,11 @@ deferred qualification boundaries.
 `EP-GL-001` is marked locally complete by the explicit status override recorded
 in `ROADMAP.md`; its implementation is present in the current source tree, but
 the child delivery items and qualification follow-ups remain open. `EP-WFA-001`
-is still open. The current branch contains approval-policy management and the
-User Story 2 approval-request create/read slice; decision, delegation,
-escalation, and full workflow qualification remain future scope. Focused gates
+is still open. The current branch contains approval-policy management, the
+User Story 2 approval-request create/read slice, and the User Story 3
+workflow-owned decision record-and-expose slice. Downstream decision application
+acknowledgement, authoritative delegation, escalation, and full workflow
+qualification remain future scope. Focused gates
 include `make shared-primitives-check`, `make outbox-dispatch-check`,
 `make outbox-worker-check`, and `make api-check`; the verification snapshot
 above records the commands actually run for this README update.
