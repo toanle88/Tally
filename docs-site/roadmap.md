@@ -7,7 +7,9 @@ distinguishes a local learning baseline from production qualification.
 
 ## Current checkpoint
 
-This checkout is still at the M0/M1 boundary:
+This checkout includes the M0/M1 foundations plus incremental M2/M3
+implementation slices. Qualification status remains narrower than source-code
+presence:
 
 - **EP-PLAT-001 — Engineering foundation:** locally complete and intentionally
   closed. Hosted CI and external qualification remain deferred.
@@ -23,17 +25,26 @@ This checkout is still at the M0/M1 boundary:
   closed by owner decision on 2026-09-26. Finance-action wiring, live Entra
   qualification, audit-chain ownership, and production security qualification
   remain deferred and are not claimed.
+- **EP-GL-001 — General Ledger:** the parent is marked locally complete by an
+  explicit status override. GL posting, reversal, ledger-control, and reopen
+  slices exist, while child delivery items and PostgreSQL, cross-context,
+  browser, accessibility, and release qualification remain open.
+- **EP-WFA-001 — Workflow and approvals:** remains open. Approval-policy
+  maintenance and User Story 2 approval-request create/read behavior are
+  implemented locally; decision, delegation, escalation, and full workflow
+  qualification remain future scope.
 
 The repository’s [live roadmap](https://github.com/toanle88/Tally/blob/main/ROADMAP.md)
-is the status authority. Its last recorded update is 2026-09-22; this site
-also describes the current checkout’s IAM work as of 2026-09-26.
+is the status authority. Its last recorded update is 2026-10-11; this page
+records the current branch-specific implementation checkpoint separately from
+that roadmap date.
 
 ## Milestones
 
 | Milestone | Outcome | Current meaning |
 | --- | --- | --- |
 | M0 | Engineering foundation | Platform, UX foundation, local environment, CI, and operational controls. |
-| M1 | Identity and accounting configuration | IAM, scope, master data, COA, and ledger configuration. IAM is the active slice; the accounting modules remain future work. |
+| M1 | Identity and accounting configuration | IAM, scope, master data, COA, and ledger configuration. Several configuration slices are present; qualification remains open. |
 | M2 | First posted journal vertical slice | Journal validation, approval, posting, query, and reversal end to end. Recommended portfolio stopping point. |
 | M3 | Approval and period controls | Approval policies, close, reopen, reclose, and posting-gate recovery. |
 | M4 | Receivables and billing | Invoicing, receipts, applications, credits, write-offs, and refund obligations. |

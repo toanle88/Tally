@@ -30,9 +30,10 @@ separately instead of presenting every request as success or failure.
 
 The repository has focused evidence for exact-decimal primitives, accounting
 scope, aggregate versions, request fingerprints, scoped idempotency, durable
-outbox/inbox coordination, dispatch/retry/replay, and IAM audit/evidence
-boundaries. It does not yet implement the GL, AR, AP, payments, close, or
-other finance aggregates that will use these controls.
+outbox/inbox coordination, dispatch/retry/replay, IAM audit/evidence
+boundaries, General Ledger posting/control slices, and workflow policy/request
+evidence. It does not yet implement the complete GL domain or the AR, AP,
+payments, close, and other finance aggregates that will use these controls.
 
 The [DDD baseline](https://github.com/toanle88/Tally/blob/main/docs/specs/finance_domain_model_ddd.md)
 is authoritative for domain language and invariants. Focused evidence is

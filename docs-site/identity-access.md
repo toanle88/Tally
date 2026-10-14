@@ -80,7 +80,7 @@ Focused local evidence exists for [authenticated application identity](https://g
 [scoped policies](https://github.com/toanle88/Tally/blob/main/docs/verification/DLV-IAM-003-us4-scoped-access-policies.md),
 [segregation of duties](https://github.com/toanle88/Tally/blob/main/docs/verification/DLV-IAM-004-us5-segregation-of-duties.md),
 [emergency access](https://github.com/toanle88/Tally/blob/main/docs/verification/DLV-IAM-005-us6-emergency-access.md),
-and [sensitive-access evidence](https://github.com/toanle88/Tally/blob/codex/iam-us7-sensitive-access-evidence/docs/verification/DLV-IAM-006-us7-sensitive-access-evidence.md).
+and [sensitive-access evidence](https://github.com/toanle88/Tally/blob/main/docs/verification/DLV-IAM-006-us7-sensitive-access-evidence.md).
 
 The records explicitly retain limitations: some frontend/database wrappers
 were blocked by host tooling, live Entra and production controls are not
