@@ -220,6 +220,7 @@ export type WfaApprovalRequestProjection = {
     scope: WfaApprovalScope;
     requesterUserId?: Uuid;
     requesterSubjectReference?: string;
+    activeDelegation?: WfaDelegationProjection;
     steps: Array<WfaApprovalRequestStep>;
     decisions: Array<WfaApprovalDecisionProjection>;
     currentStepId?: Uuid;
@@ -724,6 +725,21 @@ export type GlMaintainAccountsAndReportingMappingsEstablishedResult = {
     data: GlMaintainAccountsAndReportingMappingsResultData;
 };
 
+export type WfaDelegationProjection = {
+    id: Uuid;
+    delegatorUserId: Uuid;
+    delegateUserId: Uuid;
+    policyId: Uuid;
+    policyVersion: string;
+    scope: WfaApprovalScope;
+    effectiveFrom: string;
+    effectiveTo: string;
+    active: boolean;
+    aggregateVersion: number;
+    createdAt: string;
+    updatedAt: string;
+};
+
 export type WfaApprovalDecisionProjection = {
     id: Uuid;
     decisionVersion: number;
@@ -749,6 +765,60 @@ export type WfaApprovalDecisionReference = {
     approverUserId: Uuid;
     decidedAt: string;
     appliedAt?: string;
+};
+
+export type WfaDecideApprovalRequestCommandData = {
+    requestId: Uuid;
+    decisionId: Uuid;
+    stepId: Uuid;
+    outcome: 'approved' | 'rejected';
+    reason?: string;
+    delegationId?: Uuid;
+    /**
+     * @deprecated
+     */
+    delegationReference?: string;
+    policyVersion: string;
+    subjectVersion: number;
+    candidateFingerprint: string;
+};
+
+export type WfaDecideApprovalRequestCommandRequest = {
+    commandId: Uuid;
+    expectedVersion: number;
+    data: WfaDecideApprovalRequestCommandData;
+};
+
+export type WfaDelegateApprovalCommandData = {
+    delegationId: Uuid;
+    delegateUserId: Uuid;
+    policyId: Uuid;
+    policyVersion: string;
+    scope: WfaApprovalScope;
+    effectiveFrom: string;
+    effectiveTo: string;
+};
+
+export type WfaDelegateApprovalCommandRequest = {
+    commandId: Uuid;
+    data: WfaDelegateApprovalCommandData;
+};
+
+export type WfaDelegateApprovalResultData = {
+    delegation: WfaDelegationProjection;
+    validationStatus: string;
+    auditReference?: Uuid;
+    replayed: boolean;
+};
+
+export type WfaDelegateApprovalEstablishedResult = {
+    status: 'established';
+    aggregateId: Uuid;
+    aggregateVersion: number;
+    processId?: Uuid | null;
+    correlationId: Uuid;
+    links: Links;
+    data: WfaDelegateApprovalResultData;
 };
 
 export type IamPermissionGrant = {
@@ -9975,7 +10045,7 @@ export type WfaGetApprovalRequestResponses = {
 export type WfaGetApprovalRequestResponse = WfaGetApprovalRequestResponses[keyof WfaGetApprovalRequestResponses];
 
 export type WfaDecideApprovalRequestData = {
-    body: CommandRequest;
+    body: WfaDecideApprovalRequestCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
@@ -10029,7 +10099,7 @@ export type WfaDecideApprovalRequestResponses = {
 export type WfaDecideApprovalRequestResponse = WfaDecideApprovalRequestResponses[keyof WfaDecideApprovalRequestResponses];
 
 export type WfaDelegateApprovalData = {
-    body: CommandRequest;
+    body: WfaDelegateApprovalCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
@@ -10071,9 +10141,9 @@ export type WfaDelegateApprovalError = WfaDelegateApprovalErrors[keyof WfaDelega
 
 export type WfaDelegateApprovalResponses = {
     /**
-     * Established result
+     * Established approval delegation result
      */
-    200: EstablishedResult;
+    200: WfaDelegateApprovalEstablishedResult;
 };
 
 export type WfaDelegateApprovalResponse = WfaDelegateApprovalResponses[keyof WfaDelegateApprovalResponses];

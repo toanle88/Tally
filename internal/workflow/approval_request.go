@@ -105,6 +105,7 @@ type ApprovalRequest struct {
 	Requester           Actor                             `json:"requester"`
 	Steps               []ApprovalRequestStep             `json:"steps"`
 	Decisions           []ApprovalDecision                `json:"decisions"`
+	ActiveDelegation    *Delegation                       `json:"activeDelegation,omitempty"`
 	Status              string                            `json:"status"`
 	Version             aggregateversion.AggregateVersion `json:"version"`
 	CorrelationID       string                            `json:"correlationId"`
@@ -262,6 +263,7 @@ type DecideApprovalRequestCommand struct {
 	StepID               uuid.UUID
 	Outcome              string
 	Reason               string
+	DelegationID         uuid.UUID
 	DelegationReference  string
 	PolicyVersion        string
 	SubjectVersion       int64
@@ -354,6 +356,14 @@ type ApprovalRequestReader interface {
 	List(context.Context) ([]ApprovalRequest, error)
 }
 
+// DelegationReader is the read-only boundary used by approval decisions and
+// WFA projections. It keeps delegation persistence inside Workflow while
+// allowing decision authorization to revalidate the live effective interval.
+type DelegationReader interface {
+	Get(context.Context, uuid.UUID) (Delegation, error)
+	List(context.Context) ([]Delegation, error)
+}
+
 type DurableApprovalRequestServiceConfig struct {
 	Database          platformidempotency.TxBeginner
 	Coordinator       platformidempotency.DurableCoordinator
@@ -390,6 +400,13 @@ type ApprovalRequestDecisionAuthorizer interface {
 	AuthorizeApprovalRequestDecision(context.Context, Actor, ApprovalRequest, ApprovalRequestStep, string) (AuthorizationDecision, error)
 }
 
+// ApprovalRequestDelegationAuthorizer is the stronger decision boundary used
+// when a delegation aggregate has been resolved. The legacy interface remains
+// supported for direct approver callers and older focused tests.
+type ApprovalRequestDelegationAuthorizer interface {
+	AuthorizeApprovalRequestDecisionWithDelegation(context.Context, Actor, ApprovalRequest, ApprovalRequestStep, string, *Delegation) (AuthorizationDecision, error)
+}
+
 type ApprovalRequestReadAuthorizer interface {
 	AuthorizeApprovalRequestRead(context.Context, Actor, ApprovalRequest) (AuthorizationDecision, error)
 }
@@ -420,6 +437,7 @@ type ApprovalRequestService struct {
 	durable          *DurableApprovalRequestServiceConfig
 	policyResolver   ApprovalPolicyResolver
 	policyRepository ApprovalPolicyRepository
+	delegationReader DelegationReader
 
 	mu          sync.Mutex
 	idempotency map[string]storedApprovalRequestResult
@@ -442,6 +460,16 @@ func (service *ApprovalRequestService) BindPolicyRepository(repository ApprovalP
 		return ErrInvalidApprovalPolicyService
 	}
 	service.policyRepository = repository
+	return nil
+}
+
+// BindDelegationReader enables fail-closed decision-time delegation checks and
+// read projections without coupling approval requests to a delegation adapter.
+func (service *ApprovalRequestService) BindDelegationReader(reader DelegationReader) error {
+	if service == nil || reader == nil {
+		return ErrInvalidApprovalPolicyService
+	}
+	service.delegationReader = reader
 	return nil
 }
 
@@ -701,7 +729,39 @@ func (service *ApprovalRequestService) DecideApprovalRequest(ctx context.Context
 	if err != nil {
 		return ApprovalRequestCommandResult{}, err
 	}
-	decision, err := authorizeApprovalRequestDecision(ctx, service.authorizer, actor, request, step, command.DelegationReference)
+	delegationReference := strings.TrimSpace(command.DelegationReference)
+	var delegation *Delegation
+	if command.DelegationID != uuid.Nil || (service.delegationReader != nil && delegationReference != "") {
+		if service.delegationReader == nil {
+			return ApprovalRequestCommandResult{}, ErrDelegationAuthorizationUnavailable
+		}
+		delegationID := command.DelegationID
+		if delegationID == uuid.Nil {
+			delegationID, err = uuid.Parse(delegationReference)
+			if err != nil || delegationID == uuid.Nil {
+				return ApprovalRequestCommandResult{}, ErrDelegationAuthorizationDenied
+			}
+		}
+		resolved, resolveErr := service.delegationReader.Get(ctx, delegationID)
+		if resolveErr != nil {
+			if errors.Is(resolveErr, ErrDelegationNotFound) {
+				return ApprovalRequestCommandResult{}, ErrDelegationAuthorizationDenied
+			}
+			return ApprovalRequestCommandResult{}, ErrDelegationAuthorizationUnavailable
+		}
+		if !resolved.ActiveAt(service.clock().UTC()) {
+			return ApprovalRequestCommandResult{}, ErrDelegationExpired
+		}
+		if resolved.PolicyID != request.PolicyID || resolved.PolicyVersion != request.PolicyVersion {
+			return ApprovalRequestCommandResult{}, ErrDelegationPolicyConflict
+		}
+		if !resolved.Scope.Contains(request.Scope.CanonicalScopeIDs()) {
+			return ApprovalRequestCommandResult{}, ErrDelegationScopeConflict
+		}
+		delegation = &resolved
+		delegationReference = resolved.ID.String()
+	}
+	decision, err := authorizeApprovalRequestDecision(ctx, service.authorizer, actor, request, step, delegationReference, delegation)
 	if err != nil {
 		return ApprovalRequestCommandResult{}, ErrApprovalPolicyApprovalUnavailable
 	}
@@ -725,7 +785,7 @@ func (service *ApprovalRequestService) DecideApprovalRequest(ctx context.Context
 		request.Status = ApprovalRequestStatusRejected
 	}
 	request.UpdatedAt = now
-	request.Decisions = append(request.Decisions, ApprovalDecision{ID: decisionID, DecisionVersion: request.Version.Value(), Outcome: command.Outcome, Approver: actor, Reason: strings.TrimSpace(command.Reason), StepID: step.ID, DelegationReference: strings.TrimSpace(command.DelegationReference), PolicyVersion: command.PolicyVersion, SubjectVersion: command.SubjectVersion, CandidateFingerprint: command.CandidateFingerprint, RecordedAt: now})
+	request.Decisions = append(request.Decisions, ApprovalDecision{ID: decisionID, DecisionVersion: request.Version.Value(), Outcome: command.Outcome, Approver: actor, Reason: strings.TrimSpace(command.Reason), StepID: step.ID, DelegationReference: delegationReference, PolicyVersion: command.PolicyVersion, SubjectVersion: command.SubjectVersion, CandidateFingerprint: command.CandidateFingerprint, RecordedAt: now})
 	for index := range request.Steps {
 		request.Steps[index].Status = request.Status
 	}
@@ -733,8 +793,8 @@ func (service *ApprovalRequestService) DecideApprovalRequest(ctx context.Context
 		return ApprovalRequestCommandResult{}, err
 	}
 	reference := ApprovalDecisionReference{ApprovalRequestID: request.ID, DecisionID: decisionID, PolicyVersion: command.PolicyVersion, DecisionVersion: request.Version.Value(), SubjectVersion: command.SubjectVersion, CandidateFingerprint: command.CandidateFingerprint, ApproverUserID: actor.UserID, DecidedAt: now}
-	auditRecord := ApprovalRequestAuditRecord{ApprovalRequestID: request.ID, ApprovalDecisionID: decisionID, ActorUserID: actor.UserID, ActorAuthenticationSubjectRef: actor.SubjectReference, ApproverUserID: actor.UserID, Action: "DecideApprovalRequest", ScopeIDs: request.Scope.CanonicalScopeIDs(), Reason: command.Reason, StepID: step.ID, DelegationReference: strings.TrimSpace(command.DelegationReference), Permission: decision.Permission, PolicyReference: decision.PolicyReference, DecisionReference: decision.DecisionReference, PolicyVersion: command.PolicyVersion, RevisionVersion: request.Version.Value(), SubjectVersion: command.SubjectVersion, BeforeFingerprint: fingerprint(requestBefore), AfterFingerprint: fingerprint(request), CorrelationID: command.CorrelationID, CausationID: command.CausationID}
-	event := ApprovalEvent{Type: ApprovalDecisionRecordedEventType, RequestID: request.ID, DecisionID: decisionID, DecisionVersion: request.Version.Value(), Outcome: command.Outcome, ApproverUserID: actor.UserID, StepID: step.ID, DelegationReference: strings.TrimSpace(command.DelegationReference), AggregateVersion: request.Version.Value(), PolicyID: request.PolicyID, PolicyVersion: request.PolicyVersion, SubjectID: request.SubjectID, SubjectVersion: request.SubjectVersion, CandidateFingerprint: request.SubjectFingerprint, ScopeIDs: request.Scope.CanonicalScopeIDs(), DataClassification: request.DataClassification, OccurredAt: now, DecidedAt: now, CorrelationID: command.CorrelationID, CausationID: command.CausationID}
+	auditRecord := ApprovalRequestAuditRecord{ApprovalRequestID: request.ID, ApprovalDecisionID: decisionID, ActorUserID: actor.UserID, ActorAuthenticationSubjectRef: actor.SubjectReference, ApproverUserID: actor.UserID, Action: "DecideApprovalRequest", ScopeIDs: request.Scope.CanonicalScopeIDs(), Reason: command.Reason, StepID: step.ID, DelegationReference: delegationReference, Permission: decision.Permission, PolicyReference: decision.PolicyReference, DecisionReference: decision.DecisionReference, PolicyVersion: command.PolicyVersion, RevisionVersion: request.Version.Value(), SubjectVersion: command.SubjectVersion, BeforeFingerprint: fingerprint(requestBefore), AfterFingerprint: fingerprint(request), CorrelationID: command.CorrelationID, CausationID: command.CausationID}
+	event := ApprovalEvent{Type: ApprovalDecisionRecordedEventType, RequestID: request.ID, DecisionID: decisionID, DecisionVersion: request.Version.Value(), Outcome: command.Outcome, ApproverUserID: actor.UserID, StepID: step.ID, DelegationReference: delegationReference, AggregateVersion: request.Version.Value(), PolicyID: request.PolicyID, PolicyVersion: request.PolicyVersion, SubjectID: request.SubjectID, SubjectVersion: request.SubjectVersion, CandidateFingerprint: request.SubjectFingerprint, ScopeIDs: request.Scope.CanonicalScopeIDs(), DataClassification: request.DataClassification, OccurredAt: now, DecidedAt: now, CorrelationID: command.CorrelationID, CausationID: command.CausationID}
 	result = ApprovalRequestCommandResult{Request: cloneApprovalRequest(request), Reference: reference}
 	if service.durable != nil {
 		committer, ok := service.repository.(DurableApprovalRequestRepository)
@@ -764,10 +824,13 @@ func (service *ApprovalRequestService) DecideApprovalRequest(ctx context.Context
 }
 
 func authorizeApprovalDecisionForStep(ctx context.Context, authorizer ApprovalRequestAuthorizer, actor Actor, request ApprovalRequest, step ApprovalRequestStep) (AuthorizationDecision, error) {
-	return authorizeApprovalRequestDecision(ctx, authorizer, actor, request, step, "")
+	return authorizeApprovalRequestDecision(ctx, authorizer, actor, request, step, "", nil)
 }
 
-func authorizeApprovalRequestDecision(ctx context.Context, authorizer ApprovalRequestAuthorizer, actor Actor, request ApprovalRequest, step ApprovalRequestStep, delegationReference string) (AuthorizationDecision, error) {
+func authorizeApprovalRequestDecision(ctx context.Context, authorizer ApprovalRequestAuthorizer, actor Actor, request ApprovalRequest, step ApprovalRequestStep, delegationReference string, delegation *Delegation) (AuthorizationDecision, error) {
+	if delegationAuthorizer, ok := authorizer.(ApprovalRequestDelegationAuthorizer); ok {
+		return delegationAuthorizer.AuthorizeApprovalRequestDecisionWithDelegation(ctx, actor, request, step, delegationReference, delegation)
+	}
 	if decisionAuthorizer, ok := authorizer.(ApprovalRequestDecisionAuthorizer); ok {
 		return decisionAuthorizer.AuthorizeApprovalRequestDecision(ctx, actor, request, step, delegationReference)
 	}
@@ -1237,6 +1300,11 @@ func cloneApprovalRequest(request ApprovalRequest) ApprovalRequest {
 		request.Steps[index].Escalation.EscalateToRoles = append([]string(nil), request.Steps[index].Escalation.EscalateToRoles...)
 	}
 	request.Decisions = append([]ApprovalDecision(nil), request.Decisions...)
+	if request.ActiveDelegation != nil {
+		delegation := *request.ActiveDelegation
+		delegation.Scope = cloneScope(request.ActiveDelegation.Scope)
+		request.ActiveDelegation = &delegation
+	}
 	return request
 }
 

@@ -779,11 +779,11 @@ type Handler interface {
 	// WfaDecideApprovalRequest implements wfaDecideApprovalRequest operation.
 	//
 	// POST /approvals/actions/decide-approval-request
-	WfaDecideApprovalRequest(ctx context.Context, req *CommandRequest, params WfaDecideApprovalRequestParams) (WfaDecideApprovalRequestRes, error)
+	WfaDecideApprovalRequest(ctx context.Context, req *WfaDecideApprovalRequestCommandRequest, params WfaDecideApprovalRequestParams) (WfaDecideApprovalRequestRes, error)
 	// WfaDelegateApproval implements wfaDelegateApproval operation.
 	//
 	// POST /approvals/actions/delegate-approval
-	WfaDelegateApproval(ctx context.Context, req *CommandRequest, params WfaDelegateApprovalParams) (WfaDelegateApprovalRes, error)
+	WfaDelegateApproval(ctx context.Context, req *WfaDelegateApprovalCommandRequest, params WfaDelegateApprovalParams) (WfaDelegateApprovalRes, error)
 	// WfaEscalateApproval implements wfaEscalateApproval operation.
 	//
 	// POST /approvals/actions/escalate-approval

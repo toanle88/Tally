@@ -39,9 +39,10 @@ type ApprovalRequestPage struct {
 }
 
 type ApprovalRequestQueryService struct {
-	repository ApprovalRequestReader
-	authorizer ApprovalRequestReadAuthorizer
-	clock      func() time.Time
+	repository       ApprovalRequestReader
+	authorizer       ApprovalRequestReadAuthorizer
+	delegationReader DelegationReader
+	clock            func() time.Time
 }
 
 func NewApprovalRequestQueryService(repository ApprovalRequestReader, authorizer ApprovalRequestReadAuthorizer, clock func() time.Time) (*ApprovalRequestQueryService, error) {
@@ -49,6 +50,14 @@ func NewApprovalRequestQueryService(repository ApprovalRequestReader, authorizer
 		return nil, ErrInvalidApprovalPolicyService
 	}
 	return &ApprovalRequestQueryService{repository: repository, authorizer: authorizer, clock: clock}, nil
+}
+
+func (service *ApprovalRequestQueryService) BindDelegationReader(reader DelegationReader) error {
+	if service == nil || reader == nil {
+		return ErrInvalidApprovalPolicyService
+	}
+	service.delegationReader = reader
+	return nil
 }
 
 func (service *ApprovalRequestQueryService) Get(ctx context.Context, actor Actor, id uuid.UUID) (ApprovalRequest, error) {
@@ -63,6 +72,9 @@ func (service *ApprovalRequestQueryService) Get(ctx context.Context, actor Actor
 		return ApprovalRequest{}, err
 	}
 	if err := service.authorizeRead(ctx, actor, request); err != nil {
+		return ApprovalRequest{}, err
+	}
+	if err := service.attachActiveDelegation(ctx, &request); err != nil {
 		return ApprovalRequest{}, err
 	}
 	return request, nil
@@ -95,6 +107,9 @@ func (service *ApprovalRequestQueryService) List(ctx context.Context, actor Acto
 			}
 			return ApprovalRequestPage{}, err
 		}
+		if err := service.attachActiveDelegation(ctx, &request); err != nil {
+			return ApprovalRequestPage{}, err
+		}
 		if !approvalRequestMatchesListFilter(request, filter, now) {
 			continue
 		}
@@ -125,6 +140,44 @@ func (service *ApprovalRequestQueryService) List(ctx context.Context, actor Acto
 		page.After = visible[len(visible)-1].ID.String()
 	}
 	return page, nil
+}
+
+func (service *ApprovalRequestQueryService) attachActiveDelegation(ctx context.Context, request *ApprovalRequest) error {
+	if service == nil || request == nil || service.delegationReader == nil {
+		return nil
+	}
+	if request.Status != ApprovalRequestStatusPending || !approvalRequestHasPendingStep(*request) {
+		request.ActiveDelegation = nil
+		return nil
+	}
+	delegations, err := service.delegationReader.List(ctx)
+	if err != nil {
+		return ErrDelegationAuthorizationUnavailable
+	}
+	now := service.clock().UTC()
+	var selected *Delegation
+	for index := range delegations {
+		delegation := &delegations[index]
+		if delegation.PolicyID != request.PolicyID || delegation.PolicyVersion != request.PolicyVersion || !delegation.ActiveAt(now) || !delegation.Scope.Contains(request.Scope.CanonicalScopeIDs()) {
+			continue
+		}
+		if selected == nil || delegation.CreatedAt.After(selected.CreatedAt) {
+			copy := *delegation
+			copy.Scope = cloneScope(delegation.Scope)
+			selected = &copy
+		}
+	}
+	request.ActiveDelegation = selected
+	return nil
+}
+
+func approvalRequestHasPendingStep(request ApprovalRequest) bool {
+	for _, step := range request.Steps {
+		if step.Status == ApprovalRequestStatusPending {
+			return true
+		}
+	}
+	return false
 }
 
 func (service *ApprovalRequestQueryService) authorizeRead(ctx context.Context, actor Actor, request ApprovalRequest) error {
@@ -176,7 +229,7 @@ func normalizeApprovalRequestListFilter(filter ApprovalRequestListFilter) (Appro
 }
 
 func approvalRequestMatchesListFilter(request ApprovalRequest, filter ApprovalRequestListFilter, now time.Time) bool {
-	if filter.Assignment == ApprovalRequestAssignmentAssigned && (request.Status != ApprovalRequestStatusPending || len(request.ResponsibleRoles) == 0) {
+	if filter.Assignment == ApprovalRequestAssignmentAssigned && (request.Status != ApprovalRequestStatusPending || (len(request.ResponsibleRoles) == 0 && request.ActiveDelegation == nil)) {
 		return false
 	}
 	if filter.Due == ApprovalRequestDueDue && (request.DueAt == nil || request.DueAt.After(now)) {
@@ -186,7 +239,7 @@ func approvalRequestMatchesListFilter(request ApprovalRequest, filter ApprovalRe
 	case ApprovalRequestStateBlocked:
 		return request.Status == ApprovalRequestStatusPending && request.DueAt != nil && !request.DueAt.After(now)
 	case ApprovalRequestStateDelegated:
-		return approvalRequestHasStepStatus(request, "delegated")
+		return request.ActiveDelegation != nil || approvalRequestHasStepStatus(request, "delegated")
 	case ApprovalRequestStateEscalated:
 		return approvalRequestHasStepStatus(request, "escalated")
 	case ApprovalRequestStateCompleted:

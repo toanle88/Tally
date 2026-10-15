@@ -4,8 +4,8 @@ This page answers the question the older site did not answer clearly: what is
 actually implemented in the current repository, what is a contract or synthetic
 fixture, and what remains unverified.
 
-**Checkpoint:** 2026-10-14, branch
-`feat/wfa-create-approval-requests`.
+**Checkpoint:** 2026-10-15, branch
+`feat/dlv-fr-wfa-003-us4-delegate-approval`.
 
 ## How to read the status
 
@@ -60,12 +60,13 @@ The current checkout extends beyond the IAM foundation:
 | Slice | What is present | What is not claimed |
 | --- | --- | --- |
 | General Ledger | Ledgers, books, charts of accounts, accounts, posting, journal approval, reversal, posting barriers, soft close, scoped reopen, and operational reopen/reclose controls | Complete finance-suite coverage, full cross-context qualification, or production release qualification |
-| Workflow policy | Effective-dated policy maintenance, applicability and overlap validation, policy-version evidence, independent approval boundaries, and authorized policy UI/API states | Later decision, delegation, escalation, and full workflow qualification |
-| Approval requests | Effective-policy resolution, immutable subject evidence, copied approval steps, durable idempotency, audit/outbox integration, authorized worklist/detail reads, and User Story 2 create/read behavior | Concrete user assignment, decision/delegation/escalation lineage, blocker panels, and exception actions |
+| Workflow policy | Effective-dated policy maintenance, applicability and overlap validation, policy-version evidence, independent approval boundaries, and authorized policy UI/API states | Escalation and full workflow qualification |
+| Approval requests and decisions | Effective-policy resolution, immutable subject evidence, copied approval steps, durable idempotency, audit/outbox integration, authorized worklist/detail reads, decision-time authorization, and immutable decision evidence | Consuming-context application acknowledgement, escalation, and full workflow qualification |
+| Approval delegation | Immutable finite, scoped policy-version delegation, IAM authorization/SoD boundary, audit/outbox evidence, durable replay/conflict handling, delegated worklist/detail/decision projections, and WFA-SCR-04 | Revoke/end contract, live Entra/production qualification, PostgreSQL/Testcontainers release gates, and full accessibility witnessing |
 
-The [approval-request story evidence](https://github.com/toanle88/Tally/blob/main/docs/backlog/stories/EP-WFA-001_user_stories.md)
+The [WFA story evidence](https://github.com/toanle88/Tally/blob/main/docs/backlog/stories/EP-WFA-001_user_stories.md)
 lists the exact routes, implementation areas, accepted behavior, and deferred
-qualification evidence for this slice.
+qualification evidence for these slices.
 
 ## Operations and infrastructure
 

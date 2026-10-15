@@ -1357,14 +1357,14 @@ func (UnimplementedHandler) WfaCreateApprovalRequest(ctx context.Context, req *W
 // WfaDecideApprovalRequest implements wfaDecideApprovalRequest operation.
 //
 // POST /approvals/actions/decide-approval-request
-func (UnimplementedHandler) WfaDecideApprovalRequest(ctx context.Context, req *CommandRequest, params WfaDecideApprovalRequestParams) (r WfaDecideApprovalRequestRes, _ error) {
+func (UnimplementedHandler) WfaDecideApprovalRequest(ctx context.Context, req *WfaDecideApprovalRequestCommandRequest, params WfaDecideApprovalRequestParams) (r WfaDecideApprovalRequestRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
 // WfaDelegateApproval implements wfaDelegateApproval operation.
 //
 // POST /approvals/actions/delegate-approval
-func (UnimplementedHandler) WfaDelegateApproval(ctx context.Context, req *CommandRequest, params WfaDelegateApprovalParams) (r WfaDelegateApprovalRes, _ error) {
+func (UnimplementedHandler) WfaDelegateApproval(ctx context.Context, req *WfaDelegateApprovalCommandRequest, params WfaDelegateApprovalParams) (r WfaDelegateApprovalRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

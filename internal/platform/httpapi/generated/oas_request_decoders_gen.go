@@ -14788,7 +14788,7 @@ func (s *Server) decodeWfaCreateApprovalRequestRequest(r *http.Request) (
 }
 
 func (s *Server) decodeWfaDecideApprovalRequestRequest(r *http.Request) (
-	req *CommandRequest,
+	req *WfaDecideApprovalRequestCommandRequest,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -14835,7 +14835,7 @@ func (s *Server) decodeWfaDecideApprovalRequestRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request CommandRequest
+		var request WfaDecideApprovalRequestCommandRequest
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -14867,7 +14867,7 @@ func (s *Server) decodeWfaDecideApprovalRequestRequest(r *http.Request) (
 }
 
 func (s *Server) decodeWfaDelegateApprovalRequest(r *http.Request) (
-	req *CommandRequest,
+	req *WfaDelegateApprovalCommandRequest,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -14914,7 +14914,7 @@ func (s *Server) decodeWfaDelegateApprovalRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request CommandRequest
+		var request WfaDelegateApprovalCommandRequest
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
