@@ -28717,7 +28717,7 @@ func (s *Server) handleWfaDecideApprovalRequestRequest(args [0]string, argsEscap
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *WfaDecideApprovalRequestCommandRequest
 			Params   = WfaDecideApprovalRequestParams
 			Response = WfaDecideApprovalRequestRes
 		)
@@ -28866,7 +28866,7 @@ func (s *Server) handleWfaDelegateApprovalRequest(args [0]string, argsEscaped bo
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *WfaDelegateApprovalCommandRequest
 			Params   = WfaDelegateApprovalParams
 			Response = WfaDelegateApprovalRes
 		)

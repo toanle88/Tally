@@ -132,3 +132,20 @@ type WorkflowBootstrapApprovalAuthority struct {
 	AuditEvidence string
 	CreatedAt     pgtype.Timestamptz
 }
+
+type WorkflowDelegation struct {
+	DelegationID     pgtype.UUID
+	DelegatorUserID  pgtype.UUID
+	DelegateUserID   pgtype.UUID
+	PolicyID         pgtype.UUID
+	PolicyVersion    string
+	Scope            []byte
+	EffectiveFrom    pgtype.Timestamptz
+	EffectiveTo      pgtype.Timestamptz
+	AggregateVersion int64
+	AuditReference   pgtype.UUID
+	CorrelationID    pgtype.UUID
+	CausationID      pgtype.UUID
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+}

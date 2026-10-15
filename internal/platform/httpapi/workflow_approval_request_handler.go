@@ -1,13 +1,11 @@
 package httpapi
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -20,6 +18,7 @@ import (
 const (
 	workflowCreateApprovalRequestRoute = "/api/v1/approvals/actions/create-approval-request"
 	workflowDecideApprovalRequestRoute = "/api/v1/approvals/actions/decide-approval-request"
+	workflowDelegateApprovalRoute      = "/api/v1/approvals/actions/delegate-approval"
 	workflowApprovalRequestListRoute   = "/api/v1/approvals/reference/requests"
 )
 
@@ -46,7 +45,7 @@ func (handler IdentityHandler) WfaCreateApprovalRequest(ctx context.Context, req
 	return establishedWorkflowCreateApprovalRequestResult(result, correlationID), nil
 }
 
-func (handler IdentityHandler) WfaDecideApprovalRequest(ctx context.Context, request *generated.CommandRequest, params generated.WfaDecideApprovalRequestParams) (generated.WfaDecideApprovalRequestRes, error) {
+func (handler IdentityHandler) WfaDecideApprovalRequest(ctx context.Context, request *generated.WfaDecideApprovalRequestCommandRequest, params generated.WfaDecideApprovalRequestParams) (generated.WfaDecideApprovalRequestRes, error) {
 	correlationID := workflowDecideCorrelation(params)
 	if handler.ApprovalRequestService == nil {
 		return workflowDecideApprovalRequestProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The approval-request service is unavailable.", correlationID), nil
@@ -67,6 +66,38 @@ func (handler IdentityHandler) WfaDecideApprovalRequest(ctx context.Context, req
 		return mapWorkflowDecideApprovalRequestError(err, correlationID), nil
 	}
 	return establishedWorkflowApprovalRequestResult(result, correlationID), nil
+}
+
+func (handler IdentityHandler) WfaDelegateApproval(ctx context.Context, request *generated.WfaDelegateApprovalCommandRequest, params generated.WfaDelegateApprovalParams) (generated.WfaDelegateApprovalRes, error) {
+	correlationID := workflowDelegateCorrelation(params)
+	if handler.DelegationService == nil {
+		return workflowDelegateApprovalProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The delegation service is unavailable.", correlationID), nil
+	}
+	actor, ok := identity.ActorFromContext(ctx)
+	if !ok {
+		return workflowDelegateApprovalProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The delegating actor is not authorized.", correlationID), nil
+	}
+	if request == nil || uuid.UUID(request.CommandId) == uuid.Nil {
+		return workflowDelegateApprovalProblem(http.StatusBadRequest, "INVALID_REQUEST", "The delegation command requires a command identifier.", correlationID), nil
+	}
+	data := request.Data
+	command := workflow.DelegateApprovalCommand{
+		DelegationID:   uuid.UUID(data.DelegationId),
+		DelegateUserID: uuid.UUID(data.DelegateUserId),
+		PolicyID:       uuid.UUID(data.PolicyId),
+		PolicyVersion:  strings.TrimSpace(data.PolicyVersion),
+		Scope:          workflowPolicyScope(data.Scope),
+		EffectiveFrom:  data.EffectiveFrom,
+		EffectiveTo:    data.EffectiveTo,
+		IdempotencyKey: params.IdempotencyKey,
+		CorrelationID:  correlationID.String(),
+		CausationID:    uuid.UUID(request.CommandId).String(),
+	}
+	result, err := handler.DelegationService.DelegateApproval(ctx, workflow.Actor{UserID: actor.UserID, SubjectReference: glActorSubject(actor)}, command)
+	if err != nil {
+		return mapWorkflowDelegateApprovalError(err, correlationID), nil
+	}
+	return establishedWorkflowDelegateApprovalResult(result, correlationID), nil
 }
 
 func (handler IdentityHandler) WfaListApprovalRequests(ctx context.Context, params generated.WfaListApprovalRequestsParams) (generated.WfaListApprovalRequestsRes, error) {
@@ -172,78 +203,55 @@ func workflowDecideCorrelation(params generated.WfaDecideApprovalRequestParams) 
 	return uuid.New()
 }
 
-type workflowDecideApprovalRequestData struct {
-	RequestID            string `json:"requestId"`
-	DecisionID           string `json:"decisionId"`
-	StepID               string `json:"stepId"`
-	Outcome              string `json:"outcome"`
-	Reason               string `json:"reason"`
-	DelegationReference  string `json:"delegationReference"`
-	PolicyVersion        string `json:"policyVersion"`
-	SubjectVersion       int64  `json:"subjectVersion"`
-	CandidateFingerprint string `json:"candidateFingerprint"`
+func workflowDelegateCorrelation(params generated.WfaDelegateApprovalParams) uuid.UUID {
+	if params.XCorrelationID.Set && uuid.UUID(params.XCorrelationID.Value) != uuid.Nil {
+		return uuid.UUID(params.XCorrelationID.Value)
+	}
+	return uuid.New()
 }
 
-func workflowDecideApprovalRequestCommand(request *generated.CommandRequest, params generated.WfaDecideApprovalRequestParams) (workflow.DecideApprovalRequestCommand, error) {
-	if request == nil || !request.ExpectedVersion.Set || request.ExpectedVersion.Value < 1 {
+func workflowDecideApprovalRequestCommand(request *generated.WfaDecideApprovalRequestCommandRequest, params generated.WfaDecideApprovalRequestParams) (workflow.DecideApprovalRequestCommand, error) {
+	if request == nil || request.ExpectedVersion < 1 {
 		return workflow.DecideApprovalRequestCommand{}, errors.New("expected version is required")
 	}
-	data, err := json.Marshal(request.Data)
+	data := request.Data
+	expectedVersion, err := aggregateversion.FromInt64(int64(request.ExpectedVersion))
 	if err != nil {
 		return workflow.DecideApprovalRequestCommand{}, err
 	}
-	var payload workflowDecideApprovalRequestData
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.DisallowUnknownFields()
-	if err := decoder.Decode(&payload); err != nil {
-		return workflow.DecideApprovalRequestCommand{}, err
-	}
-	var trailing any
-	if err := decoder.Decode(&trailing); !errors.Is(err, io.EOF) {
-		if err == nil {
-			return workflow.DecideApprovalRequestCommand{}, errors.New("decision data must contain one object")
-		}
-		return workflow.DecideApprovalRequestCommand{}, err
-	}
-	requestID, err := workflowDecisionUUID(payload.RequestID, "requestId")
-	if err != nil {
-		return workflow.DecideApprovalRequestCommand{}, err
-	}
-	decisionID, err := workflowDecisionUUID(payload.DecisionID, "decisionId")
-	if err != nil {
-		return workflow.DecideApprovalRequestCommand{}, err
-	}
-	stepID, err := workflowDecisionUUID(payload.StepID, "stepId")
-	if err != nil {
-		return workflow.DecideApprovalRequestCommand{}, err
-	}
-	expectedVersion, err := aggregateversion.FromInt64(int64(request.ExpectedVersion.Value))
-	if err != nil {
-		return workflow.DecideApprovalRequestCommand{}, err
-	}
-	return workflow.DecideApprovalRequestCommand{
-		RequestID:            requestID,
+	command := workflow.DecideApprovalRequestCommand{
+		RequestID:            uuid.UUID(data.RequestId),
 		ExpectedVersion:      &expectedVersion,
-		DecisionID:           decisionID,
-		StepID:               stepID,
-		Outcome:              strings.TrimSpace(payload.Outcome),
-		Reason:               strings.TrimSpace(payload.Reason),
-		DelegationReference:  strings.TrimSpace(payload.DelegationReference),
-		PolicyVersion:        strings.TrimSpace(payload.PolicyVersion),
-		SubjectVersion:       payload.SubjectVersion,
-		CandidateFingerprint: strings.TrimSpace(payload.CandidateFingerprint),
+		DecisionID:           uuid.UUID(data.DecisionId),
+		StepID:               uuid.UUID(data.StepId),
+		Outcome:              strings.TrimSpace(string(data.Outcome)),
+		Reason:               strings.TrimSpace(data.Reason.Or("")),
+		PolicyVersion:        strings.TrimSpace(data.PolicyVersion),
+		SubjectVersion:       int64(data.SubjectVersion),
+		CandidateFingerprint: strings.TrimSpace(data.CandidateFingerprint),
 		IdempotencyKey:       params.IdempotencyKey,
 		CorrelationID:        workflowDecideCorrelation(params).String(),
 		CausationID:          uuid.UUID(request.CommandId).String(),
-	}, nil
+	}
+	if data.DelegationId.Set {
+		command.DelegationID = uuid.UUID(data.DelegationId.Value)
+	}
+	if data.DelegationReference.Set {
+		command.DelegationReference = strings.TrimSpace(data.DelegationReference.Value)
+	}
+	return command, nil
 }
 
-func workflowDecisionUUID(value, field string) (uuid.UUID, error) {
-	parsed, err := uuid.Parse(strings.TrimSpace(value))
-	if err != nil || parsed == uuid.Nil {
-		return uuid.Nil, errors.New(field + " is required and must be a UUID")
+func workflowPolicyScope(value generated.WfaApprovalScope) workflow.ApprovalPolicyScope {
+	return workflow.ApprovalPolicyScope{
+		ScopeIDs:           append([]string(nil), value.ScopeIds...),
+		AccountingScopeIDs: workflowUUIDs(value.AccountingScopeIds),
+		LegalEntityIDs:     workflowUUIDs(value.LegalEntityIds),
+		BusinessUnitIDs:    workflowUUIDs(value.BusinessUnitIds),
+		SegmentIDs:         workflowUUIDs(value.SegmentIds),
+		AccountIDs:         workflowUUIDs(value.AccountIds),
+		FiscalPeriodIDs:    workflowUUIDs(value.FiscalPeriodIds),
 	}
-	return parsed, nil
 }
 
 func workflowCreateApprovalRequestCommand(request *generated.WfaCreateApprovalRequestCommandRequest, params generated.WfaCreateApprovalRequestParams) (workflow.CreateApprovalRequestCommand, error) {
@@ -357,6 +365,9 @@ func generatedWorkflowApprovalRequestProjection(request workflow.ApprovalRequest
 	if request.SourceContext != "" {
 		projection.SourceContext = generated.NewOptString(request.SourceContext)
 	}
+	if request.ActiveDelegation != nil {
+		projection.ActiveDelegation = generated.NewOptWfaDelegationProjection(generatedWorkflowDelegationProjection(*request.ActiveDelegation))
+	}
 	if request.Operation != "" {
 		projection.Operation = generated.NewOptString(request.Operation)
 	}
@@ -383,6 +394,42 @@ func generatedWorkflowApprovalRequestProjection(request workflow.ApprovalRequest
 		projection.DueAt = generated.NewOptDateTime(*request.DueAt)
 	}
 	return projection
+}
+
+func generatedWorkflowDelegationProjection(delegation workflow.Delegation) generated.WfaDelegationProjection {
+	return generated.WfaDelegationProjection{
+		ID:               generated.UUID(delegation.ID),
+		DelegatorUserId:  generated.UUID(delegation.DelegatorUserID),
+		DelegateUserId:   generated.UUID(delegation.DelegateUserID),
+		PolicyId:         generated.UUID(delegation.PolicyID),
+		PolicyVersion:    delegation.PolicyVersion,
+		Scope:            generatedWorkflowScope(delegation.Scope),
+		EffectiveFrom:    delegation.EffectiveFrom,
+		EffectiveTo:      delegation.EffectiveTo,
+		Active:           delegation.ActiveAt(time.Now().UTC()),
+		AggregateVersion: int(delegation.Version.Value()),
+		CreatedAt:        delegation.CreatedAt,
+		UpdatedAt:        delegation.UpdatedAt,
+	}
+}
+
+func establishedWorkflowDelegateApprovalResult(result workflow.DelegationCommandResult, correlationID uuid.UUID) *generated.WfaDelegateApprovalEstablishedResult {
+	response := &generated.WfaDelegateApprovalEstablishedResult{
+		Status:           "established",
+		AggregateId:      generated.UUID(result.Delegation.ID),
+		AggregateVersion: int(result.Delegation.Version.Value()),
+		CorrelationId:    generated.UUID(correlationID),
+		Links:            generated.Links{Self: workflowDelegateApprovalRoute},
+		Data: generated.WfaDelegateApprovalResultData{
+			Delegation:       generatedWorkflowDelegationProjection(result.Delegation),
+			ValidationStatus: "validated",
+			Replayed:         result.Replayed,
+		},
+	}
+	if result.Delegation.AuditReference != uuid.Nil {
+		response.Data.AuditReference = generated.NewOptUUID(generated.UUID(result.Delegation.AuditReference))
+	}
+	return response
 }
 
 func generatedWorkflowApprovalDecisions(values []workflow.ApprovalDecision) []generated.WfaApprovalDecisionProjection {
@@ -576,11 +623,11 @@ func mapWorkflowDecideApprovalRequestError(err error, correlationID uuid.UUID) g
 	switch {
 	case errors.Is(err, workflow.ErrApprovalPolicyNotFound):
 		return workflowDecideApprovalRequestProblem(http.StatusNotFound, "REQUEST_NOT_FOUND", "The approval request does not exist.", correlationID)
-	case errors.Is(err, workflow.ErrApprovalPolicyAuthorizationDenied), errors.Is(err, workflow.ErrApprovalPolicySelfApproval):
+	case errors.Is(err, workflow.ErrApprovalPolicyAuthorizationDenied), errors.Is(err, workflow.ErrApprovalPolicySelfApproval), errors.Is(err, workflow.ErrDelegationAuthorizationDenied):
 		return workflowDecideApprovalRequestProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The deciding actor is outside the approval request authority.", correlationID)
-	case errors.Is(err, workflow.ErrApprovalPolicyAuthorizationUnavailable), errors.Is(err, workflow.ErrApprovalPolicyApprovalUnavailable), errors.Is(err, workflow.ErrApprovalPolicyAuditUnavailable), errors.Is(err, workflow.ErrApprovalPolicyResolverUnavailable), errors.Is(err, workflow.ErrInvalidApprovalPolicyService):
+	case errors.Is(err, workflow.ErrApprovalPolicyAuthorizationUnavailable), errors.Is(err, workflow.ErrApprovalPolicyApprovalUnavailable), errors.Is(err, workflow.ErrApprovalPolicyAuditUnavailable), errors.Is(err, workflow.ErrApprovalPolicyResolverUnavailable), errors.Is(err, workflow.ErrDelegationAuthorizationUnavailable), errors.Is(err, workflow.ErrInvalidApprovalPolicyService):
 		return workflowDecideApprovalRequestProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The approval decision could not reach a required dependency.", correlationID)
-	case errors.Is(err, workflow.ErrApprovalPolicyAuthorizationStale), errors.Is(err, workflow.ErrApprovalPolicyVersionConflict), errors.Is(err, workflow.ErrApprovalPolicySubjectConflict), errors.Is(err, workflow.ErrApprovalPolicyIdempotencyConflict), errors.Is(err, workflow.ErrApprovalPolicyCommandInProgress), errors.Is(err, workflow.ErrApprovalPolicyExpired), errors.Is(err, workflow.ErrApprovalPolicyStepConflict), errors.Is(err, workflow.ErrApprovalPolicyApprovalRejected):
+	case errors.Is(err, workflow.ErrApprovalPolicyAuthorizationStale), errors.Is(err, workflow.ErrApprovalPolicyVersionConflict), errors.Is(err, workflow.ErrApprovalPolicySubjectConflict), errors.Is(err, workflow.ErrApprovalPolicyIdempotencyConflict), errors.Is(err, workflow.ErrApprovalPolicyCommandInProgress), errors.Is(err, workflow.ErrApprovalPolicyExpired), errors.Is(err, workflow.ErrApprovalPolicyStepConflict), errors.Is(err, workflow.ErrApprovalPolicyApprovalRejected), errors.Is(err, workflow.ErrDelegationAuthorizationStale), errors.Is(err, workflow.ErrDelegationExpired), errors.Is(err, workflow.ErrDelegationPolicyConflict), errors.Is(err, workflow.ErrDelegationScopeConflict):
 		code, detail := "VERSION_CONFLICT", "The approval request or authorization evidence changed. Refresh and retry."
 		switch {
 		case errors.Is(err, workflow.ErrApprovalPolicyIdempotencyConflict):
@@ -599,6 +646,29 @@ func mapWorkflowDecideApprovalRequestError(err error, correlationID uuid.UUID) g
 		return workflowDecideApprovalRequestProblem(http.StatusBadRequest, "INVALID_REQUEST", "The approval decision command is invalid.", correlationID)
 	default:
 		return workflowDecideApprovalRequestProblem(http.StatusUnprocessableEntity, "VALIDATION_FAILED", "The approval decision violates a workflow rule.", correlationID)
+	}
+}
+
+func mapWorkflowDelegateApprovalError(err error, correlationID uuid.UUID) generated.WfaDelegateApprovalRes {
+	switch {
+	case errors.Is(err, workflow.ErrDelegationAuthorizationDenied):
+		return workflowDelegateApprovalProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The delegating actor or delegate is outside the permitted authority.", correlationID)
+	case errors.Is(err, workflow.ErrDelegationAuthorizationUnavailable), errors.Is(err, workflow.ErrDelegationAuditUnavailable):
+		return workflowDelegateApprovalProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The delegation operation could not reach a required dependency.", correlationID)
+	case errors.Is(err, workflow.ErrDelegationAuthorizationStale):
+		return workflowDelegateApprovalProblem(http.StatusConflict, "AUTHORIZATION_STALE", "Authorization changed. Refresh the delegation form and retry.", correlationID)
+	case errors.Is(err, workflow.ErrDelegationIdempotencyConflict):
+		return workflowDelegateApprovalProblem(http.StatusConflict, "IDEMPOTENCY_CONFLICT", "The idempotency key was already used for different delegation data.", correlationID)
+	case errors.Is(err, workflow.ErrDelegationCommandInProgress):
+		return workflowDelegateApprovalProblem(http.StatusConflict, "COMMAND_IN_PROGRESS", "An equivalent delegation command is already being processed.", correlationID)
+	case errors.Is(err, workflow.ErrDelegationDuplicate):
+		return workflowDelegateApprovalProblem(http.StatusConflict, "DUPLICATE", "The delegation identity is already established.", correlationID)
+	case errors.Is(err, workflow.ErrDelegationPolicyConflict), errors.Is(err, workflow.ErrDelegationScopeConflict), errors.Is(err, workflow.ErrDelegationExpired):
+		return workflowDelegateApprovalProblem(http.StatusConflict, "DELEGATION_CONFLICT", "The policy, scope, or effective interval no longer permits this delegation.", correlationID)
+	case errors.Is(err, workflow.ErrInvalidDelegation), errors.Is(err, workflow.ErrInvalidDelegationCommand):
+		return workflowDelegateApprovalProblem(http.StatusBadRequest, "INVALID_REQUEST", "The delegation command is invalid.", correlationID)
+	default:
+		return workflowDelegateApprovalProblem(http.StatusUnprocessableEntity, "VALIDATION_FAILED", "The delegation command violates a workflow rule.", correlationID)
 	}
 }
 
@@ -676,6 +746,27 @@ func workflowDecideApprovalRequestProblem(status int, code, detail string, corre
 		return &value
 	default:
 		value := generated.WfaDecideApprovalRequestServiceUnavailable(problem)
+		return &value
+	}
+}
+
+func workflowDelegateApprovalProblem(status int, code, detail string, correlationID uuid.UUID) generated.WfaDelegateApprovalRes {
+	problem := generated.ProblemDetails{Type: "https://tally.local/problems/" + code, Title: http.StatusText(status), Status: status, Code: code, Detail: detail, CorrelationId: generated.UUID(correlationID)}
+	switch status {
+	case http.StatusBadRequest:
+		value := generated.WfaDelegateApprovalBadRequest(problem)
+		return &value
+	case http.StatusForbidden:
+		value := generated.WfaDelegateApprovalForbidden(problem)
+		return &value
+	case http.StatusConflict:
+		value := generated.WfaDelegateApprovalConflict(problem)
+		return &value
+	case http.StatusUnprocessableEntity:
+		value := generated.WfaDelegateApprovalUnprocessableEntity(problem)
+		return &value
+	default:
+		value := generated.WfaDelegateApprovalServiceUnavailable(problem)
 		return &value
 	}
 }

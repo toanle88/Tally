@@ -397,7 +397,21 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err != nil {
 		return identityUnavailableHandler("workflow approval-policy persistence unavailable"), nil
 	}
-	workflowRequestAuthorizer := evaluatorWorkflowRequestAuthorizer{evaluator: policyEvaluator, segregation: segregationEvaluator, users: repository, roles: roleRepository}
+	workflowRequestAuthorizer := evaluatorWorkflowRequestAuthorizer{evaluator: policyEvaluator, segregation: segregationEvaluator, users: repository, roles: roleRepository, clock: time.Now}
+	workflowDelegationRepository, err := workflow.NewPostgresDelegationRepository(pool, postgresWorkflowDelegationAuditWriter(auditWriter), postgresWorkflowDelegationEventWriter)
+	if err != nil {
+		return identityUnavailableHandler("workflow delegation persistence unavailable"), nil
+	}
+	workflowDelegationService, err := workflow.NewDelegationServiceWithDurableIdempotency(
+		workflowDelegationRepository,
+		workflowPolicyRepository,
+		workflowRequestAuthorizer,
+		time.Now,
+		workflow.DurableDelegationServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, OperationID: "workflow.delegate-approval.v1"},
+	)
+	if err != nil {
+		return identityUnavailableHandler("workflow delegation service unavailable"), nil
+	}
 	workflowApprovalWorkflow, err := workflow.NewPostgresApprovalWorkflowWithDurableIdempotency(pool, postgresWorkflowRequestAuditWriter(auditWriter), postgresWorkflowEventWriter, workflowRequestAuthorizer, time.Now, workflow.DurableApprovalRequestServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, CreateOperationID: "workflow.create-approval-request.v1", DecideOperationID: "workflow.decide-approval-request.v1"})
 	if err != nil {
 		return identityUnavailableHandler("workflow approval-request persistence unavailable"), nil
@@ -412,9 +426,15 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err := workflowApprovalWorkflow.Service.BindPolicyRepository(workflowPolicyRepository); err != nil {
 		return identityUnavailableHandler("workflow approval-request policy validator unavailable"), nil
 	}
+	if err := workflowApprovalWorkflow.Service.BindDelegationReader(workflowDelegationRepository); err != nil {
+		return identityUnavailableHandler("workflow approval-request delegation validator unavailable"), nil
+	}
 	workflowRequestQueries, err := workflow.NewApprovalRequestQueryService(workflowApprovalWorkflow.Requests, workflowRequestAuthorizer, time.Now)
 	if err != nil {
 		return identityUnavailableHandler("workflow approval-request query service unavailable"), nil
+	}
+	if err := workflowRequestQueries.BindDelegationReader(workflowDelegationRepository); err != nil {
+		return identityUnavailableHandler("workflow approval-request delegation query unavailable"), nil
 	}
 	workflowPolicyService, err := workflow.NewApprovalPolicyServiceWithDurableIdempotency(
 		workflowPolicyRepository,
@@ -428,7 +448,7 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 		return identityUnavailableHandler("workflow approval-policy service unavailable"), nil
 	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, ApprovalPolicyService: workflowPolicyService, ApprovalRequestService: workflowApprovalWorkflow.Service, ApprovalRequestQueries: workflowRequestQueries, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, ApprovalPolicyService: workflowPolicyService, ApprovalRequestService: workflowApprovalWorkflow.Service, ApprovalRequestQueries: workflowRequestQueries, DelegationService: workflowDelegationService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -973,12 +993,20 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err != nil {
 		return identityUnavailableHandler("general-ledger soft-close gate service unavailable"), nil
 	}
-	workflowRequestAuthorizer := evaluatorWorkflowRequestAuthorizer{evaluator: authorizer.evaluator, segregation: segregationEvaluator, users: repository, roles: roleRepository}
+	workflowRequestAuthorizer := evaluatorWorkflowRequestAuthorizer{evaluator: authorizer.evaluator, segregation: segregationEvaluator, users: repository, roles: roleRepository, clock: time.Now}
 	workflowApprovalWorkflow, err := workflow.NewMemoryApprovalWorkflowWithAuthorizer(workflowRequestAuthorizer)
 	if err != nil {
 		return identityUnavailableHandler("workflow approval-request service unavailable"), nil
 	}
 	workflowPolicyRepository := workflow.NewMemoryApprovalPolicyRepository()
+	workflowDelegationRepository := workflow.NewMemoryDelegationRepository()
+	workflowDelegationAudit := &workflow.MemoryDelegationAuditRecorder{}
+	workflowDelegationEvents := &workflow.MemoryDelegationEventRecorder{}
+	workflowDelegationRepository.BindPorts(workflowDelegationAudit, workflowDelegationEvents)
+	workflowDelegationService, err := workflow.NewDelegationService(workflowDelegationRepository, workflowPolicyRepository, workflowRequestAuthorizer, time.Now)
+	if err != nil {
+		return identityUnavailableHandler("workflow delegation service unavailable"), nil
+	}
 	workflowPolicyResolver, err := workflow.NewEffectiveApprovalPolicyResolver(workflowPolicyRepository, time.Now)
 	if err != nil {
 		return identityUnavailableHandler("workflow approval-policy resolver unavailable"), nil
@@ -989,9 +1017,15 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err := workflowApprovalWorkflow.Service.BindPolicyRepository(workflowPolicyRepository); err != nil {
 		return identityUnavailableHandler("workflow approval-request policy validator unavailable"), nil
 	}
+	if err := workflowApprovalWorkflow.Service.BindDelegationReader(workflowDelegationRepository); err != nil {
+		return identityUnavailableHandler("workflow approval-request delegation validator unavailable"), nil
+	}
 	workflowRequestQueries, err := workflow.NewApprovalRequestQueryService(workflowApprovalWorkflow.Requests, workflowRequestAuthorizer, time.Now)
 	if err != nil {
 		return identityUnavailableHandler("workflow approval-request query service unavailable"), nil
+	}
+	if err := workflowRequestQueries.BindDelegationReader(workflowDelegationRepository); err != nil {
+		return identityUnavailableHandler("workflow approval-request delegation query unavailable"), nil
 	}
 	workflowPolicyService, err := workflow.NewApprovalPolicyService(
 		workflowPolicyRepository,
@@ -1004,7 +1038,7 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 		return identityUnavailableHandler("workflow approval-policy service unavailable"), nil
 	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, ApprovalPolicyService: workflowPolicyService, ApprovalRequestService: workflowApprovalWorkflow.Service, ApprovalRequestQueries: workflowRequestQueries, PostingService: postingService, PostingApprovalDecisionService: postingApprovalDecisionService, JournalReversalService: journalReversalService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, ApprovalPolicyService: workflowPolicyService, ApprovalRequestService: workflowApprovalWorkflow.Service, ApprovalRequestQueries: workflowRequestQueries, DelegationService: workflowDelegationService, PostingService: postingService, PostingApprovalDecisionService: postingApprovalDecisionService, JournalReversalService: journalReversalService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {

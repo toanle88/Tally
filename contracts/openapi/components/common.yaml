@@ -150,6 +150,48 @@ schemas:
         additionalProperties: { type: string, maxLength: 160 }
       amount: { $ref: '#/schemas/Money' }
       currency: { $ref: '#/schemas/CurrencyCode' }
+  WfaDecideApprovalRequestCommandRequest:
+    type: object
+    additionalProperties: false
+    required: [commandId, expectedVersion, data]
+    properties:
+      commandId: { $ref: '#/schemas/Uuid' }
+      expectedVersion: { type: integer, minimum: 1 }
+      data: { $ref: '#/schemas/WfaDecideApprovalRequestCommandData' }
+  WfaDecideApprovalRequestCommandData:
+    type: object
+    additionalProperties: false
+    required: [requestId, decisionId, stepId, outcome, policyVersion, subjectVersion, candidateFingerprint]
+    properties:
+      requestId: { $ref: '#/schemas/Uuid' }
+      decisionId: { $ref: '#/schemas/Uuid' }
+      stepId: { $ref: '#/schemas/Uuid' }
+      outcome: { type: string, enum: [approved, rejected] }
+      reason: { type: string, maxLength: 2000 }
+      delegationId: { $ref: '#/schemas/Uuid' }
+      delegationReference: { type: string, maxLength: 240, deprecated: true }
+      policyVersion: { type: string, minLength: 1, maxLength: 80 }
+      subjectVersion: { type: integer, minimum: 1 }
+      candidateFingerprint: { type: string, minLength: 1, maxLength: 240 }
+  WfaDelegateApprovalCommandRequest:
+    type: object
+    additionalProperties: false
+    required: [commandId, data]
+    properties:
+      commandId: { $ref: '#/schemas/Uuid' }
+      data: { $ref: '#/schemas/WfaDelegateApprovalCommandData' }
+  WfaDelegateApprovalCommandData:
+    type: object
+    additionalProperties: false
+    required: [delegationId, delegateUserId, policyId, policyVersion, scope, effectiveFrom, effectiveTo]
+    properties:
+      delegationId: { $ref: '#/schemas/Uuid' }
+      delegateUserId: { $ref: '#/schemas/Uuid' }
+      policyId: { $ref: '#/schemas/Uuid' }
+      policyVersion: { type: string, minLength: 1, maxLength: 80 }
+      scope: { $ref: '#/schemas/WfaApprovalScope' }
+      effectiveFrom: { type: string, format: date-time }
+      effectiveTo: { type: string, format: date-time }
   WfaApprovalSubjectSnapshot:
     type: object
     additionalProperties: false
@@ -340,6 +382,23 @@ schemas:
       subjectVersion: { type: integer, minimum: 1 }
       candidateFingerprint: { type: string, minLength: 1 }
       recordedAt: { type: string, format: date-time }
+  WfaDelegationProjection:
+    type: object
+    additionalProperties: false
+    required: [id, delegatorUserId, delegateUserId, policyId, policyVersion, scope, effectiveFrom, effectiveTo, active, aggregateVersion, createdAt, updatedAt]
+    properties:
+      id: { $ref: '#/schemas/Uuid' }
+      delegatorUserId: { $ref: '#/schemas/Uuid' }
+      delegateUserId: { $ref: '#/schemas/Uuid' }
+      policyId: { $ref: '#/schemas/Uuid' }
+      policyVersion: { type: string, minLength: 1 }
+      scope: { $ref: '#/schemas/WfaApprovalScope' }
+      effectiveFrom: { type: string, format: date-time }
+      effectiveTo: { type: string, format: date-time }
+      active: { type: boolean }
+      aggregateVersion: { type: integer, minimum: 1 }
+      createdAt: { type: string, format: date-time }
+      updatedAt: { type: string, format: date-time }
   WfaApprovalDecisionReference:
     type: object
     additionalProperties: false
@@ -380,6 +439,7 @@ schemas:
       scope: { $ref: '#/schemas/WfaApprovalScope' }
       requesterUserId: { $ref: '#/schemas/Uuid' }
       requesterSubjectReference: { type: string }
+      activeDelegation: { $ref: '#/schemas/WfaDelegationProjection' }
       steps:
         type: array
         items: { $ref: '#/schemas/WfaApprovalRequestStep' }
@@ -454,6 +514,27 @@ schemas:
       correlationId: { $ref: '#/schemas/Uuid' }
       links: { $ref: '#/schemas/Links' }
       data: { $ref: '#/schemas/WfaApprovalRequestResultData' }
+  WfaDelegateApprovalResultData:
+    type: object
+    additionalProperties: false
+    required: [delegation, validationStatus, replayed]
+    properties:
+      delegation: { $ref: '#/schemas/WfaDelegationProjection' }
+      validationStatus: { type: string }
+      auditReference: { $ref: '#/schemas/Uuid' }
+      replayed: { type: boolean }
+  WfaDelegateApprovalEstablishedResult:
+    type: object
+    additionalProperties: false
+    required: [status, aggregateId, aggregateVersion, correlationId, links, data]
+    properties:
+      status: { type: string, const: established }
+      aggregateId: { $ref: '#/schemas/Uuid' }
+      aggregateVersion: { type: integer, minimum: 1 }
+      processId: { oneOf: [{ $ref: '#/schemas/Uuid' }, { type: 'null' }] }
+      correlationId: { $ref: '#/schemas/Uuid' }
+      links: { $ref: '#/schemas/Links' }
+      data: { $ref: '#/schemas/WfaDelegateApprovalResultData' }
   WfaApprovalRequestListResultData:
     type: object
     additionalProperties: false

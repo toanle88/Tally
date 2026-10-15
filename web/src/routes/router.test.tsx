@@ -35,6 +35,14 @@ describe('application router', () => {
     expect(await screen.findByRole('heading', { name: 'Page not found' })).toBeInTheDocument()
   })
 
+  it('supports direct entry to the approval delegation workspace', async () => {
+    renderRoute('/approvals/wfa-scr-04')
+    expect(await screen.findByRole('heading', { name: 'Delegate approval responsibility', level: 1 })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Delegate approval responsibility' })).toBeInTheDocument()
+    expect(screen.getByLabelText(/Effective from/)).toHaveAttribute('type', 'datetime-local')
+    expect(screen.getByLabelText(/Effective to/)).toHaveAttribute('type', 'datetime-local')
+  })
+
   it('supports the OMD worklist and record mutation boundary', async () => {
     renderRoute('/master-data/omd-ws-01')
     expect(await screen.findByRole('heading', { name: 'Legal-entity master-data worklist' })).toBeInTheDocument()

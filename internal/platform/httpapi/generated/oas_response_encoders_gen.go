@@ -21313,7 +21313,7 @@ func encodeWfaDecideApprovalRequestResponse(response WfaDecideApprovalRequestRes
 
 func encodeWfaDelegateApprovalResponse(response WfaDelegateApprovalRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
-	case *EstablishedResult:
+	case *WfaDelegateApprovalEstablishedResult:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 

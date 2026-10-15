@@ -179,18 +179,18 @@ func TestApprovalDecisionHandlerRecordsAndExposesDecisionHistory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	decisionRequest := &generated.CommandRequest{
+	decisionRequest := &generated.WfaDecideApprovalRequestCommandRequest{
 		CommandId:       generated.UUID(uuid.New()),
-		ExpectedVersion: generated.NewOptInt(created.AggregateVersion),
-		Data: generated.CommandRequestData{
-			"requestId":            mustRaw(uuid.UUID(created.AggregateId).String()),
-			"decisionId":           mustRaw(uuid.NewString()),
-			"stepId":               mustRaw(uuid.UUID(stepID).String()),
-			"outcome":              mustRaw("approved"),
-			"reason":               mustRaw("Independent review complete"),
-			"policyVersion":        mustRaw(created.Data.Request.PolicyVersion),
-			"subjectVersion":       mustRaw(created.Data.Request.SubjectVersion),
-			"candidateFingerprint": mustRaw(created.Data.Request.SubjectFingerprint),
+		ExpectedVersion: created.AggregateVersion,
+		Data: generated.WfaDecideApprovalRequestCommandData{
+			RequestId:            created.AggregateId,
+			DecisionId:           generated.UUID(uuid.New()),
+			StepId:               stepID,
+			Outcome:              generated.WfaDecideApprovalRequestCommandDataOutcomeApproved,
+			Reason:               generated.NewOptString("Independent review complete"),
+			PolicyVersion:        created.Data.Request.PolicyVersion,
+			SubjectVersion:       created.Data.Request.SubjectVersion,
+			CandidateFingerprint: created.Data.Request.SubjectFingerprint,
 		},
 	}
 	params := generated.WfaDecideApprovalRequestParams{IdempotencyKey: "handler-decision", XCorrelationID: generated.NewOptUUID(generated.UUID(uuid.New()))}
@@ -212,13 +212,86 @@ func TestApprovalDecisionHandlerRecordsAndExposesDecisionHistory(t *testing.T) {
 	}
 
 	unknown := *decisionRequest
-	unknown.Data = generated.CommandRequestData{"requestId": mustRaw(uuid.UUID(created.AggregateId).String()), "decisionId": mustRaw(uuid.NewString()), "stepId": mustRaw(uuid.UUID(stepID).String()), "outcome": mustRaw("approved"), "policyVersion": mustRaw(created.Data.Request.PolicyVersion), "subjectVersion": mustRaw(created.Data.Request.SubjectVersion), "candidateFingerprint": mustRaw(created.Data.Request.SubjectFingerprint), "unexpected": mustRaw("reject")}
+	unknown.Data.Outcome = generated.WfaDecideApprovalRequestCommandDataOutcome("unexpected")
 	invalid, err := handler.WfaDecideApprovalRequest(approverContext, &unknown, generated.WfaDecideApprovalRequestParams{IdempotencyKey: "handler-unknown-field"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if problem, ok := invalid.(*generated.WfaDecideApprovalRequestBadRequest); !ok || problem.Code != "INVALID_REQUEST" {
 		t.Fatalf("unknown-field response = %#v", invalid)
+	}
+}
+
+type httpDelegationAuthorizer struct {
+	decision workflow.AuthorizationDecision
+}
+
+func (authorizer httpDelegationAuthorizer) AuthorizeApprovalDelegation(context.Context, workflow.Actor, workflow.DelegateApprovalCommand, workflow.ApprovalPolicy) (workflow.AuthorizationDecision, error) {
+	return authorizer.decision, nil
+}
+
+func TestApprovalDelegationHandlerEstablishesReplaysAndRejectsChangedRetry(t *testing.T) {
+	now := time.Date(2026, 10, 15, 9, 0, 0, 0, time.UTC)
+	policy := httpApprovalRequestPolicy(now)
+	policy.Steps[0].Delegation = workflow.DelegationConfiguration{Enabled: true, DelegateToRoles: []string{"finance.delegate"}, MaximumDepth: 1}
+	policy.Steps[0].RequiredRoles[0].AllowDelegation = true
+	policyRepository := staticApprovalPolicyRepository{policies: []workflow.ApprovalPolicy{policy}}
+	delegationRepository := workflow.NewMemoryDelegationRepository()
+	delegationAudit := &workflow.MemoryDelegationAuditRecorder{}
+	delegationEvents := &workflow.MemoryDelegationEventRecorder{}
+	delegationRepository.BindPorts(delegationAudit, delegationEvents)
+	delegationService, err := workflow.NewDelegationService(delegationRepository, policyRepository, httpDelegationAuthorizer{decision: workflow.AuthorizationDecision{Allowed: true, Outcome: workflow.AuthorizationAllowed, Permission: workflow.DelegateApprovalPermission, ApprovedScopeIDs: []string{"scope-1"}, DecisionReference: uuid.New()}}, func() time.Time { return now })
+	if err != nil {
+		t.Fatal(err)
+	}
+	handler := IdentityHandler{DelegationService: delegationService}
+	actorContext, err := identity.WithActor(context.Background(), identity.ApplicationActor{UserID: uuid.New(), Subject: identity.AuthenticationSubject{OID: "oid", TID: "tid", Sub: "delegator"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	delegationID := uuid.New()
+	delegateUserID := uuid.New()
+	request := &generated.WfaDelegateApprovalCommandRequest{
+		CommandId: generated.UUID(uuid.New()),
+		Data: generated.WfaDelegateApprovalCommandData{
+			DelegationId:   generated.UUID(delegationID),
+			DelegateUserId: generated.UUID(delegateUserID),
+			PolicyId:       generated.UUID(policy.ID),
+			PolicyVersion:  policy.PolicyVersion,
+			Scope:          generated.WfaApprovalScope{ScopeIds: []string{"scope-1"}},
+			EffectiveFrom:  now.Add(time.Hour),
+			EffectiveTo:    now.Add(8 * time.Hour),
+		},
+	}
+	params := generated.WfaDelegateApprovalParams{IdempotencyKey: "handler-delegation", XCorrelationID: generated.NewOptUUID(generated.UUID(uuid.New()))}
+	response, err := handler.WfaDelegateApproval(actorContext, request, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+	established, ok := response.(*generated.WfaDelegateApprovalEstablishedResult)
+	if !ok || established.AggregateId != generated.UUID(delegationID) || established.Data.Delegation.DelegateUserId != generated.UUID(delegateUserID) || !established.Data.AuditReference.Set || established.Data.Replayed {
+		t.Fatalf("delegation response = %#v", response)
+	}
+	if len(delegationAudit.Records) != 1 || len(delegationEvents.Events) != 1 {
+		t.Fatalf("delegation evidence = %#v / %#v", delegationAudit.Records, delegationEvents.Events)
+	}
+
+	replayedResponse, err := handler.WfaDelegateApproval(actorContext, request, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if replayed, ok := replayedResponse.(*generated.WfaDelegateApprovalEstablishedResult); !ok || !replayed.Data.Replayed {
+		t.Fatalf("replayed delegation response = %#v", replayedResponse)
+	}
+
+	changed := *request
+	changed.Data.DelegateUserId = generated.UUID(uuid.New())
+	conflictResponse, err := handler.WfaDelegateApproval(actorContext, &changed, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if conflict, ok := conflictResponse.(*generated.WfaDelegateApprovalConflict); !ok || conflict.Code != "IDEMPOTENCY_CONFLICT" {
+		t.Fatalf("delegation conflict response = %#v", conflictResponse)
 	}
 }
 

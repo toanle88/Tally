@@ -50,6 +50,7 @@ type IdentityHandler struct {
 	ApprovalPolicyService                *workflow.ApprovalPolicyService
 	ApprovalRequestService               *workflow.ApprovalRequestService
 	ApprovalRequestQueries               *workflow.ApprovalRequestQueryService
+	DelegationService                    *workflow.DelegationService
 	Instrumentation                      *telemetry.Instrumentation
 }
 

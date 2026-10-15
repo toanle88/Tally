@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Epic | `EP-WFA-001` — Workflow and approvals |
-| Status | User Stories 1–2 implemented locally — focused evidence recorded on 2026-10-14; persistence release checks remain pending |
+| Status | User Stories 1–4 implemented locally — focused evidence recorded on 2026-10-15; persistence release checks remain pending |
 | Milestone | `M3` — Approval and period controls |
 | Delivery items | `DLV-GFR-004`, `DLV-FR-WFA-001`–`DLV-FR-WFA-005` |
 | Supporting workflows | `DLV-WF-6.1`, `DLV-WF-6.2`, `DLV-WF-7.12`; these workflows remain owned by Fiscal Period Management and GL |
@@ -14,8 +14,8 @@
 | Exit evidence | Domain, persistence, API, authorization, audit, outbox, idempotency, concurrency, UI, accessibility, integration, and recovery evidence for all five stories |
 
 This document is the planning and delivery-traceability artifact for
-`EP-WFA-001`. User Story 1 implementation and focused local verification are
-recorded below; the remaining stories and release qualification remain open.
+`EP-WFA-001`. User Stories 1–4 implementation and focused local verification
+are recorded below; User Story 5 and release qualification remain open.
 The stories are grouped into coherent vertical slices while preserving every
 approved WFA requirement, operation, route, permission, event, and ownership
 boundary.
@@ -462,9 +462,9 @@ Required evidence:
   generated artifacts were regenerated and verified from the canonical
   contracts.
 - Not claimed in this story slice: a production consuming business-context
-  adapter, applied-status acknowledgements, delegation/escalation workflows,
-  notification delivery, PostgreSQL/Testcontainers release gates, or the full
-  frontend Vitest suite.
+  adapter, applied-status acknowledgements, escalation workflows, notification
+  delivery, PostgreSQL/Testcontainers release gates, or the full frontend
+  Vitest suite.
 
 ### 7.4 User Story 4 — Delegate approval responsibility
 
@@ -478,31 +478,34 @@ Traceability: `DLV-FR-WFA-003`, `FR-WFA-003`, `GFR-002`–`GFR-004`,
 
 Acceptance criteria:
 
-- [ ] `DelegateApproval` validates the delegator's authorization, the
+- [x] `DelegateApproval` validates the delegator's authorization, the
   delegate's eligibility, the requested scope, the effective date range, the
   applicable policy version, and all relevant segregation rules before
   establishing a delegation.
-- [ ] A delegation has stable `DelegationId`, delegator, delegate, scope, and
+- [x] A delegation has stable `DelegationId`, delegator, delegate, scope, and
   effective-date values. Its history is retained and independently attributable
   for audit and later review.
-- [ ] A delegate can act only while the delegation is effective and within its
-  scope. Expired, revoked/ended, out-of-scope, or unauthorized delegation does
-  not permit a decision, even if a stale worklist still displays the task.
-- [ ] The active delegation is visible in the assigned/delegated worklist and
+- [x] A delegate can act only while the delegation is effective and within its
+  scope. Expired, out-of-scope, or unauthorized delegation does not permit a
+  decision, even if a stale worklist still displays the task. This delivery
+  slice has no revoke/end command; expiry is the only termination mechanism
+  until that contract is approved.
+- [x] The active delegation is visible in the assigned/delegated worklist and
   request detail, with owner, scope, effective interval, and evidence shown to
   authorized users.
-- [ ] A delegated decision records the actual approver and the applicable
+- [x] A delegated decision records the actual approver and the applicable
   delegation evidence; delegation does not erase the original request owner or
   broaden the policy's required approval level.
-- [ ] Repeating the same delegation identity and fingerprint returns its
+- [x] Repeating the same delegation identity and fingerprint returns its
   established result; conflicting reuse or concurrent updates return typed
   idempotency/version conflicts without overwriting an established delegation.
-- [ ] The transaction records the delegation and its `ApprovalDelegated`
+- [x] The transaction records the delegation and its `ApprovalDelegated`
   outbox message atomically, with minimized payloads and correlation/causation
   evidence.
-- [ ] `WFA-SCR-04` supports the approved create/end or revoke behavior once the
-  command contract is confirmed, with accessible validation, expiry warnings,
-  audit evidence, and safe conflict recovery.
+- [x] `WFA-SCR-04` supports the approved create behavior with accessible
+  validation, a finite-interval expiry warning, audit evidence in the
+  established result, and safe conflict recovery. End/revoke behavior remains
+  deferred because the approved operation list contains only `DelegateApproval`.
 
 Likely implementation areas:
 
@@ -512,7 +515,8 @@ Likely implementation areas:
   `workflow.delegation` and its effective-dated history.
 - `contracts/openapi/paths/approvals.yaml` and generated artifacts for the
   delegation action.
-- `web/src/capabilities/approvals/` for delegated filters and `WFA-SCR-04`.
+- `web/src/app/workflow-delegation-workspace.tsx` and route wiring for
+  delegated filters and `WFA-SCR-04`.
 
 Required evidence:
 
@@ -523,6 +527,38 @@ Required evidence:
   replay of `ApprovalDelegated`.
 - UI and authorization evidence showing delegated work without exposing
   records outside the delegate's scope.
+
+#### User Story 4 implementation evidence (2026-10-15)
+
+- Added the immutable `Delegation` aggregate and finite `[effectiveFrom,
+  effectiveTo)` interval validation in `internal/workflow`, including
+  self-delegation, policy-version, scope, compatible-step, and expiry rules.
+  Delegation decision-time resolution is bound to the live aggregate, so a
+  stale worklist cannot authorize an expired, mismatched, or out-of-scope
+  decision.
+- Added `workflow.delegation` migration and generated SQLC model, PostgreSQL
+  transaction wiring for audit, aggregate, outbox publication, and durable
+  idempotency finalization, plus memory adapters used by the local runtime.
+- Added typed `DelegateApproval` at
+  `POST /api/v1/approvals/actions/delegate-approval`, the approved
+  `finance.wfa.delegate.approval` permission, `approval_delegated` event
+  payload, replay/conflict outcomes, and generated Go/TypeScript artifacts.
+- Added IAM evaluator wiring for the existing permission boundary, active
+  delegate user/role/scope checks, policy-defined delegation eligibility, and
+  decision-time delegated approver evidence. No new segregation identifier was
+  invented; the existing evaluator and domain self-delegation guard are used.
+- Added WFA-SCR-04 at `/approvals/wfa-scr-04`, active-delegation projections in
+  the worklist/detail/decision surfaces, typed delegation-ID decision input,
+  finite UTC form validation, and retry-safe command identity retention.
+- Added domain, API-handler, decision-time expiry, route, and replay/conflict
+  tests. Verified with `GOCACHE=/tmp/tally-go-cache-story4 go test
+  ./internal/workflow ./internal/platform/httpapi ./cmd/api`, `make
+  db-migrate-validate`, `make db-migrate-check`, `make sqlc-check`, `make
+  api-generate-check`, `make api-ts-check`, `pnpm --dir web exec tsc --noEmit`,
+  `pnpm --dir web build`, the focused route tests, and `git diff --check`.
+- Not claimed in this story slice: revoke/end behavior, PostgreSQL/Testcontainers
+  release qualification, live Entra or production SoD qualification, witnessed
+  screen-reader/400% zoom review, or User Story 5 escalation behavior.
 
 ### 7.5 User Story 5 — Escalate overdue or blocked approvals
 
@@ -709,8 +745,9 @@ evidence at its first applicable slice.
   explicit.
 - [x] Open semantics that would materially affect implementation are recorded
   as risks instead of being invented.
-- [ ] Implementation, generated artifacts, tests, runtime checks, and delivery
-  evidence remain intentionally unstarted.
+- [x] User Story 4 implementation, generated artifacts, focused tests, runtime
+  wiring, and delivery evidence are recorded on the implementation branch.
+- [ ] User Story 5, full-epic integration, and release/qualification evidence
+  remain open.
 
-No branch, commit, roadmap completion checkbox, or implementation code is
-changed by this planning artifact.
+No commit or roadmap completion checkbox is implied by this planning artifact.

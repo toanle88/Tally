@@ -23,6 +23,7 @@ describe('route registry', () => {
       ['WFA-SCR-01', '/approvals/wfa-scr-01'],
       ['WFA-SCR-02', '/approvals/wfa-scr-02'],
       ['WFA-SCR-03', '/approvals/wfa-scr-03'],
+      ['WFA-SCR-04', '/approvals/wfa-scr-04'],
       ['IAM-WS-01', '/administration/identity-access'],
       ['IAM-SCR-04', '/identity-access/iam-scr-04'],
       ['OMD-WS-01', '/master-data/omd-ws-01'],

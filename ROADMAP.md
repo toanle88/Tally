@@ -166,6 +166,11 @@ Approval policies, requests, decisions, delegation, escalation, and decision app
 
 User-story plan: [EP-WFA-001 user stories](docs/backlog/stories/EP-WFA-001_user_stories.md)
 
+User Stories 1–4 have focused local implementation evidence on the current
+feature branch. The epic and delivery items remain open pending PostgreSQL,
+cross-context, production authorization, accessibility, and release
+qualification; User Story 5 is not implemented.
+
 - [ ] `DLV-GFR-004` — GFR-004 — EP-WFA-001
 - [ ] `DLV-FR-WFA-001` — FR-WFA-001 — `CreateApprovalRequest`
 - [ ] `DLV-FR-WFA-002` — FR-WFA-002 — `DecideApprovalRequest`
