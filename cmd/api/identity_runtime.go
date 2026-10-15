@@ -412,7 +412,7 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err != nil {
 		return identityUnavailableHandler("workflow delegation service unavailable"), nil
 	}
-	workflowApprovalWorkflow, err := workflow.NewPostgresApprovalWorkflowWithDurableIdempotency(pool, postgresWorkflowRequestAuditWriter(auditWriter), postgresWorkflowEventWriter, workflowRequestAuthorizer, time.Now, workflow.DurableApprovalRequestServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, CreateOperationID: "workflow.create-approval-request.v1", DecideOperationID: "workflow.decide-approval-request.v1"})
+	workflowApprovalWorkflow, err := workflow.NewPostgresApprovalWorkflowWithDurableIdempotency(pool, postgresWorkflowRequestAuditWriter(auditWriter), postgresWorkflowEventWriter, workflowRequestAuthorizer, time.Now, workflow.DurableApprovalRequestServiceConfig{Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(), Policy: platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute}, CreateOperationID: "workflow.create-approval-request.v1", DecideOperationID: "workflow.decide-approval-request.v1", EscalateOperationID: "workflow.escalate-approval.v1"})
 	if err != nil {
 		return identityUnavailableHandler("workflow approval-request persistence unavailable"), nil
 	}

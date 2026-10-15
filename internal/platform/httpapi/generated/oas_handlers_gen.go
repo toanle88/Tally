@@ -29015,7 +29015,7 @@ func (s *Server) handleWfaEscalateApprovalRequest(args [0]string, argsEscaped bo
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *WfaEscalateApprovalCommandRequest
 			Params   = WfaEscalateApprovalParams
 			Response = WfaEscalateApprovalRes
 		)

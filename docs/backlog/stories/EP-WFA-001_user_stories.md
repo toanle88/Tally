@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Epic | `EP-WFA-001` — Workflow and approvals |
-| Status | User Stories 1–4 implemented locally — focused evidence recorded on 2026-10-15; persistence release checks remain pending |
+| Status | User Stories 1–5 implementation slices locally in place — focused evidence recorded on 2026-10-15; persistence, notification, accessibility, and release checks remain pending |
 | Milestone | `M3` — Approval and period controls |
 | Delivery items | `DLV-GFR-004`, `DLV-FR-WFA-001`–`DLV-FR-WFA-005` |
 | Supporting workflows | `DLV-WF-6.1`, `DLV-WF-6.2`, `DLV-WF-7.12`; these workflows remain owned by Fiscal Period Management and GL |
@@ -14,8 +14,9 @@
 | Exit evidence | Domain, persistence, API, authorization, audit, outbox, idempotency, concurrency, UI, accessibility, integration, and recovery evidence for all five stories |
 
 This document is the planning and delivery-traceability artifact for
-`EP-WFA-001`. User Stories 1–4 implementation and focused local verification
-are recorded below; User Story 5 and release qualification remain open.
+`EP-WFA-001`. User Stories 1–5 implementation and focused local verification
+are recorded below; full-epic integration and release qualification remain
+open.
 The stories are grouped into coherent vertical slices while preserving every
 approved WFA requirement, operation, route, permission, event, and ownership
 boundary.
@@ -572,31 +573,33 @@ Traceability: `DLV-FR-WFA-004`, `FR-WFA-004`, `GFR-004`, `GFR-009`,
 
 Acceptance criteria:
 
-- [ ] `EscalateApproval` can be invoked only for a request/step eligible for
+- [x] `EscalateApproval` can be invoked only for a request/step eligible for
   escalation under its effective policy, such as the policy-defined overdue or
   blocked condition, and only by an authorized actor or approved domain
   process.
-- [ ] Escalation records the request/step identity, current policy and subject
+- [x] Escalation records the request/step identity, current policy and subject
   versions, escalation reason, responsible owner/target, actor or process, and
   timing/evidence required by the policy. It does not alter the subject fact or
   record an approval decision.
-- [ ] Escalation does not skip a required step, broaden authorization, remove
+- [x] Escalation does not skip a required step, broaden authorization, remove
   segregation controls, or make a downstream business effect authoritative.
-- [ ] The request and worklist expose escalated, due, blocked, owner, age,
+- [x] The request and worklist expose escalated, due, blocked, owner, age,
   blocker, next action, and recovery information. The original request and
   prior decision/delegation history remain visible.
-- [ ] Repeating the same escalation identity and fingerprint returns the
+- [x] Repeating the same escalation identity and fingerprint returns the
   established result. Concurrent escalation, decision, delegation, or request
   changes return a typed conflict and do not silently replace the established
   outcome.
 - [ ] The transaction records the escalation and its `ApprovalEscalated`
   outbox message atomically. Duplicate/out-of-order delivery creates at most
-  one local effect and remains explainable to operations.
+  one local effect and remains explainable to operations. The PostgreSQL
+  transaction path is implemented, but persistence/outbox integration evidence
+  remains pending.
 - [ ] Notification and operational telemetry expose approval age, oldest items,
   owner, escalation path, and typed domain/authorization/concurrency/
   dependency/internal outcomes without unbounded metric labels or sensitive
   payloads.
-- [ ] `WFA-SCR-04` shows escalation evidence and safe recovery. Automatic
+- [x] `WFA-SCR-04` shows escalation evidence and safe recovery. Automatic
   escalation workers are included only where the approved policy/technical
   contract explicitly requires them; this story does not invent a scheduler
   rule.
@@ -622,6 +625,47 @@ Required evidence:
 - Outbox/inbox and recovery tests proving escalation is durable and replay-safe.
 - Worklist, telemetry, notification, accessibility, authorization, and
   sensitive-data evidence for due/blocked/escalated states.
+
+#### User Story 5 implementation evidence (2026-10-15)
+
+- Added policy-bound `EscalateApproval` behavior to the existing
+  `ApprovalRequest` aggregate. An escalation preserves the pending request and
+  immutable subject/policy evidence, transitions only the actionable step to
+  `Escalated`, derives responsible/target roles from the copied policy, and
+  records actor or approved-process, timing, reason, blocker, correlation,
+  causation, and audit references. It never records a decision or downstream
+  business effect.
+- Added the immutable `workflow.approval_request_escalation` child table and
+  SQLC model. PostgreSQL save ordering writes the audit fact first, then the
+  escalation child, outbox event, and durable idempotency finalization in the
+  same transaction; the migration includes an immutability trigger and
+  evidence checks.
+- Added typed `wfaEscalateApproval` API/OpenAPI contracts, generated Go and
+  TypeScript artifacts, `finance.wfa.escalate.approval` authorization, safe
+  `approval_escalated` outbox payload fields, and typed conflict, authorization,
+  validation, not-found, and dependency outcomes.
+- Added the policy-derived worklist/detail projections and WFA-SCR-04 form for
+  escalated, overdue, blocked, age, owner, target, blocker, next-action,
+  recovery, actor/process, and audit evidence. Retry identity remains stable
+  after transport failure and established results identify replay.
+- Added the approved one-minute/100-item overdue worker in `internal/workflow`
+  with exact process identity, bounded candidate selection, deterministic
+  escalation/idempotency identities, and race-safe skip behavior.
+- Focused evidence covers eligible/ineligible actor escalation, blocked and
+  overdue boundaries, authorization denial without mutation, immutable
+  evidence, no-decision side effects, replay/idempotency conflict, typed API
+  response/replay, blocked worklist projection, and deterministic worker
+  processing.
+- Verified locally with the focused Go tests, migration validation/checksum
+  checks, SQLC drift check, OpenAPI Go generation check, TypeScript generation
+  check, TypeScript compilation, and `git diff --check`. The exact commands
+  and outcomes are recorded in
+  [`DLV-FR-WFA-004-us5-escalate-approval.md`](../../verification/DLV-FR-WFA-004-us5-escalate-approval.md).
+- Not claimed in this story slice: PostgreSQL/Testcontainers execution,
+  production `cmd/worker` composition with the repository's external audit
+  writer, duplicate/out-of-order inbox delivery qualification, notification
+  delivery, operational metrics/dashboard qualification, live IAM/SoD,
+  witnessed accessibility/performance review, or full release gates.
 
 ## 8. Cross-story definition of done
 
@@ -747,7 +791,8 @@ evidence at its first applicable slice.
   as risks instead of being invented.
 - [x] User Story 4 implementation, generated artifacts, focused tests, runtime
   wiring, and delivery evidence are recorded on the implementation branch.
-- [ ] User Story 5, full-epic integration, and release/qualification evidence
-  remain open.
+- [x] User Story 5 implementation, generated artifacts, focused tests, and
+  delivery evidence are recorded on the implementation branch.
+- [ ] Full-epic integration and release/qualification evidence remain open.
 
 No commit or roadmap completion checkbox is implied by this planning artifact.

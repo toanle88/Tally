@@ -19,6 +19,7 @@ const (
 	workflowCreateApprovalRequestRoute = "/api/v1/approvals/actions/create-approval-request"
 	workflowDecideApprovalRequestRoute = "/api/v1/approvals/actions/decide-approval-request"
 	workflowDelegateApprovalRoute      = "/api/v1/approvals/actions/delegate-approval"
+	workflowEscalateApprovalRoute      = "/api/v1/approvals/actions/escalate-approval"
 	workflowApprovalRequestListRoute   = "/api/v1/approvals/reference/requests"
 )
 
@@ -98,6 +99,29 @@ func (handler IdentityHandler) WfaDelegateApproval(ctx context.Context, request 
 		return mapWorkflowDelegateApprovalError(err, correlationID), nil
 	}
 	return establishedWorkflowDelegateApprovalResult(result, correlationID), nil
+}
+
+func (handler IdentityHandler) WfaEscalateApproval(ctx context.Context, request *generated.WfaEscalateApprovalCommandRequest, params generated.WfaEscalateApprovalParams) (generated.WfaEscalateApprovalRes, error) {
+	correlationID := workflowEscalateCorrelation(params)
+	if handler.ApprovalRequestService == nil {
+		return workflowEscalateApprovalProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The approval-request service is unavailable.", correlationID), nil
+	}
+	actor, ok := identity.ActorFromContext(ctx)
+	if !ok {
+		return workflowEscalateApprovalProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The escalating actor is not authorized.", correlationID), nil
+	}
+	if request == nil || uuid.UUID(request.CommandId) == uuid.Nil {
+		return workflowEscalateApprovalProblem(http.StatusBadRequest, "INVALID_REQUEST", "The approval escalation command requires a command identifier.", correlationID), nil
+	}
+	command, err := workflowEscalateApprovalCommand(request, params, correlationID)
+	if err != nil {
+		return workflowEscalateApprovalProblem(http.StatusBadRequest, "INVALID_REQUEST", "The approval escalation command is invalid.", correlationID), nil
+	}
+	result, err := handler.ApprovalRequestService.EscalateApproval(ctx, workflow.Actor{UserID: actor.UserID, SubjectReference: glActorSubject(actor)}, command)
+	if err != nil {
+		return mapWorkflowEscalateApprovalError(err, correlationID), nil
+	}
+	return establishedWorkflowEscalateApprovalResult(result, correlationID), nil
 }
 
 func (handler IdentityHandler) WfaListApprovalRequests(ctx context.Context, params generated.WfaListApprovalRequestsParams) (generated.WfaListApprovalRequestsRes, error) {
@@ -210,6 +234,13 @@ func workflowDelegateCorrelation(params generated.WfaDelegateApprovalParams) uui
 	return uuid.New()
 }
 
+func workflowEscalateCorrelation(params generated.WfaEscalateApprovalParams) uuid.UUID {
+	if params.XCorrelationID.Set && uuid.UUID(params.XCorrelationID.Value) != uuid.Nil {
+		return uuid.UUID(params.XCorrelationID.Value)
+	}
+	return uuid.New()
+}
+
 func workflowDecideApprovalRequestCommand(request *generated.WfaDecideApprovalRequestCommandRequest, params generated.WfaDecideApprovalRequestParams) (workflow.DecideApprovalRequestCommand, error) {
 	if request == nil || request.ExpectedVersion < 1 {
 		return workflow.DecideApprovalRequestCommand{}, errors.New("expected version is required")
@@ -240,6 +271,31 @@ func workflowDecideApprovalRequestCommand(request *generated.WfaDecideApprovalRe
 		command.DelegationReference = strings.TrimSpace(data.DelegationReference.Value)
 	}
 	return command, nil
+}
+
+func workflowEscalateApprovalCommand(request *generated.WfaEscalateApprovalCommandRequest, params generated.WfaEscalateApprovalParams, correlationID uuid.UUID) (workflow.EscalateApprovalCommand, error) {
+	if request == nil || request.ExpectedVersion < 1 {
+		return workflow.EscalateApprovalCommand{}, errors.New("expected version is required")
+	}
+	expectedVersion, err := aggregateversion.FromInt64(int64(request.ExpectedVersion))
+	if err != nil {
+		return workflow.EscalateApprovalCommand{}, err
+	}
+	data := request.Data
+	return workflow.EscalateApprovalCommand{
+		RequestID:            uuid.UUID(data.RequestId),
+		ExpectedVersion:      &expectedVersion,
+		EscalationID:         uuid.UUID(data.EscalationId),
+		StepID:               uuid.UUID(data.StepId),
+		Reason:               strings.TrimSpace(string(data.Reason)),
+		Blocker:              strings.TrimSpace(data.Blocker.Or("")),
+		PolicyVersion:        strings.TrimSpace(data.PolicyVersion),
+		SubjectVersion:       int64(data.SubjectVersion),
+		CandidateFingerprint: strings.TrimSpace(data.CandidateFingerprint),
+		IdempotencyKey:       params.IdempotencyKey,
+		CorrelationID:        correlationID.String(),
+		CausationID:          uuid.UUID(request.CommandId).String(),
+	}, nil
 }
 
 func workflowPolicyScope(value generated.WfaApprovalScope) workflow.ApprovalPolicyScope {
@@ -355,8 +411,12 @@ func generatedWorkflowApprovalRequestProjection(request workflow.ApprovalRequest
 	}
 	projection.ApplicationStatus = generated.WfaApprovalRequestProjectionApplicationStatusNotReported
 	projection.Decisions = generatedWorkflowApprovalDecisions(request.Decisions)
+	projection.Escalations = generatedWorkflowApprovalEscalations(request.Escalations)
 	if currentStep := workflowCurrentApprovalStep(request); currentStep != uuid.Nil {
 		projection.CurrentStepId = generated.NewOptUUID(generated.UUID(currentStep))
+	}
+	if age := int(time.Since(request.CreatedAt).Seconds()); !request.CreatedAt.IsZero() && age >= 0 {
+		projection.AgeSeconds = generated.NewOptInt(age)
 	}
 	if request.SnapshotFingerprint != "" {
 		projection.SubjectSnapshot = generated.NewOptWfaApprovalSubjectSnapshot(generatedWorkflowSubjectSnapshot(request.SubjectSnapshot))
@@ -392,6 +452,21 @@ func generatedWorkflowApprovalRequestProjection(request workflow.ApprovalRequest
 	}
 	if request.DueAt != nil {
 		projection.DueAt = generated.NewOptDateTime(*request.DueAt)
+	}
+	currentStep := workflowCurrentApprovalStepValue(request)
+	if currentStep != nil {
+		projection.CurrentOwnerRoles = workflowApprovalRequestStepRoles(*currentStep)
+	}
+	if currentEscalation := workflowCurrentApprovalEscalation(request, currentStep); currentEscalation != nil {
+		projection.EscalationTargetRoles = append([]string(nil), currentEscalation.TargetRoles...)
+		if currentEscalation.Blocker != "" {
+			projection.Blocker = generated.NewOptString(currentEscalation.Blocker)
+		}
+		projection.NextAction = generated.NewOptString("review-escalated-approval")
+		projection.RecoveryPath = generated.NewOptString("Review the escalation evidence, refresh the request, and decide the current step.")
+	} else if request.Status == workflow.ApprovalRequestStatusPending {
+		projection.NextAction = generated.NewOptString("awaiting-decision")
+		projection.RecoveryPath = generated.NewOptString("Await the assigned approval owner or escalate when the configured threshold is reached.")
 	}
 	return projection
 }
@@ -432,6 +507,31 @@ func establishedWorkflowDelegateApprovalResult(result workflow.DelegationCommand
 	return response
 }
 
+func establishedWorkflowEscalateApprovalResult(result workflow.ApprovalRequestCommandResult, correlationID uuid.UUID) *generated.WfaEscalateApprovalEstablishedResult {
+	request := result.Request
+	var escalation workflow.ApprovalEscalation
+	if result.Escalation != nil {
+		escalation = *result.Escalation
+	} else if len(request.Escalations) > 0 {
+		escalation = request.Escalations[len(request.Escalations)-1]
+	}
+	return &generated.WfaEscalateApprovalEstablishedResult{
+		Status:           "established",
+		AggregateId:      generated.UUID(request.ID),
+		AggregateVersion: int(request.Version.Value()),
+		CorrelationId:    generated.UUID(correlationID),
+		Links:            generated.Links{Self: workflowEscalateApprovalRoute},
+		Data: generated.WfaEscalateApprovalResultData{
+			Request:          generatedWorkflowApprovalRequestProjection(request),
+			Escalation:       generatedWorkflowApprovalEscalations([]workflow.ApprovalEscalation{escalation})[0],
+			ValidationStatus: "validated",
+			NextAction:       "review-escalated-approval",
+			RecoveryPath:     "Review the escalation evidence, refresh the request, and decide the current step.",
+			Replayed:         result.Replayed,
+		},
+	}
+}
+
 func generatedWorkflowApprovalDecisions(values []workflow.ApprovalDecision) []generated.WfaApprovalDecisionProjection {
 	result := make([]generated.WfaApprovalDecisionProjection, len(values))
 	for index, value := range values {
@@ -457,19 +557,89 @@ func generatedWorkflowApprovalDecisions(values []workflow.ApprovalDecision) []ge
 	return result
 }
 
-func workflowCurrentApprovalStep(request workflow.ApprovalRequest) uuid.UUID {
-	var current *workflow.ApprovalRequestStep
-	for index := range request.Steps {
-		step := &request.Steps[index]
-		if step.Status != workflow.ApprovalRequestStatusPending || (current != nil && step.Sequence >= current.Sequence) {
-			continue
+func generatedWorkflowApprovalEscalations(values []workflow.ApprovalEscalation) []generated.WfaApprovalEscalationProjection {
+	result := make([]generated.WfaApprovalEscalationProjection, len(values))
+	for index, value := range values {
+		result[index] = generated.WfaApprovalEscalationProjection{
+			ID:                   generated.UUID(value.ID),
+			StepId:               generated.UUID(value.StepID),
+			Reason:               generated.WfaApprovalEscalationProjectionReason(value.Reason),
+			ResponsibleRoles:     append([]string(nil), value.ResponsibleRoles...),
+			TargetRoles:          append([]string(nil), value.TargetRoles...),
+			PolicyId:             generated.UUID(value.PolicyID),
+			PolicyVersion:        value.PolicyVersion,
+			SubjectVersion:       int(value.SubjectVersion),
+			CandidateFingerprint: value.CandidateFingerprint,
+			OccurredAt:           value.OccurredAt,
+			AuditReference:       generated.UUID(value.AuditReference),
 		}
-		current = step
+		if value.Blocker != "" {
+			result[index].Blocker = generated.NewOptString(value.Blocker)
+		}
+		if value.ActorUserID != uuid.Nil {
+			result[index].ActorUserId = generated.NewOptUUID(generated.UUID(value.ActorUserID))
+		}
+		if value.ActorSubjectReference != "" {
+			result[index].ActorSubjectReference = generated.NewOptString(value.ActorSubjectReference)
+		}
+		if value.ProcessReference != "" {
+			result[index].ProcessReference = generated.NewOptString(value.ProcessReference)
+		}
+		if value.DueAt != nil {
+			result[index].DueAt = generated.NewOptDateTime(*value.DueAt)
+		}
 	}
+	return result
+}
+
+func workflowCurrentApprovalStep(request workflow.ApprovalRequest) uuid.UUID {
+	current := workflowCurrentApprovalStepValue(request)
 	if current == nil {
 		return uuid.Nil
 	}
 	return current.ID
+}
+
+func workflowCurrentApprovalStepValue(request workflow.ApprovalRequest) *workflow.ApprovalRequestStep {
+	var current *workflow.ApprovalRequestStep
+	for index := range request.Steps {
+		step := &request.Steps[index]
+		if (step.Status != workflow.ApprovalRequestStatusPending && step.Status != workflow.ApprovalRequestStepStatusEscalated) || (current != nil && step.Sequence >= current.Sequence) {
+			continue
+		}
+		current = step
+	}
+	return current
+}
+
+func workflowCurrentApprovalEscalation(request workflow.ApprovalRequest, currentStep *workflow.ApprovalRequestStep) *workflow.ApprovalEscalation {
+	if request.Status != workflow.ApprovalRequestStatusPending || currentStep == nil || currentStep.Status != workflow.ApprovalRequestStepStatusEscalated {
+		return nil
+	}
+	for index := len(request.Escalations) - 1; index >= 0; index-- {
+		if request.Escalations[index].StepID == currentStep.ID {
+			escalation := request.Escalations[index]
+			return &escalation
+		}
+	}
+	return nil
+}
+
+func workflowApprovalRequestStepRoles(step workflow.ApprovalRequestStep) []string {
+	roles := make([]string, 0, len(step.RequiredRoles))
+	seen := make(map[string]struct{}, len(step.RequiredRoles))
+	for _, requirement := range step.RequiredRoles {
+		role := strings.TrimSpace(requirement.Role)
+		if role == "" {
+			continue
+		}
+		if _, exists := seen[role]; exists {
+			continue
+		}
+		seen[role] = struct{}{}
+		roles = append(roles, role)
+	}
+	return roles
 }
 
 func generatedWorkflowSubjectSnapshot(snapshot workflow.ApprovalSubjectSnapshot) generated.WfaApprovalSubjectSnapshot {
@@ -672,6 +842,29 @@ func mapWorkflowDelegateApprovalError(err error, correlationID uuid.UUID) genera
 	}
 }
 
+func mapWorkflowEscalateApprovalError(err error, correlationID uuid.UUID) generated.WfaEscalateApprovalRes {
+	switch {
+	case errors.Is(err, workflow.ErrApprovalPolicyNotFound):
+		return workflowEscalateApprovalProblem(http.StatusNotFound, "REQUEST_NOT_FOUND", "The approval request does not exist.", correlationID)
+	case errors.Is(err, workflow.ErrApprovalPolicyAuthorizationDenied):
+		return workflowEscalateApprovalProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The actor is outside the approval escalation authority.", correlationID)
+	case errors.Is(err, workflow.ErrApprovalPolicyAuthorizationUnavailable), errors.Is(err, workflow.ErrApprovalPolicyAuditUnavailable), errors.Is(err, workflow.ErrInvalidApprovalPolicyService):
+		return workflowEscalateApprovalProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The approval escalation could not reach a required dependency.", correlationID)
+	case errors.Is(err, workflow.ErrApprovalPolicyAuthorizationStale):
+		return workflowEscalateApprovalProblem(http.StatusConflict, "AUTHORIZATION_STALE", "Authorization changed. Refresh the approval evidence and retry.", correlationID)
+	case errors.Is(err, workflow.ErrApprovalPolicyIdempotencyConflict):
+		return workflowEscalateApprovalProblem(http.StatusConflict, "IDEMPOTENCY_CONFLICT", "The idempotency key was already used for different escalation data.", correlationID)
+	case errors.Is(err, workflow.ErrApprovalPolicyCommandInProgress):
+		return workflowEscalateApprovalProblem(http.StatusConflict, "COMMAND_IN_PROGRESS", "An equivalent approval escalation is already being processed.", correlationID)
+	case errors.Is(err, workflow.ErrApprovalPolicyVersionConflict), errors.Is(err, workflow.ErrApprovalPolicySubjectConflict), errors.Is(err, workflow.ErrApprovalPolicyExpired), errors.Is(err, workflow.ErrApprovalPolicyStepConflict), errors.Is(err, workflow.ErrApprovalPolicyEscalationNotEligible), errors.Is(err, workflow.ErrApprovalPolicyAlreadyEscalated), errors.Is(err, workflow.ErrApprovalPolicyNotApplicable), errors.Is(err, workflow.ErrApprovalPolicyAmbiguous):
+		return workflowEscalateApprovalProblem(http.StatusConflict, "ESCALATION_CONFLICT", "The approval request or escalation evidence changed, or the step is not eligible. Refresh and retry.", correlationID)
+	case errors.Is(err, workflow.ErrInvalidApprovalPolicyCommand):
+		return workflowEscalateApprovalProblem(http.StatusBadRequest, "INVALID_REQUEST", "The approval escalation command is invalid.", correlationID)
+	default:
+		return workflowEscalateApprovalProblem(http.StatusUnprocessableEntity, "VALIDATION_FAILED", "The approval escalation violates a workflow rule.", correlationID)
+	}
+}
+
 func workflowCreateApprovalRequestProblem(status int, code, detail string, correlationID uuid.UUID) generated.WfaCreateApprovalRequestRes {
 	problem := generated.ProblemDetails{Type: "https://tally.local/problems/" + code, Title: http.StatusText(status), Status: status, Code: code, Detail: detail, CorrelationId: generated.UUID(correlationID)}
 	switch status {
@@ -767,6 +960,30 @@ func workflowDelegateApprovalProblem(status int, code, detail string, correlatio
 		return &value
 	default:
 		value := generated.WfaDelegateApprovalServiceUnavailable(problem)
+		return &value
+	}
+}
+
+func workflowEscalateApprovalProblem(status int, code, detail string, correlationID uuid.UUID) generated.WfaEscalateApprovalRes {
+	problem := generated.ProblemDetails{Type: "https://tally.local/problems/" + code, Title: http.StatusText(status), Status: status, Code: code, Detail: detail, CorrelationId: generated.UUID(correlationID)}
+	switch status {
+	case http.StatusBadRequest:
+		value := generated.WfaEscalateApprovalBadRequest(problem)
+		return &value
+	case http.StatusForbidden:
+		value := generated.WfaEscalateApprovalForbidden(problem)
+		return &value
+	case http.StatusNotFound:
+		value := generated.WfaEscalateApprovalNotFound(problem)
+		return &value
+	case http.StatusConflict:
+		value := generated.WfaEscalateApprovalConflict(problem)
+		return &value
+	case http.StatusUnprocessableEntity:
+		value := generated.WfaEscalateApprovalUnprocessableEntity(problem)
+		return &value
+	default:
+		value := generated.WfaEscalateApprovalServiceUnavailable(problem)
 		return &value
 	}
 }

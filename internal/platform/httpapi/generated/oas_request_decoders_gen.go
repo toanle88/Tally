@@ -14946,7 +14946,7 @@ func (s *Server) decodeWfaDelegateApprovalRequest(r *http.Request) (
 }
 
 func (s *Server) decodeWfaEscalateApprovalRequest(r *http.Request) (
-	req *CommandRequest,
+	req *WfaEscalateApprovalCommandRequest,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -14993,7 +14993,7 @@ func (s *Server) decodeWfaEscalateApprovalRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request CommandRequest
+		var request WfaEscalateApprovalCommandRequest
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err

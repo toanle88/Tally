@@ -787,7 +787,7 @@ type Handler interface {
 	// WfaEscalateApproval implements wfaEscalateApproval operation.
 	//
 	// POST /approvals/actions/escalate-approval
-	WfaEscalateApproval(ctx context.Context, req *CommandRequest, params WfaEscalateApprovalParams) (WfaEscalateApprovalRes, error)
+	WfaEscalateApproval(ctx context.Context, req *WfaEscalateApprovalCommandRequest, params WfaEscalateApprovalParams) (WfaEscalateApprovalRes, error)
 	// WfaGetApprovalRequest implements wfaGetApprovalRequest operation.
 	//
 	// GET /approvals/reference/requests/{approvalRequestId}

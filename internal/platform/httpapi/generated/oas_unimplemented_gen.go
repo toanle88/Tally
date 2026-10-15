@@ -1371,7 +1371,7 @@ func (UnimplementedHandler) WfaDelegateApproval(ctx context.Context, req *WfaDel
 // WfaEscalateApproval implements wfaEscalateApproval operation.
 //
 // POST /approvals/actions/escalate-approval
-func (UnimplementedHandler) WfaEscalateApproval(ctx context.Context, req *CommandRequest, params WfaEscalateApprovalParams) (r WfaEscalateApprovalRes, _ error) {
+func (UnimplementedHandler) WfaEscalateApproval(ctx context.Context, req *WfaEscalateApprovalCommandRequest, params WfaEscalateApprovalParams) (r WfaEscalateApprovalRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

@@ -20,6 +20,7 @@ const MaintainApprovalPoliciesPermission = "finance.wfa.maintain.approval.polici
 const CreateApprovalRequestsPermission = "finance.wfa.create.approval.request"
 const ReadApprovalRequestsPermission = "finance.wfa.read.approval.requests"
 const DecideApprovalRequestsPermission = "finance.wfa.decide.approval.request"
+const EscalateApprovalPermission = "finance.wfa.escalate.approval"
 
 const (
 	ApprovalPolicyActionCreate            = "create"

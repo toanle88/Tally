@@ -48663,6 +48663,412 @@ func (s *WfaApprovalDecisionReference) UnmarshalJSON(data []byte) error {
 }
 
 // Encode implements json.Marshaler.
+func (s *WfaApprovalEscalationProjection) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *WfaApprovalEscalationProjection) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("id")
+		s.ID.Encode(e)
+	}
+	{
+		e.FieldStart("stepId")
+		s.StepId.Encode(e)
+	}
+	{
+		e.FieldStart("reason")
+		s.Reason.Encode(e)
+	}
+	{
+		if s.Blocker.Set {
+			e.FieldStart("blocker")
+			s.Blocker.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("responsibleRoles")
+		e.ArrStart()
+		for _, elem := range s.ResponsibleRoles {
+			e.Str(elem)
+		}
+		e.ArrEnd()
+	}
+	{
+		e.FieldStart("targetRoles")
+		e.ArrStart()
+		for _, elem := range s.TargetRoles {
+			e.Str(elem)
+		}
+		e.ArrEnd()
+	}
+	{
+		if s.ActorUserId.Set {
+			e.FieldStart("actorUserId")
+			s.ActorUserId.Encode(e)
+		}
+	}
+	{
+		if s.ActorSubjectReference.Set {
+			e.FieldStart("actorSubjectReference")
+			s.ActorSubjectReference.Encode(e)
+		}
+	}
+	{
+		if s.ProcessReference.Set {
+			e.FieldStart("processReference")
+			s.ProcessReference.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("policyId")
+		s.PolicyId.Encode(e)
+	}
+	{
+		e.FieldStart("policyVersion")
+		e.Str(s.PolicyVersion)
+	}
+	{
+		e.FieldStart("subjectVersion")
+		e.Int(s.SubjectVersion)
+	}
+	{
+		e.FieldStart("candidateFingerprint")
+		e.Str(s.CandidateFingerprint)
+	}
+	{
+		if s.DueAt.Set {
+			e.FieldStart("dueAt")
+			s.DueAt.Encode(e, json.EncodeDateTime)
+		}
+	}
+	{
+		e.FieldStart("occurredAt")
+		json.EncodeDateTime(e, s.OccurredAt)
+	}
+	{
+		e.FieldStart("auditReference")
+		s.AuditReference.Encode(e)
+	}
+}
+
+var jsonFieldsNameOfWfaApprovalEscalationProjection = [16]string{
+	0:  "id",
+	1:  "stepId",
+	2:  "reason",
+	3:  "blocker",
+	4:  "responsibleRoles",
+	5:  "targetRoles",
+	6:  "actorUserId",
+	7:  "actorSubjectReference",
+	8:  "processReference",
+	9:  "policyId",
+	10: "policyVersion",
+	11: "subjectVersion",
+	12: "candidateFingerprint",
+	13: "dueAt",
+	14: "occurredAt",
+	15: "auditReference",
+}
+
+// Decode decodes WfaApprovalEscalationProjection from json.
+func (s *WfaApprovalEscalationProjection) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode WfaApprovalEscalationProjection to nil")
+	}
+	var requiredBitSet [2]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "id":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.ID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"id\"")
+			}
+		case "stepId":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.StepId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"stepId\"")
+			}
+		case "reason":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.Reason.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"reason\"")
+			}
+		case "blocker":
+			if err := func() error {
+				s.Blocker.Reset()
+				if err := s.Blocker.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"blocker\"")
+			}
+		case "responsibleRoles":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				s.ResponsibleRoles = make([]string, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem string
+					v, err := d.Str()
+					elem = string(v)
+					if err != nil {
+						return err
+					}
+					s.ResponsibleRoles = append(s.ResponsibleRoles, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"responsibleRoles\"")
+			}
+		case "targetRoles":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				s.TargetRoles = make([]string, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem string
+					v, err := d.Str()
+					elem = string(v)
+					if err != nil {
+						return err
+					}
+					s.TargetRoles = append(s.TargetRoles, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"targetRoles\"")
+			}
+		case "actorUserId":
+			if err := func() error {
+				s.ActorUserId.Reset()
+				if err := s.ActorUserId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"actorUserId\"")
+			}
+		case "actorSubjectReference":
+			if err := func() error {
+				s.ActorSubjectReference.Reset()
+				if err := s.ActorSubjectReference.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"actorSubjectReference\"")
+			}
+		case "processReference":
+			if err := func() error {
+				s.ProcessReference.Reset()
+				if err := s.ProcessReference.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"processReference\"")
+			}
+		case "policyId":
+			requiredBitSet[1] |= 1 << 1
+			if err := func() error {
+				if err := s.PolicyId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"policyId\"")
+			}
+		case "policyVersion":
+			requiredBitSet[1] |= 1 << 2
+			if err := func() error {
+				v, err := d.Str()
+				s.PolicyVersion = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"policyVersion\"")
+			}
+		case "subjectVersion":
+			requiredBitSet[1] |= 1 << 3
+			if err := func() error {
+				v, err := d.Int()
+				s.SubjectVersion = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"subjectVersion\"")
+			}
+		case "candidateFingerprint":
+			requiredBitSet[1] |= 1 << 4
+			if err := func() error {
+				v, err := d.Str()
+				s.CandidateFingerprint = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"candidateFingerprint\"")
+			}
+		case "dueAt":
+			if err := func() error {
+				s.DueAt.Reset()
+				if err := s.DueAt.Decode(d, json.DecodeDateTime); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"dueAt\"")
+			}
+		case "occurredAt":
+			requiredBitSet[1] |= 1 << 6
+			if err := func() error {
+				v, err := json.DecodeDateTime(d)
+				s.OccurredAt = v
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"occurredAt\"")
+			}
+		case "auditReference":
+			requiredBitSet[1] |= 1 << 7
+			if err := func() error {
+				if err := s.AuditReference.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"auditReference\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode WfaApprovalEscalationProjection")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [2]uint8{
+		0b00110111,
+		0b11011110,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfWfaApprovalEscalationProjection) {
+					name = jsonFieldsNameOfWfaApprovalEscalationProjection[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *WfaApprovalEscalationProjection) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *WfaApprovalEscalationProjection) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes WfaApprovalEscalationProjectionReason as json.
+func (s WfaApprovalEscalationProjectionReason) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes WfaApprovalEscalationProjectionReason from json.
+func (s *WfaApprovalEscalationProjectionReason) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode WfaApprovalEscalationProjectionReason to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch WfaApprovalEscalationProjectionReason(v) {
+	case WfaApprovalEscalationProjectionReasonOverdue:
+		*s = WfaApprovalEscalationProjectionReasonOverdue
+	case WfaApprovalEscalationProjectionReasonBlocked:
+		*s = WfaApprovalEscalationProjectionReasonBlocked
+	default:
+		*s = WfaApprovalEscalationProjectionReason(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s WfaApprovalEscalationProjectionReason) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *WfaApprovalEscalationProjectionReason) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
 func (s *WfaApprovalPolicyProjection) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
@@ -49701,6 +50107,14 @@ func (s *WfaApprovalRequestProjection) encodeFields(e *jx.Encoder) {
 		e.ArrEnd()
 	}
 	{
+		e.FieldStart("escalations")
+		e.ArrStart()
+		for _, elem := range s.Escalations {
+			elem.Encode(e)
+		}
+		e.ArrEnd()
+	}
+	{
 		if s.CurrentStepId.Set {
 			e.FieldStart("currentStepId")
 			s.CurrentStepId.Encode(e)
@@ -49733,6 +50147,50 @@ func (s *WfaApprovalRequestProjection) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.AgeSeconds.Set {
+			e.FieldStart("ageSeconds")
+			s.AgeSeconds.Encode(e)
+		}
+	}
+	{
+		if s.CurrentOwnerRoles != nil {
+			e.FieldStart("currentOwnerRoles")
+			e.ArrStart()
+			for _, elem := range s.CurrentOwnerRoles {
+				e.Str(elem)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		if s.EscalationTargetRoles != nil {
+			e.FieldStart("escalationTargetRoles")
+			e.ArrStart()
+			for _, elem := range s.EscalationTargetRoles {
+				e.Str(elem)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		if s.Blocker.Set {
+			e.FieldStart("blocker")
+			s.Blocker.Encode(e)
+		}
+	}
+	{
+		if s.NextAction.Set {
+			e.FieldStart("nextAction")
+			s.NextAction.Encode(e)
+		}
+	}
+	{
+		if s.RecoveryPath.Set {
+			e.FieldStart("recoveryPath")
+			s.RecoveryPath.Encode(e)
+		}
+	}
+	{
 		e.FieldStart("createdAt")
 		json.EncodeDateTime(e, s.CreatedAt)
 	}
@@ -49742,7 +50200,7 @@ func (s *WfaApprovalRequestProjection) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfWfaApprovalRequestProjection = [30]string{
+var jsonFieldsNameOfWfaApprovalRequestProjection = [37]string{
 	0:  "id",
 	1:  "subjectType",
 	2:  "subjectId",
@@ -49765,14 +50223,21 @@ var jsonFieldsNameOfWfaApprovalRequestProjection = [30]string{
 	19: "activeDelegation",
 	20: "steps",
 	21: "decisions",
-	22: "currentStepId",
-	23: "status",
-	24: "applicationStatus",
-	25: "aggregateVersion",
-	26: "responsibleRoles",
-	27: "dueAt",
-	28: "createdAt",
-	29: "updatedAt",
+	22: "escalations",
+	23: "currentStepId",
+	24: "status",
+	25: "applicationStatus",
+	26: "aggregateVersion",
+	27: "responsibleRoles",
+	28: "dueAt",
+	29: "ageSeconds",
+	30: "currentOwnerRoles",
+	31: "escalationTargetRoles",
+	32: "blocker",
+	33: "nextAction",
+	34: "recoveryPath",
+	35: "createdAt",
+	36: "updatedAt",
 }
 
 // Decode decodes WfaApprovalRequestProjection from json.
@@ -49780,7 +50245,7 @@ func (s *WfaApprovalRequestProjection) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode WfaApprovalRequestProjection to nil")
 	}
-	var requiredBitSet [4]uint8
+	var requiredBitSet [5]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
@@ -50030,6 +50495,24 @@ func (s *WfaApprovalRequestProjection) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"decisions\"")
 			}
+		case "escalations":
+			requiredBitSet[2] |= 1 << 6
+			if err := func() error {
+				s.Escalations = make([]WfaApprovalEscalationProjection, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem WfaApprovalEscalationProjection
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Escalations = append(s.Escalations, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"escalations\"")
+			}
 		case "currentStepId":
 			if err := func() error {
 				s.CurrentStepId.Reset()
@@ -50041,7 +50524,7 @@ func (s *WfaApprovalRequestProjection) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"currentStepId\"")
 			}
 		case "status":
-			requiredBitSet[2] |= 1 << 7
+			requiredBitSet[3] |= 1 << 0
 			if err := func() error {
 				if err := s.Status.Decode(d); err != nil {
 					return err
@@ -50051,7 +50534,7 @@ func (s *WfaApprovalRequestProjection) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"status\"")
 			}
 		case "applicationStatus":
-			requiredBitSet[3] |= 1 << 0
+			requiredBitSet[3] |= 1 << 1
 			if err := func() error {
 				if err := s.ApplicationStatus.Decode(d); err != nil {
 					return err
@@ -50061,7 +50544,7 @@ func (s *WfaApprovalRequestProjection) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"applicationStatus\"")
 			}
 		case "aggregateVersion":
-			requiredBitSet[3] |= 1 << 1
+			requiredBitSet[3] |= 1 << 2
 			if err := func() error {
 				v, err := d.Int()
 				s.AggregateVersion = int(v)
@@ -50073,7 +50556,7 @@ func (s *WfaApprovalRequestProjection) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"aggregateVersion\"")
 			}
 		case "responsibleRoles":
-			requiredBitSet[3] |= 1 << 2
+			requiredBitSet[3] |= 1 << 3
 			if err := func() error {
 				s.ResponsibleRoles = make([]string, 0)
 				if err := d.Arr(func(d *jx.Decoder) error {
@@ -50102,8 +50585,86 @@ func (s *WfaApprovalRequestProjection) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"dueAt\"")
 			}
+		case "ageSeconds":
+			if err := func() error {
+				s.AgeSeconds.Reset()
+				if err := s.AgeSeconds.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"ageSeconds\"")
+			}
+		case "currentOwnerRoles":
+			if err := func() error {
+				s.CurrentOwnerRoles = make([]string, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem string
+					v, err := d.Str()
+					elem = string(v)
+					if err != nil {
+						return err
+					}
+					s.CurrentOwnerRoles = append(s.CurrentOwnerRoles, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"currentOwnerRoles\"")
+			}
+		case "escalationTargetRoles":
+			if err := func() error {
+				s.EscalationTargetRoles = make([]string, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem string
+					v, err := d.Str()
+					elem = string(v)
+					if err != nil {
+						return err
+					}
+					s.EscalationTargetRoles = append(s.EscalationTargetRoles, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"escalationTargetRoles\"")
+			}
+		case "blocker":
+			if err := func() error {
+				s.Blocker.Reset()
+				if err := s.Blocker.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"blocker\"")
+			}
+		case "nextAction":
+			if err := func() error {
+				s.NextAction.Reset()
+				if err := s.NextAction.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"nextAction\"")
+			}
+		case "recoveryPath":
+			if err := func() error {
+				s.RecoveryPath.Reset()
+				if err := s.RecoveryPath.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"recoveryPath\"")
+			}
 		case "createdAt":
-			requiredBitSet[3] |= 1 << 4
+			requiredBitSet[4] |= 1 << 3
 			if err := func() error {
 				v, err := json.DecodeDateTime(d)
 				s.CreatedAt = v
@@ -50115,7 +50676,7 @@ func (s *WfaApprovalRequestProjection) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"createdAt\"")
 			}
 		case "updatedAt":
-			requiredBitSet[3] |= 1 << 5
+			requiredBitSet[4] |= 1 << 4
 			if err := func() error {
 				v, err := json.DecodeDateTime(d)
 				s.UpdatedAt = v
@@ -50135,11 +50696,12 @@ func (s *WfaApprovalRequestProjection) Decode(d *jx.Decoder) error {
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
-	for i, mask := range [4]uint8{
+	for i, mask := range [5]uint8{
 		0b00011111,
 		0b11000000,
-		0b10110001,
-		0b00110111,
+		0b01110001,
+		0b00001111,
+		0b00011000,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -54845,6 +55407,379 @@ func (s *WfaEscalateApprovalBadRequest) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode implements json.Marshaler.
+func (s *WfaEscalateApprovalCommandData) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *WfaEscalateApprovalCommandData) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("requestId")
+		s.RequestId.Encode(e)
+	}
+	{
+		e.FieldStart("escalationId")
+		s.EscalationId.Encode(e)
+	}
+	{
+		e.FieldStart("stepId")
+		s.StepId.Encode(e)
+	}
+	{
+		e.FieldStart("reason")
+		s.Reason.Encode(e)
+	}
+	{
+		if s.Blocker.Set {
+			e.FieldStart("blocker")
+			s.Blocker.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("policyVersion")
+		e.Str(s.PolicyVersion)
+	}
+	{
+		e.FieldStart("subjectVersion")
+		e.Int(s.SubjectVersion)
+	}
+	{
+		e.FieldStart("candidateFingerprint")
+		e.Str(s.CandidateFingerprint)
+	}
+}
+
+var jsonFieldsNameOfWfaEscalateApprovalCommandData = [8]string{
+	0: "requestId",
+	1: "escalationId",
+	2: "stepId",
+	3: "reason",
+	4: "blocker",
+	5: "policyVersion",
+	6: "subjectVersion",
+	7: "candidateFingerprint",
+}
+
+// Decode decodes WfaEscalateApprovalCommandData from json.
+func (s *WfaEscalateApprovalCommandData) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode WfaEscalateApprovalCommandData to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "requestId":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.RequestId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"requestId\"")
+			}
+		case "escalationId":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.EscalationId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"escalationId\"")
+			}
+		case "stepId":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.StepId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"stepId\"")
+			}
+		case "reason":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				if err := s.Reason.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"reason\"")
+			}
+		case "blocker":
+			if err := func() error {
+				s.Blocker.Reset()
+				if err := s.Blocker.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"blocker\"")
+			}
+		case "policyVersion":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				v, err := d.Str()
+				s.PolicyVersion = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"policyVersion\"")
+			}
+		case "subjectVersion":
+			requiredBitSet[0] |= 1 << 6
+			if err := func() error {
+				v, err := d.Int()
+				s.SubjectVersion = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"subjectVersion\"")
+			}
+		case "candidateFingerprint":
+			requiredBitSet[0] |= 1 << 7
+			if err := func() error {
+				v, err := d.Str()
+				s.CandidateFingerprint = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"candidateFingerprint\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode WfaEscalateApprovalCommandData")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b11101111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfWfaEscalateApprovalCommandData) {
+					name = jsonFieldsNameOfWfaEscalateApprovalCommandData[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *WfaEscalateApprovalCommandData) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *WfaEscalateApprovalCommandData) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes WfaEscalateApprovalCommandDataReason as json.
+func (s WfaEscalateApprovalCommandDataReason) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes WfaEscalateApprovalCommandDataReason from json.
+func (s *WfaEscalateApprovalCommandDataReason) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode WfaEscalateApprovalCommandDataReason to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch WfaEscalateApprovalCommandDataReason(v) {
+	case WfaEscalateApprovalCommandDataReasonOverdue:
+		*s = WfaEscalateApprovalCommandDataReasonOverdue
+	case WfaEscalateApprovalCommandDataReasonBlocked:
+		*s = WfaEscalateApprovalCommandDataReasonBlocked
+	default:
+		*s = WfaEscalateApprovalCommandDataReason(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s WfaEscalateApprovalCommandDataReason) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *WfaEscalateApprovalCommandDataReason) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *WfaEscalateApprovalCommandRequest) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *WfaEscalateApprovalCommandRequest) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("commandId")
+		s.CommandId.Encode(e)
+	}
+	{
+		e.FieldStart("expectedVersion")
+		e.Int(s.ExpectedVersion)
+	}
+	{
+		e.FieldStart("data")
+		s.Data.Encode(e)
+	}
+}
+
+var jsonFieldsNameOfWfaEscalateApprovalCommandRequest = [3]string{
+	0: "commandId",
+	1: "expectedVersion",
+	2: "data",
+}
+
+// Decode decodes WfaEscalateApprovalCommandRequest from json.
+func (s *WfaEscalateApprovalCommandRequest) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode WfaEscalateApprovalCommandRequest to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "commandId":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.CommandId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"commandId\"")
+			}
+		case "expectedVersion":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Int()
+				s.ExpectedVersion = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"expectedVersion\"")
+			}
+		case "data":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.Data.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"data\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode WfaEscalateApprovalCommandRequest")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfWfaEscalateApprovalCommandRequest) {
+					name = jsonFieldsNameOfWfaEscalateApprovalCommandRequest[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *WfaEscalateApprovalCommandRequest) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *WfaEscalateApprovalCommandRequest) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes WfaEscalateApprovalConflict as json.
 func (s *WfaEscalateApprovalConflict) Encode(e *jx.Encoder) {
 	unwrapped := (*ProblemDetails)(s)
@@ -54883,6 +55818,196 @@ func (s *WfaEscalateApprovalConflict) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode implements json.Marshaler.
+func (s *WfaEscalateApprovalEstablishedResult) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *WfaEscalateApprovalEstablishedResult) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("status")
+		e.Str("established")
+	}
+	{
+		e.FieldStart("aggregateId")
+		s.AggregateId.Encode(e)
+	}
+	{
+		e.FieldStart("aggregateVersion")
+		e.Int(s.AggregateVersion)
+	}
+	{
+		if s.ProcessId.Set {
+			e.FieldStart("processId")
+			s.ProcessId.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("correlationId")
+		s.CorrelationId.Encode(e)
+	}
+	{
+		e.FieldStart("links")
+		s.Links.Encode(e)
+	}
+	{
+		e.FieldStart("data")
+		s.Data.Encode(e)
+	}
+}
+
+var jsonFieldsNameOfWfaEscalateApprovalEstablishedResult = [7]string{
+	0: "status",
+	1: "aggregateId",
+	2: "aggregateVersion",
+	3: "processId",
+	4: "correlationId",
+	5: "links",
+	6: "data",
+}
+
+// Decode decodes WfaEscalateApprovalEstablishedResult from json.
+func (s *WfaEscalateApprovalEstablishedResult) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode WfaEscalateApprovalEstablishedResult to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "status":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.Status = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"status\"")
+			}
+		case "aggregateId":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.AggregateId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"aggregateId\"")
+			}
+		case "aggregateVersion":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Int()
+				s.AggregateVersion = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"aggregateVersion\"")
+			}
+		case "processId":
+			if err := func() error {
+				s.ProcessId.Reset()
+				if err := s.ProcessId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"processId\"")
+			}
+		case "correlationId":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				if err := s.CorrelationId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"correlationId\"")
+			}
+		case "links":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				if err := s.Links.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"links\"")
+			}
+		case "data":
+			requiredBitSet[0] |= 1 << 6
+			if err := func() error {
+				if err := s.Data.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"data\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode WfaEscalateApprovalEstablishedResult")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b01110111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfWfaEscalateApprovalEstablishedResult) {
+					name = jsonFieldsNameOfWfaEscalateApprovalEstablishedResult[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *WfaEscalateApprovalEstablishedResult) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *WfaEscalateApprovalEstablishedResult) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes WfaEscalateApprovalForbidden as json.
 func (s *WfaEscalateApprovalForbidden) Encode(e *jx.Encoder) {
 	unwrapped := (*ProblemDetails)(s)
@@ -54917,6 +56042,221 @@ func (s *WfaEscalateApprovalForbidden) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *WfaEscalateApprovalForbidden) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes WfaEscalateApprovalNotFound as json.
+func (s *WfaEscalateApprovalNotFound) Encode(e *jx.Encoder) {
+	unwrapped := (*ProblemDetails)(s)
+
+	unwrapped.Encode(e)
+}
+
+// Decode decodes WfaEscalateApprovalNotFound from json.
+func (s *WfaEscalateApprovalNotFound) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode WfaEscalateApprovalNotFound to nil")
+	}
+	var unwrapped ProblemDetails
+	if err := func() error {
+		if err := unwrapped.Decode(d); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = WfaEscalateApprovalNotFound(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *WfaEscalateApprovalNotFound) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *WfaEscalateApprovalNotFound) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *WfaEscalateApprovalResultData) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *WfaEscalateApprovalResultData) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("request")
+		s.Request.Encode(e)
+	}
+	{
+		e.FieldStart("escalation")
+		s.Escalation.Encode(e)
+	}
+	{
+		e.FieldStart("validationStatus")
+		e.Str(s.ValidationStatus)
+	}
+	{
+		e.FieldStart("nextAction")
+		e.Str(s.NextAction)
+	}
+	{
+		e.FieldStart("recoveryPath")
+		e.Str(s.RecoveryPath)
+	}
+	{
+		e.FieldStart("replayed")
+		e.Bool(s.Replayed)
+	}
+}
+
+var jsonFieldsNameOfWfaEscalateApprovalResultData = [6]string{
+	0: "request",
+	1: "escalation",
+	2: "validationStatus",
+	3: "nextAction",
+	4: "recoveryPath",
+	5: "replayed",
+}
+
+// Decode decodes WfaEscalateApprovalResultData from json.
+func (s *WfaEscalateApprovalResultData) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode WfaEscalateApprovalResultData to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "request":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Request.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"request\"")
+			}
+		case "escalation":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.Escalation.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"escalation\"")
+			}
+		case "validationStatus":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Str()
+				s.ValidationStatus = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"validationStatus\"")
+			}
+		case "nextAction":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				v, err := d.Str()
+				s.NextAction = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"nextAction\"")
+			}
+		case "recoveryPath":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				v, err := d.Str()
+				s.RecoveryPath = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"recoveryPath\"")
+			}
+		case "replayed":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				v, err := d.Bool()
+				s.Replayed = bool(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"replayed\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode WfaEscalateApprovalResultData")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00111111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfWfaEscalateApprovalResultData) {
+					name = jsonFieldsNameOfWfaEscalateApprovalResultData[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *WfaEscalateApprovalResultData) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *WfaEscalateApprovalResultData) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

@@ -141,6 +141,7 @@ type AuditRecord struct {
 	DecisionReference             uuid.UUID
 	ApprovalRequestID             uuid.UUID
 	ApprovalDecisionID            uuid.UUID
+	ApprovalEscalationID          uuid.UUID
 	ApproverUserID                uuid.UUID
 	RevisionVersion               int64
 	Reason                        string

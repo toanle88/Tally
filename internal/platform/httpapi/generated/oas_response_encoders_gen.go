@@ -21424,7 +21424,7 @@ func encodeWfaDelegateApprovalResponse(response WfaDelegateApprovalRes, w http.R
 
 func encodeWfaEscalateApprovalResponse(response WfaEscalateApprovalRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
-	case *EstablishedResult:
+	case *WfaEscalateApprovalEstablishedResult:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
@@ -21483,6 +21483,18 @@ func encodeWfaEscalateApprovalResponse(response WfaEscalateApprovalRes, w http.R
 	case *WfaEscalateApprovalForbidden:
 		w.Header().Set("Content-Type", "application/problem+json")
 		w.WriteHeader(403)
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *WfaEscalateApprovalNotFound:
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.WriteHeader(404)
 
 		e := new(jx.Encoder)
 		response.Encode(e)

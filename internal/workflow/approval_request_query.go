@@ -237,7 +237,7 @@ func approvalRequestMatchesListFilter(request ApprovalRequest, filter ApprovalRe
 	}
 	switch filter.State {
 	case ApprovalRequestStateBlocked:
-		return request.Status == ApprovalRequestStatusPending && request.DueAt != nil && !request.DueAt.After(now)
+		return request.Status == ApprovalRequestStatusPending && approvalRequestHasBlockedEscalation(request)
 	case ApprovalRequestStateDelegated:
 		return request.ActiveDelegation != nil || approvalRequestHasStepStatus(request, "delegated")
 	case ApprovalRequestStateEscalated:
@@ -247,6 +247,15 @@ func approvalRequestMatchesListFilter(request ApprovalRequest, filter ApprovalRe
 	default:
 		return true
 	}
+}
+
+func approvalRequestHasBlockedEscalation(request ApprovalRequest) bool {
+	for _, escalation := range request.Escalations {
+		if escalation.Reason == ApprovalEscalationReasonBlocked && strings.TrimSpace(escalation.Blocker) != "" {
+			return true
+		}
+	}
+	return false
 }
 
 func approvalRequestHasStepStatus(request ApprovalRequest, expected string) bool {
