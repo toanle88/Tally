@@ -4,7 +4,7 @@
 > `[x]` means complete or intentionally closed; `[ ]` means open, planned, or awaiting qualification evidence.
 > Workflow and NFR delivery tables do not define an Epic column, so those items are grouped under their primary roadmap epic for navigation.
 
-**Last updated:** 2026-10-11
+**Last updated:** 2026-10-15
 
 ## [x] EP-PLAT-001 — Engineering foundation (M0)
 
@@ -160,16 +160,24 @@ individually verified by this parent status.
 - [ ] `DLV-FR-GL-018` — FR-GL-018 — `Maintain accounts and reporting mappings`
 - [ ] `DLV-WF-6.6` — WF-6.6 — Journal Entry Posting and Reversal
 
-## [ ] EP-WFA-001 — Workflow and approvals (M3)
+## [x] EP-WFA-001 — Workflow and approvals (M3)
 
 Approval policies, requests, decisions, delegation, escalation, and decision application.
 
 User-story plan: [EP-WFA-001 user stories](docs/backlog/stories/EP-WFA-001_user_stories.md)
 
-User Stories 1–4 have focused local implementation evidence on the current
-feature branch. The epic and delivery items remain open pending PostgreSQL,
-cross-context, production authorization, accessibility, and release
-qualification; User Story 5 is not implemented.
+User Stories 1–5 have local implementation and focused verification evidence on
+the current feature branch. EP-WFA-001 is marked done by explicit
+user-requested status override; child delivery items remain open pending
+PostgreSQL, cross-context, production authorization, accessibility,
+notification, recovery, and release qualification. See
+[`DLV-FR-WFA-004` verification](docs/verification/DLV-FR-WFA-004-us5-escalate-approval.md)
+for the current escalation-slice evidence and limits.
+
+Status comment — 2026-10-15: EP-WFA-001 is marked done by explicit
+user-requested status override. This parent status does not mark its child
+delivery items or integration, accessibility, recovery, or release
+qualification complete.
 
 - [ ] `DLV-GFR-004` — GFR-004 — EP-WFA-001
 - [ ] `DLV-FR-WFA-001` — FR-WFA-001 — `CreateApprovalRequest`

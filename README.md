@@ -24,28 +24,28 @@ Implemented repository slices include:
 - General Ledger slices for ledgers, accounting books, charts of accounts,
   accounts, posting, journal approval, reversal, posting barriers, soft close,
   scoped reopen, and operational reopen/reclose under `internal/gl/`.
-- Workflow policy maintenance, approval-request create/read, and the User Story
-  3 approval-decision record-and-expose slice under `internal/workflow/`, including
-  effective-policy resolution, immutable subject and decision evidence,
-  decision-time authorization, durable idempotency and PostgreSQL persistence,
-  audit/outbox integration, the authenticated decision API, and the WFA-SCR-02
-  decision workspace. Downstream decision application acknowledgement,
-  authoritative delegation lifecycle, escalation, notifications, and full
-  qualification remain later workflow scope.
+- Workflow policy maintenance, approval-request create/read, approval-decision
+  recording/exposure, delegation, and escalation implementation slices under
+  `internal/workflow/`, including effective-policy resolution, immutable subject
+  and decision evidence, decision-time authorization, durable idempotency and
+  PostgreSQL persistence, audit/outbox integration, authenticated APIs, and the
+  WFA-SCR-02/WFA-SCR-04 workflow workspaces. Downstream decision application
+  acknowledgement, notifications, production worker composition, and full
+  qualification remain open.
 - A generated, authenticated API boundary under `/api/v1` for the implemented
   identity, organization, COA, General Ledger, and workflow policy, request,
-  and decision operations, plus anonymous `GET /health/live`.
+  decision, delegation, and escalation operations, plus anonymous
+  `GET /health/live`.
 - A React/Vite frontend with shared finance interaction components and
   fixture-backed identity/access, master-data, COA, General Ledger, and
   workflow workspaces, including the WFA-SCR-02 decision view.
 
-`ROADMAP.md` marks the `EP-GL-001` parent locally complete by explicit status
-override, while its child delivery items and PostgreSQL, browser, accessibility,
-cross-context, and release qualification remain open. `EP-WFA-001` remains open;
-the current branch implements approval-policy management, User Story 2's
-approval-request slice, and User Story 3's workflow-owned decision recording and
-exposure without claiming downstream application acknowledgement, the complete
-delegation/escalation lifecycle, or full workflow qualification.
+`ROADMAP.md` marks the `EP-GL-001` and `EP-WFA-001` parents locally complete by
+explicit status override, while their child delivery items and PostgreSQL,
+browser, accessibility, cross-context, notification, recovery, and release
+qualification remain open. The current branch contains WFA User Stories 1–5
+implementation slices without claiming downstream application acknowledgement,
+production worker composition, or full workflow qualification.
 
 For the business, technology, and architecture learning guide, see the
 [TALLY docs site](./docs-site/learning-notes.md).
@@ -801,14 +801,13 @@ roadmap also records local/owner-closed foundation slices for `EP-OPS-001`,
 `EP-IAM-001`, `EP-OMD-001`, and `EP-COA-001`; each closure retains explicit
 deferred qualification boundaries.
 
-`EP-GL-001` is marked locally complete by the explicit status override recorded
-in `ROADMAP.md`; its implementation is present in the current source tree, but
-the child delivery items and qualification follow-ups remain open. `EP-WFA-001`
-is still open. The current branch contains approval-policy management, the
-User Story 2 approval-request create/read slice, and the User Story 3
-workflow-owned decision record-and-expose slice. Downstream decision application
-acknowledgement, authoritative delegation, escalation, and full workflow
-qualification remain future scope. Focused gates
+`EP-GL-001` and `EP-WFA-001` are marked locally complete by the explicit status
+overrides recorded in `ROADMAP.md`; their implementations are present in the
+current source tree, but the child delivery items and qualification follow-ups
+remain open. The current branch contains WFA User Stories 1–5 implementation
+slices. Downstream decision application acknowledgement, production worker
+composition, notifications, and full workflow qualification remain future
+scope. Focused gates
 include `make shared-primitives-check`, `make outbox-dispatch-check`,
 `make outbox-worker-check`, and `make api-check`; the verification snapshot
 above records the commands actually run for this README update.
