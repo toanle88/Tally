@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -19,6 +20,7 @@ import (
 const (
 	ApprovalRequestedEventType        = "approval_requested"
 	ApprovalDecisionRecordedEventType = "approval_decision_recorded"
+	ApprovalEscalatedEventType        = "approval_escalated"
 )
 
 const (
@@ -31,6 +33,8 @@ const (
 	ApprovalDecisionApproved = "approved"
 	ApprovalDecisionRejected = "rejected"
 )
+
+const ApprovalRequestStepStatusEscalated = "Escalated"
 
 const ApprovalDecisionApplicationStatusNotReported = "not-reported"
 
@@ -66,6 +70,27 @@ type ApprovalRequestStep struct {
 	Delegation       DelegationConfiguration `json:"delegation,omitempty"`
 	Escalation       EscalationConfiguration `json:"escalation,omitempty"`
 	Status           string                  `json:"status"`
+}
+
+type ApprovalEscalation struct {
+	ID                    uuid.UUID  `json:"id"`
+	StepID                uuid.UUID  `json:"stepId"`
+	Reason                string     `json:"reason"`
+	Blocker               string     `json:"blocker,omitempty"`
+	ResponsibleRoles      []string   `json:"responsibleRoles"`
+	TargetRoles           []string   `json:"targetRoles"`
+	ActorUserID           uuid.UUID  `json:"actorUserId,omitempty"`
+	ActorSubjectReference string     `json:"actorSubjectReference,omitempty"`
+	ProcessReference      string     `json:"processReference,omitempty"`
+	PolicyID              uuid.UUID  `json:"policyId"`
+	PolicyVersion         string     `json:"policyVersion"`
+	SubjectVersion        int64      `json:"subjectVersion"`
+	CandidateFingerprint  string     `json:"candidateFingerprint"`
+	DueAt                 *time.Time `json:"dueAt,omitempty"`
+	OccurredAt            time.Time  `json:"occurredAt"`
+	AuditReference        uuid.UUID  `json:"auditReference"`
+	CorrelationID         string     `json:"correlationId"`
+	CausationID           string     `json:"causationId"`
 }
 
 type ApprovalDecision struct {
@@ -105,6 +130,7 @@ type ApprovalRequest struct {
 	Requester           Actor                             `json:"requester"`
 	Steps               []ApprovalRequestStep             `json:"steps"`
 	Decisions           []ApprovalDecision                `json:"decisions"`
+	Escalations         []ApprovalEscalation              `json:"escalations,omitempty"`
 	ActiveDelegation    *Delegation                       `json:"activeDelegation,omitempty"`
 	Status              string                            `json:"status"`
 	Version             aggregateversion.AggregateVersion `json:"version"`
@@ -153,6 +179,11 @@ func (request ApprovalRequest) Validate() error {
 		if step.ID == uuid.Nil || step.Sequence < 1 || step.MinimumApprovals < 1 {
 			return fmt.Errorf("%w: approval request step is invalid", ErrInvalidApprovalPolicyCommand)
 		}
+		switch step.Status {
+		case ApprovalRequestStatusPending, ApprovalRequestStepStatusEscalated, ApprovalRequestStatusApproved, ApprovalRequestStatusRejected:
+		default:
+			return fmt.Errorf("%w: approval request step status is invalid", ErrInvalidApprovalPolicyCommand)
+		}
 	}
 	decisionIDs := make(map[uuid.UUID]struct{}, len(request.Decisions))
 	for _, decision := range request.Decisions {
@@ -184,6 +215,55 @@ func (request ApprovalRequest) Validate() error {
 			return fmt.Errorf("%w: duplicate approval decision", ErrInvalidApprovalPolicyCommand)
 		}
 		decisionIDs[decision.ID] = struct{}{}
+	}
+	escalationIDs := make(map[uuid.UUID]struct{}, len(request.Escalations))
+	escalatedSteps := make(map[uuid.UUID]struct{}, len(request.Escalations))
+	for _, escalation := range request.Escalations {
+		if escalation.ID == uuid.Nil || escalation.StepID == uuid.Nil || escalation.PolicyID != request.PolicyID || escalation.PolicyVersion != request.PolicyVersion || escalation.SubjectVersion != request.SubjectVersion || escalation.CandidateFingerprint != request.SubjectFingerprint || escalation.OccurredAt.IsZero() {
+			return fmt.Errorf("%w: approval escalation evidence is invalid", ErrInvalidApprovalPolicyCommand)
+		}
+		if escalation.Reason != ApprovalEscalationReasonOverdue && escalation.Reason != ApprovalEscalationReasonBlocked {
+			return fmt.Errorf("%w: approval escalation reason is invalid", ErrInvalidApprovalPolicyCommand)
+		}
+		if escalation.Reason == ApprovalEscalationReasonBlocked && strings.TrimSpace(escalation.Blocker) == "" {
+			return fmt.Errorf("%w: blocked approval escalation requires a blocker", ErrInvalidApprovalPolicyCommand)
+		}
+		if len(escalation.Blocker) > approvalEscalationBlockerMaxLength || len(escalation.ProcessReference) > approvalEscalationProcessReferenceMaxLength {
+			return fmt.Errorf("%w: approval escalation evidence is too long", ErrInvalidApprovalPolicyCommand)
+		}
+		if escalation.ActorUserID == uuid.Nil && strings.TrimSpace(escalation.ProcessReference) == "" {
+			return fmt.Errorf("%w: approval escalation actor or process is required", ErrInvalidApprovalPolicyCommand)
+		}
+		if escalation.ActorUserID != uuid.Nil && strings.TrimSpace(escalation.ProcessReference) != "" {
+			return fmt.Errorf("%w: approval escalation cannot contain both actor and process evidence", ErrInvalidApprovalPolicyCommand)
+		}
+		if escalation.ActorUserID == uuid.Nil && strings.TrimSpace(escalation.ActorSubjectReference) != "" {
+			return fmt.Errorf("%w: process escalation cannot contain actor subject evidence", ErrInvalidApprovalPolicyCommand)
+		}
+		if escalation.ActorUserID != uuid.Nil && strings.TrimSpace(escalation.ActorSubjectReference) == "" {
+			return fmt.Errorf("%w: approval escalation actor subject reference is required", ErrInvalidApprovalPolicyCommand)
+		}
+		knownStep := false
+		for _, step := range request.Steps {
+			if step.ID == escalation.StepID {
+				knownStep = true
+				break
+			}
+		}
+		if !knownStep {
+			return fmt.Errorf("%w: approval escalation step is unknown", ErrInvalidApprovalPolicyCommand)
+		}
+		if len(escalation.TargetRoles) == 0 {
+			return fmt.Errorf("%w: approval escalation target roles are required", ErrInvalidApprovalPolicyCommand)
+		}
+		if _, exists := escalationIDs[escalation.ID]; exists {
+			return fmt.Errorf("%w: duplicate approval escalation", ErrInvalidApprovalPolicyCommand)
+		}
+		if _, exists := escalatedSteps[escalation.StepID]; exists {
+			return fmt.Errorf("%w: duplicate approval escalation step", ErrInvalidApprovalPolicyCommand)
+		}
+		escalationIDs[escalation.ID] = struct{}{}
+		escalatedSteps[escalation.StepID] = struct{}{}
 	}
 	return nil
 }
@@ -273,6 +353,42 @@ type DecideApprovalRequestCommand struct {
 	CausationID          string
 }
 
+type EscalateApprovalCommand struct {
+	RequestID            uuid.UUID
+	ExpectedVersion      *aggregateversion.AggregateVersion
+	EscalationID         uuid.UUID
+	StepID               uuid.UUID
+	Reason               string
+	Blocker              string
+	PolicyVersion        string
+	SubjectVersion       int64
+	CandidateFingerprint string
+	IdempotencyKey       string
+	CorrelationID        string
+	CausationID          string
+}
+
+func (command EscalateApprovalCommand) Validate() error {
+	if command.RequestID == uuid.Nil || command.EscalationID == uuid.Nil || command.StepID == uuid.Nil || strings.TrimSpace(command.IdempotencyKey) == "" {
+		return fmt.Errorf("%w: approval escalation identity and idempotency key are required", ErrInvalidApprovalPolicyCommand)
+	}
+	if command.ExpectedVersion == nil || command.ExpectedVersion.Value() < 1 || command.SubjectVersion < 1 || strings.TrimSpace(command.PolicyVersion) == "" || strings.TrimSpace(command.CandidateFingerprint) == "" || len(strings.TrimSpace(command.CandidateFingerprint)) > approvalEscalationFingerprintMaxLength {
+		return fmt.Errorf("%w: approval escalation evidence is incomplete", ErrInvalidApprovalPolicyCommand)
+	}
+	command.Reason = strings.ToLower(strings.TrimSpace(command.Reason))
+	command.Blocker = strings.TrimSpace(command.Blocker)
+	if command.Reason != ApprovalEscalationReasonOverdue && command.Reason != ApprovalEscalationReasonBlocked {
+		return fmt.Errorf("%w: approval escalation reason is invalid", ErrInvalidApprovalPolicyCommand)
+	}
+	if command.Reason == ApprovalEscalationReasonBlocked && command.Blocker == "" {
+		return fmt.Errorf("%w: blocked approval escalation requires a blocker", ErrInvalidApprovalPolicyCommand)
+	}
+	if len(command.Blocker) > approvalEscalationBlockerMaxLength {
+		return fmt.Errorf("%w: approval escalation blocker is too long", ErrInvalidApprovalPolicyCommand)
+	}
+	return nil
+}
+
 func (command DecideApprovalRequestCommand) Validate() error {
 	if command.RequestID == uuid.Nil || strings.TrimSpace(command.IdempotencyKey) == "" || (command.Outcome != ApprovalDecisionApproved && command.Outcome != ApprovalDecisionRejected) {
 		return fmt.Errorf("%w: approval decision identity, outcome, and idempotency key are required", ErrInvalidApprovalPolicyCommand)
@@ -292,6 +408,7 @@ func (command DecideApprovalRequestCommand) Validate() error {
 type ApprovalRequestAuditRecord struct {
 	ApprovalRequestID             uuid.UUID
 	ApprovalDecisionID            uuid.UUID
+	ApprovalEscalationID          uuid.UUID
 	ActorUserID                   uuid.UUID
 	ActorAuthenticationSubjectRef string
 	ApproverUserID                uuid.UUID
@@ -317,26 +434,31 @@ type ApprovalRequestAuditRecorder interface {
 }
 
 type ApprovalEvent struct {
-	Type                 string
-	RequestID            uuid.UUID
-	DecisionID           uuid.UUID
-	DecisionVersion      int64
-	Outcome              string
-	ApproverUserID       uuid.UUID
-	StepID               uuid.UUID
-	DelegationReference  string
-	AggregateVersion     int64
-	PolicyID             uuid.UUID
-	PolicyVersion        string
-	SubjectID            string
-	SubjectVersion       int64
-	CandidateFingerprint string
-	ScopeIDs             []string
-	DataClassification   string
-	OccurredAt           time.Time
-	DecidedAt            time.Time
-	CorrelationID        string
-	CausationID          string
+	Type                  string
+	RequestID             uuid.UUID
+	DecisionID            uuid.UUID
+	EscalationID          uuid.UUID
+	DecisionVersion       int64
+	Outcome               string
+	EscalationReason      string
+	EscalationBlocker     string
+	EscalationTargetRoles []string
+	ApproverUserID        uuid.UUID
+	StepID                uuid.UUID
+	DelegationReference   string
+	AggregateVersion      int64
+	PolicyID              uuid.UUID
+	PolicyVersion         string
+	SubjectID             string
+	SubjectVersion        int64
+	CandidateFingerprint  string
+	ScopeIDs              []string
+	DataClassification    string
+	OccurredAt            time.Time
+	DecidedAt             time.Time
+	EscalatedAt           time.Time
+	CorrelationID         string
+	CausationID           string
 }
 
 type ApprovalEventRecorder interface {
@@ -345,7 +467,21 @@ type ApprovalEventRecorder interface {
 
 type ApprovalRequestRepository interface {
 	Get(context.Context, uuid.UUID) (ApprovalRequest, error)
-	Save(context.Context, ApprovalRequest, *ApprovalRequest, ApprovalRequestAuditRecord, ApprovalEvent) error
+	Save(context.Context, ApprovalRequest, *ApprovalRequest, ApprovalRequestAuditRecord, ApprovalEvent) (uuid.UUID, error)
+}
+
+type ApprovalEscalationCandidate struct {
+	RequestID            uuid.UUID
+	ExpectedVersion      aggregateversion.AggregateVersion
+	StepID               uuid.UUID
+	PolicyVersion        string
+	SubjectVersion       int64
+	CandidateFingerprint string
+	DueAt                time.Time
+}
+
+type ApprovalEscalationCandidateReader interface {
+	ListDueApprovalEscalationCandidates(context.Context, time.Time, int) ([]ApprovalEscalationCandidate, error)
 }
 
 // ApprovalRequestReader is the read-only boundary used by the WFA worklist
@@ -365,25 +501,35 @@ type DelegationReader interface {
 }
 
 type DurableApprovalRequestServiceConfig struct {
-	Database          platformidempotency.TxBeginner
-	Coordinator       platformidempotency.DurableCoordinator
-	Policy            platformidempotency.IdempotencyPolicy
-	CreateOperationID string
-	DecideOperationID string
+	Database            platformidempotency.TxBeginner
+	Coordinator         platformidempotency.DurableCoordinator
+	Policy              platformidempotency.IdempotencyPolicy
+	CreateOperationID   string
+	DecideOperationID   string
+	EscalateOperationID string
 }
 
 type DurableApprovalRequestCommit struct {
-	Coordinator platformidempotency.DurableCoordinator
-	Acquisition platformidempotency.DurableAcquisition
-	Result      platformidempotency.CommandResultMetadata
+	Coordinator   platformidempotency.DurableCoordinator
+	Acquisition   platformidempotency.DurableAcquisition
+	Result        platformidempotency.CommandResultMetadata
+	ResultBuilder func(uuid.UUID) (platformidempotency.CommandResultMetadata, error)
 }
 
 type DurableApprovalRequestRepository interface {
-	SaveWithIdempotency(context.Context, ApprovalRequest, *ApprovalRequest, ApprovalRequestAuditRecord, ApprovalEvent, DurableApprovalRequestCommit) error
+	SaveWithIdempotency(context.Context, ApprovalRequest, *ApprovalRequest, ApprovalRequestAuditRecord, ApprovalEvent, DurableApprovalRequestCommit) (uuid.UUID, error)
 }
 
 type ApprovalRequestAuthorizer interface {
 	AuthorizeApprovalDecision(context.Context, Actor, ApprovalRequest) (AuthorizationDecision, error)
+}
+
+type ApprovalRequestEscalationAuthorizer interface {
+	AuthorizeApprovalEscalation(context.Context, Actor, ApprovalRequest, ApprovalRequestStep) (AuthorizationDecision, error)
+}
+
+type ApprovalRequestEscalationProcessAuthorizer interface {
+	AuthorizeApprovalEscalationProcess(context.Context, string, ApprovalRequest, ApprovalRequestStep) (AuthorizationDecision, error)
 }
 
 // ApprovalRequestStepAuthorizer is an optional extension used by the runtime
@@ -412,9 +558,10 @@ type ApprovalRequestReadAuthorizer interface {
 }
 
 type ApprovalRequestCommandResult struct {
-	Request   ApprovalRequest
-	Reference ApprovalDecisionReference
-	Replayed  bool
+	Request    ApprovalRequest
+	Reference  ApprovalDecisionReference
+	Escalation *ApprovalEscalation
+	Replayed   bool
 }
 
 // PreparedApprovalRequest contains the complete generic WFA request effect
@@ -483,7 +630,7 @@ func NewApprovalRequestService(repository ApprovalRequestRepository, authorizer 
 }
 
 func NewApprovalRequestServiceWithDurableIdempotency(repository ApprovalRequestRepository, authorizer ApprovalRequestAuthorizer, audit ApprovalRequestAuditRecorder, events ApprovalEventRecorder, clock func() time.Time, durable DurableApprovalRequestServiceConfig) (*ApprovalRequestService, error) {
-	if durable.Database == nil || durable.Coordinator == nil || durable.Policy.RecordTTL <= 0 || durable.Policy.LeaseTTL <= 0 || durable.Policy.LeaseTTL >= durable.Policy.RecordTTL || strings.TrimSpace(durable.CreateOperationID) == "" || strings.TrimSpace(durable.DecideOperationID) == "" {
+	if durable.Database == nil || durable.Coordinator == nil || durable.Policy.RecordTTL <= 0 || durable.Policy.LeaseTTL <= 0 || durable.Policy.LeaseTTL >= durable.Policy.RecordTTL || strings.TrimSpace(durable.CreateOperationID) == "" || strings.TrimSpace(durable.DecideOperationID) == "" || strings.TrimSpace(durable.EscalateOperationID) == "" {
 		return nil, ErrInvalidApprovalPolicyService
 	}
 	return newApprovalRequestService(repository, authorizer, audit, events, clock, &durable)
@@ -598,10 +745,10 @@ func (service *ApprovalRequestService) CreateApprovalRequest(ctx context.Context
 		if metadataErr != nil {
 			return ApprovalRequestCommandResult{}, metadataErr
 		}
-		if err := committer.SaveWithIdempotency(ctx, request, nil, auditRecord, event, DurableApprovalRequestCommit{Coordinator: service.durable.Coordinator, Acquisition: durableAcquisition, Result: metadata}); err != nil {
+		if _, err := committer.SaveWithIdempotency(ctx, request, nil, auditRecord, event, DurableApprovalRequestCommit{Coordinator: service.durable.Coordinator, Acquisition: durableAcquisition, Result: metadata}); err != nil {
 			return ApprovalRequestCommandResult{}, err
 		}
-	} else if err := service.repository.Save(ctx, request, nil, auditRecord, event); err != nil {
+	} else if _, err := service.repository.Save(ctx, request, nil, auditRecord, event); err != nil {
 		return ApprovalRequestCommandResult{}, err
 	}
 	if service.durable == nil {
@@ -811,10 +958,10 @@ func (service *ApprovalRequestService) DecideApprovalRequest(ctx context.Context
 		if metadataErr != nil {
 			return ApprovalRequestCommandResult{}, metadataErr
 		}
-		if err := committer.SaveWithIdempotency(ctx, request, &requestBefore, auditRecord, event, DurableApprovalRequestCommit{Coordinator: service.durable.Coordinator, Acquisition: durableAcquisition, Result: metadata}); err != nil {
+		if _, err := committer.SaveWithIdempotency(ctx, request, &requestBefore, auditRecord, event, DurableApprovalRequestCommit{Coordinator: service.durable.Coordinator, Acquisition: durableAcquisition, Result: metadata}); err != nil {
 			return ApprovalRequestCommandResult{}, err
 		}
-	} else if err := service.repository.Save(ctx, request, &requestBefore, auditRecord, event); err != nil {
+	} else if _, err := service.repository.Save(ctx, request, &requestBefore, auditRecord, event); err != nil {
 		return ApprovalRequestCommandResult{}, err
 	}
 	if service.durable == nil {
@@ -844,7 +991,7 @@ func actionableApprovalRequestStep(request ApprovalRequest, requestedStepID uuid
 	var actionable *ApprovalRequestStep
 	for index := range request.Steps {
 		step := &request.Steps[index]
-		if step.Status != ApprovalRequestStatusPending {
+		if step.Status != ApprovalRequestStatusPending && step.Status != ApprovalRequestStepStatusEscalated {
 			continue
 		}
 		if actionable == nil || step.Sequence < actionable.Sequence {
@@ -993,6 +1140,10 @@ func durableApprovalRequestFailureCode(err error) (string, bool) {
 		return "APPROVAL_EXPIRED", true
 	case errors.Is(err, ErrApprovalPolicyStepConflict):
 		return "STEP_CONFLICT", true
+	case errors.Is(err, ErrApprovalPolicyEscalationNotEligible):
+		return "ESCALATION_NOT_ELIGIBLE", true
+	case errors.Is(err, ErrApprovalPolicyAlreadyEscalated):
+		return "ALREADY_ESCALATED", true
 	case errors.Is(err, ErrApprovalPolicyDuplicate):
 		return "DUPLICATE", true
 	case errors.Is(err, ErrApprovalPolicyApprovalUnavailable):
@@ -1040,6 +1191,10 @@ func durableApprovalRequestFailureError(body []byte) error {
 		return ErrApprovalPolicyExpired
 	case "STEP_CONFLICT":
 		return ErrApprovalPolicyStepConflict
+	case "ESCALATION_NOT_ELIGIBLE":
+		return ErrApprovalPolicyEscalationNotEligible
+	case "ALREADY_ESCALATED":
+		return ErrApprovalPolicyAlreadyEscalated
 	case "DUPLICATE":
 		return ErrApprovalPolicyDuplicate
 	case "APPROVAL_UNAVAILABLE":
@@ -1106,41 +1261,94 @@ func (repository *MemoryApprovalRequestRepository) List(_ context.Context) ([]Ap
 	return requests, nil
 }
 
-func (repository *MemoryApprovalRequestRepository) Save(ctx context.Context, request ApprovalRequest, before *ApprovalRequest, auditRecord ApprovalRequestAuditRecord, event ApprovalEvent) error {
+func (repository *MemoryApprovalRequestRepository) ListDueApprovalEscalationCandidates(_ context.Context, now time.Time, limit int) ([]ApprovalEscalationCandidate, error) {
+	if repository == nil || limit < 1 || limit > 100 {
+		return nil, ErrInvalidApprovalPolicyCommand
+	}
+	repository.mu.RLock()
+	defer repository.mu.RUnlock()
+	candidates := make([]ApprovalEscalationCandidate, 0, limit)
+	for _, request := range repository.requests {
+		if request.Status != ApprovalRequestStatusPending || request.DueAt == nil || request.DueAt.After(now.UTC()) {
+			continue
+		}
+		step, err := actionableApprovalRequestStep(request, uuid.Nil)
+		if err != nil || step.Status != ApprovalRequestStatusPending || !step.Escalation.Enabled || step.Escalation.AfterSeconds < 1 || len(step.Escalation.EscalateToRoles) == 0 {
+			continue
+		}
+		alreadyEscalated := false
+		for _, escalation := range request.Escalations {
+			if escalation.StepID == step.ID {
+				alreadyEscalated = true
+				break
+			}
+		}
+		if alreadyEscalated {
+			continue
+		}
+		candidates = append(candidates, ApprovalEscalationCandidate{RequestID: request.ID, ExpectedVersion: request.Version, StepID: step.ID, PolicyVersion: request.PolicyVersion, SubjectVersion: request.SubjectVersion, CandidateFingerprint: request.SubjectFingerprint, DueAt: request.DueAt.UTC()})
+	}
+	sort.Slice(candidates, func(left, right int) bool {
+		if candidates[left].DueAt.Equal(candidates[right].DueAt) {
+			return candidates[left].RequestID.String() < candidates[right].RequestID.String()
+		}
+		return candidates[left].DueAt.Before(candidates[right].DueAt)
+	})
+	if len(candidates) > limit {
+		candidates = candidates[:limit]
+	}
+	return candidates, nil
+}
+
+func (repository *MemoryApprovalRequestRepository) Save(ctx context.Context, request ApprovalRequest, before *ApprovalRequest, auditRecord ApprovalRequestAuditRecord, event ApprovalEvent) (uuid.UUID, error) {
 	if repository == nil {
-		return ErrInvalidApprovalPolicyService
+		return uuid.Nil, ErrInvalidApprovalPolicyService
 	}
 	if err := request.Validate(); err != nil {
-		return err
+		return uuid.Nil, err
 	}
 	repository.mu.Lock()
 	defer repository.mu.Unlock()
 	current, exists := repository.requests[request.ID]
 	if before == nil {
 		if exists {
-			return ErrApprovalPolicyDuplicate
+			return uuid.Nil, ErrApprovalPolicyDuplicate
 		}
 	} else if !exists || current.Version.Value() != before.Version.Value() {
-		return ErrApprovalPolicyVersionConflict
+		return uuid.Nil, ErrApprovalPolicyVersionConflict
 	}
 	if repository.audit == nil || repository.events == nil {
-		return ErrApprovalPolicyAuditUnavailable
+		return uuid.Nil, ErrApprovalPolicyAuditUnavailable
 	}
-	if _, err := repository.audit.RecordApprovalRequestMutation(ctx, auditRecord); err != nil {
-		return err
+	auditReference, err := repository.audit.RecordApprovalRequestMutation(ctx, auditRecord)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	if auditReference == uuid.Nil {
+		return uuid.Nil, ErrApprovalPolicyAuditUnavailable
 	}
 	if err := repository.events.RecordApprovalEvent(ctx, event); err != nil {
-		return err
+		return uuid.Nil, err
 	}
-	repository.requests[request.ID] = cloneApprovalRequest(request)
-	return nil
+	stored := cloneApprovalRequest(request)
+	if auditRecord.ApprovalEscalationID != uuid.Nil {
+		for index := range stored.Escalations {
+			if stored.Escalations[index].ID == auditRecord.ApprovalEscalationID {
+				stored.Escalations[index].AuditReference = auditReference
+				break
+			}
+		}
+	}
+	repository.requests[request.ID] = stored
+	return auditReference, nil
 }
 
 type MemoryApprovalRequestAuthorizer struct {
-	Decision       AuthorizationDecision
-	DecideDecision *AuthorizationDecision
-	ReadDecision   *AuthorizationDecision
-	Err            error
+	Decision         AuthorizationDecision
+	DecideDecision   *AuthorizationDecision
+	EscalateDecision *AuthorizationDecision
+	ReadDecision     *AuthorizationDecision
+	Err              error
 }
 
 func (authorizer MemoryApprovalRequestAuthorizer) AuthorizeApprovalDecisionForStep(ctx context.Context, actor Actor, request ApprovalRequest, _ ApprovalRequestStep) (AuthorizationDecision, error) {
@@ -1154,6 +1362,45 @@ func (authorizer MemoryApprovalRequestAuthorizer) AuthorizeApprovalDecision(_ co
 	decision := authorizer.Decision
 	if authorizer.DecideDecision != nil && actor.UserID != request.Requester.UserID {
 		decision = *authorizer.DecideDecision
+	}
+	decision.ApprovedScopeIDs = append([]string(nil), decision.ApprovedScopeIDs...)
+	return decision, nil
+}
+
+func (authorizer MemoryApprovalRequestAuthorizer) AuthorizeApprovalEscalation(_ context.Context, _ Actor, _ ApprovalRequest, _ ApprovalRequestStep) (AuthorizationDecision, error) {
+	if authorizer.Err != nil {
+		return AuthorizationDecision{}, authorizer.Err
+	}
+	decision := authorizer.Decision
+	if authorizer.EscalateDecision != nil {
+		decision = *authorizer.EscalateDecision
+	}
+	if decision.Permission == "" {
+		decision.Permission = EscalateApprovalPermission
+	}
+	if decision.DecisionReference == uuid.Nil {
+		decision.DecisionReference = uuid.New()
+	}
+	decision.ApprovedScopeIDs = append([]string(nil), decision.ApprovedScopeIDs...)
+	return decision, nil
+}
+
+func (authorizer MemoryApprovalRequestAuthorizer) AuthorizeApprovalEscalationProcess(_ context.Context, processReference string, _ ApprovalRequest, _ ApprovalRequestStep) (AuthorizationDecision, error) {
+	if authorizer.Err != nil {
+		return AuthorizationDecision{}, authorizer.Err
+	}
+	if strings.TrimSpace(processReference) == "" {
+		return AuthorizationDecision{}, ErrApprovalPolicyAuthorizationUnavailable
+	}
+	decision := authorizer.Decision
+	if authorizer.EscalateDecision != nil {
+		decision = *authorizer.EscalateDecision
+	}
+	if decision.Permission == "" {
+		decision.Permission = EscalateApprovalPermission
+	}
+	if decision.DecisionReference == uuid.Nil {
+		decision.DecisionReference = uuid.New()
 	}
 	decision.ApprovedScopeIDs = append([]string(nil), decision.ApprovedScopeIDs...)
 	return decision, nil
@@ -1300,6 +1547,10 @@ func cloneApprovalRequest(request ApprovalRequest) ApprovalRequest {
 		request.Steps[index].Escalation.EscalateToRoles = append([]string(nil), request.Steps[index].Escalation.EscalateToRoles...)
 	}
 	request.Decisions = append([]ApprovalDecision(nil), request.Decisions...)
+	request.Escalations = append([]ApprovalEscalation(nil), request.Escalations...)
+	for index := range request.Escalations {
+		request.Escalations[index] = cloneApprovalEscalation(request.Escalations[index])
+	}
 	if request.ActiveDelegation != nil {
 		delegation := *request.ActiveDelegation
 		delegation.Scope = cloneScope(request.ActiveDelegation.Scope)
@@ -1328,6 +1579,10 @@ func approvalRequestResponsibleRoles(steps []ApprovalRequestStep) []string {
 
 func cloneApprovalRequestResult(result ApprovalRequestCommandResult) ApprovalRequestCommandResult {
 	result.Request = cloneApprovalRequest(result.Request)
+	if result.Escalation != nil {
+		escalation := cloneApprovalEscalation(*result.Escalation)
+		result.Escalation = &escalation
+	}
 	return result
 }
 

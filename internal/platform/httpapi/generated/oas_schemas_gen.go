@@ -1452,7 +1452,6 @@ func (*EstablishedResult) taxRequestTaxPaymentRes()                             
 func (*EstablishedResult) taxReverseIncomingSettlementApplicationRes()          {}
 func (*EstablishedResult) taxSubmitTaxAmendmentRes()                            {}
 func (*EstablishedResult) taxSubmitTaxReturnRes()                               {}
-func (*EstablishedResult) wfaEscalateApprovalRes()                              {}
 
 type EstablishedResultData map[string]jx.Raw
 
@@ -11046,6 +11045,227 @@ func (s *WfaApprovalDecisionReference) SetAppliedAt(val OptDateTime) {
 	s.AppliedAt = val
 }
 
+// Ref: #/components/schemas/WfaApprovalEscalationProjection
+type WfaApprovalEscalationProjection struct {
+	ID                    UUID                                  `json:"id"`
+	StepId                UUID                                  `json:"stepId"`
+	Reason                WfaApprovalEscalationProjectionReason `json:"reason"`
+	Blocker               OptString                             `json:"blocker"`
+	ResponsibleRoles      []string                              `json:"responsibleRoles"`
+	TargetRoles           []string                              `json:"targetRoles"`
+	ActorUserId           OptUUID                               `json:"actorUserId"`
+	ActorSubjectReference OptString                             `json:"actorSubjectReference"`
+	ProcessReference      OptString                             `json:"processReference"`
+	PolicyId              UUID                                  `json:"policyId"`
+	PolicyVersion         string                                `json:"policyVersion"`
+	SubjectVersion        int                                   `json:"subjectVersion"`
+	CandidateFingerprint  string                                `json:"candidateFingerprint"`
+	DueAt                 OptDateTime                           `json:"dueAt"`
+	OccurredAt            time.Time                             `json:"occurredAt"`
+	AuditReference        UUID                                  `json:"auditReference"`
+}
+
+// GetID returns the value of ID.
+func (s *WfaApprovalEscalationProjection) GetID() UUID {
+	return s.ID
+}
+
+// GetStepId returns the value of StepId.
+func (s *WfaApprovalEscalationProjection) GetStepId() UUID {
+	return s.StepId
+}
+
+// GetReason returns the value of Reason.
+func (s *WfaApprovalEscalationProjection) GetReason() WfaApprovalEscalationProjectionReason {
+	return s.Reason
+}
+
+// GetBlocker returns the value of Blocker.
+func (s *WfaApprovalEscalationProjection) GetBlocker() OptString {
+	return s.Blocker
+}
+
+// GetResponsibleRoles returns the value of ResponsibleRoles.
+func (s *WfaApprovalEscalationProjection) GetResponsibleRoles() []string {
+	return s.ResponsibleRoles
+}
+
+// GetTargetRoles returns the value of TargetRoles.
+func (s *WfaApprovalEscalationProjection) GetTargetRoles() []string {
+	return s.TargetRoles
+}
+
+// GetActorUserId returns the value of ActorUserId.
+func (s *WfaApprovalEscalationProjection) GetActorUserId() OptUUID {
+	return s.ActorUserId
+}
+
+// GetActorSubjectReference returns the value of ActorSubjectReference.
+func (s *WfaApprovalEscalationProjection) GetActorSubjectReference() OptString {
+	return s.ActorSubjectReference
+}
+
+// GetProcessReference returns the value of ProcessReference.
+func (s *WfaApprovalEscalationProjection) GetProcessReference() OptString {
+	return s.ProcessReference
+}
+
+// GetPolicyId returns the value of PolicyId.
+func (s *WfaApprovalEscalationProjection) GetPolicyId() UUID {
+	return s.PolicyId
+}
+
+// GetPolicyVersion returns the value of PolicyVersion.
+func (s *WfaApprovalEscalationProjection) GetPolicyVersion() string {
+	return s.PolicyVersion
+}
+
+// GetSubjectVersion returns the value of SubjectVersion.
+func (s *WfaApprovalEscalationProjection) GetSubjectVersion() int {
+	return s.SubjectVersion
+}
+
+// GetCandidateFingerprint returns the value of CandidateFingerprint.
+func (s *WfaApprovalEscalationProjection) GetCandidateFingerprint() string {
+	return s.CandidateFingerprint
+}
+
+// GetDueAt returns the value of DueAt.
+func (s *WfaApprovalEscalationProjection) GetDueAt() OptDateTime {
+	return s.DueAt
+}
+
+// GetOccurredAt returns the value of OccurredAt.
+func (s *WfaApprovalEscalationProjection) GetOccurredAt() time.Time {
+	return s.OccurredAt
+}
+
+// GetAuditReference returns the value of AuditReference.
+func (s *WfaApprovalEscalationProjection) GetAuditReference() UUID {
+	return s.AuditReference
+}
+
+// SetID sets the value of ID.
+func (s *WfaApprovalEscalationProjection) SetID(val UUID) {
+	s.ID = val
+}
+
+// SetStepId sets the value of StepId.
+func (s *WfaApprovalEscalationProjection) SetStepId(val UUID) {
+	s.StepId = val
+}
+
+// SetReason sets the value of Reason.
+func (s *WfaApprovalEscalationProjection) SetReason(val WfaApprovalEscalationProjectionReason) {
+	s.Reason = val
+}
+
+// SetBlocker sets the value of Blocker.
+func (s *WfaApprovalEscalationProjection) SetBlocker(val OptString) {
+	s.Blocker = val
+}
+
+// SetResponsibleRoles sets the value of ResponsibleRoles.
+func (s *WfaApprovalEscalationProjection) SetResponsibleRoles(val []string) {
+	s.ResponsibleRoles = val
+}
+
+// SetTargetRoles sets the value of TargetRoles.
+func (s *WfaApprovalEscalationProjection) SetTargetRoles(val []string) {
+	s.TargetRoles = val
+}
+
+// SetActorUserId sets the value of ActorUserId.
+func (s *WfaApprovalEscalationProjection) SetActorUserId(val OptUUID) {
+	s.ActorUserId = val
+}
+
+// SetActorSubjectReference sets the value of ActorSubjectReference.
+func (s *WfaApprovalEscalationProjection) SetActorSubjectReference(val OptString) {
+	s.ActorSubjectReference = val
+}
+
+// SetProcessReference sets the value of ProcessReference.
+func (s *WfaApprovalEscalationProjection) SetProcessReference(val OptString) {
+	s.ProcessReference = val
+}
+
+// SetPolicyId sets the value of PolicyId.
+func (s *WfaApprovalEscalationProjection) SetPolicyId(val UUID) {
+	s.PolicyId = val
+}
+
+// SetPolicyVersion sets the value of PolicyVersion.
+func (s *WfaApprovalEscalationProjection) SetPolicyVersion(val string) {
+	s.PolicyVersion = val
+}
+
+// SetSubjectVersion sets the value of SubjectVersion.
+func (s *WfaApprovalEscalationProjection) SetSubjectVersion(val int) {
+	s.SubjectVersion = val
+}
+
+// SetCandidateFingerprint sets the value of CandidateFingerprint.
+func (s *WfaApprovalEscalationProjection) SetCandidateFingerprint(val string) {
+	s.CandidateFingerprint = val
+}
+
+// SetDueAt sets the value of DueAt.
+func (s *WfaApprovalEscalationProjection) SetDueAt(val OptDateTime) {
+	s.DueAt = val
+}
+
+// SetOccurredAt sets the value of OccurredAt.
+func (s *WfaApprovalEscalationProjection) SetOccurredAt(val time.Time) {
+	s.OccurredAt = val
+}
+
+// SetAuditReference sets the value of AuditReference.
+func (s *WfaApprovalEscalationProjection) SetAuditReference(val UUID) {
+	s.AuditReference = val
+}
+
+type WfaApprovalEscalationProjectionReason string
+
+const (
+	WfaApprovalEscalationProjectionReasonOverdue WfaApprovalEscalationProjectionReason = "overdue"
+	WfaApprovalEscalationProjectionReasonBlocked WfaApprovalEscalationProjectionReason = "blocked"
+)
+
+// AllValues returns all WfaApprovalEscalationProjectionReason values.
+func (WfaApprovalEscalationProjectionReason) AllValues() []WfaApprovalEscalationProjectionReason {
+	return []WfaApprovalEscalationProjectionReason{
+		WfaApprovalEscalationProjectionReasonOverdue,
+		WfaApprovalEscalationProjectionReasonBlocked,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s WfaApprovalEscalationProjectionReason) MarshalText() ([]byte, error) {
+	switch s {
+	case WfaApprovalEscalationProjectionReasonOverdue:
+		return []byte(s), nil
+	case WfaApprovalEscalationProjectionReasonBlocked:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *WfaApprovalEscalationProjectionReason) UnmarshalText(data []byte) error {
+	switch WfaApprovalEscalationProjectionReason(data) {
+	case WfaApprovalEscalationProjectionReasonOverdue:
+		*s = WfaApprovalEscalationProjectionReasonOverdue
+		return nil
+	case WfaApprovalEscalationProjectionReasonBlocked:
+		*s = WfaApprovalEscalationProjectionReasonBlocked
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Ref: #/components/schemas/WfaApprovalPolicyProjection
 type WfaApprovalPolicyProjection struct {
 	ID                   UUID                              `json:"id"`
@@ -11498,12 +11718,19 @@ type WfaApprovalRequestProjection struct {
 	ActiveDelegation          OptWfaDelegationProjection                    `json:"activeDelegation"`
 	Steps                     []WfaApprovalRequestStep                      `json:"steps"`
 	Decisions                 []WfaApprovalDecisionProjection               `json:"decisions"`
+	Escalations               []WfaApprovalEscalationProjection             `json:"escalations"`
 	CurrentStepId             OptUUID                                       `json:"currentStepId"`
 	Status                    WfaApprovalRequestProjectionStatus            `json:"status"`
 	ApplicationStatus         WfaApprovalRequestProjectionApplicationStatus `json:"applicationStatus"`
 	AggregateVersion          int                                           `json:"aggregateVersion"`
 	ResponsibleRoles          []string                                      `json:"responsibleRoles"`
 	DueAt                     OptDateTime                                   `json:"dueAt"`
+	AgeSeconds                OptInt                                        `json:"ageSeconds"`
+	CurrentOwnerRoles         []string                                      `json:"currentOwnerRoles"`
+	EscalationTargetRoles     []string                                      `json:"escalationTargetRoles"`
+	Blocker                   OptString                                     `json:"blocker"`
+	NextAction                OptString                                     `json:"nextAction"`
+	RecoveryPath              OptString                                     `json:"recoveryPath"`
 	CreatedAt                 time.Time                                     `json:"createdAt"`
 	UpdatedAt                 time.Time                                     `json:"updatedAt"`
 }
@@ -11618,6 +11845,11 @@ func (s *WfaApprovalRequestProjection) GetDecisions() []WfaApprovalDecisionProje
 	return s.Decisions
 }
 
+// GetEscalations returns the value of Escalations.
+func (s *WfaApprovalRequestProjection) GetEscalations() []WfaApprovalEscalationProjection {
+	return s.Escalations
+}
+
 // GetCurrentStepId returns the value of CurrentStepId.
 func (s *WfaApprovalRequestProjection) GetCurrentStepId() OptUUID {
 	return s.CurrentStepId
@@ -11646,6 +11878,36 @@ func (s *WfaApprovalRequestProjection) GetResponsibleRoles() []string {
 // GetDueAt returns the value of DueAt.
 func (s *WfaApprovalRequestProjection) GetDueAt() OptDateTime {
 	return s.DueAt
+}
+
+// GetAgeSeconds returns the value of AgeSeconds.
+func (s *WfaApprovalRequestProjection) GetAgeSeconds() OptInt {
+	return s.AgeSeconds
+}
+
+// GetCurrentOwnerRoles returns the value of CurrentOwnerRoles.
+func (s *WfaApprovalRequestProjection) GetCurrentOwnerRoles() []string {
+	return s.CurrentOwnerRoles
+}
+
+// GetEscalationTargetRoles returns the value of EscalationTargetRoles.
+func (s *WfaApprovalRequestProjection) GetEscalationTargetRoles() []string {
+	return s.EscalationTargetRoles
+}
+
+// GetBlocker returns the value of Blocker.
+func (s *WfaApprovalRequestProjection) GetBlocker() OptString {
+	return s.Blocker
+}
+
+// GetNextAction returns the value of NextAction.
+func (s *WfaApprovalRequestProjection) GetNextAction() OptString {
+	return s.NextAction
+}
+
+// GetRecoveryPath returns the value of RecoveryPath.
+func (s *WfaApprovalRequestProjection) GetRecoveryPath() OptString {
+	return s.RecoveryPath
 }
 
 // GetCreatedAt returns the value of CreatedAt.
@@ -11768,6 +12030,11 @@ func (s *WfaApprovalRequestProjection) SetDecisions(val []WfaApprovalDecisionPro
 	s.Decisions = val
 }
 
+// SetEscalations sets the value of Escalations.
+func (s *WfaApprovalRequestProjection) SetEscalations(val []WfaApprovalEscalationProjection) {
+	s.Escalations = val
+}
+
 // SetCurrentStepId sets the value of CurrentStepId.
 func (s *WfaApprovalRequestProjection) SetCurrentStepId(val OptUUID) {
 	s.CurrentStepId = val
@@ -11796,6 +12063,36 @@ func (s *WfaApprovalRequestProjection) SetResponsibleRoles(val []string) {
 // SetDueAt sets the value of DueAt.
 func (s *WfaApprovalRequestProjection) SetDueAt(val OptDateTime) {
 	s.DueAt = val
+}
+
+// SetAgeSeconds sets the value of AgeSeconds.
+func (s *WfaApprovalRequestProjection) SetAgeSeconds(val OptInt) {
+	s.AgeSeconds = val
+}
+
+// SetCurrentOwnerRoles sets the value of CurrentOwnerRoles.
+func (s *WfaApprovalRequestProjection) SetCurrentOwnerRoles(val []string) {
+	s.CurrentOwnerRoles = val
+}
+
+// SetEscalationTargetRoles sets the value of EscalationTargetRoles.
+func (s *WfaApprovalRequestProjection) SetEscalationTargetRoles(val []string) {
+	s.EscalationTargetRoles = val
+}
+
+// SetBlocker sets the value of Blocker.
+func (s *WfaApprovalRequestProjection) SetBlocker(val OptString) {
+	s.Blocker = val
+}
+
+// SetNextAction sets the value of NextAction.
+func (s *WfaApprovalRequestProjection) SetNextAction(val OptString) {
+	s.NextAction = val
+}
+
+// SetRecoveryPath sets the value of RecoveryPath.
+func (s *WfaApprovalRequestProjection) SetRecoveryPath(val OptString) {
+	s.RecoveryPath = val
 }
 
 // SetCreatedAt sets the value of CreatedAt.
@@ -13559,13 +13856,340 @@ type WfaEscalateApprovalBadRequest ProblemDetails
 
 func (*WfaEscalateApprovalBadRequest) wfaEscalateApprovalRes() {}
 
+// Ref: #/components/schemas/WfaEscalateApprovalCommandData
+type WfaEscalateApprovalCommandData struct {
+	RequestId            UUID                                 `json:"requestId"`
+	EscalationId         UUID                                 `json:"escalationId"`
+	StepId               UUID                                 `json:"stepId"`
+	Reason               WfaEscalateApprovalCommandDataReason `json:"reason"`
+	Blocker              OptString                            `json:"blocker"`
+	PolicyVersion        string                               `json:"policyVersion"`
+	SubjectVersion       int                                  `json:"subjectVersion"`
+	CandidateFingerprint string                               `json:"candidateFingerprint"`
+}
+
+// GetRequestId returns the value of RequestId.
+func (s *WfaEscalateApprovalCommandData) GetRequestId() UUID {
+	return s.RequestId
+}
+
+// GetEscalationId returns the value of EscalationId.
+func (s *WfaEscalateApprovalCommandData) GetEscalationId() UUID {
+	return s.EscalationId
+}
+
+// GetStepId returns the value of StepId.
+func (s *WfaEscalateApprovalCommandData) GetStepId() UUID {
+	return s.StepId
+}
+
+// GetReason returns the value of Reason.
+func (s *WfaEscalateApprovalCommandData) GetReason() WfaEscalateApprovalCommandDataReason {
+	return s.Reason
+}
+
+// GetBlocker returns the value of Blocker.
+func (s *WfaEscalateApprovalCommandData) GetBlocker() OptString {
+	return s.Blocker
+}
+
+// GetPolicyVersion returns the value of PolicyVersion.
+func (s *WfaEscalateApprovalCommandData) GetPolicyVersion() string {
+	return s.PolicyVersion
+}
+
+// GetSubjectVersion returns the value of SubjectVersion.
+func (s *WfaEscalateApprovalCommandData) GetSubjectVersion() int {
+	return s.SubjectVersion
+}
+
+// GetCandidateFingerprint returns the value of CandidateFingerprint.
+func (s *WfaEscalateApprovalCommandData) GetCandidateFingerprint() string {
+	return s.CandidateFingerprint
+}
+
+// SetRequestId sets the value of RequestId.
+func (s *WfaEscalateApprovalCommandData) SetRequestId(val UUID) {
+	s.RequestId = val
+}
+
+// SetEscalationId sets the value of EscalationId.
+func (s *WfaEscalateApprovalCommandData) SetEscalationId(val UUID) {
+	s.EscalationId = val
+}
+
+// SetStepId sets the value of StepId.
+func (s *WfaEscalateApprovalCommandData) SetStepId(val UUID) {
+	s.StepId = val
+}
+
+// SetReason sets the value of Reason.
+func (s *WfaEscalateApprovalCommandData) SetReason(val WfaEscalateApprovalCommandDataReason) {
+	s.Reason = val
+}
+
+// SetBlocker sets the value of Blocker.
+func (s *WfaEscalateApprovalCommandData) SetBlocker(val OptString) {
+	s.Blocker = val
+}
+
+// SetPolicyVersion sets the value of PolicyVersion.
+func (s *WfaEscalateApprovalCommandData) SetPolicyVersion(val string) {
+	s.PolicyVersion = val
+}
+
+// SetSubjectVersion sets the value of SubjectVersion.
+func (s *WfaEscalateApprovalCommandData) SetSubjectVersion(val int) {
+	s.SubjectVersion = val
+}
+
+// SetCandidateFingerprint sets the value of CandidateFingerprint.
+func (s *WfaEscalateApprovalCommandData) SetCandidateFingerprint(val string) {
+	s.CandidateFingerprint = val
+}
+
+type WfaEscalateApprovalCommandDataReason string
+
+const (
+	WfaEscalateApprovalCommandDataReasonOverdue WfaEscalateApprovalCommandDataReason = "overdue"
+	WfaEscalateApprovalCommandDataReasonBlocked WfaEscalateApprovalCommandDataReason = "blocked"
+)
+
+// AllValues returns all WfaEscalateApprovalCommandDataReason values.
+func (WfaEscalateApprovalCommandDataReason) AllValues() []WfaEscalateApprovalCommandDataReason {
+	return []WfaEscalateApprovalCommandDataReason{
+		WfaEscalateApprovalCommandDataReasonOverdue,
+		WfaEscalateApprovalCommandDataReasonBlocked,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s WfaEscalateApprovalCommandDataReason) MarshalText() ([]byte, error) {
+	switch s {
+	case WfaEscalateApprovalCommandDataReasonOverdue:
+		return []byte(s), nil
+	case WfaEscalateApprovalCommandDataReasonBlocked:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *WfaEscalateApprovalCommandDataReason) UnmarshalText(data []byte) error {
+	switch WfaEscalateApprovalCommandDataReason(data) {
+	case WfaEscalateApprovalCommandDataReasonOverdue:
+		*s = WfaEscalateApprovalCommandDataReasonOverdue
+		return nil
+	case WfaEscalateApprovalCommandDataReasonBlocked:
+		*s = WfaEscalateApprovalCommandDataReasonBlocked
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/WfaEscalateApprovalCommandRequest
+type WfaEscalateApprovalCommandRequest struct {
+	CommandId       UUID                           `json:"commandId"`
+	ExpectedVersion int                            `json:"expectedVersion"`
+	Data            WfaEscalateApprovalCommandData `json:"data"`
+}
+
+// GetCommandId returns the value of CommandId.
+func (s *WfaEscalateApprovalCommandRequest) GetCommandId() UUID {
+	return s.CommandId
+}
+
+// GetExpectedVersion returns the value of ExpectedVersion.
+func (s *WfaEscalateApprovalCommandRequest) GetExpectedVersion() int {
+	return s.ExpectedVersion
+}
+
+// GetData returns the value of Data.
+func (s *WfaEscalateApprovalCommandRequest) GetData() WfaEscalateApprovalCommandData {
+	return s.Data
+}
+
+// SetCommandId sets the value of CommandId.
+func (s *WfaEscalateApprovalCommandRequest) SetCommandId(val UUID) {
+	s.CommandId = val
+}
+
+// SetExpectedVersion sets the value of ExpectedVersion.
+func (s *WfaEscalateApprovalCommandRequest) SetExpectedVersion(val int) {
+	s.ExpectedVersion = val
+}
+
+// SetData sets the value of Data.
+func (s *WfaEscalateApprovalCommandRequest) SetData(val WfaEscalateApprovalCommandData) {
+	s.Data = val
+}
+
 type WfaEscalateApprovalConflict ProblemDetails
 
 func (*WfaEscalateApprovalConflict) wfaEscalateApprovalRes() {}
 
+// Ref: #/components/schemas/WfaEscalateApprovalEstablishedResult
+type WfaEscalateApprovalEstablishedResult struct {
+	Status           string                        `json:"status"`
+	AggregateId      UUID                          `json:"aggregateId"`
+	AggregateVersion int                           `json:"aggregateVersion"`
+	ProcessId        OptNilUUID                    `json:"processId"`
+	CorrelationId    UUID                          `json:"correlationId"`
+	Links            Links                         `json:"links"`
+	Data             WfaEscalateApprovalResultData `json:"data"`
+}
+
+// GetStatus returns the value of Status.
+func (s *WfaEscalateApprovalEstablishedResult) GetStatus() string {
+	return s.Status
+}
+
+// GetAggregateId returns the value of AggregateId.
+func (s *WfaEscalateApprovalEstablishedResult) GetAggregateId() UUID {
+	return s.AggregateId
+}
+
+// GetAggregateVersion returns the value of AggregateVersion.
+func (s *WfaEscalateApprovalEstablishedResult) GetAggregateVersion() int {
+	return s.AggregateVersion
+}
+
+// GetProcessId returns the value of ProcessId.
+func (s *WfaEscalateApprovalEstablishedResult) GetProcessId() OptNilUUID {
+	return s.ProcessId
+}
+
+// GetCorrelationId returns the value of CorrelationId.
+func (s *WfaEscalateApprovalEstablishedResult) GetCorrelationId() UUID {
+	return s.CorrelationId
+}
+
+// GetLinks returns the value of Links.
+func (s *WfaEscalateApprovalEstablishedResult) GetLinks() Links {
+	return s.Links
+}
+
+// GetData returns the value of Data.
+func (s *WfaEscalateApprovalEstablishedResult) GetData() WfaEscalateApprovalResultData {
+	return s.Data
+}
+
+// SetStatus sets the value of Status.
+func (s *WfaEscalateApprovalEstablishedResult) SetStatus(val string) {
+	s.Status = val
+}
+
+// SetAggregateId sets the value of AggregateId.
+func (s *WfaEscalateApprovalEstablishedResult) SetAggregateId(val UUID) {
+	s.AggregateId = val
+}
+
+// SetAggregateVersion sets the value of AggregateVersion.
+func (s *WfaEscalateApprovalEstablishedResult) SetAggregateVersion(val int) {
+	s.AggregateVersion = val
+}
+
+// SetProcessId sets the value of ProcessId.
+func (s *WfaEscalateApprovalEstablishedResult) SetProcessId(val OptNilUUID) {
+	s.ProcessId = val
+}
+
+// SetCorrelationId sets the value of CorrelationId.
+func (s *WfaEscalateApprovalEstablishedResult) SetCorrelationId(val UUID) {
+	s.CorrelationId = val
+}
+
+// SetLinks sets the value of Links.
+func (s *WfaEscalateApprovalEstablishedResult) SetLinks(val Links) {
+	s.Links = val
+}
+
+// SetData sets the value of Data.
+func (s *WfaEscalateApprovalEstablishedResult) SetData(val WfaEscalateApprovalResultData) {
+	s.Data = val
+}
+
+func (*WfaEscalateApprovalEstablishedResult) wfaEscalateApprovalRes() {}
+
 type WfaEscalateApprovalForbidden ProblemDetails
 
 func (*WfaEscalateApprovalForbidden) wfaEscalateApprovalRes() {}
+
+type WfaEscalateApprovalNotFound ProblemDetails
+
+func (*WfaEscalateApprovalNotFound) wfaEscalateApprovalRes() {}
+
+// Ref: #/components/schemas/WfaEscalateApprovalResultData
+type WfaEscalateApprovalResultData struct {
+	Request          WfaApprovalRequestProjection    `json:"request"`
+	Escalation       WfaApprovalEscalationProjection `json:"escalation"`
+	ValidationStatus string                          `json:"validationStatus"`
+	NextAction       string                          `json:"nextAction"`
+	RecoveryPath     string                          `json:"recoveryPath"`
+	Replayed         bool                            `json:"replayed"`
+}
+
+// GetRequest returns the value of Request.
+func (s *WfaEscalateApprovalResultData) GetRequest() WfaApprovalRequestProjection {
+	return s.Request
+}
+
+// GetEscalation returns the value of Escalation.
+func (s *WfaEscalateApprovalResultData) GetEscalation() WfaApprovalEscalationProjection {
+	return s.Escalation
+}
+
+// GetValidationStatus returns the value of ValidationStatus.
+func (s *WfaEscalateApprovalResultData) GetValidationStatus() string {
+	return s.ValidationStatus
+}
+
+// GetNextAction returns the value of NextAction.
+func (s *WfaEscalateApprovalResultData) GetNextAction() string {
+	return s.NextAction
+}
+
+// GetRecoveryPath returns the value of RecoveryPath.
+func (s *WfaEscalateApprovalResultData) GetRecoveryPath() string {
+	return s.RecoveryPath
+}
+
+// GetReplayed returns the value of Replayed.
+func (s *WfaEscalateApprovalResultData) GetReplayed() bool {
+	return s.Replayed
+}
+
+// SetRequest sets the value of Request.
+func (s *WfaEscalateApprovalResultData) SetRequest(val WfaApprovalRequestProjection) {
+	s.Request = val
+}
+
+// SetEscalation sets the value of Escalation.
+func (s *WfaEscalateApprovalResultData) SetEscalation(val WfaApprovalEscalationProjection) {
+	s.Escalation = val
+}
+
+// SetValidationStatus sets the value of ValidationStatus.
+func (s *WfaEscalateApprovalResultData) SetValidationStatus(val string) {
+	s.ValidationStatus = val
+}
+
+// SetNextAction sets the value of NextAction.
+func (s *WfaEscalateApprovalResultData) SetNextAction(val string) {
+	s.NextAction = val
+}
+
+// SetRecoveryPath sets the value of RecoveryPath.
+func (s *WfaEscalateApprovalResultData) SetRecoveryPath(val string) {
+	s.RecoveryPath = val
+}
+
+// SetReplayed sets the value of Replayed.
+func (s *WfaEscalateApprovalResultData) SetReplayed(val bool) {
+	s.Replayed = val
+}
 
 type WfaEscalateApprovalServiceUnavailable ProblemDetails
 

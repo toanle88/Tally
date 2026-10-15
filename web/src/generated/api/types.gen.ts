@@ -223,12 +223,19 @@ export type WfaApprovalRequestProjection = {
     activeDelegation?: WfaDelegationProjection;
     steps: Array<WfaApprovalRequestStep>;
     decisions: Array<WfaApprovalDecisionProjection>;
+    escalations: Array<WfaApprovalEscalationProjection>;
     currentStepId?: Uuid;
     status: 'Pending' | 'Approved' | 'Rejected';
     applicationStatus: 'not-reported';
     aggregateVersion: number;
     responsibleRoles: Array<string>;
     dueAt?: string;
+    ageSeconds?: number;
+    currentOwnerRoles?: Array<string>;
+    escalationTargetRoles?: Array<string>;
+    blocker?: string;
+    nextAction?: string;
+    recoveryPath?: string;
     createdAt: string;
     updatedAt: string;
 };
@@ -755,6 +762,25 @@ export type WfaApprovalDecisionProjection = {
     recordedAt: string;
 };
 
+export type WfaApprovalEscalationProjection = {
+    id: Uuid;
+    stepId: Uuid;
+    reason: 'overdue' | 'blocked';
+    blocker?: string;
+    responsibleRoles: Array<string>;
+    targetRoles: Array<string>;
+    actorUserId?: Uuid;
+    actorSubjectReference?: string;
+    processReference?: string;
+    policyId: Uuid;
+    policyVersion: string;
+    subjectVersion: number;
+    candidateFingerprint: string;
+    dueAt?: string;
+    occurredAt: string;
+    auditReference: Uuid;
+};
+
 export type WfaApprovalDecisionReference = {
     approvalRequestId: Uuid;
     decisionId: Uuid;
@@ -819,6 +845,42 @@ export type WfaDelegateApprovalEstablishedResult = {
     correlationId: Uuid;
     links: Links;
     data: WfaDelegateApprovalResultData;
+};
+
+export type WfaEscalateApprovalCommandData = {
+    requestId: Uuid;
+    escalationId: Uuid;
+    stepId: Uuid;
+    reason: 'overdue' | 'blocked';
+    blocker?: string;
+    policyVersion: string;
+    subjectVersion: number;
+    candidateFingerprint: string;
+};
+
+export type WfaEscalateApprovalCommandRequest = {
+    commandId: Uuid;
+    expectedVersion: number;
+    data: WfaEscalateApprovalCommandData;
+};
+
+export type WfaEscalateApprovalResultData = {
+    request: WfaApprovalRequestProjection;
+    escalation: WfaApprovalEscalationProjection;
+    validationStatus: string;
+    nextAction: string;
+    recoveryPath: string;
+    replayed: boolean;
+};
+
+export type WfaEscalateApprovalEstablishedResult = {
+    status: 'established';
+    aggregateId: Uuid;
+    aggregateVersion: number;
+    processId?: Uuid | null;
+    correlationId: Uuid;
+    links: Links;
+    data: WfaEscalateApprovalResultData;
 };
 
 export type IamPermissionGrant = {
@@ -10149,7 +10211,7 @@ export type WfaDelegateApprovalResponses = {
 export type WfaDelegateApprovalResponse = WfaDelegateApprovalResponses[keyof WfaDelegateApprovalResponses];
 
 export type WfaEscalateApprovalData = {
-    body: CommandRequest;
+    body: WfaEscalateApprovalCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
@@ -10176,6 +10238,10 @@ export type WfaEscalateApprovalErrors = {
     /**
      * RFC 9457-style problem details
      */
+    404: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
     409: ProblemDetails;
     /**
      * RFC 9457-style problem details
@@ -10191,9 +10257,9 @@ export type WfaEscalateApprovalError = WfaEscalateApprovalErrors[keyof WfaEscala
 
 export type WfaEscalateApprovalResponses = {
     /**
-     * Established result
+     * Established approval escalation result
      */
-    200: EstablishedResult;
+    200: WfaEscalateApprovalEstablishedResult;
 };
 
 export type WfaEscalateApprovalResponse = WfaEscalateApprovalResponses[keyof WfaEscalateApprovalResponses];

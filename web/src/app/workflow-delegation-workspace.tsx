@@ -1,8 +1,8 @@
 import { useRef, useState, type FormEvent } from 'react'
 
-import { wfaDelegateApproval } from '@/generated/api/sdk.gen'
-import type { WfaDelegateApprovalEstablishedResult } from '@/generated/api/types.gen'
-import { Button, Field, Panel, StatusBadge } from '@/components/ui'
+import { wfaDelegateApproval, wfaEscalateApproval } from '@/generated/api/sdk.gen'
+import type { WfaDelegateApprovalEstablishedResult, WfaEscalateApprovalEstablishedResult } from '@/generated/api/types.gen'
+import { Button, Field, Panel, Select, StatusBadge } from '@/components/ui'
 import { useScopeContext } from '@/lib/scope/scope-context'
 
 function newIdentifier() {
@@ -59,6 +59,26 @@ type SubmissionIdentity = {
   correlationId: string
 }
 
+type EscalationForm = {
+  requestId: string
+  stepId: string
+  expectedVersion: string
+  escalationId: string
+  policyVersion: string
+  subjectVersion: string
+  candidateFingerprint: string
+  reason: 'overdue' | 'blocked'
+  blocker: string
+}
+
+type EscalationSubmissionIdentity = {
+  fingerprint: string
+  commandId: string
+  escalationId: string
+  idempotencyKey: string
+  correlationId: string
+}
+
 export function WorkflowDelegationWorkspace() {
   const { currentScope } = useScopeContext()
   const [form, setForm] = useState<DelegationForm>(() => ({
@@ -71,11 +91,21 @@ export function WorkflowDelegationWorkspace() {
   const [submitting, setSubmitting] = useState(false)
   const [notice, setNotice] = useState('Enter the delegate, policy binding, and finite UTC effective interval.')
   const [result, setResult] = useState<WfaDelegateApprovalEstablishedResult | null>(null)
+  const [escalationForm, setEscalationForm] = useState<EscalationForm>({ requestId: '', stepId: '', expectedVersion: '1', escalationId: '', policyVersion: '', subjectVersion: '1', candidateFingerprint: '', reason: 'overdue', blocker: '' })
+  const [escalationSubmitting, setEscalationSubmitting] = useState(false)
+  const [escalationNotice, setEscalationNotice] = useState('Use the current request and step evidence from WFA-SCR-01. The server rechecks policy eligibility and authorization.')
+  const [escalationResult, setEscalationResult] = useState<WfaEscalateApprovalEstablishedResult | null>(null)
   const submissionIdentity = useRef<SubmissionIdentity | null>(null)
+  const escalationSubmissionIdentity = useRef<EscalationSubmissionIdentity | null>(null)
 
   const update = (key: keyof DelegationForm, value: string) => {
     setForm((current) => ({ ...current, [key]: value }))
     setResult(null)
+  }
+
+  const updateEscalation = (key: keyof EscalationForm, value: string) => {
+    setEscalationForm((current) => ({ ...current, [key]: value }))
+    setEscalationResult(null)
   }
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -142,6 +172,55 @@ export function WorkflowDelegationWorkspace() {
     }
   }
 
+  const submitEscalation = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const requestId = escalationForm.requestId.trim()
+    const stepId = escalationForm.stepId.trim()
+    const escalationId = escalationSubmissionIdentity.current?.escalationId ?? (escalationForm.escalationId.trim() || newIdentifier())
+    const expectedVersion = Number(escalationForm.expectedVersion)
+    const subjectVersion = Number(escalationForm.subjectVersion)
+    const policyVersion = escalationForm.policyVersion.trim()
+    const candidateFingerprint = escalationForm.candidateFingerprint.trim()
+    const blocker = escalationForm.blocker.trim()
+    if (!isUuid(requestId) || !isUuid(stepId) || !Number.isInteger(expectedVersion) || expectedVersion < 1 || !Number.isInteger(subjectVersion) || subjectVersion < 1 || !policyVersion || !candidateFingerprint) {
+      setEscalationNotice('Request ID, step ID, positive versions, policy version, and candidate fingerprint are required.')
+      return
+    }
+    if (escalationForm.reason === 'blocked' && !blocker) {
+      setEscalationNotice('A blocked escalation requires a safe blocker description.')
+      return
+    }
+    const data = { requestId, escalationId, stepId, reason: escalationForm.reason, blocker: blocker || undefined, policyVersion, subjectVersion, candidateFingerprint }
+    const fingerprint = JSON.stringify(data)
+    const identity = escalationSubmissionIdentity.current?.fingerprint === fingerprint
+      ? escalationSubmissionIdentity.current
+      : { fingerprint, commandId: newIdentifier(), escalationId, idempotencyKey: newIdentifier(), correlationId: newIdentifier() }
+    escalationSubmissionIdentity.current = identity
+    setEscalationSubmitting(true)
+    setEscalationNotice('Establishing the escalation evidence and waiting for the authoritative result…')
+    try {
+      const response = await wfaEscalateApproval({
+        body: { commandId: identity.commandId, expectedVersion, data },
+        headers: { 'Idempotency-Key': identity.idempotencyKey, 'X-Correlation-Id': identity.correlationId },
+      })
+      if (response.error) {
+        setEscalationNotice(errorDetail(response.error))
+        return
+      }
+      if (!response.data) {
+        setEscalationNotice('No established result was returned. No local escalation state was substituted.')
+        return
+      }
+      setEscalationResult(response.data)
+      setEscalationNotice(response.data.data.replayed ? 'The escalation result was safely replayed from the idempotency key.' : 'Escalation established. The request remains pending and requires a decision from the target owner.')
+      escalationSubmissionIdentity.current = null
+    } catch (error) {
+      setEscalationNotice(error instanceof Error ? error.message : 'The escalation command could not reach the live API. The idempotency identity is retained for safe retry.')
+    } finally {
+      setEscalationSubmitting(false)
+    }
+  }
+
   return <div className="space-y-6">
     <div><p className="text-sm font-semibold uppercase tracking-wide text-primary">WFA-SCR-04</p><h1 className="mt-1 text-2xl font-semibold">Delegate approval responsibility</h1><p className="mt-2 max-w-3xl text-base-content/75">Create a bounded delegation for a compatible approval policy. Workflow rechecks authority, segregation of duties, policy version, scope, and the finite UTC interval when the command is established and when a decision is made.</p></div>
     <Panel title="Delegation command" description={notice}>
@@ -153,5 +232,14 @@ export function WorkflowDelegationWorkspace() {
       </form>
     </Panel>
     {result ? <Panel title="Established delegation result" state="success" description="This projection came from the authoritative command result and includes the recorded delegation boundary."><div className="flex flex-wrap items-center gap-3"><StatusBadge state="success" label={result.data.replayed ? 'Replayed' : 'Established'} announce /><span className="font-mono text-sm break-all">{result.aggregateId} · aggregate v{result.aggregateVersion}</span></div><dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2"><div><dt className="font-medium text-base-content/70">Delegator</dt><dd className="mt-1 break-all font-mono">{result.data.delegation.delegatorUserId}</dd></div><div><dt className="font-medium text-base-content/70">Delegate</dt><dd className="mt-1 break-all font-mono">{result.data.delegation.delegateUserId}</dd></div><div><dt className="font-medium text-base-content/70">Policy binding</dt><dd className="mt-1 break-all font-mono">{result.data.delegation.policyId} / {result.data.delegation.policyVersion}</dd></div><div><dt className="font-medium text-base-content/70">Scope</dt><dd className="mt-1 break-all font-mono">{result.data.delegation.scope.scopeIds?.join(', ') || '—'}</dd></div><div><dt className="font-medium text-base-content/70">Effective from</dt><dd className="mt-1">{result.data.delegation.effectiveFrom}</dd></div><div><dt className="font-medium text-base-content/70">Effective to</dt><dd className="mt-1">{result.data.delegation.effectiveTo}</dd></div><div><dt className="font-medium text-base-content/70">Validation</dt><dd className="mt-1">{result.data.validationStatus}</dd></div><div><dt className="font-medium text-base-content/70">Audit reference</dt><dd className="mt-1 break-all font-mono">{result.data.auditReference ?? 'Recorded with the command evidence'}</dd></div></dl></Panel> : null}
+    <Panel title="Escalate overdue or blocked approval" description={escalationNotice}>
+      <form onSubmit={(event) => void submitEscalation(event)} noValidate className="space-y-5">
+        <div className="grid gap-4 md:grid-cols-3"><Field id="wfa-escalate-request-id" label="Approval request ID" value={escalationForm.requestId} onChange={(event) => updateEscalation('requestId', event.target.value)} required /><Field id="wfa-escalate-step-id" label="Current step ID" value={escalationForm.stepId} onChange={(event) => updateEscalation('stepId', event.target.value)} required /><Field id="wfa-escalate-expected-version" label="Expected request version" type="number" min={1} value={escalationForm.expectedVersion} onChange={(event) => updateEscalation('expectedVersion', event.target.value)} required /></div>
+        <div className="grid gap-4 md:grid-cols-3"><Field id="wfa-escalate-policy-version" label="Policy version" value={escalationForm.policyVersion} onChange={(event) => updateEscalation('policyVersion', event.target.value)} required /><Field id="wfa-escalate-subject-version" label="Subject version" type="number" min={1} value={escalationForm.subjectVersion} onChange={(event) => updateEscalation('subjectVersion', event.target.value)} required /><Field id="wfa-escalate-candidate-fingerprint" label="Candidate fingerprint" value={escalationForm.candidateFingerprint} onChange={(event) => updateEscalation('candidateFingerprint', event.target.value)} required /></div>
+        <div className="grid gap-4 md:grid-cols-2"><label className="form-control gap-2"><span className="font-medium">Reason</span><Select aria-label="Escalation reason" value={escalationForm.reason} onChange={(event) => updateEscalation('reason', event.target.value as EscalationForm['reason'])}><option value="overdue">Overdue</option><option value="blocked">Blocked</option></Select></label><Field id="wfa-escalate-blocker" label="Blocker" value={escalationForm.blocker} onChange={(event) => updateEscalation('blocker', event.target.value)} required={escalationForm.reason === 'blocked'} description="Do not include sensitive subject data. A blocker is immutable evidence." /></div>
+        <div className="flex flex-wrap items-center gap-3"><Button type="submit" loading={escalationSubmitting}>Escalate approval</Button><span className="text-sm text-base-content/70">The same retry identity is retained after a transport or timeout failure.</span></div>
+      </form>
+    </Panel>
+    {escalationResult ? <Panel title="Established escalation result" state="success" description="The request remains pending. This result exposes the policy-derived target roles, immutable reason, and audit reference."><div className="flex flex-wrap items-center gap-3"><StatusBadge state="success" label={escalationResult.data.replayed ? 'Replayed' : 'Established'} announce /><span className="font-mono text-sm break-all">{escalationResult.aggregateId} · aggregate v{escalationResult.aggregateVersion}</span></div><dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2"><div><dt className="font-medium text-base-content/70">Reason</dt><dd className="mt-1">{escalationResult.data.escalation.reason}</dd></div><div><dt className="font-medium text-base-content/70">Blocker</dt><dd className="mt-1">{escalationResult.data.escalation.blocker ?? '—'}</dd></div><div><dt className="font-medium text-base-content/70">Responsible roles</dt><dd className="mt-1">{escalationResult.data.escalation.responsibleRoles.join(', ') || '—'}</dd></div><div><dt className="font-medium text-base-content/70">Target roles</dt><dd className="mt-1">{escalationResult.data.escalation.targetRoles.join(', ') || '—'}</dd></div><div><dt className="font-medium text-base-content/70">Audit reference</dt><dd className="mt-1 break-all font-mono">{escalationResult.data.escalation.auditReference}</dd></div><div><dt className="font-medium text-base-content/70">Next action</dt><dd className="mt-1">{escalationResult.data.nextAction}</dd></div></dl></Panel> : null}
   </div>
 }

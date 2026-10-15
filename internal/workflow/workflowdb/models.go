@@ -123,6 +123,28 @@ type WorkflowApprovalRequest struct {
 	ResponsibleRoles          []byte
 }
 
+type WorkflowApprovalRequestEscalation struct {
+	ID                    pgtype.UUID
+	ApprovalRequestID     pgtype.UUID
+	StepID                pgtype.UUID
+	Reason                string
+	Blocker               string
+	ResponsibleRoles      []byte
+	TargetRoles           []byte
+	ActorUserID           pgtype.UUID
+	ActorSubjectReference string
+	ProcessReference      string
+	PolicyID              pgtype.UUID
+	PolicyVersion         string
+	SubjectVersion        int64
+	CandidateFingerprint  string
+	DueAt                 pgtype.Timestamptz
+	OccurredAt            pgtype.Timestamptz
+	AuditReference        pgtype.UUID
+	CorrelationID         pgtype.UUID
+	CausationID           pgtype.UUID
+}
+
 type WorkflowBootstrapApprovalAuthority struct {
 	AuthorityID   pgtype.UUID
 	AuthorityKind string

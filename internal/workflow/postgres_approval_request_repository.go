@@ -104,6 +104,44 @@ func (repository *PostgresApprovalRequestRepository) Get(ctx context.Context, id
 	if err := decisionRows.Err(); err != nil {
 		return ApprovalRequest{}, err
 	}
+	escalationRows, err := repository.pool.Query(ctx, `SELECT id, step_id, reason, blocker, responsible_roles, target_roles, actor_user_id, actor_subject_reference, process_reference, policy_id, policy_version, subject_version, candidate_fingerprint, due_at, occurred_at, audit_reference, correlation_id, causation_id FROM workflow.approval_request_escalation WHERE approval_request_id=$1 ORDER BY occurred_at, id`, id)
+	if err != nil {
+		return ApprovalRequest{}, err
+	}
+	defer escalationRows.Close()
+	for escalationRows.Next() {
+		var escalation ApprovalEscalation
+		var responsibleRoles, targetRoles []byte
+		var actorUserID *uuid.UUID
+		var actorSubjectReference, processReference *string
+		var dueAt *time.Time
+		var correlationID, causationID *uuid.UUID
+		if err := escalationRows.Scan(&escalation.ID, &escalation.StepID, &escalation.Reason, &escalation.Blocker, &responsibleRoles, &targetRoles, &actorUserID, &actorSubjectReference, &processReference, &escalation.PolicyID, &escalation.PolicyVersion, &escalation.SubjectVersion, &escalation.CandidateFingerprint, &dueAt, &escalation.OccurredAt, &escalation.AuditReference, &correlationID, &causationID); err != nil {
+			return ApprovalRequest{}, err
+		}
+		if err := json.Unmarshal(responsibleRoles, &escalation.ResponsibleRoles); err != nil {
+			return ApprovalRequest{}, err
+		}
+		if err := json.Unmarshal(targetRoles, &escalation.TargetRoles); err != nil {
+			return ApprovalRequest{}, err
+		}
+		if actorUserID != nil {
+			escalation.ActorUserID = *actorUserID
+		}
+		if actorSubjectReference != nil {
+			escalation.ActorSubjectReference = *actorSubjectReference
+		}
+		if processReference != nil {
+			escalation.ProcessReference = *processReference
+		}
+		escalation.DueAt = dueAt
+		escalation.CorrelationID = uuidString(correlationID)
+		escalation.CausationID = uuidString(causationID)
+		request.Escalations = append(request.Escalations, escalation)
+	}
+	if err := escalationRows.Err(); err != nil {
+		return ApprovalRequest{}, err
+	}
 	if err := request.Validate(); err != nil {
 		return ApprovalRequest{}, err
 	}
@@ -137,27 +175,68 @@ func (repository *PostgresApprovalRequestRepository) List(ctx context.Context) (
 	return requests, nil
 }
 
-func (repository *PostgresApprovalRequestRepository) Save(ctx context.Context, request ApprovalRequest, before *ApprovalRequest, auditRecord ApprovalRequestAuditRecord, event ApprovalEvent) error {
+func (repository *PostgresApprovalRequestRepository) ListDueApprovalEscalationCandidates(ctx context.Context, now time.Time, limit int) ([]ApprovalEscalationCandidate, error) {
+	if repository == nil || repository.pool == nil || limit < 1 || limit > 100 {
+		return nil, ErrInvalidApprovalPolicyCommand
+	}
+	rows, err := repository.pool.Query(ctx, `SELECT id FROM workflow.approval_request WHERE status=$1 AND due_at IS NOT NULL AND due_at <= $2 ORDER BY due_at, id LIMIT $3`, ApprovalRequestStatusPending, now.UTC(), limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	candidates := make([]ApprovalEscalationCandidate, 0, limit)
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		request, err := repository.Get(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		step, err := actionableApprovalRequestStep(request, uuid.Nil)
+		if err != nil || step.Status != ApprovalRequestStatusPending || !step.Escalation.Enabled || step.Escalation.AfterSeconds < 1 || len(step.Escalation.EscalateToRoles) == 0 {
+			continue
+		}
+		alreadyEscalated := false
+		for _, escalation := range request.Escalations {
+			if escalation.StepID == step.ID {
+				alreadyEscalated = true
+				break
+			}
+		}
+		if alreadyEscalated {
+			continue
+		}
+		candidates = append(candidates, ApprovalEscalationCandidate{RequestID: request.ID, ExpectedVersion: request.Version, StepID: step.ID, PolicyVersion: request.PolicyVersion, SubjectVersion: request.SubjectVersion, CandidateFingerprint: request.SubjectFingerprint, DueAt: request.DueAt.UTC()})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return candidates, nil
+}
+
+func (repository *PostgresApprovalRequestRepository) Save(ctx context.Context, request ApprovalRequest, before *ApprovalRequest, auditRecord ApprovalRequestAuditRecord, event ApprovalEvent) (uuid.UUID, error) {
 	return repository.save(ctx, request, before, auditRecord, event, nil)
 }
 
-func (repository *PostgresApprovalRequestRepository) SaveWithIdempotency(ctx context.Context, request ApprovalRequest, before *ApprovalRequest, auditRecord ApprovalRequestAuditRecord, event ApprovalEvent, durable DurableApprovalRequestCommit) error {
+func (repository *PostgresApprovalRequestRepository) SaveWithIdempotency(ctx context.Context, request ApprovalRequest, before *ApprovalRequest, auditRecord ApprovalRequestAuditRecord, event ApprovalEvent, durable DurableApprovalRequestCommit) (uuid.UUID, error) {
 	return repository.save(ctx, request, before, auditRecord, event, &durable)
 }
 
-func (repository *PostgresApprovalRequestRepository) save(ctx context.Context, request ApprovalRequest, before *ApprovalRequest, auditRecord ApprovalRequestAuditRecord, event ApprovalEvent, durable *DurableApprovalRequestCommit) error {
+func (repository *PostgresApprovalRequestRepository) save(ctx context.Context, request ApprovalRequest, before *ApprovalRequest, auditRecord ApprovalRequestAuditRecord, event ApprovalEvent, durable *DurableApprovalRequestCommit) (uuid.UUID, error) {
 	if repository == nil || repository.pool == nil {
-		return ErrInvalidApprovalPolicyService
+		return uuid.Nil, ErrInvalidApprovalPolicyService
 	}
 	if repository.auditWriter == nil || repository.eventWriter == nil {
-		return ErrApprovalPolicyAuditUnavailable
+		return uuid.Nil, ErrApprovalPolicyAuditUnavailable
 	}
 	if err := request.Validate(); err != nil {
-		return err
+		return uuid.Nil, err
 	}
 	tx, err := repository.pool.Begin(ctx)
 	if err != nil {
-		return err
+		return uuid.Nil, err
 	}
 	committed := false
 	defer func() {
@@ -168,17 +247,17 @@ func (repository *PostgresApprovalRequestRepository) save(ctx context.Context, r
 	if before == nil {
 		scope, marshalErr := json.Marshal(request.Scope)
 		if marshalErr != nil {
-			return marshalErr
+			return uuid.Nil, marshalErr
 		}
 		steps, marshalErr := json.Marshal(request.Steps)
 		if marshalErr != nil {
-			return marshalErr
+			return uuid.Nil, marshalErr
 		}
 		snapshot := []byte(`{}`)
 		if request.SnapshotFingerprint != "" {
 			snapshot, marshalErr = json.Marshal(request.SubjectSnapshot)
 			if marshalErr != nil {
-				return marshalErr
+				return uuid.Nil, marshalErr
 			}
 		}
 		dimensionValues := request.Dimensions
@@ -187,7 +266,7 @@ func (repository *PostgresApprovalRequestRepository) save(ctx context.Context, r
 		}
 		dimensions, marshalErr := json.Marshal(dimensionValues)
 		if marshalErr != nil {
-			return marshalErr
+			return uuid.Nil, marshalErr
 		}
 		roleValues := request.ResponsibleRoles
 		if roleValues == nil {
@@ -195,7 +274,7 @@ func (repository *PostgresApprovalRequestRepository) save(ctx context.Context, r
 		}
 		roles, marshalErr := json.Marshal(roleValues)
 		if marshalErr != nil {
-			return marshalErr
+			return uuid.Nil, marshalErr
 		}
 		var amount any
 		if request.Amount != nil {
@@ -205,12 +284,12 @@ func (repository *PostgresApprovalRequestRepository) save(ctx context.Context, r
 	} else {
 		steps, marshalErr := json.Marshal(request.Steps)
 		if marshalErr != nil {
-			return marshalErr
+			return uuid.Nil, marshalErr
 		}
 		var tag pgconn.CommandTag
 		tag, err = tx.Exec(ctx, `UPDATE workflow.approval_request SET steps=$1::jsonb, status=$2, aggregate_version=$3, updated_at=$4 WHERE id=$5 AND aggregate_version=$6`, steps, request.Status, request.Version.Value(), request.UpdatedAt, request.ID, before.Version.Value())
 		if err == nil && tag.RowsAffected() != 1 {
-			return ErrApprovalPolicyVersionConflict
+			return uuid.Nil, ErrApprovalPolicyVersionConflict
 		}
 		if err == nil && len(request.Decisions) > len(before.Decisions) {
 			decision := request.Decisions[len(request.Decisions)-1]
@@ -218,31 +297,63 @@ func (repository *PostgresApprovalRequestRepository) save(ctx context.Context, r
 		}
 	}
 	if err != nil {
-		return mapPostgresApprovalRequestError(err)
+		return uuid.Nil, mapPostgresApprovalRequestError(err)
 	}
 	auditReference, err := repository.auditWriter(ctx, tx, auditRecord)
 	if err != nil {
-		return err
+		return uuid.Nil, err
 	}
 	if auditReference == uuid.Nil {
-		return ErrApprovalPolicyAuditUnavailable
+		return uuid.Nil, ErrApprovalPolicyAuditUnavailable
+	}
+	if event.EscalationID != uuid.Nil {
+		if before == nil || len(request.Escalations) <= len(before.Escalations) {
+			return uuid.Nil, ErrInvalidApprovalPolicyCommand
+		}
+		escalation := request.Escalations[len(request.Escalations)-1]
+		if escalation.ID != event.EscalationID {
+			return uuid.Nil, ErrInvalidApprovalPolicyCommand
+		}
+		responsibleRoles, marshalErr := json.Marshal(escalation.ResponsibleRoles)
+		if marshalErr != nil {
+			return uuid.Nil, marshalErr
+		}
+		targetRoles, marshalErr := json.Marshal(escalation.TargetRoles)
+		if marshalErr != nil {
+			return uuid.Nil, marshalErr
+		}
+		var actorUserID any
+		if escalation.ActorUserID != uuid.Nil {
+			actorUserID = escalation.ActorUserID
+		}
+		_, err = tx.Exec(ctx, `INSERT INTO workflow.approval_request_escalation (id, approval_request_id, step_id, reason, blocker, responsible_roles, target_roles, actor_user_id, actor_subject_reference, process_reference, policy_id, policy_version, subject_version, candidate_fingerprint, due_at, occurred_at, audit_reference, correlation_id, causation_id) VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)`, escalation.ID, request.ID, escalation.StepID, escalation.Reason, escalation.Blocker, responsibleRoles, targetRoles, actorUserID, nullableText(escalation.ActorSubjectReference), nullableText(escalation.ProcessReference), escalation.PolicyID, escalation.PolicyVersion, escalation.SubjectVersion, escalation.CandidateFingerprint, escalation.DueAt, escalation.OccurredAt, auditReference, nullableUUIDString(escalation.CorrelationID), nullableUUIDString(escalation.CausationID))
+		if err != nil {
+			return uuid.Nil, mapPostgresApprovalRequestError(err)
+		}
 	}
 	if err := repository.eventWriter(ctx, tx, event); err != nil {
-		return err
+		return uuid.Nil, err
+	}
+	if durable != nil && durable.ResultBuilder != nil {
+		result, buildErr := durable.ResultBuilder(auditReference)
+		if buildErr != nil {
+			return uuid.Nil, buildErr
+		}
+		durable.Result = result
 	}
 	if durable != nil {
 		if durable.Coordinator == nil || durable.Acquisition.Decision() != platformidempotency.DecisionExecute {
-			return platformidempotency.ErrInvalidAcquisition
+			return uuid.Nil, platformidempotency.ErrInvalidAcquisition
 		}
 		if err := durable.Coordinator.Finalize(ctx, tx, durable.Acquisition, durable.Result); err != nil {
-			return err
+			return uuid.Nil, err
 		}
 	}
 	if err := tx.Commit(ctx); err != nil {
-		return err
+		return uuid.Nil, err
 	}
 	committed = true
-	return nil
+	return auditReference, nil
 }
 
 type PostgresApprovalWorkflow struct {
@@ -370,6 +481,15 @@ func nullableUUIDString(value string) *uuid.UUID {
 	return &parsed
 }
 
+func nullableText(value string) *string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return nil
+	}
+	return &value
+}
+
 var _ ApprovalRequestRepository = (*PostgresApprovalRequestRepository)(nil)
+var _ ApprovalEscalationCandidateReader = (*PostgresApprovalRequestRepository)(nil)
 var _ ApprovalWorkflowPort = (*PostgresApprovalWorkflow)(nil)
 var _ ApprovalWorkflowPreparationPort = (*PostgresApprovalWorkflow)(nil)

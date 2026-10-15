@@ -103,6 +103,32 @@ func (authorizer evaluatorWorkflowRequestAuthorizer) AuthorizeApprovalRequestDec
 	return decision, nil
 }
 
+func (authorizer evaluatorWorkflowRequestAuthorizer) AuthorizeApprovalEscalation(ctx context.Context, actor workflow.Actor, request workflow.ApprovalRequest, step workflow.ApprovalRequestStep) (workflow.AuthorizationDecision, error) {
+	roleIDs, err := authorizer.approvalRoleIDs(ctx, actor, true)
+	if err != nil {
+		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
+	}
+	decision, err := authorizer.evaluateRequest(ctx, actor, request, workflow.EscalateApprovalPermission, roleIDs)
+	if err != nil || !decision.Allowed || authorizer.users == nil || authorizer.roles == nil {
+		return decision, err
+	}
+	eligible, err := authorizer.actorEligibleForStep(ctx, actor, request, step, "", nil)
+	if err != nil {
+		return workflow.AuthorizationDecision{}, workflow.ErrApprovalPolicyApprovalUnavailable
+	}
+	if !eligible {
+		return workflow.AuthorizationDecision{Allowed: false, Outcome: workflow.AuthorizationDenied, Permission: workflow.EscalateApprovalPermission, DecisionReference: decision.DecisionReference, ReasonCode: "approval-step-role-required"}, nil
+	}
+	return decision, nil
+}
+
+func (authorizer evaluatorWorkflowRequestAuthorizer) AuthorizeApprovalEscalationProcess(_ context.Context, processReference string, request workflow.ApprovalRequest, _ workflow.ApprovalRequestStep) (workflow.AuthorizationDecision, error) {
+	if strings.TrimSpace(processReference) != workflow.ApprovalEscalationProcess {
+		return workflow.AuthorizationDecision{Allowed: false, Outcome: workflow.AuthorizationDenied, Permission: workflow.EscalateApprovalPermission, DecisionReference: uuid.New(), ReasonCode: "process-not-approved"}, nil
+	}
+	return workflow.AuthorizationDecision{Allowed: true, Outcome: workflow.AuthorizationAllowed, Permission: workflow.EscalateApprovalPermission, ApprovedScopeIDs: request.Scope.CanonicalScopeIDs(), PolicyReference: workflow.ApprovalEscalationProcess, DecisionReference: uuid.New()}, nil
+}
+
 func (authorizer evaluatorWorkflowRequestAuthorizer) AuthorizeApprovalDelegation(ctx context.Context, actor workflow.Actor, command workflow.DelegateApprovalCommand, policy workflow.ApprovalPolicy) (workflow.AuthorizationDecision, error) {
 	if authorizer.evaluator == nil {
 		return workflow.AuthorizationDecision{}, workflow.ErrDelegationAuthorizationUnavailable
@@ -379,6 +405,7 @@ func postgresWorkflowRequestAuditWriter(auditWriter identity.PostgresAuditWriter
 			RevisionVersion:               record.RevisionVersion,
 			ApprovalRequestID:             record.ApprovalRequestID,
 			ApprovalDecisionID:            record.ApprovalDecisionID,
+			ApprovalEscalationID:          record.ApprovalEscalationID,
 			ApproverUserID:                record.ApproverUserID,
 			Reason:                        record.Reason,
 			BeforeFingerprint:             record.BeforeFingerprint,
@@ -398,28 +425,42 @@ func postgresWorkflowEventWriter(ctx context.Context, tx pgx.Tx, event workflow.
 	if event.ApproverUserID != uuid.Nil {
 		approverUserID = event.ApproverUserID.String()
 	}
+	escalationID := ""
+	if event.EscalationID != uuid.Nil {
+		escalationID = event.EscalationID.String()
+	}
 	var decidedAt *time.Time
 	if !event.DecidedAt.IsZero() {
 		value := event.DecidedAt
 		decidedAt = &value
 	}
+	var escalatedAt *time.Time
+	if !event.EscalatedAt.IsZero() {
+		value := event.EscalatedAt
+		escalatedAt = &value
+	}
 	payload, err := json.Marshal(struct {
-		ApprovalRequestID    uuid.UUID  `json:"approvalRequestId"`
-		DecisionID           string     `json:"decisionId,omitempty"`
-		DecisionVersion      int64      `json:"decisionVersion,omitempty"`
-		Outcome              string     `json:"outcome,omitempty"`
-		ApproverUserID       string     `json:"approverUserId,omitempty"`
-		StepID               string     `json:"stepId,omitempty"`
-		DelegationReference  string     `json:"delegationReference,omitempty"`
-		DecidedAt            *time.Time `json:"decidedAt,omitempty"`
-		PolicyID             uuid.UUID  `json:"policyId"`
-		PolicyVersion        string     `json:"policyVersion"`
-		SubjectID            string     `json:"subjectId"`
-		SubjectVersion       int64      `json:"subjectVersion"`
-		CandidateFingerprint string     `json:"candidateFingerprint"`
-		ScopeIDs             []string   `json:"scopeIds"`
-		DataClassification   string     `json:"dataClassification"`
-	}{ApprovalRequestID: event.RequestID, DecisionID: decisionID, DecisionVersion: event.DecisionVersion, Outcome: event.Outcome, ApproverUserID: approverUserID, StepID: nullableUUIDString(event.StepID), DelegationReference: event.DelegationReference, DecidedAt: decidedAt, PolicyID: event.PolicyID, PolicyVersion: event.PolicyVersion, SubjectID: event.SubjectID, SubjectVersion: event.SubjectVersion, CandidateFingerprint: event.CandidateFingerprint, ScopeIDs: append([]string(nil), event.ScopeIDs...), DataClassification: event.DataClassification})
+		ApprovalRequestID     uuid.UUID  `json:"approvalRequestId"`
+		DecisionID            string     `json:"decisionId,omitempty"`
+		EscalationID          string     `json:"escalationId,omitempty"`
+		DecisionVersion       int64      `json:"decisionVersion,omitempty"`
+		Outcome               string     `json:"outcome,omitempty"`
+		EscalationReason      string     `json:"escalationReason,omitempty"`
+		EscalationBlocker     string     `json:"escalationBlocker,omitempty"`
+		EscalationTargetRoles []string   `json:"escalationTargetRoles,omitempty"`
+		ApproverUserID        string     `json:"approverUserId,omitempty"`
+		StepID                string     `json:"stepId,omitempty"`
+		DelegationReference   string     `json:"delegationReference,omitempty"`
+		DecidedAt             *time.Time `json:"decidedAt,omitempty"`
+		EscalatedAt           *time.Time `json:"escalatedAt,omitempty"`
+		PolicyID              uuid.UUID  `json:"policyId"`
+		PolicyVersion         string     `json:"policyVersion"`
+		SubjectID             string     `json:"subjectId"`
+		SubjectVersion        int64      `json:"subjectVersion"`
+		CandidateFingerprint  string     `json:"candidateFingerprint"`
+		ScopeIDs              []string   `json:"scopeIds"`
+		DataClassification    string     `json:"dataClassification"`
+	}{ApprovalRequestID: event.RequestID, DecisionID: decisionID, EscalationID: escalationID, DecisionVersion: event.DecisionVersion, Outcome: event.Outcome, EscalationReason: event.EscalationReason, EscalationBlocker: event.EscalationBlocker, EscalationTargetRoles: append([]string(nil), event.EscalationTargetRoles...), ApproverUserID: approverUserID, StepID: nullableUUIDString(event.StepID), DelegationReference: event.DelegationReference, DecidedAt: decidedAt, EscalatedAt: escalatedAt, PolicyID: event.PolicyID, PolicyVersion: event.PolicyVersion, SubjectID: event.SubjectID, SubjectVersion: event.SubjectVersion, CandidateFingerprint: event.CandidateFingerprint, ScopeIDs: append([]string(nil), event.ScopeIDs...), DataClassification: event.DataClassification})
 	if err != nil {
 		return err
 	}
