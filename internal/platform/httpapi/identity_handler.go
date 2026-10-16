@@ -13,6 +13,7 @@ import (
 	"github.com/go-faster/jx"
 	"github.com/google/uuid"
 	"github.com/toanle88/Tally/internal/coa"
+	"github.com/toanle88/Tally/internal/fiscalperiod"
 	"github.com/toanle88/Tally/internal/gl"
 	"github.com/toanle88/Tally/internal/identity"
 	"github.com/toanle88/Tally/internal/organization"
@@ -47,6 +48,7 @@ type IdentityHandler struct {
 	PostingApprovalDecisionService       *gl.PostingApprovalDecisionService
 	JournalReversalService               *gl.JournalReversalService
 	SoftCloseGateService                 *gl.SoftCloseGateService
+	FiscalPeriodService                  *fiscalperiod.Service
 	ApprovalPolicyService                *workflow.ApprovalPolicyService
 	ApprovalRequestService               *workflow.ApprovalRequestService
 	ApprovalRequestQueries               *workflow.ApprovalRequestQueryService

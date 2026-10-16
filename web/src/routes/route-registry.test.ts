@@ -43,6 +43,8 @@ describe('route registry', () => {
       ['GL-SCR-03', '/general-ledger/gl-scr-03'],
       ['GL-SCR-04', '/general-ledger/gl-scr-04'],
       ['GL-SCR-05', '/general-ledger/gl-scr-05'],
+      ['FPM-WS-01', '/fiscal-periods/fpm-ws-01'],
+      ['FPM-SCR-02', '/fiscal-periods/fpm-scr-02'],
       ['XCT-WS-01', '/operations/xct-ws-01'],
       ['XCT-SCR-01', '/operations/xct-scr-01'],
       ['CON-SCR-01', '/operations/con-scr-01'],

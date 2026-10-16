@@ -5,16 +5,16 @@
 | Epic | EP-FPM-001 |
 | Capability | Fiscal period management |
 | Milestone | M3 in the roadmap and delivery plan; the delivery plan also identifies an M2 open-period slice |
-| Status | Planned — no FPM runtime implementation exists; approved API/OpenAPI contracts and generated client artifacts are present, while internal/fiscalperiod and fiscal_period persistence/runtime remain to be delivered |
+| Status | In progress — US2 implementation is present on the story branch; the remaining FPM stories and epic quality gates remain open |
 | Owning module | internal/fiscalperiod |
 | Owning schema | fiscal_period |
 | Primary users | Finance Manager, Controller, Close Coordinator |
 | Dependencies | EP-GL-001 and EP-WFA-001 |
 | Source of truth | finance_domain_model_ddd.md, PRD, UX workflow specification, NFR, system design, technical specifications, finance delivery plan, ROADMAP.md |
 
-This document is a planning artifact. It decomposes EP-FPM-001 into implementable user stories and preserves source traceability. It does not claim that the stories, runtime handlers, persistence, integrations, UI, or quality gates are complete.
+This document is a planning and delivery-traceability artifact. It decomposes EP-FPM-001 into implementable user stories and records the evidence delivered for US2. It does not claim that the epic, remaining stories, integrations, UI qualification, persistence integration, or quality gates are complete.
 
-The current repository contains the approved fiscal-period action contracts and generated client artifacts, plus GL posting-gate implementation owned by the GL module. It does not contain the FPM runtime module or fiscal_period persistence. Existing user changes in the worktree are preserved.
+The current repository contains the approved fiscal-period action contracts and generated client artifacts, GL posting-gate implementation owned by the GL module, and the US2 FPM runtime/persistence/API/UI slice. US1 and later FPM lifecycle behavior remain outside this delivery. Existing user changes in the worktree are preserved.
 
 ## 1. Outcome
 
@@ -228,6 +228,17 @@ Expected implementation evidence:
 - GL port/integration contract tests for atomic barrier acquisition and immutable admission evidence.
 - Persistence and outbox tests for CloseRun, control epoch handoff, idempotency, version conflicts, and event ordering.
 - API, authorization, audit, and UI tests for StartHardClose and ApplyPostingGateResult.
+
+US2 implementation evidence delivered on branch `feat/dlv-fr-fpm-001-us2-start-hard-close`:
+
+- `internal/fiscalperiod/hard_close.go` models the eligible `SoftClosed` handoff, creates a non-owning `Initiating` `CloseRun`, invokes the GL-owned `AcquirePostingBarrier` port, applies only a matching authoritative `CloseOnly` result, retains frozen admission and barrier evidence, and records `GateAdmissionSummaryRecorded`, `SoftCloseHandoffStarted`, and `PeriodStateChanged` events.
+- `internal/fiscalperiod/postgres_repository.go` persists the FPM control records with row locks, optimistic versions, audit participation, and transactional outbox publications without reading GL tables.
+- `internal/platform/httpapi/fiscal_period_handler.go` implements the approved `fpmStartHardClose` and `fpmApplyPostingGateResult` command routes with authorization, typed conflicts, dependency-unavailable responses, and established results.
+- `db/migrations/bootstrap/00007_create_fiscal_period_schema.sql` and `db/migrations/fiscal_period/00001_create_fiscal_period_tables.sql` establish the FPM-owned persistence boundary; migration validation and checksum inventory are updated.
+- `web/src/app/fiscal-period-hard-close-workspace.tsx` and the FPM route entries expose pending, restrictive, blocked, and authoritative barrier evidence states for `FPM-WS-01` and `FPM-SCR-02`.
+- Focused domain, handler, route, and component tests cover candidate creation, owner exclusivity, replay/conflict behavior, dependency failure, authoritative result application, authorization boundary, and visible recovery state.
+
+The documented local verification commands for this slice have passed. PostgreSQL/Testcontainers runtime, browser/accessibility qualification, and the remaining FPM stories are explicitly deferred.
 
 ### US3 — Execute, approve, resume, or abort a hard-close run
 
