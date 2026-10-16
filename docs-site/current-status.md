@@ -5,7 +5,7 @@ actually implemented in the current repository, what is a contract or synthetic
 fixture, and what remains unverified.
 
 **Checkpoint:** 2026-10-15, branch
-`feat/dlv-fr-wfa-003-us4-delegate-approval`.
+`feat/dlv-fr-wfa-004-us5-escalate-approval`.
 
 ## How to read the status
 
@@ -60,13 +60,19 @@ The current checkout extends beyond the IAM foundation:
 | Slice | What is present | What is not claimed |
 | --- | --- | --- |
 | General Ledger | Ledgers, books, charts of accounts, accounts, posting, journal approval, reversal, posting barriers, soft close, scoped reopen, and operational reopen/reclose controls | Complete finance-suite coverage, full cross-context qualification, or production release qualification |
-| Workflow policy | Effective-dated policy maintenance, applicability and overlap validation, policy-version evidence, independent approval boundaries, and authorized policy UI/API states | Escalation and full workflow qualification |
-| Approval requests and decisions | Effective-policy resolution, immutable subject evidence, copied approval steps, durable idempotency, audit/outbox integration, authorized worklist/detail reads, decision-time authorization, and immutable decision evidence | Consuming-context application acknowledgement, escalation, and full workflow qualification |
+| Workflow policy | Effective-dated policy maintenance, applicability and overlap validation, policy-version evidence, independent approval boundaries, and authorized policy UI/API states | Full workflow qualification |
+| Approval requests and decisions | Effective-policy resolution, immutable subject evidence, copied approval steps, durable idempotency, audit/outbox integration, authorized worklist/detail reads, decision-time authorization, and immutable decision evidence | Consuming-context application acknowledgement, production worker composition, notifications, and full workflow qualification |
 | Approval delegation | Immutable finite, scoped policy-version delegation, IAM authorization/SoD boundary, audit/outbox evidence, durable replay/conflict handling, delegated worklist/detail/decision projections, and WFA-SCR-04 | Revoke/end contract, live Entra/production qualification, PostgreSQL/Testcontainers release gates, and full accessibility witnessing |
+| Approval escalation | Policy-bound overdue/blocked escalation, immutable escalation evidence, durable idempotency, typed API outcomes, policy-derived worklist/detail projections, WFA-SCR-04, and deterministic worker processing | PostgreSQL/Testcontainers execution, production worker composition with the external audit writer, duplicate/out-of-order inbox qualification, notifications, operational metrics qualification, live IAM/SoD, witnessed accessibility/performance, and full release gates |
 
 The [WFA story evidence](https://github.com/toanle88/Tally/blob/main/docs/backlog/stories/EP-WFA-001_user_stories.md)
 lists the exact routes, implementation areas, accepted behavior, and deferred
 qualification evidence for these slices.
+
+`EP-WFA-001` is marked locally complete by explicit user-requested status
+override on 2026-10-15. This parent status does not close child delivery items
+or integration, accessibility, recovery, notification, or release
+qualification work.
 
 ## Operations and infrastructure
 
@@ -94,9 +100,10 @@ The approved domain target includes organization/master data, COA, GL, workflow
 and period controls, invoicing, AR, AP, payments, bank reconciliation, fixed
 assets, revenue, FX, intercompany, reporting, tax, payroll, audit integrity,
 and full qualification. The current checkout has organization/master-data, COA,
-GL, and initial workflow policy/request slices; most remaining domain
-aggregates and later workflow behavior are still represented by specifications
-and OpenAPI contracts rather than complete runtime implementations.
+GL, and workflow policy/request/decision/delegation/escalation implementation
+slices; most remaining domain aggregates and later workflow behavior are still
+represented by specifications and OpenAPI contracts rather than complete runtime
+implementations.
 
 The next learning boundaries are hardening and qualifying the delivered GL and
 workflow slices, then extending the same vertical-slice discipline to the

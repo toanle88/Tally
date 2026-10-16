@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Epic | `EP-WFA-001` — Workflow and approvals |
-| Status | User Stories 1–5 implementation slices locally in place — focused evidence recorded on 2026-10-15; persistence, notification, accessibility, and release checks remain pending |
+| Status | Done by explicit user-requested parent-status override on 2026-10-15 — User Stories 1–5 implementation slices locally in place; child delivery, integration, persistence, notification, accessibility, and release qualification remain open |
 | Milestone | `M3` — Approval and period controls |
 | Delivery items | `DLV-GFR-004`, `DLV-FR-WFA-001`–`DLV-FR-WFA-005` |
 | Supporting workflows | `DLV-WF-6.1`, `DLV-WF-6.2`, `DLV-WF-7.12`; these workflows remain owned by Fiscal Period Management and GL |
@@ -15,8 +15,16 @@
 
 This document is the planning and delivery-traceability artifact for
 `EP-WFA-001`. User Stories 1–5 implementation and focused local verification
-are recorded below; full-epic integration and release qualification remain
-open.
+are recorded below. The parent epic is marked done by explicit user-requested
+status override on 2026-10-15; child delivery items and full-epic integration,
+persistence, notification, accessibility, recovery, and release qualification
+remain open.
+
+> Status comment — 2026-10-15: This is a planning/status closure for the parent
+> epic only. It does not mark child delivery items or integration,
+> accessibility, recovery, or release qualification complete. Current
+> escalation-slice evidence is recorded in
+> [`DLV-FR-WFA-004-us5-escalate-approval.md`](../../verification/DLV-FR-WFA-004-us5-escalate-approval.md).
 The stories are grouped into coherent vertical slices while preserving every
 approved WFA requirement, operation, route, permission, event, and ownership
 boundary.
@@ -728,7 +736,7 @@ that the story was planned.
    vertical slice rather than treating WFA as backend-only work.
 9. Run focused domain, API, persistence, outbox/inbox, authorization,
    accessibility, and frontend tests; then record release/qualification gaps
-   without marking roadmap delivery items complete.
+   without marking child roadmap delivery items complete.
 
 ## 10. Risks and decisions required before implementation
 
@@ -793,6 +801,8 @@ evidence at its first applicable slice.
   wiring, and delivery evidence are recorded on the implementation branch.
 - [x] User Story 5 implementation, generated artifacts, focused tests, and
   delivery evidence are recorded on the implementation branch.
-- [ ] Full-epic integration and release/qualification evidence remain open.
+- [ ] Full-epic integration and release/qualification evidence remain open;
+  the parent epic status is a separate explicit user-requested override.
 
-No commit or roadmap completion checkbox is implied by this planning artifact.
+No child delivery item or release qualification checkbox is implied by this
+parent status override.

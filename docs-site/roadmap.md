@@ -29,15 +29,16 @@ presence:
   explicit status override. GL posting, reversal, ledger-control, and reopen
   slices exist, while child delivery items and PostgreSQL, cross-context,
   browser, accessibility, and release qualification remain open.
-- **EP-WFA-001 — Workflow and approvals:** remains open. Approval-policy
-  maintenance and User Story 2 approval-request create/read behavior are
-  implemented locally; decision, delegation, escalation, and full workflow
-  qualification remain future scope.
+- **EP-WFA-001 — Workflow and approvals:** the parent is marked locally complete
+  by an explicit user-requested status override. User Stories 1–5 have local
+  implementation slices, while child delivery items and PostgreSQL,
+  cross-context, notification, accessibility, recovery, and release
+  qualification remain open.
 
 The repository’s [live roadmap](https://github.com/toanle88/Tally/blob/main/ROADMAP.md)
-is the status authority. Its last recorded update is 2026-10-11; this page
-records the current branch-specific implementation checkpoint separately from
-that roadmap date.
+is the status authority. It was updated on 2026-10-15 for the parent-status
+override; this page records the current branch-specific implementation
+checkpoint separately from that roadmap date.
 
 ## Milestones
 
