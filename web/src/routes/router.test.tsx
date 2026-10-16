@@ -134,6 +134,13 @@ describe('application router', () => {
     expect(screen.getByText(/This screen is action-result driven/)).toBeInTheDocument()
   })
 
+  it('supports direct entry to the FPM hard-close workspace', async () => {
+    renderRoute('/fiscal-periods/fpm-scr-02')
+    expect(await screen.findByRole('heading', { name: 'Start hard close' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Start hard close and acquire barrier' })).toBeInTheDocument()
+    expect(screen.getByText(/candidate close run is not a posting-gate owner/)).toBeInTheDocument()
+  })
+
   it('updates active navigation and supports back navigation', async () => {
     const router = renderRoute('/')
     fireEvent.click(screen.getByRole('link', { name: 'Exceptions' }))

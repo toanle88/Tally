@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/toanle88/Tally/internal/coa"
+	"github.com/toanle88/Tally/internal/fiscalperiod"
 	"github.com/toanle88/Tally/internal/gl"
 	"github.com/toanle88/Tally/internal/identity"
 	"github.com/toanle88/Tally/internal/organization"
@@ -48,6 +49,8 @@ const (
 	glOperationalReopenGateOpenOperationID  = gl.OperationalReopenGateOpenCommandIdentity
 	glOperationalReopenGateCloseOperationID = gl.OperationalReopenGateCloseCommandIdentity
 	glBeginRecloseGateOperationID           = gl.BeginRecloseGateCommandIdentity
+	fpmStartHardCloseOperationID            = "fiscal-period.start-hard-close.v1"
+	fpmApplyPostingGateResultOperationID    = "fiscal-period.apply-posting-gate-result.v1"
 )
 
 func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
@@ -393,6 +396,24 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	if err != nil {
 		return identityUnavailableHandler("general-ledger soft-close gate service unavailable"), nil
 	}
+	fiscalPeriodRepository, err := fiscalperiod.NewPostgresRepository(pool, postgresFiscalPeriodAuditWriter(auditWriter))
+	if err != nil {
+		return identityUnavailableHandler("fiscal-period persistence unavailable"), nil
+	}
+	fiscalPeriodService, err := fiscalperiod.NewServiceWithDurableIdempotency(
+		fiscalPeriodRepository,
+		evaluatorFPMAuthorizer{evaluator: policyEvaluator},
+		glSoftCloseGateService,
+		time.Now,
+		fiscalperiod.DurableServiceConfig{
+			Database: pool, Coordinator: platformidempotency.NewPostgresCoordinator(),
+			Policy:           platformidempotency.IdempotencyPolicy{RecordTTL: 24 * time.Hour, LeaseTTL: 5 * time.Minute},
+			StartOperationID: fpmStartHardCloseOperationID, ApplyOperationID: fpmApplyPostingGateResultOperationID,
+		},
+	)
+	if err != nil {
+		return identityUnavailableHandler("fiscal-period service unavailable"), nil
+	}
 	workflowPolicyRepository, err := workflow.NewPostgresApprovalPolicyRepositoryWithWorkflow(pool, postgresWorkflowPolicyAuditWriter(auditWriter), postgresWorkflowRequestAuditWriter(auditWriter), postgresWorkflowEventWriter)
 	if err != nil {
 		return identityUnavailableHandler("workflow approval-policy persistence unavailable"), nil
@@ -448,7 +469,7 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 		return identityUnavailableHandler("workflow approval-policy service unavailable"), nil
 	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, ApprovalPolicyService: workflowPolicyService, ApprovalRequestService: workflowApprovalWorkflow.Service, ApprovalRequestQueries: workflowRequestQueries, DelegationService: workflowDelegationService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, FiscalPeriodService: fiscalPeriodService, ApprovalPolicyService: workflowPolicyService, ApprovalRequestService: workflowApprovalWorkflow.Service, ApprovalRequestQueries: workflowRequestQueries, DelegationService: workflowDelegationService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -577,6 +598,21 @@ func postgresGLSoftCloseGateAuditWriter(auditWriter identity.PostgresAuditWriter
 			AfterFingerprint:              record.AfterFingerprint,
 			CorrelationID:                 record.CorrelationID,
 			CausationID:                   record.CausationID,
+		})
+	}
+}
+
+func postgresFiscalPeriodAuditWriter(auditWriter identity.PostgresAuditWriter) fiscalperiod.PostgresAuditWriter {
+	return func(ctx context.Context, tx pgx.Tx, record fiscalperiod.AuditRecord) (uuid.UUID, error) {
+		if auditWriter == nil {
+			return uuid.Nil, fiscalperiod.ErrFiscalPeriodAuditUnavailable
+		}
+		return auditWriter(ctx, tx, identity.AuditRecord{
+			UserID: record.AggregateID, ActorUserID: record.ActorUserID, ActorAuthenticationSubjectRef: record.ActorSubjectReference,
+			Action: record.Action, ScopeIDs: []string{record.AccountingScopeID.String()}, Permission: record.Permission,
+			PolicyReference: record.PolicyReference, PolicyVersion: record.PolicyVersion, DecisionReference: record.DecisionReference,
+			RevisionVersion: record.RevisionVersion, BeforeFingerprint: record.BeforeFingerprint, AfterFingerprint: record.AfterFingerprint,
+			CorrelationID: record.CorrelationID, CausationID: record.CausationID,
 		})
 	}
 }
@@ -993,6 +1029,11 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err != nil {
 		return identityUnavailableHandler("general-ledger soft-close gate service unavailable"), nil
 	}
+	fiscalPeriodRepository := fiscalperiod.NewMemoryRepository()
+	fiscalPeriodService, err := fiscalperiod.NewService(fiscalPeriodRepository, fiscalperiod.AllowAllAuthorizer{}, glSoftCloseGateService, time.Now)
+	if err != nil {
+		return identityUnavailableHandler("fiscal-period service unavailable"), nil
+	}
 	workflowRequestAuthorizer := evaluatorWorkflowRequestAuthorizer{evaluator: authorizer.evaluator, segregation: segregationEvaluator, users: repository, roles: roleRepository, clock: time.Now}
 	workflowApprovalWorkflow, err := workflow.NewMemoryApprovalWorkflowWithAuthorizer(workflowRequestAuthorizer)
 	if err != nil {
@@ -1038,7 +1079,7 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 		return identityUnavailableHandler("workflow approval-policy service unavailable"), nil
 	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, ApprovalPolicyService: workflowPolicyService, ApprovalRequestService: workflowApprovalWorkflow.Service, ApprovalRequestQueries: workflowRequestQueries, DelegationService: workflowDelegationService, PostingService: postingService, PostingApprovalDecisionService: postingApprovalDecisionService, JournalReversalService: journalReversalService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, FiscalPeriodService: fiscalPeriodService, ApprovalPolicyService: workflowPolicyService, ApprovalRequestService: workflowApprovalWorkflow.Service, ApprovalRequestQueries: workflowRequestQueries, DelegationService: workflowDelegationService, PostingService: postingService, PostingApprovalDecisionService: postingApprovalDecisionService, JournalReversalService: journalReversalService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -1078,6 +1119,21 @@ type evaluatorGLAccountingBookAuthorizer struct {
 
 type evaluatorGLSoftCloseGateAuthorizer struct {
 	evaluator identity.AuthorizationEvaluator
+}
+
+type evaluatorFPMAuthorizer struct {
+	evaluator identity.AuthorizationEvaluator
+}
+
+func (authorizer evaluatorFPMAuthorizer) Authorize(ctx context.Context, actor fiscalperiod.Actor, permission string, scopeID uuid.UUID) (fiscalperiod.AuthorizationDecision, error) {
+	if authorizer.evaluator == nil {
+		return fiscalperiod.AuthorizationDecision{}, fiscalperiod.ErrFiscalPeriodAuthorizationUnavailable
+	}
+	decision, err := authorizer.evaluator.Evaluate(ctx, identity.DecisionInput{ActorID: actor.UserID, Permission: permission, RequestedScopeIDs: []string{scopeID.String()}})
+	if err != nil || decision.Outcome == identity.AuthorizationUnavailable {
+		return fiscalperiod.AuthorizationDecision{}, fiscalperiod.ErrFiscalPeriodAuthorizationUnavailable
+	}
+	return fiscalperiod.AuthorizationDecision{Allowed: decision.Allowed, Permission: decision.Permission, PolicyReference: decision.PolicyReference, PolicyVersion: decision.PolicyVersion, DecisionReference: decision.DecisionReference, Reason: decision.Reason}, nil
 }
 
 func (authorizer evaluatorGLLedgerAuthorizer) AuthorizeLedger(ctx context.Context, actor gl.Actor, command gl.LedgerCommand, _ *gl.Ledger) (gl.AuthorizationDecision, error) {
