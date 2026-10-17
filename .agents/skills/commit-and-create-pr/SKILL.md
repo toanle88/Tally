@@ -53,7 +53,20 @@ repair, refactor, review, or test the code.
 ## Push and create the pull request
 
 - Confirm GitHub CLI authentication and repository detection with `gh auth
-  status` and `gh repo view`.
+  status -h github.com` and `gh repo view`. Run both commands in the same
+  process environment that will perform the GitHub operations.
+- Prefer an already-exported `GH_TOKEN` or `GITHUB_TOKEN` when the environment
+  provides one. Check only whether the variable is present; never print its
+  value, put it in a command argument or remote URL, or log it. A token set in
+  `~/.bashrc` may be absent from a login or non-interactive shell when the
+  startup chain does not source that file. Use the authenticated shell context
+  or ask the user to export the token in the command environment; do not
+  silently edit shell startup files.
+- Distinguish the environment token from a stored credential in
+  `~/.config/gh/hosts.yml`: `gh auth status` may report both. If the active
+  `GH_TOKEN`/`GITHUB_TOKEN` is absent or GitHub rejects it, stop and report the
+  exact condition. Do not launch `gh auth login`/`gh auth refresh` or replace
+  credentials as an implicit part of this workflow.
 - Push the current branch without force:
 
   ```text
@@ -78,6 +91,8 @@ never claim the pull request exists until `gh pr view` confirms it.
 
 Stop and report the exact condition when authorization, scope, branch validity,
 staging, commit, push, GitHub authentication, pull-request creation, or
-verification fails. Preserve the worktree. A code-review finding or missing
-test is not a stop condition for this skill unless the user or repository
-instructions explicitly make it one.
+verification fails. This includes a missing credential in the command
+environment and an invalid `GH_TOKEN`/`GITHUB_TOKEN`; do not expose the token
+while diagnosing either condition. Preserve the worktree. A code-review
+finding or missing test is not a stop condition for this skill unless the user
+or repository instructions explicitly make it one.
