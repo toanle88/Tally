@@ -950,11 +950,16 @@ func validateReopenRequestMutation(before, after *ReopenRequest) error {
 	if before.ApprovalDecision != nil && (after.ApprovalDecision == nil || !sameReopenDecision(*before.ApprovalDecision, *after.ApprovalDecision)) {
 		return ErrFiscalPeriodScopeConflict
 	}
-	if before.GateResult != nil && (after.GateResult == nil || !sameGateResult(*before.GateResult, *after.GateResult)) {
-		return ErrFiscalPeriodScopeConflict
+	gateChanged := before.GateResult != nil && (after.GateResult == nil || !sameGateResult(*before.GateResult, *after.GateResult))
+	if gateChanged {
+		if before.GateResult == nil || after.GateResult == nil || (before.Status != ReopenRequestActive && before.Status != ReopenRequestExpiredPendingClosure) || after.Status != ReopenRequestGateClosing || after.GateVersion != before.GateVersion+1 || after.GateResult.Gate.GateVersion != after.GateVersion || after.GateResult.Operation != reopenGateCloseOperation(before.Mode) {
+			return ErrFiscalPeriodScopeConflict
+		}
 	}
-	if before.GateVersion > 0 && before.GateVersion != after.GateVersion {
-		return ErrFiscalPeriodVersionConflict
+	if before.GateVersion > 0 && before.GateVersion != after.GateVersion && !gateChanged {
+		if before.Status != ReopenRequestRecloseHandoff || after.Status != ReopenRequestRecloseInProgress || after.GateVersion != before.GateVersion+1 || before.GateResult == nil {
+			return ErrFiscalPeriodVersionConflict
+		}
 	}
 	return nil
 }
@@ -1060,7 +1065,7 @@ func classifyReopenGateError(err error) error {
 	if err == nil {
 		return nil
 	}
-	if errors.Is(err, gl.ErrSoftCloseGateVersionConflict) || errors.Is(err, gl.ErrSoftCloseGateScopeConflict) || errors.Is(err, gl.ErrSoftCloseGateModeConflict) || errors.Is(err, gl.ErrSoftCloseGateOwnerConflict) || errors.Is(err, gl.ErrSoftCloseGateEpochConflict) || errors.Is(err, gl.ErrSoftCloseGatePolicyConflict) || errors.Is(err, gl.ErrSoftCloseGatePolicyRejected) || errors.Is(err, gl.ErrSoftCloseGateAuthorizationDenied) || errors.Is(err, gl.ErrSoftCloseGateAuthorizationExpired) || errors.Is(err, gl.ErrSoftCloseGateIdempotencyConflict) {
+	if errors.Is(err, gl.ErrSoftCloseGateVersionConflict) || errors.Is(err, gl.ErrSoftCloseGateScopeConflict) || errors.Is(err, gl.ErrSoftCloseGateModeConflict) || errors.Is(err, gl.ErrSoftCloseGateOwnerConflict) || errors.Is(err, gl.ErrSoftCloseGateEpochConflict) || errors.Is(err, gl.ErrSoftCloseGatePolicyConflict) || errors.Is(err, gl.ErrSoftCloseGatePolicyRejected) || errors.Is(err, gl.ErrSoftCloseGateAuthorizationDenied) || errors.Is(err, gl.ErrSoftCloseGateAuthorizationExpired) || errors.Is(err, gl.ErrSoftCloseGateIdempotencyConflict) || errors.Is(err, gl.ErrSoftCloseGateRecloseSummaryConflict) {
 		return fmt.Errorf("%w: %v", ErrReopenGateRejected, err)
 	}
 	return fmt.Errorf("%w: %v", ErrReopenGateUnavailable, err)

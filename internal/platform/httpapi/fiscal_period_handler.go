@@ -23,22 +23,32 @@ type fpmStartHardCloseCommandData struct {
 	ExpectedGateVersion   int64  `json:"expectedGateVersion"`
 }
 
+type fpmStartRecloseCommandData struct {
+	FiscalPeriodID               string `json:"fiscalPeriodId"`
+	ReopenRequestID              string `json:"reopenRequestId"`
+	ExpectedPeriodVersion        int64  `json:"expectedPeriodVersion"`
+	ExpectedReopenRequestVersion int64  `json:"expectedReopenRequestVersion"`
+	ExpectedGateVersion          int64  `json:"expectedGateVersion"`
+}
+
 type fpmApplyPostingGateResultCommandData struct {
-	FiscalPeriodID             string                `json:"fiscalPeriodId"`
-	SoftCloseRunID             string                `json:"softCloseRunId"`
-	CloseRunID                 string                `json:"closeRunId"`
-	SoftCloseControlEpoch      int64                 `json:"softCloseControlEpoch"`
-	PolicyVersion              string                `json:"policyVersion"`
-	ExpectedGateVersion        int64                 `json:"expectedGateVersion"`
-	PostingGateResult          json.RawMessage       `json:"postingGateResult"`
-	Gate                       *gl.PeriodPostingGate `json:"gate"`
-	Operation                  string                `json:"operation"`
-	DecisionReference          uuid.UUID             `json:"decisionReference"`
-	PolicyReference            string                `json:"policyReference"`
-	AuthorizationPolicyVersion string                `json:"authorizationPolicyVersion"`
-	ValidationOutcome          string                `json:"validationOutcome"`
-	AuditReference             uuid.UUID             `json:"auditReference"`
-	NextAction                 string                `json:"nextAction"`
+	FiscalPeriodID               string                `json:"fiscalPeriodId"`
+	SoftCloseRunID               string                `json:"softCloseRunId"`
+	CloseRunID                   string                `json:"closeRunId"`
+	ReopenRequestID              string                `json:"reopenRequestId"`
+	ExpectedReopenRequestVersion int64                 `json:"expectedReopenRequestVersion"`
+	SoftCloseControlEpoch        int64                 `json:"softCloseControlEpoch"`
+	PolicyVersion                string                `json:"policyVersion"`
+	ExpectedGateVersion          int64                 `json:"expectedGateVersion"`
+	PostingGateResult            json.RawMessage       `json:"postingGateResult"`
+	Gate                         *gl.PeriodPostingGate `json:"gate"`
+	Operation                    string                `json:"operation"`
+	DecisionReference            uuid.UUID             `json:"decisionReference"`
+	PolicyReference              string                `json:"policyReference"`
+	AuthorizationPolicyVersion   string                `json:"authorizationPolicyVersion"`
+	ValidationOutcome            string                `json:"validationOutcome"`
+	AuditReference               uuid.UUID             `json:"auditReference"`
+	NextAction                   string                `json:"nextAction"`
 }
 
 type fpmCloseRunCommandData struct {
@@ -106,6 +116,48 @@ func (handler IdentityHandler) FpmStartHardClose(ctx context.Context, request *g
 	return establishedFPMResult(result, correlationID, "/api/v1/fiscal-periods/actions/start-hard-close"), nil
 }
 
+func (handler IdentityHandler) FpmStartReclose(ctx context.Context, request *generated.CommandRequest, params generated.FpmStartRecloseParams) (generated.FpmStartRecloseRes, error) {
+	correlationID := fpmStartRecloseCorrelation(params)
+	if handler.FiscalPeriodService == nil {
+		return fpmStartRecloseProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The fiscal-period service is unavailable.", correlationID), nil
+	}
+	actor, ok := identity.ActorFromContext(ctx)
+	if !ok {
+		return fpmStartRecloseProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The reclose actor is not authorized.", correlationID), nil
+	}
+	if request == nil || uuid.UUID(request.CommandId) == uuid.Nil || !request.AccountingScopeId.Set || uuid.UUID(request.AccountingScopeId.Value) == uuid.Nil || !request.ExpectedVersion.Set {
+		return fpmStartRecloseProblem(http.StatusBadRequest, "INVALID_REQUEST", "The reclose command requires command, scope, and expected period version fields.", correlationID), nil
+	}
+	var payload fpmStartRecloseCommandData
+	if err := decodeFPMCommandData(request, &payload); err != nil {
+		return fpmStartRecloseProblem(http.StatusBadRequest, "INVALID_REQUEST", "The reclose command data is invalid.", correlationID), nil
+	}
+	periodID, err := parseFPMUUID(payload.FiscalPeriodID)
+	if err != nil {
+		return fpmStartRecloseProblem(http.StatusBadRequest, "INVALID_REQUEST", "The fiscal period identifier is invalid.", correlationID), nil
+	}
+	reopenRequestID, err := parseFPMUUID(payload.ReopenRequestID)
+	if err != nil {
+		return fpmStartRecloseProblem(http.StatusBadRequest, "INVALID_REQUEST", "The reopen request identifier is invalid.", correlationID), nil
+	}
+	expectedPeriodVersion := payload.ExpectedPeriodVersion
+	if expectedPeriodVersion < 1 {
+		expectedPeriodVersion = int64(request.ExpectedVersion.Value)
+	}
+	if expectedPeriodVersion < 1 || payload.ExpectedReopenRequestVersion < 1 || payload.ExpectedGateVersion < 1 {
+		return fpmStartRecloseProblem(http.StatusBadRequest, "INVALID_REQUEST", "The expected period, reopen-request, and gate versions are required.", correlationID), nil
+	}
+	result, err := handler.FiscalPeriodService.StartReclose(ctx, fiscalperiod.Actor{UserID: actor.UserID, SubjectReference: glActorSubject(actor)}, fiscalperiod.StartRecloseCommand{
+		CommandID: uuid.UUID(request.CommandId), AccountingScopeID: uuid.UUID(request.AccountingScopeId.Value), FiscalPeriodID: periodID, ReopenRequestID: reopenRequestID,
+		ExpectedPeriodVersion: expectedPeriodVersion, ExpectedReopenRequestVersion: payload.ExpectedReopenRequestVersion, ExpectedGateVersion: payload.ExpectedGateVersion,
+		IdempotencyKey: params.IdempotencyKey, CorrelationID: correlationID.String(), CausationID: uuid.UUID(request.CommandId).String(),
+	})
+	if err != nil {
+		return mapFPMStartRecloseError(err, correlationID), nil
+	}
+	return establishedFPMResult(result, correlationID, "/api/v1/fiscal-periods/actions/start-reclose"), nil
+}
+
 func (handler IdentityHandler) FpmApplyPostingGateResult(ctx context.Context, request *generated.CommandRequest, params generated.FpmApplyPostingGateResultParams) (generated.FpmApplyPostingGateResultRes, error) {
 	correlationID := fpmApplyPostingGateResultCorrelation(params)
 	if handler.FiscalPeriodService == nil {
@@ -127,27 +179,37 @@ func (handler IdentityHandler) FpmApplyPostingGateResult(ctx context.Context, re
 	if err != nil {
 		return fpmApplyPostingGateResultProblem(http.StatusBadRequest, "INVALID_REQUEST", "The fiscal period identifier is invalid.", correlationID), nil
 	}
-	softCloseRunID, err := parseFPMUUID(payload.SoftCloseRunID)
-	if err != nil {
-		return fpmApplyPostingGateResultProblem(http.StatusBadRequest, "INVALID_REQUEST", "The soft-close run identifier is invalid.", correlationID), nil
-	}
-	closeRunID, err := parseFPMUUID(payload.CloseRunID)
-	if err != nil {
-		return fpmApplyPostingGateResultProblem(http.StatusBadRequest, "INVALID_REQUEST", "The close-run identifier is invalid.", correlationID), nil
-	}
 	result, err := fpmPostingGateResult(payload)
 	if err != nil {
 		return fpmApplyPostingGateResultProblem(http.StatusBadRequest, "INVALID_REQUEST", "The authoritative posting-gate result is invalid.", correlationID), nil
 	}
-	if payload.ExpectedGateVersion < 1 || payload.SoftCloseControlEpoch < 1 || strings.TrimSpace(payload.PolicyVersion) == "" {
-		return fpmApplyPostingGateResultProblem(http.StatusBadRequest, "INVALID_REQUEST", "The expected gate version, control epoch, and policy version are required.", correlationID), nil
-	}
 	command := fiscalperiod.ApplyPostingGateResultCommand{
 		CommandID: uuid.UUID(request.CommandId), AccountingScopeID: scopeID, FiscalPeriodID: periodID,
-		SoftCloseRunID: softCloseRunID, CloseRunID: closeRunID, ExpectedPeriodVersion: int64(request.ExpectedVersion.Value),
-		ExpectedGateVersion: payload.ExpectedGateVersion, SoftCloseControlEpoch: payload.SoftCloseControlEpoch,
-		SoftClosePolicyVersion: payload.PolicyVersion, Result: result, IdempotencyKey: params.IdempotencyKey,
-		CorrelationID: correlationID.String(), CausationID: uuid.UUID(request.CommandId).String(),
+		ExpectedPeriodVersion: int64(request.ExpectedVersion.Value), ExpectedGateVersion: payload.ExpectedGateVersion,
+		Result: result, IdempotencyKey: params.IdempotencyKey, CorrelationID: correlationID.String(), CausationID: uuid.UUID(request.CommandId).String(),
+	}
+	if result.Operation == gl.ScopedReopenGateCloseOperation || result.Operation == gl.OperationalReopenGateCloseOperation {
+		command.ReopenRequestID, err = parseFPMUUID(payload.ReopenRequestID)
+		if err != nil || payload.ExpectedReopenRequestVersion < 1 || payload.ExpectedGateVersion < 1 {
+			return fpmApplyPostingGateResultProblem(http.StatusBadRequest, "INVALID_REQUEST", "The reopen request and expected gate versions are required for a reopen-gate close result.", correlationID), nil
+		}
+		command.ExpectedReopenRequestVersion = payload.ExpectedReopenRequestVersion
+	} else {
+		softCloseRunID, parseErr := parseFPMUUID(payload.SoftCloseRunID)
+		if parseErr != nil {
+			return fpmApplyPostingGateResultProblem(http.StatusBadRequest, "INVALID_REQUEST", "The soft-close run identifier is invalid.", correlationID), nil
+		}
+		closeRunID, parseErr := parseFPMUUID(payload.CloseRunID)
+		if parseErr != nil {
+			return fpmApplyPostingGateResultProblem(http.StatusBadRequest, "INVALID_REQUEST", "The close-run identifier is invalid.", correlationID), nil
+		}
+		if payload.ExpectedGateVersion < 1 || payload.SoftCloseControlEpoch < 1 || strings.TrimSpace(payload.PolicyVersion) == "" {
+			return fpmApplyPostingGateResultProblem(http.StatusBadRequest, "INVALID_REQUEST", "The expected gate version, control epoch, and policy version are required.", correlationID), nil
+		}
+		command.SoftCloseRunID = softCloseRunID
+		command.CloseRunID = closeRunID
+		command.SoftCloseControlEpoch = payload.SoftCloseControlEpoch
+		command.SoftClosePolicyVersion = payload.PolicyVersion
 	}
 	resultValue, err := handler.FiscalPeriodService.ApplyPostingGateResult(ctx, fiscalperiod.Actor{UserID: actor.UserID, SubjectReference: glActorSubject(actor)}, command)
 	if err != nil {
@@ -367,6 +429,12 @@ func establishedFPMResult(result fiscalperiod.CommandResult, correlationID uuid.
 				nextAction = "open-reopen-gate"
 			case fiscalperiod.ReopenRequestActive:
 				nextAction = "perform-authorized-reopen-work"
+			case fiscalperiod.ReopenRequestExpiredPendingClosure, fiscalperiod.ReopenRequestGateClosing, fiscalperiod.ReopenRequestRecloseHandoff:
+				nextAction = "start-reclose"
+			case fiscalperiod.ReopenRequestRecloseInProgress:
+				nextAction = "resume-close-run"
+			case fiscalperiod.ReopenRequestCompletedNoChange, fiscalperiod.ReopenRequestCompleted:
+				nextAction = "review-reopen-state"
 			case fiscalperiod.ReopenRequestRejected:
 				nextAction = "request-new-reopen"
 			default:
@@ -394,7 +462,8 @@ func establishedFPMResult(result fiscalperiod.CommandResult, correlationID uuid.
 		"softCloseRunId": mustRaw(result.State.SoftClose.ID.String()), "softCloseStatus": mustRaw(result.State.SoftClose.Status),
 		"controlEpoch": mustRaw(result.State.ControlEpoch.Number), "controlEpochStatus": mustRaw(result.State.ControlEpoch.Status),
 		"closeRunId": mustRaw(closeRun.ID.String()), "closeRunStatus": mustRaw(closeRun.Status), "closeRunAggregateVersion": mustRaw(closeRun.AggregateVersion), "closeRunCommandFingerprint": mustRaw(closeRun.CommandFingerprint),
-		"gateMode": mustRaw(gate.Gate.GateMode), "gateVersion": mustRaw(gate.Gate.GateVersion),
+		"closeType": mustRaw(closeRun.CloseType),
+		"gateMode":  mustRaw(gate.Gate.GateMode), "gateVersion": mustRaw(gate.Gate.GateVersion),
 		"barrierLedgerPosition": mustRaw(gate.Gate.BarrierLedgerPosition), "frozenAdmissionSummary": mustRaw(closeRun.BarrierEvidence),
 		"validationOutcome": mustRaw(gate.ValidationOutcome), "decisionReference": mustRaw(gate.DecisionReference.String()),
 		"policyReference": mustRaw(gate.PolicyReference), "auditReference": mustRaw(gate.AuditReference.String()),
@@ -415,6 +484,7 @@ func establishedFPMResult(result fiscalperiod.CommandResult, correlationID uuid.
 		data["approvalRequestId"] = mustRaw(approvalRequestID)
 		data["approvalDecision"] = mustRaw(reopenRequest.ApprovalDecision)
 		data["reopenGateResult"] = mustRaw(reopenRequest.GateResult)
+		data["reopenGateVersion"] = mustRaw(reopenRequest.GateVersion)
 	}
 	if closeRun.BarrierEvidence != nil {
 		data["priorControlProcessId"] = mustRaw(closeRun.BarrierEvidence.PriorControlProcessID)
@@ -436,6 +506,13 @@ func fiscalperiodGateEvidenceResult(run fiscalperiod.CloseRun) gl.SoftCloseGateR
 }
 
 func fpmStartHardCloseCorrelation(params generated.FpmStartHardCloseParams) uuid.UUID {
+	if params.XCorrelationID.Set && uuid.UUID(params.XCorrelationID.Value) != uuid.Nil {
+		return uuid.UUID(params.XCorrelationID.Value)
+	}
+	return uuid.New()
+}
+
+func fpmStartRecloseCorrelation(params generated.FpmStartRecloseParams) uuid.UUID {
 	if params.XCorrelationID.Set && uuid.UUID(params.XCorrelationID.Value) != uuid.Nil {
 		return uuid.UUID(params.XCorrelationID.Value)
 	}
@@ -466,6 +543,10 @@ func parseFPMUUID(value string) (uuid.UUID, error) {
 
 func mapFPMStartHardCloseError(err error, correlationID uuid.UUID) generated.FpmStartHardCloseRes {
 	return mapFPMError(err, correlationID, fpmStartHardCloseProblem)
+}
+
+func mapFPMStartRecloseError(err error, correlationID uuid.UUID) generated.FpmStartRecloseRes {
+	return mapFPMError(err, correlationID, fpmStartRecloseProblem)
 }
 
 func mapFPMApplyPostingGateResultError(err error, correlationID uuid.UUID) generated.FpmApplyPostingGateResultRes {
@@ -550,6 +631,27 @@ func fpmStartHardCloseProblem(status int, code, detail string, correlationID uui
 		return &value
 	default:
 		value := generated.FpmStartHardCloseServiceUnavailable(problem)
+		return &value
+	}
+}
+
+func fpmStartRecloseProblem(status int, code, detail string, correlationID uuid.UUID) generated.FpmStartRecloseRes {
+	problem := generated.ProblemDetails{Type: "https://tally.local/problems/" + strings.ToLower(code), Title: http.StatusText(status), Status: status, Code: code, Detail: detail, CorrelationId: generated.UUID(correlationID)}
+	switch status {
+	case http.StatusBadRequest:
+		value := generated.FpmStartRecloseBadRequest(problem)
+		return &value
+	case http.StatusForbidden:
+		value := generated.FpmStartRecloseForbidden(problem)
+		return &value
+	case http.StatusConflict:
+		value := generated.FpmStartRecloseConflict(problem)
+		return &value
+	case http.StatusUnprocessableEntity:
+		value := generated.FpmStartRecloseUnprocessableEntity(problem)
+		return &value
+	default:
+		value := generated.FpmStartRecloseServiceUnavailable(problem)
 		return &value
 	}
 }

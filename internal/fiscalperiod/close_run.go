@@ -1234,6 +1234,10 @@ func (service *Service) applyAuthoritativeFinalization(ctx context.Context, acto
 		service.finalizeDurableFailureIfNeeded(ctx, durable, err)
 		return CommandResult{}, err
 	}
+	if state.CloseRun.CloseType == gl.CloseTypeReclose && (state.ReopenRequest == nil || state.ReopenRequest.Status != ReopenRequestRecloseInProgress) {
+		service.finalizeDurableFailureIfNeeded(ctx, durable, ErrFiscalPeriodOwnerConflict)
+		return CommandResult{}, ErrFiscalPeriodOwnerConflict
+	}
 	if state.Period.State == PeriodStateHardClosed && state.CloseRun.Status == CloseRunCompleted {
 		if !sameFinalizationFacts(state.CloseRun.FinalizationGateResult, finalized) {
 			service.finalizeDurableFailureIfNeeded(ctx, durable, ErrPostingBarrierResultConflict)
@@ -1272,15 +1276,18 @@ func (service *Service) applyAuthoritativeFinalization(ctx context.Context, acto
 	before := state
 	after := cloneControlState(state)
 	now := service.clock().UTC()
+	isReclose := after.CloseRun.CloseType == gl.CloseTypeReclose
 	after.Period.State = PeriodStateHardClosed
 	after.Period.StateVersion++
 	after.Period.AggregateVersion++
 	after.Period.ActiveSoftCloseRunID = nil
 	after.Period.ActiveCloseRunID = nil
 	after.Period.UpdatedAt = now
-	after.SoftClose.Status = SoftCloseRunSuperseded
-	after.SoftClose.AggregateVersion++
-	after.SoftClose.UpdatedAt = now
+	if !isReclose {
+		after.SoftClose.Status = SoftCloseRunSuperseded
+		after.SoftClose.AggregateVersion++
+		after.SoftClose.UpdatedAt = now
+	}
 	after.ControlEpoch.Status = ControlEpochHandoffPending
 	after.ControlEpoch.AggregateVersion++
 	after.ControlEpoch.UpdatedAt = now
@@ -1293,6 +1300,13 @@ func (service *Service) applyAuthoritativeFinalization(ctx context.Context, acto
 	after.CloseRun.LastFailureCode = ""
 	after.CloseRun.LastFailureDetail = ""
 	after.CloseRun.UpdatedAt = now
+	if isReclose {
+		updatedRequest := cloneReopenRequest(after.ReopenRequest)
+		updatedRequest.Status = ReopenRequestCompleted
+		updatedRequest.AggregateVersion++
+		updatedRequest.UpdatedAt = now
+		after.ReopenRequest = &updatedRequest
+	}
 	sealResult, sealErr := service.requestAuditSeal(ctx, actor, *after.CloseRun)
 	if sealErr != nil {
 		service.finalizeDurableFailureIfNeeded(ctx, durable, sealErr)
@@ -1303,7 +1317,14 @@ func (service *Service) applyAuthoritativeFinalization(ctx context.Context, acto
 		return CommandResult{}, sealErr
 	}
 	payload := closeStatePayload(after, finalized)
-	events := []Event{{EventType: "GateAdmissionSummaryRecorded", AggregateID: after.CloseRun.ID, AggregateVersion: after.CloseRun.AggregateVersion, AccountingScopeID: after.Period.AccountingScopeID, CorrelationID: correlationID, CausationID: causationID, OccurredAt: now, Payload: payload}, {EventType: "SoftCloseSuperseded", AggregateID: after.SoftClose.ID, AggregateVersion: after.SoftClose.AggregateVersion, AccountingScopeID: after.Period.AccountingScopeID, CorrelationID: correlationID, CausationID: causationID, OccurredAt: now, Payload: payload}, {EventType: "PeriodStateChanged", AggregateID: after.Period.ID, AggregateVersion: after.Period.AggregateVersion, AccountingScopeID: after.Period.AccountingScopeID, CorrelationID: correlationID, CausationID: causationID, OccurredAt: now, Payload: payload}}
+	events := []Event{{EventType: "GateAdmissionSummaryRecorded", AggregateID: after.CloseRun.ID, AggregateVersion: after.CloseRun.AggregateVersion, AccountingScopeID: after.Period.AccountingScopeID, CorrelationID: correlationID, CausationID: causationID, OccurredAt: now, Payload: payload}}
+	if !isReclose {
+		events = append(events, Event{EventType: "SoftCloseSuperseded", AggregateID: after.SoftClose.ID, AggregateVersion: after.SoftClose.AggregateVersion, AccountingScopeID: after.Period.AccountingScopeID, CorrelationID: correlationID, CausationID: causationID, OccurredAt: now, Payload: payload})
+	}
+	events = append(events, Event{EventType: "PeriodStateChanged", AggregateID: after.Period.ID, AggregateVersion: after.Period.AggregateVersion, AccountingScopeID: after.Period.AccountingScopeID, CorrelationID: correlationID, CausationID: causationID, OccurredAt: now, Payload: payload})
+	if isReclose {
+		events = append(events, Event{EventType: "PeriodReclosed", AggregateID: after.Period.ID, AggregateVersion: after.Period.AggregateVersion, AccountingScopeID: after.Period.AccountingScopeID, CorrelationID: correlationID, CausationID: causationID, OccurredAt: now, Payload: payload})
+	}
 	result := CommandResult{State: after, GateResult: finalized, Decision: decision}
 	if err := service.commitCloseMutation(ctx, Mutation{Before: before, After: after, Operation: ApplyPostingGateResultOperation, CommandFingerprint: postingGateResultFingerprint(finalized), Audit: service.auditRecord(actor, decision, after.Period.AccountingScopeID, after.CloseRun.ID, ApplyPostingGateResultOperation, postingGateResultFingerprint(finalized), postingGateResultFingerprint(finalized), correlationID, causationID), Events: events}, durable, result); err != nil {
 		service.finalizeDurableFailureIfNeeded(ctx, durable, err)

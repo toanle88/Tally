@@ -130,6 +130,18 @@ func (stub *hardCloseGateStub) OpenOperationalReopenGate(context.Context, gl.Act
 	return gl.SoftCloseGateResult{}, ErrReopenGateUnavailable
 }
 
+func (stub *hardCloseGateStub) CloseScopedReopenGate(context.Context, gl.Actor, gl.CloseScopedReopenGateCommand) (gl.SoftCloseGateResult, error) {
+	return gl.SoftCloseGateResult{}, ErrReopenGateUnavailable
+}
+
+func (stub *hardCloseGateStub) CloseOperationalReopenGate(context.Context, gl.Actor, gl.CloseOperationalReopenGateCommand) (gl.SoftCloseGateResult, error) {
+	return gl.SoftCloseGateResult{}, ErrReopenGateUnavailable
+}
+
+func (stub *hardCloseGateStub) BeginRecloseGate(context.Context, gl.Actor, gl.BeginRecloseGateCommand) (gl.SoftCloseGateResult, error) {
+	return gl.SoftCloseGateResult{}, ErrReopenGateUnavailable
+}
+
 func TestStartHardCloseCreatesCandidateAndAppliesAuthoritativeBarrier(t *testing.T) {
 	state, command := hardCloseFixture()
 	repository := NewMemoryRepository()

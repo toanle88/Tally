@@ -57,6 +57,7 @@ const (
 	fpmApplyCloseApprovalOperationID          = "fiscal-period.apply-close-approval-decision.v1"
 	fpmRequestReopenOperationID               = "fiscal-period.request-reopen.v1"
 	fpmApplyReopenApprovalOperationID         = "fiscal-period.apply-reopen-approval-decision.v1"
+	fpmStartRecloseOperationID                = "fiscal-period.start-reclose.v1"
 )
 
 func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
@@ -420,6 +421,7 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 			ApplyCloseApprovalOperationID:          fpmApplyCloseApprovalOperationID,
 			RequestReopenOperationID:               fpmRequestReopenOperationID,
 			ApplyReopenApprovalOperationID:         fpmApplyReopenApprovalOperationID,
+			StartRecloseOperationID:                fpmStartRecloseOperationID,
 		},
 	)
 	if err != nil {

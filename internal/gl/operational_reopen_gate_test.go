@@ -181,6 +181,39 @@ func TestOperationalReopenGateNoChangeAndExpiryEvent(t *testing.T) {
 	}
 }
 
+func TestScopedReopenGateBeginReclosePreservesScopedPriorOwner(t *testing.T) {
+	now := time.Date(2026, time.January, 2, 3, 4, 5, 0, time.UTC)
+	scopeID, periodID, requestID, recloseRunID := uuid.New(), uuid.New(), uuid.New(), uuid.New()
+	epoch := int64(9)
+	repository := NewMemorySoftCloseGateRepository()
+	gate := NewOpenMemorySoftCloseGate(scopeID, periodID, 4)
+	gate.GateMode = PostingGateCloseOnly
+	gate.GateVersion = 12
+	gate.AggregateVersion = 12
+	gate.ActiveReopenRequestID = &requestID
+	gate.ReopenControlAuthorityEpoch = &epoch
+	gate.ActiveAdmissionCounters = ActiveGateAdmissionCounters{ControlOwnerType: ScopedReopenGateOwnerType, ControlOwnerID: requestID, ControlOwnerEpoch: &epoch, AdmittedPostingCount: 1, ReopenPostingAdmitted: true, FirstAdmittedLedgerPosition: 10, LastAdmittedLedgerPosition: 10}
+	gate.LastFrozenAdmissionSummary = &FrozenGateAdmissionSummary{ControlOwnerType: ScopedReopenGateOwnerType, ControlOwnerID: requestID, ControlOwnerEpoch: &epoch, AdmittedPostingCount: 1, ReopenPostingAdmitted: true, FirstAdmittedLedgerPosition: 10, LastAdmittedLedgerPosition: 10, FrozenAtGateVersion: 12, FrozenAt: now, FrozenByCommandFingerprint: "sha256:scoped-close", FrozenByCommandType: ScopedReopenGateCloseCommandIdentity}
+	if err := repository.Seed(gate); err != nil {
+		t.Fatal(err)
+	}
+	service, err := NewSoftCloseGateService(repository, allowScopedReopenForTest(scopeID), AllowAllSoftClosePolicyEvaluator{}, func() time.Time { return now })
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := service.BeginRecloseGate(context.Background(), Actor{UserID: uuid.New(), SubjectReference: "controller"}, BeginRecloseGateCommand{
+		CommandID: uuid.New(), AccountingScopeID: scopeID, FiscalPeriodID: periodID, ExpectedGateVersion: 12, ReopenRequestID: requestID, RecloseRunID: recloseRunID,
+		IdempotencyKey: "scoped-begin-reclose", CorrelationID: uuid.NewString(), CausationID: uuid.NewString(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Gate.PriorControlProcessType != ScopedReopenGateOwnerType || result.Gate.PriorGateMode != PostingGateScopedReopen || result.Gate.ActiveCloseType != CloseTypeReclose {
+		t.Fatalf("scoped reclose lineage = %#v", result.Gate)
+	}
+}
+
 func validOpenOperationalReopenCommand(scopeID, periodID, requestID, actorID uuid.UUID, expectedVersion int64, expiry time.Time) OpenOperationalReopenGateCommand {
 	return OpenOperationalReopenGateCommand{
 		CommandID: uuid.New(), AccountingScopeID: scopeID, FiscalPeriodID: periodID, ExpectedGateVersion: expectedVersion,

@@ -334,8 +334,8 @@ US4 implementation evidence delivered on branch `feat/dlv-fr-fpm-009-010-us4-reo
 Focused local verification passed. The repository fast gate's migration checks
 and changed packages passed, while unrelated listener-based authentication and
 database tests could not bind local TCP sockets in the restricted sandbox.
-PostgreSQL/Testcontainers runtime, browser/accessibility qualification, US5
-closure/reclose, and epic completion remain explicitly deferred.
+PostgreSQL/Testcontainers runtime, browser/accessibility qualification, and
+epic completion remain explicitly deferred.
 
 ### US5 — Close an approved reopen and reclose safely
 
@@ -362,6 +362,40 @@ Expected implementation evidence:
 - GL handoff/finalization contract tests and status-reconciliation tests.
 - Persistence tests proving new reclose identity and immutable prior-lineage retention.
 - Workflow, API, UI, audit, and outbox tests for the complete reopen/reclose journey.
+
+US5 implementation evidence delivered on branch `feat/dlv-fr-fpm-011-us5-reclose`:
+
+- `internal/fiscalperiod/reclose.go` implements `StartReclose` as the FPM-owned
+  close/reclose orchestration boundary. It closes the approved scoped or
+  operational GL gate, applies the authoritative frozen admission summary,
+  completes zero-admission requests as `CompletedNoChange`, and preserves the
+  prior close-run watermark and seal without creating a second run.
+- Positive admission creates a new `Reclose` `CloseRun`, records the prior
+  reopen request and admission summary as lineage, invokes `BeginRecloseGate`,
+  and moves the request and period through `RecloseHandoff`/
+  `RecloseInProgress` and `Closing`. Reclose barriers remain outside the
+  initial-close abort/release path.
+- `internal/fiscalperiod/close_run.go` finalizes a reclose with the existing
+  mandatory task/approval/watermark/seal controls, retains the original close
+  and reopen evidence, and emits `PeriodReclosed`.
+- `internal/gl/operational_reopen_gate.go` and the scoped GL contract preserve
+  the typed reopen owner and prior gate mode during reclose handoff. The new
+  migration `db/migrations/fiscal_period/00004_allow_reclose_close_runs.sql`
+  permits the persisted `Reclose` close-run type without widening unrelated
+  status constraints.
+- `internal/platform/httpapi/fiscal_period_handler.go` exposes the established
+  `fpmStartReclose` route and supports reopen-close results through the shared
+  `fpmApplyPostingGateResult` boundary. The FPM workspace explains that GL,
+  rather than the controller, determines no-change versus mandatory reclose.
+- Focused domain, GL, and component tests cover zero-admission no-change,
+  positive-admission handoff/finalization, scoped lineage, and the UI decision
+  path. The verification record is
+  `docs/verification/DLV-FR-FPM-011-us5-reclose.md`.
+
+Focused local verification passed. PostgreSQL/Testcontainers, listener-based
+authentication/database tests, browser/accessibility qualification, and
+release/slow checks remain deferred; see the verification record for exact
+commands and results.
 
 ### US6 — Recover period control and extend close exceptions
 
