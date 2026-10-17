@@ -46,6 +46,7 @@ describe('route registry', () => {
       ['FPM-WS-01', '/fiscal-periods/fpm-ws-01'],
       ['FPM-SCR-02', '/fiscal-periods/fpm-scr-02'],
       ['FPM-SCR-03', '/fiscal-periods/fpm-scr-03'],
+      ['FPM-SCR-04', '/fiscal-periods/fpm-scr-04'],
       ['FPM-SCR-05', '/fiscal-periods/fpm-scr-05'],
       ['XCT-WS-01', '/operations/xct-ws-01'],
       ['XCT-SCR-01', '/operations/xct-scr-01'],

@@ -423,6 +423,8 @@ Expected implementation evidence:
 - Persistence/audit/outbox tests for preserved process identity and exception lineage.
 - API/UI/observability tests for aging, cutoff, expiry, and operator guidance.
 
+Current local evidence: [DLV-FR-FPM-012/013 US6 verification record](../../verification/DLV-FR-FPM-012-013-us6-period-control-recovery.md) and [RUN-005 period-control interruption runbook](../../operations/runbooks/run-005-period-control-interruption.md). Roadmap and acceptance completion markers remain unchanged until the deferred qualification evidence is available.
+
 ## 8. Cross-story definition of done
 
 The epic is ready for delivery review only when all of the following are evidenced:
