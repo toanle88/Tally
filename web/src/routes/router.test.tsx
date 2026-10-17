@@ -148,6 +148,13 @@ describe('application router', () => {
     expect(screen.getByText(/immutable Workflow decision references/)).toBeInTheDocument()
   })
 
+  it('supports direct entry to the FPM reopen request and approval workspace', async () => {
+    renderRoute('/fiscal-periods/fpm-scr-03')
+    expect(await screen.findByRole('heading', { name: 'Request and authorize reopen' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Request reopen approval' })).toBeInTheDocument()
+    expect(screen.getByText(/pending request does not change the period state/)).toBeInTheDocument()
+  })
+
   it('updates active navigation and supports back navigation', async () => {
     const router = renderRoute('/')
     fireEvent.click(screen.getByRole('link', { name: 'Exceptions' }))

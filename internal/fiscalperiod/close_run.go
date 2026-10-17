@@ -149,6 +149,14 @@ type CloseDecisionPort interface {
 	Validate(context.Context, Actor, CloseApprovalDecision) error
 }
 
+// ReopenDecisionPort is the FPM-side boundary for immutable Workflow
+// approval evidence. Workflow owns the approval request and decision; FPM
+// only asks the owning context to validate the reference against the current
+// request and candidate fingerprint.
+type ReopenDecisionPort interface {
+	Validate(context.Context, Actor, ReopenRequest, ReopenApprovalDecision) error
+}
+
 type AuditSealResult struct {
 	Status         string
 	RequestID      uuid.UUID
@@ -162,9 +170,10 @@ type AuditSealPort interface {
 }
 
 type CloseRunDependencies struct {
-	CloseTasks CloseTaskPort
-	Workflow   CloseDecisionPort
-	Seal       AuditSealPort
+	CloseTasks     CloseTaskPort
+	Workflow       CloseDecisionPort
+	ReopenWorkflow ReopenDecisionPort
+	Seal           AuditSealPort
 }
 
 func (dependencies CloseRunDependencies) withDefaults() CloseRunDependencies {
@@ -173,6 +182,9 @@ func (dependencies CloseRunDependencies) withDefaults() CloseRunDependencies {
 	}
 	if dependencies.Workflow == nil {
 		dependencies.Workflow = EvidenceCloseDecisionPort{}
+	}
+	if dependencies.ReopenWorkflow == nil {
+		dependencies.ReopenWorkflow = UnavailableReopenDecisionPort{}
 	}
 	if dependencies.Seal == nil {
 		dependencies.Seal = PendingAuditSealPort{}
@@ -226,6 +238,12 @@ type UnavailableCloseDecisionPort struct{}
 
 func (UnavailableCloseDecisionPort) Validate(context.Context, Actor, CloseApprovalDecision) error {
 	return ErrCloseDecisionUnavailable
+}
+
+type UnavailableReopenDecisionPort struct{}
+
+func (UnavailableReopenDecisionPort) Validate(context.Context, Actor, ReopenRequest, ReopenApprovalDecision) error {
+	return ErrReopenDecisionUnavailable
 }
 
 type UnavailableAuditSealPort struct{}

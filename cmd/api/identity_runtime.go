@@ -55,6 +55,8 @@ const (
 	fpmAbortCloseRunOperationID               = "fiscal-period.abort-close-run.v1"
 	fpmApplyCloseExceptionApprovalOperationID = "fiscal-period.apply-close-exception-approval-decision.v1"
 	fpmApplyCloseApprovalOperationID          = "fiscal-period.apply-close-approval-decision.v1"
+	fpmRequestReopenOperationID               = "fiscal-period.request-reopen.v1"
+	fpmApplyReopenApprovalOperationID         = "fiscal-period.apply-reopen-approval-decision.v1"
 )
 
 func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
@@ -416,6 +418,8 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 			ResumeOperationID: fpmResumeCloseRunOperationID, AbortOperationID: fpmAbortCloseRunOperationID,
 			ApplyCloseExceptionApprovalOperationID: fpmApplyCloseExceptionApprovalOperationID,
 			ApplyCloseApprovalOperationID:          fpmApplyCloseApprovalOperationID,
+			RequestReopenOperationID:               fpmRequestReopenOperationID,
+			ApplyReopenApprovalOperationID:         fpmApplyReopenApprovalOperationID,
 		},
 	)
 	if err != nil {
@@ -463,6 +467,9 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	}
 	if err := workflowRequestQueries.BindDelegationReader(workflowDelegationRepository); err != nil {
 		return identityUnavailableHandler("workflow approval-request delegation query unavailable"), nil
+	}
+	if err := fiscalPeriodService.BindReopenDecisionPort(fiscalPeriodReopenWorkflowValidator{queries: workflowRequestQueries}); err != nil {
+		return identityUnavailableHandler("fiscal-period reopen workflow boundary unavailable"), nil
 	}
 	workflowPolicyService, err := workflow.NewApprovalPolicyServiceWithDurableIdempotency(
 		workflowPolicyRepository,
@@ -1074,6 +1081,9 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	}
 	if err := workflowRequestQueries.BindDelegationReader(workflowDelegationRepository); err != nil {
 		return identityUnavailableHandler("workflow approval-request delegation query unavailable"), nil
+	}
+	if err := fiscalPeriodService.BindReopenDecisionPort(fiscalPeriodReopenWorkflowValidator{queries: workflowRequestQueries}); err != nil {
+		return identityUnavailableHandler("fiscal-period reopen workflow boundary unavailable"), nil
 	}
 	workflowPolicyService, err := workflow.NewApprovalPolicyService(
 		workflowPolicyRepository,

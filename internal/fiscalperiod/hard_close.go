@@ -24,23 +24,32 @@ const (
 	PermissionAbortCloseRun               = "finance.fpm.abort.close.run"
 	PermissionApplyCloseExceptionApproval = "finance.fpm.apply.close.exception.approval.decision"
 	PermissionApplyCloseApproval          = "finance.fpm.apply.close.approval.decision"
+	PermissionRequestReopen               = "finance.fpm.request.reopen"
+	PermissionApplyReopenApprovalDecision = "finance.fpm.apply.reopen.approval.decision"
 	StartHardCloseOperation               = "start-hard-close"
 	ApplyPostingGateResultOperation       = "apply-posting-gate-result"
 	ResumeCloseRunOperation               = "resume-close-run"
 	AbortCloseRunOperation                = "abort-close-run"
 	ApplyCloseExceptionApprovalOperation  = "apply-close-exception-approval-decision"
 	ApplyCloseApprovalOperation           = "apply-close-approval-decision"
+	RequestReopenOperation                = "request-reopen"
+	ApplyReopenApprovalDecisionOperation  = "apply-reopen-approval-decision"
+	ReconcileReopenExpiryOperation        = "reconcile-reopen-expiry"
 	StartHardCloseCommandIdentity         = "start-hard-close.v1"
 	ApplyPostingGateResultCommandIdentity = "apply-posting-gate-result.v1"
 	ResumeCloseRunCommandIdentity         = "resume-close-run.v1"
 	AbortCloseRunCommandIdentity          = "abort-close-run.v1"
 	ApplyCloseExceptionApprovalIdentity   = "apply-close-exception-approval-decision.v1"
 	ApplyCloseApprovalIdentity            = "apply-close-approval-decision.v1"
+	RequestReopenCommandIdentity          = "request-reopen.v1"
+	ApplyReopenApprovalDecisionIdentity   = "apply-reopen-approval-decision.v1"
+	ReconcileReopenExpiryCommandIdentity  = "reconcile-reopen-expiry.v1"
 
 	PeriodStateOpen       = "Open"
 	PeriodStateSoftClosed = "SoftClosed"
 	PeriodStateClosing    = "Closing"
 	PeriodStateHardClosed = "HardClosed"
+	PeriodStateReopening  = "Reopening"
 
 	SoftCloseRunActive         = "Active"
 	SoftCloseRunHandoffPending = "HandoffPending"
@@ -89,6 +98,10 @@ var (
 	ErrCloseTaskFailed                      = errors.New("close task failed")
 	ErrCloseDecisionUnavailable             = errors.New("close approval decision dependency unavailable")
 	ErrCloseDecisionRejected                = errors.New("close approval decision rejected")
+	ErrReopenDecisionUnavailable            = errors.New("reopen approval decision dependency unavailable")
+	ErrReopenDecisionRejected               = errors.New("reopen approval decision rejected")
+	ErrReopenGateUnavailable                = errors.New("reopen gate dependency unavailable")
+	ErrReopenGateRejected                   = errors.New("reopen gate request rejected")
 	ErrCloseSealUnavailable                 = errors.New("audit seal dependency unavailable")
 	ErrCloseSealFailed                      = errors.New("audit seal failed")
 	ErrCloseFinalizationPending             = errors.New("close finalization is pending")
@@ -151,7 +164,7 @@ func (period FiscalPeriod) Validate() error {
 	if period.ID == uuid.Nil || period.AccountingScopeID == uuid.Nil {
 		return ErrFiscalPeriodNotFound
 	}
-	if period.State != PeriodStateOpen && period.State != PeriodStateSoftClosed && period.State != PeriodStateClosing && period.State != PeriodStateHardClosed {
+	if period.State != PeriodStateOpen && period.State != PeriodStateSoftClosed && period.State != PeriodStateClosing && period.State != PeriodStateHardClosed && period.State != PeriodStateReopening {
 		return fmt.Errorf("%w: unsupported period state %q", ErrFiscalPeriodStateConflict, period.State)
 	}
 	if period.StateVersion < 1 || period.AggregateVersion < 1 {
@@ -327,10 +340,11 @@ func (run CloseRun) Validate() error {
 }
 
 type ControlState struct {
-	Period       FiscalPeriod          `json:"period"`
-	SoftClose    SoftCloseRun          `json:"softClose"`
-	ControlEpoch SoftCloseControlEpoch `json:"controlEpoch"`
-	CloseRun     *CloseRun             `json:"closeRun,omitempty"`
+	Period        FiscalPeriod          `json:"period"`
+	SoftClose     SoftCloseRun          `json:"softClose"`
+	ControlEpoch  SoftCloseControlEpoch `json:"controlEpoch"`
+	CloseRun      *CloseRun             `json:"closeRun,omitempty"`
+	ReopenRequest *ReopenRequest        `json:"reopenRequest,omitempty"`
 }
 
 func (state ControlState) Validate() error {
@@ -353,6 +367,22 @@ func (state ControlState) Validate() error {
 		if state.CloseRun.AccountingScopeID != state.Period.AccountingScopeID || state.CloseRun.FiscalPeriodID != state.Period.ID {
 			return ErrFiscalPeriodScopeConflict
 		}
+	}
+	if state.ReopenRequest != nil {
+		if err := state.ReopenRequest.Validate(); err != nil {
+			return err
+		}
+		if state.ReopenRequest.AccountingScopeID != state.Period.AccountingScopeID || state.ReopenRequest.FiscalPeriodID != state.Period.ID {
+			return ErrFiscalPeriodScopeConflict
+		}
+	}
+	if state.Period.State == PeriodStateReopening {
+		if state.ReopenRequest == nil || (state.ReopenRequest.Status != ReopenRequestActive && state.ReopenRequest.Status != ReopenRequestExpiredPendingClosure) {
+			return ErrFiscalPeriodStateConflict
+		}
+	}
+	if state.ReopenRequest != nil && (state.ReopenRequest.Status == ReopenRequestActive || state.ReopenRequest.Status == ReopenRequestExpiredPendingClosure) && state.Period.State != PeriodStateReopening {
+		return ErrFiscalPeriodStateConflict
 	}
 	return nil
 }
@@ -419,12 +449,16 @@ type DurableServiceConfig struct {
 	AbortOperationID                       string
 	ApplyCloseExceptionApprovalOperationID string
 	ApplyCloseApprovalOperationID          string
+	RequestReopenOperationID               string
+	ApplyReopenApprovalOperationID         string
 }
 
 type PostingGateApplicationPort interface {
 	AcquirePostingBarrier(context.Context, gl.Actor, gl.AcquirePostingBarrierCommand) (gl.SoftCloseGateResult, error)
 	ReleasePostingBarrier(context.Context, gl.Actor, gl.ReleasePostingBarrierCommand) (gl.SoftCloseGateResult, error)
 	FinalizePostingGate(context.Context, gl.Actor, gl.FinalizePostingGateCommand) (gl.SoftCloseGateResult, error)
+	OpenScopedReopenGate(context.Context, gl.Actor, gl.OpenScopedReopenGateCommand) (gl.SoftCloseGateResult, error)
+	OpenOperationalReopenGate(context.Context, gl.Actor, gl.OpenOperationalReopenGateCommand) (gl.SoftCloseGateResult, error)
 	GetPostingGateStatus(context.Context, uuid.UUID, uuid.UUID) (gl.PostingGateStatus, error)
 }
 
@@ -515,14 +549,15 @@ type durableCommand struct {
 }
 
 type Service struct {
-	repository  Repository
-	authorizer  Authorizer
-	postingGate PostingGateApplicationPort
-	closeTasks  CloseTaskPort
-	workflow    CloseDecisionPort
-	seal        AuditSealPort
-	clock       func() time.Time
-	durable     *DurableServiceConfig
+	repository     Repository
+	authorizer     Authorizer
+	postingGate    PostingGateApplicationPort
+	closeTasks     CloseTaskPort
+	workflow       CloseDecisionPort
+	reopenWorkflow ReopenDecisionPort
+	seal           AuditSealPort
+	clock          func() time.Time
+	durable        *DurableServiceConfig
 
 	mu          sync.Mutex
 	idempotency map[string]storedResult
@@ -537,7 +572,7 @@ func NewServiceWithDependencies(repository Repository, authorizer Authorizer, po
 }
 
 func NewServiceWithDurableIdempotency(repository Repository, authorizer Authorizer, postingGate PostingGateApplicationPort, clock func() time.Time, durable DurableServiceConfig) (*Service, error) {
-	if durable.Database == nil || durable.Coordinator == nil || durable.Policy.RecordTTL <= 0 || durable.Policy.LeaseTTL <= 0 || durable.Policy.LeaseTTL >= durable.Policy.RecordTTL || strings.TrimSpace(durable.StartOperationID) == "" || strings.TrimSpace(durable.ApplyOperationID) == "" || strings.TrimSpace(durable.ResumeOperationID) == "" || strings.TrimSpace(durable.AbortOperationID) == "" || strings.TrimSpace(durable.ApplyCloseExceptionApprovalOperationID) == "" || strings.TrimSpace(durable.ApplyCloseApprovalOperationID) == "" {
+	if durable.Database == nil || durable.Coordinator == nil || durable.Policy.RecordTTL <= 0 || durable.Policy.LeaseTTL <= 0 || durable.Policy.LeaseTTL >= durable.Policy.RecordTTL || strings.TrimSpace(durable.StartOperationID) == "" || strings.TrimSpace(durable.ApplyOperationID) == "" || strings.TrimSpace(durable.ResumeOperationID) == "" || strings.TrimSpace(durable.AbortOperationID) == "" || strings.TrimSpace(durable.ApplyCloseExceptionApprovalOperationID) == "" || strings.TrimSpace(durable.ApplyCloseApprovalOperationID) == "" || strings.TrimSpace(durable.RequestReopenOperationID) == "" || strings.TrimSpace(durable.ApplyReopenApprovalOperationID) == "" {
 		return nil, ErrInvalidFiscalPeriodService
 	}
 	return newService(repository, authorizer, postingGate, clock, &durable, CloseRunDependencies{})
@@ -548,7 +583,19 @@ func newService(repository Repository, authorizer Authorizer, postingGate Postin
 		return nil, ErrInvalidFiscalPeriodService
 	}
 	dependencies = dependencies.withDefaults()
-	return &Service{repository: repository, authorizer: authorizer, postingGate: postingGate, closeTasks: dependencies.CloseTasks, workflow: dependencies.Workflow, seal: dependencies.Seal, clock: clock, durable: durable, idempotency: make(map[string]storedResult)}, nil
+	return &Service{repository: repository, authorizer: authorizer, postingGate: postingGate, closeTasks: dependencies.CloseTasks, workflow: dependencies.Workflow, reopenWorkflow: dependencies.ReopenWorkflow, seal: dependencies.Seal, clock: clock, durable: durable, idempotency: make(map[string]storedResult)}, nil
+}
+
+// BindReopenDecisionPort connects the FPM service to the owning Workflow
+// context after both module runtimes have been composed. The port is kept
+// behind FPM's narrow validation boundary so FPM never reads Workflow data or
+// storage directly.
+func (service *Service) BindReopenDecisionPort(port ReopenDecisionPort) error {
+	if service == nil || port == nil {
+		return ErrInvalidFiscalPeriodService
+	}
+	service.reopenWorkflow = port
+	return nil
 }
 
 func (service *Service) acquireDurableCommand(ctx context.Context, actor Actor, scopeID uuid.UUID, key, commandFingerprint, operation string) (durableCommand, *CommandResult, error) {
@@ -605,6 +652,12 @@ func (service *Service) durableOperationID(operation string) string {
 	}
 	if operation == ApplyCloseApprovalOperation {
 		return service.durable.ApplyCloseApprovalOperationID
+	}
+	if operation == RequestReopenOperation {
+		return service.durable.RequestReopenOperationID
+	}
+	if operation == ApplyReopenApprovalDecisionOperation {
+		return service.durable.ApplyReopenApprovalOperationID
 	}
 	return operation
 }
@@ -710,7 +763,7 @@ func (service *Service) finalizeDurableFailureIfNeeded(ctx context.Context, comm
 }
 
 func shouldLeaveFiscalPeriodCommandInProgress(err error) bool {
-	return errors.Is(err, ErrPostingBarrierUnavailable) || errors.Is(err, ErrPostingBarrierRejected) || errors.Is(err, ErrCloseTaskUnavailable) || errors.Is(err, ErrCloseDecisionUnavailable) || errors.Is(err, ErrCloseSealUnavailable) || errors.Is(err, ErrFiscalPeriodAuditUnavailable) || errors.Is(err, ErrFiscalPeriodOutboxUnavailable) || errors.Is(err, ErrFiscalPeriodVersionConflict)
+	return errors.Is(err, ErrPostingBarrierUnavailable) || errors.Is(err, ErrPostingBarrierRejected) || errors.Is(err, ErrCloseTaskUnavailable) || errors.Is(err, ErrCloseDecisionUnavailable) || errors.Is(err, ErrReopenDecisionUnavailable) || errors.Is(err, ErrReopenGateUnavailable) || errors.Is(err, ErrCloseSealUnavailable) || errors.Is(err, ErrFiscalPeriodAuditUnavailable) || errors.Is(err, ErrFiscalPeriodOutboxUnavailable) || errors.Is(err, ErrFiscalPeriodVersionConflict)
 }
 
 func fiscalPeriodFailureCode(err error) string {
@@ -727,6 +780,10 @@ func fiscalPeriodFailureCode(err error) string {
 		return "CLOSE_TASK_FAILED"
 	case errors.Is(err, ErrCloseDecisionRejected):
 		return "CLOSE_APPROVAL_REJECTED"
+	case errors.Is(err, ErrReopenDecisionRejected):
+		return "REOPEN_APPROVAL_REJECTED"
+	case errors.Is(err, ErrReopenGateRejected):
+		return "REOPEN_GATE_REJECTED"
 	case errors.Is(err, ErrCloseSealFailed):
 		return "AUDIT_SEAL_FAILED"
 	default:
@@ -1371,6 +1428,9 @@ func (repository *MemoryRepository) Commit(_ context.Context, mutation Mutation)
 	if !sameVersions(current, mutation.Before) {
 		return ErrFiscalPeriodVersionConflict
 	}
+	if err := validateReopenRequestMutation(mutation.Before.ReopenRequest, mutation.After.ReopenRequest); err != nil {
+		return err
+	}
 	repository.states[key] = cloneControlState(mutation.After)
 	repository.audits = append(repository.audits, mutation.Audit)
 	repository.events = append(repository.events, cloneEvents(mutation.Events)...)
@@ -1405,6 +1465,12 @@ func sameVersions(left, right ControlState) bool {
 		return false
 	}
 	if left.CloseRun != nil && (left.CloseRun.ID != right.CloseRun.ID || left.CloseRun.AggregateVersion != right.CloseRun.AggregateVersion) {
+		return false
+	}
+	if (left.ReopenRequest == nil) != (right.ReopenRequest == nil) {
+		return false
+	}
+	if left.ReopenRequest != nil && (left.ReopenRequest.ID != right.ReopenRequest.ID || left.ReopenRequest.AggregateVersion != right.ReopenRequest.AggregateVersion) {
 		return false
 	}
 	return true

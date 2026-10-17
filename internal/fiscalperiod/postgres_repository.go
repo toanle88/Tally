@@ -89,6 +89,9 @@ func (repository *PostgresRepository) commitMutation(ctx context.Context, mutati
 	if err := updateCloseRun(ctx, tx, mutation.Before.CloseRun, mutation.After.CloseRun); err != nil {
 		return err
 	}
+	if err := updateReopenRequest(ctx, tx, mutation.Before.ReopenRequest, mutation.After.ReopenRequest); err != nil {
+		return err
+	}
 
 	auditReference, err := repository.auditWriter(ctx, tx, mutation.Audit)
 	if err != nil || auditReference == uuid.Nil {
@@ -155,6 +158,11 @@ func (repository *PostgresRepository) Seed(ctx context.Context, state ControlSta
 	}
 	if state.CloseRun != nil {
 		if err := updateCloseRun(ctx, tx, nil, state.CloseRun); err != nil {
+			return err
+		}
+	}
+	if state.ReopenRequest != nil {
+		if err := updateReopenRequest(ctx, tx, nil, state.ReopenRequest); err != nil {
 			return err
 		}
 	}
@@ -244,7 +252,47 @@ func readControlState(ctx context.Context, queryer fiscalPeriodQueryer, scopeID,
 		closeRunPtr = &closeRun
 	}
 
-	state := ControlState{Period: period, SoftClose: run, ControlEpoch: epoch, CloseRun: closeRunPtr}
+	var reopenRequest ReopenRequest
+	var reopenScopeJSON, proposedCorrectionsJSON, impactJSON, approvalDecisionJSON, gateResultJSON []byte
+	var approvalRequestID *uuid.UUID
+	var gateVersion *int64
+	reopenErr := queryer.QueryRow(ctx, `SELECT reopen_request_id, accounting_scope_id, fiscal_period_id, original_close_run_id, reopen_mode, status, reason, authorization_scope, proposed_corrections, impact, authorization_expiry, expected_period_version, expected_gate_version, control_authority_epoch, requested_by_user_id, requested_by_subject_reference, request_fingerprint, approval_request_id, approval_decision, gate_result, gate_version, aggregate_version, correlation_id, causation_id, created_at, updated_at FROM fiscal_period.reopen_request WHERE accounting_scope_id=$1 AND fiscal_period_id=$2 ORDER BY CASE WHEN status IN ('Draft', 'PendingApproval', 'Approved', 'GateOpening', 'Active', 'ExpiredPendingClosure', 'GateClosing', 'RecloseHandoff', 'RecloseInProgress', 'Failed') THEN 0 ELSE 1 END, updated_at DESC, reopen_request_id DESC LIMIT 1`+lock, scopeID, periodID).Scan(&reopenRequest.ID, &reopenRequest.AccountingScopeID, &reopenRequest.FiscalPeriodID, &reopenRequest.OriginalCloseRunID, &reopenRequest.Mode, &reopenRequest.Status, &reopenRequest.Reason, &reopenScopeJSON, &proposedCorrectionsJSON, &impactJSON, &reopenRequest.AuthorizationExpiry, &reopenRequest.ExpectedPeriodVersion, &reopenRequest.ExpectedGateVersion, &reopenRequest.ControlAuthorityEpoch, &reopenRequest.RequestedBy.UserID, &reopenRequest.RequestedBy.SubjectReference, &reopenRequest.RequestFingerprint, &approvalRequestID, &approvalDecisionJSON, &gateResultJSON, &gateVersion, &reopenRequest.AggregateVersion, &reopenRequest.CorrelationID, &reopenRequest.CausationID, &reopenRequest.CreatedAt, &reopenRequest.UpdatedAt)
+	var reopenRequestPtr *ReopenRequest
+	if errors.Is(reopenErr, pgx.ErrNoRows) {
+		reopenRequestPtr = nil
+	} else if reopenErr != nil {
+		return ControlState{}, mapFiscalPeriodPostgresError(reopenErr)
+	} else {
+		if err := json.Unmarshal(reopenScopeJSON, &reopenRequest.Scope); err != nil {
+			return ControlState{}, err
+		}
+		reopenRequest.ProposedCorrections = append(json.RawMessage(nil), proposedCorrectionsJSON...)
+		reopenRequest.Impact = append(json.RawMessage(nil), impactJSON...)
+		if gateVersion != nil {
+			reopenRequest.GateVersion = *gateVersion
+		}
+		reopenRequest.ApprovalRequestID = uuid.Nil
+		if approvalRequestID != nil {
+			reopenRequest.ApprovalRequestID = *approvalRequestID
+		}
+		if len(approvalDecisionJSON) > 0 && string(approvalDecisionJSON) != "null" {
+			var decision ReopenApprovalDecision
+			if err := json.Unmarshal(approvalDecisionJSON, &decision); err != nil {
+				return ControlState{}, err
+			}
+			reopenRequest.ApprovalDecision = &decision
+		}
+		if len(gateResultJSON) > 0 && string(gateResultJSON) != "null" {
+			var result gl.SoftCloseGateResult
+			if err := json.Unmarshal(gateResultJSON, &result); err != nil {
+				return ControlState{}, err
+			}
+			reopenRequest.GateResult = &result
+		}
+		reopenRequestPtr = &reopenRequest
+	}
+
+	state := ControlState{Period: period, SoftClose: run, ControlEpoch: epoch, CloseRun: closeRunPtr, ReopenRequest: reopenRequestPtr}
 	if err := state.Validate(); err != nil {
 		return ControlState{}, err
 	}
@@ -366,6 +414,64 @@ func insertCloseRun(ctx context.Context, tx pgx.Tx, after *CloseRun) error {
 	return mapFiscalPeriodPostgresError(err)
 }
 
+func updateReopenRequest(ctx context.Context, tx pgx.Tx, before, after *ReopenRequest) error {
+	if before == nil && after == nil {
+		return nil
+	}
+	if before == nil {
+		return insertReopenRequest(ctx, tx, after)
+	}
+	if after == nil {
+		return ErrFiscalPeriodOwnerConflict
+	}
+	if before.ID != after.ID {
+		if err := validateReopenRequestMutation(before, after); err != nil {
+			return err
+		}
+		return insertReopenRequest(ctx, tx, after)
+	}
+	if err := validateReopenRequestMutation(before, after); err != nil {
+		return err
+	}
+	scope, err := nullableJSON(after.Scope)
+	if err != nil {
+		return err
+	}
+	approval, err := nullableJSON(after.ApprovalDecision)
+	if err != nil {
+		return err
+	}
+	gateResult, err := nullableJSON(after.GateResult)
+	if err != nil {
+		return err
+	}
+	tag, err := tx.Exec(ctx, `UPDATE fiscal_period.reopen_request SET status=$1, reason=$2, authorization_scope=$3, proposed_corrections=$4, impact=$5, authorization_expiry=$6, expected_period_version=$7, expected_gate_version=$8, control_authority_epoch=$9, approval_request_id=$10, approval_decision=$11, gate_result=$12, gate_version=$13, aggregate_version=$14, correlation_id=$15, causation_id=$16, updated_at=$17 WHERE reopen_request_id=$18 AND aggregate_version=$19`, after.Status, after.Reason, scope, after.ProposedCorrections, after.Impact, after.AuthorizationExpiry, after.ExpectedPeriodVersion, after.ExpectedGateVersion, after.ControlAuthorityEpoch, nullableUUID(after.ApprovalRequestID), approval, gateResult, nullableInt64(after.GateVersion), after.AggregateVersion, after.CorrelationID, after.CausationID, after.UpdatedAt, after.ID, before.AggregateVersion)
+	if err != nil {
+		return mapFiscalPeriodPostgresError(err)
+	}
+	if tag.RowsAffected() != 1 {
+		return ErrFiscalPeriodVersionConflict
+	}
+	return nil
+}
+
+func insertReopenRequest(ctx context.Context, tx pgx.Tx, after *ReopenRequest) error {
+	scope, err := nullableJSON(after.Scope)
+	if err != nil {
+		return err
+	}
+	approval, err := nullableJSON(after.ApprovalDecision)
+	if err != nil {
+		return err
+	}
+	gateResult, err := nullableJSON(after.GateResult)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(ctx, `INSERT INTO fiscal_period.reopen_request (reopen_request_id, accounting_scope_id, fiscal_period_id, original_close_run_id, reopen_mode, status, reason, authorization_scope, proposed_corrections, impact, authorization_expiry, expected_period_version, expected_gate_version, control_authority_epoch, requested_by_user_id, requested_by_subject_reference, request_fingerprint, approval_request_id, approval_decision, gate_result, gate_version, aggregate_version, correlation_id, causation_id, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26)`, after.ID, after.AccountingScopeID, after.FiscalPeriodID, after.OriginalCloseRunID, after.Mode, after.Status, after.Reason, scope, after.ProposedCorrections, after.Impact, after.AuthorizationExpiry, after.ExpectedPeriodVersion, after.ExpectedGateVersion, after.ControlAuthorityEpoch, after.RequestedBy.UserID, after.RequestedBy.SubjectReference, after.RequestFingerprint, nullableUUID(after.ApprovalRequestID), approval, gateResult, nullableInt64(after.GateVersion), after.AggregateVersion, after.CorrelationID, after.CausationID, after.CreatedAt, after.UpdatedAt)
+	return mapFiscalPeriodPostgresError(err)
+}
+
 func writeEvents(ctx context.Context, tx pgx.Tx, eventList []Event) error {
 	for _, item := range eventList {
 		payload := append([]byte(nil), item.Payload...)
@@ -402,6 +508,20 @@ func nullableJSON(value any) (any, error) {
 
 func nullableText(value string) any {
 	if value == "" {
+		return nil
+	}
+	return value
+}
+
+func nullableUUID(value uuid.UUID) any {
+	if value == uuid.Nil {
+		return nil
+	}
+	return value
+}
+
+func nullableInt64(value int64) any {
+	if value < 1 {
 		return nil
 	}
 	return value

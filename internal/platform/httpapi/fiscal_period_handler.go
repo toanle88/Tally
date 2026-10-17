@@ -354,6 +354,26 @@ func establishedFPMResult(result fiscalperiod.CommandResult, correlationID uuid.
 		gate = fiscalperiodGateEvidenceResult(closeRun)
 	}
 	nextAction := gate.NextAction
+	var reopenRequest *fiscalperiod.ReopenRequest
+	if result.State.ReopenRequest != nil {
+		reopenRequest = result.State.ReopenRequest
+	}
+	if nextAction == "" {
+		if reopenRequest != nil {
+			switch reopenRequest.Status {
+			case fiscalperiod.ReopenRequestPendingApproval:
+				nextAction = "await-reopen-approval"
+			case fiscalperiod.ReopenRequestApproved, fiscalperiod.ReopenRequestGateOpening:
+				nextAction = "open-reopen-gate"
+			case fiscalperiod.ReopenRequestActive:
+				nextAction = "perform-authorized-reopen-work"
+			case fiscalperiod.ReopenRequestRejected:
+				nextAction = "request-new-reopen"
+			default:
+				nextAction = "review-reopen-state"
+			}
+		}
+	}
 	if nextAction == "" {
 		switch {
 		case closeRun.SealStatus == fiscalperiod.CloseRunSealPending:
@@ -380,12 +400,32 @@ func establishedFPMResult(result fiscalperiod.CommandResult, correlationID uuid.
 		"policyReference": mustRaw(gate.PolicyReference), "auditReference": mustRaw(gate.AuditReference.String()),
 		"nextAction": mustRaw(nextAction), "replayed": mustRaw(result.Replayed), "steps": mustRaw(closeRun.Steps), "exceptions": mustRaw(closeRun.Exceptions), "approvalRequestIds": mustRaw(closeRun.ApprovalRequestIDs), "approvalDecisions": mustRaw(closeRun.ApprovalDecisions), "approvalPolicyVersion": mustRaw(closeRun.ApprovalPolicyVersion), "finalApproval": mustRaw(closeRun.FinalApproval), "finalLedgerWatermark": mustRaw(closeRun.FinalLedgerWatermark), "finalizationGateResult": mustRaw(closeRun.FinalizationGateResult), "releaseGateResult": mustRaw(closeRun.ReleaseGateResult), "sealStatus": mustRaw(closeRun.SealStatus), "sealRequestId": mustRaw(closeRun.SealRequestID), "sealProofReference": mustRaw(closeRun.SealProofReference), "sealFailureCode": mustRaw(closeRun.SealFailureCode), "sealFailureDetail": mustRaw(closeRun.SealFailureDetail), "lastFailureCode": mustRaw(closeRun.LastFailureCode), "lastFailureDetail": mustRaw(closeRun.LastFailureDetail),
 	}
+	if reopenRequest != nil {
+		data["reopenRequestId"] = mustRaw(reopenRequest.ID.String())
+		data["reopenStatus"] = mustRaw(reopenRequest.Status)
+		data["reopenMode"] = mustRaw(reopenRequest.Mode)
+		data["reopenRequest"] = mustRaw(reopenRequest)
+		data["reopenScope"] = mustRaw(reopenRequest.Scope)
+		data["authorizationExpiry"] = mustRaw(reopenRequest.AuthorizationExpiry)
+		data["controlAuthorityEpoch"] = mustRaw(reopenRequest.ControlAuthorityEpoch)
+		var approvalRequestID any
+		if reopenRequest.ApprovalRequestID != uuid.Nil {
+			approvalRequestID = reopenRequest.ApprovalRequestID.String()
+		}
+		data["approvalRequestId"] = mustRaw(approvalRequestID)
+		data["approvalDecision"] = mustRaw(reopenRequest.ApprovalDecision)
+		data["reopenGateResult"] = mustRaw(reopenRequest.GateResult)
+	}
 	if closeRun.BarrierEvidence != nil {
 		data["priorControlProcessId"] = mustRaw(closeRun.BarrierEvidence.PriorControlProcessID)
 		data["priorControlEpoch"] = mustRaw(closeRun.BarrierEvidence.PriorControlEpoch)
 		data["frozenAdmissionSummary"] = mustRaw(closeRun.BarrierEvidence.FrozenSummary)
 	}
-	return &generated.EstablishedResult{Status: "established", AggregateId: generated.UUID(period.ID), AggregateVersion: int(period.AggregateVersion), ProcessId: generated.NewOptNilUUID(generated.UUID(closeRun.ID)), CorrelationId: generated.UUID(correlationID), Links: generated.Links{Self: self}, Data: data}
+	processID := closeRun.ID
+	if processID == uuid.Nil && reopenRequest != nil {
+		processID = reopenRequest.ID
+	}
+	return &generated.EstablishedResult{Status: "established", AggregateId: generated.UUID(period.ID), AggregateVersion: int(period.AggregateVersion), ProcessId: generated.NewOptNilUUID(generated.UUID(processID)), CorrelationId: generated.UUID(correlationID), Links: generated.Links{Self: self}, Data: data}
 }
 
 func fiscalperiodGateEvidenceResult(run fiscalperiod.CloseRun) gl.SoftCloseGateResult {
@@ -479,6 +519,12 @@ func mapFPMError[T any](err error, correlationID uuid.UUID, problem fpmProblemFa
 		status, code, detail = http.StatusConflict, "CLOSE_TASK_FAILED", "A mandatory close task failed. Resolve the task and resume the existing close run."
 	case errors.Is(err, fiscalperiod.ErrCloseDecisionRejected):
 		status, code, detail = http.StatusConflict, "APPROVAL_INVALIDATED", "The approval decision is stale, mismatched, rejected, or violates the current close-run evidence."
+	case errors.Is(err, fiscalperiod.ErrReopenDecisionRejected):
+		status, code, detail = http.StatusConflict, "APPROVAL_INVALIDATED", "The reopen approval decision is stale, mismatched, rejected, or violates the current reopen evidence."
+	case errors.Is(err, fiscalperiod.ErrReopenGateRejected):
+		status, code, detail = http.StatusUnprocessableEntity, "REOPEN_GATE_REJECTED", "GL rejected the reopen gate request. The period remains restrictive."
+	case errors.Is(err, fiscalperiod.ErrReopenDecisionUnavailable), errors.Is(err, fiscalperiod.ErrReopenGateUnavailable):
+		code, detail = "DEPENDENCY_UNAVAILABLE", "A required reopen dependency is unavailable. The period remains restrictive and the request is retryable."
 	case errors.Is(err, fiscalperiod.ErrCloseFinalizationPending):
 		status, code, detail = http.StatusConflict, "FINALIZATION_PENDING", "The authoritative finalization result is not yet confirmed. Resume the existing close run."
 	case errors.Is(err, fiscalperiod.ErrFiscalPeriodAuditUnavailable), errors.Is(err, fiscalperiod.ErrFiscalPeriodOutboxUnavailable):

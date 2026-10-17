@@ -122,6 +122,14 @@ func (stub *hardCloseGateStub) GetPostingGateStatus(_ context.Context, _, _ uuid
 	return stub.result.Gate, stub.err
 }
 
+func (stub *hardCloseGateStub) OpenScopedReopenGate(context.Context, gl.Actor, gl.OpenScopedReopenGateCommand) (gl.SoftCloseGateResult, error) {
+	return gl.SoftCloseGateResult{}, ErrReopenGateUnavailable
+}
+
+func (stub *hardCloseGateStub) OpenOperationalReopenGate(context.Context, gl.Actor, gl.OpenOperationalReopenGateCommand) (gl.SoftCloseGateResult, error) {
+	return gl.SoftCloseGateResult{}, ErrReopenGateUnavailable
+}
+
 func TestStartHardCloseCreatesCandidateAndAppliesAuthoritativeBarrier(t *testing.T) {
 	state, command := hardCloseFixture()
 	repository := NewMemoryRepository()
