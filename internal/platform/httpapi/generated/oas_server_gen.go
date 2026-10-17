@@ -487,7 +487,7 @@ type Handler interface {
 	// InvConfigureInvoiceTemplates implements invConfigureInvoiceTemplates operation.
 	//
 	// PUT /invoicing/configuration/configure-invoice-templates
-	InvConfigureInvoiceTemplates(ctx context.Context, req *CommandRequest, params InvConfigureInvoiceTemplatesParams) (InvConfigureInvoiceTemplatesRes, error)
+	InvConfigureInvoiceTemplates(ctx context.Context, req *InvConfigureInvoiceTemplatesCommandRequest, params InvConfigureInvoiceTemplatesParams) (InvConfigureInvoiceTemplatesRes, error)
 	// InvFinalizeGeneratedInvoices implements invFinalizeGeneratedInvoices operation.
 	//
 	// POST /invoicing/actions/finalize-generated-invoices
@@ -496,6 +496,14 @@ type Handler interface {
 	//
 	// POST /invoicing/actions/generate-invoices
 	InvGenerateInvoices(ctx context.Context, req *CommandRequest, params InvGenerateInvoicesParams) (InvGenerateInvoicesRes, error)
+	// InvGetInvoiceTemplate implements invGetInvoiceTemplate operation.
+	//
+	// GET /invoicing/reference/invoice-templates/{invoiceTemplateId}
+	InvGetInvoiceTemplate(ctx context.Context, params InvGetInvoiceTemplateParams) (InvGetInvoiceTemplateRes, error)
+	// InvListInvoiceTemplates implements invListInvoiceTemplates operation.
+	//
+	// GET /invoicing/reference/invoice-templates
+	InvListInvoiceTemplates(ctx context.Context, params InvListInvoiceTemplatesParams) (InvListInvoiceTemplatesRes, error)
 	// InvRecalculateUnfinalizedInvoices implements invRecalculateUnfinalizedInvoices operation.
 	//
 	// POST /invoicing/actions/recalculate-unfinalized-invoices

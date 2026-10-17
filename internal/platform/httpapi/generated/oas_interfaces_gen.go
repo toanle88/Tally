@@ -485,6 +485,14 @@ type InvGenerateInvoicesRes interface {
 	invGenerateInvoicesRes()
 }
 
+type InvGetInvoiceTemplateRes interface {
+	invGetInvoiceTemplateRes()
+}
+
+type InvListInvoiceTemplatesRes interface {
+	invListInvoiceTemplatesRes()
+}
+
 type InvRecalculateUnfinalizedInvoicesRes interface {
 	invRecalculateUnfinalizedInvoicesRes()
 }

@@ -7,13 +7,14 @@
     parameters:
       - $ref: ../components/common.yaml#/headers/X-Correlation-Id
       - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/X-Accounting-Scope-Id
       - $ref: ../components/common.yaml#/headers/Idempotency-Key-Required
       - $ref: ../components/common.yaml#/headers/If-Match
     requestBody:
       required: true
       content:
         application/json:
-          schema: { $ref: ../components/common.yaml#/schemas/CommandRequest }
+          schema: { $ref: ../components/common.yaml#/schemas/InvConfigureInvoiceTemplatesCommandRequest }
           examples:
             deterministic:
               $ref: ../examples/command-request.yaml
@@ -24,6 +25,45 @@
       '403': { $ref: ../components/common.yaml#/responses/Problem }
       '409': { $ref: ../components/common.yaml#/responses/Problem }
       '422': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/invoicing/reference/invoice-templates:
+  get:
+    tags: [invoicing]
+    operationId: invListInvoiceTemplates
+    x-owner-capability: invoicing
+    x-permission: finance.inv.configure.invoice.templates
+    parameters:
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/X-Accounting-Scope-Id
+      - $ref: ../components/common.yaml#/parameters/PageSize
+      - $ref: ../components/common.yaml#/parameters/PageAfter
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '503': { $ref: ../components/common.yaml#/responses/Problem }
+/invoicing/reference/invoice-templates/{invoiceTemplateId}:
+  get:
+    tags: [invoicing]
+    operationId: invGetInvoiceTemplate
+    x-owner-capability: invoicing
+    x-permission: finance.inv.configure.invoice.templates
+    parameters:
+      - name: invoiceTemplateId
+        in: path
+        required: true
+        schema: { $ref: ../components/common.yaml#/schemas/Uuid }
+      - $ref: ../components/common.yaml#/headers/X-Correlation-Id
+      - $ref: ../components/common.yaml#/headers/Accept-Language
+      - $ref: ../components/common.yaml#/headers/X-Accounting-Scope-Id
+    responses:
+      '200': { $ref: ../components/common.yaml#/responses/Established }
+      '400': { $ref: ../components/common.yaml#/responses/Problem }
+      '401': { $ref: ../components/common.yaml#/responses/AuthenticationRequired }
+      '403': { $ref: ../components/common.yaml#/responses/Problem }
+      '404': { $ref: ../components/common.yaml#/responses/Problem }
       '503': { $ref: ../components/common.yaml#/responses/Problem }
 /invoicing/configuration/configure-billing-schedules:
   put:

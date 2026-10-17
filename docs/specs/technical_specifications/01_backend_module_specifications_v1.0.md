@@ -192,6 +192,22 @@ type CommandResult[T any] struct {
 }
 ```
 
+### 6.1 Invoicing US1 application boundary
+
+`internal/invoicing` owns the `InvoiceTemplate` aggregate, its complete
+replacement command, and the safe current/revision projections. The command
+uses `create` and `update` semantics, explicit accounting scope, expected
+aggregate version for updates, and a stable idempotency key. Template
+configuration is not an accounting posting and does not call GL or AR.
+
+The module exposes reference-validation ports for opaque tax-category and
+payment-reference values. Adapters may call an approved published contract;
+they must not import another module's repository or database adapter. A
+successful mutation commits the current aggregate projection, line items,
+immutable revision snapshot, audit reference, and shared platform idempotency
+result in one transaction. No Invoicing integration event is emitted by US1
+because the approved contract does not define one for template maintenance.
+
 Command-handler order is normative:
 
 1. Validate transport schema and canonicalize business content.
@@ -205,7 +221,7 @@ Command-handler order is normative:
 9. Persist aggregate/fact changes, idempotency result, audit envelope and outbox records in the same transaction.
 10. Commit; only then return the established result.
 
-### 6.1 Idempotency coordination and durable reservation foundation
+### 6.2 Idempotency coordination and durable reservation foundation
 
 `internal/platform/idempotency` provides a technical coordination contract,
 an in-memory test double, and a PostgreSQL-backed reservation/finalization

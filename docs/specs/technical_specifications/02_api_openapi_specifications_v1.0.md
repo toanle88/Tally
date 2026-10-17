@@ -84,6 +84,61 @@ Every capability exposes these exact read patterns when relevant:
 
 Cursor pagination uses `page[size]` (default 50, maximum 200) and `page[after]`. Sorting uses a server allow-list. Unbounded list responses are prohibited.
 
+### 6.1 Invoicing template configuration and reference query contract
+
+US1 makes the previously generic Invoicing template command explicit. The
+command is a complete replacement of one current template revision:
+
+- `action` is `create` or `update`.
+- `create` omits `templateId` and `expectedVersion`; the server creates the
+  stable `templateId` and establishes version `1`.
+- `update` requires `templateId` and `expectedVersion`; the server accepts the
+  change only when the current aggregate version matches. `If-Match`, when
+  supplied, must carry the same quoted version.
+- `accountingScopeId` is required in the body. `X-Accounting-Scope-Id`, when
+  supplied, must match it; scope is never inferred from the route or session.
+- `code`, `name`, `billingFrequency`, `lineItems`, `paymentMethod`,
+  `applicability`, and `effectiveFrom` are required. `effectiveTo` is
+  optional. Effective intervals are inclusive and an open end is later than
+  every date.
+- Supported billing frequencies are `one_time`, `daily`, `weekly`,
+  `monthly`, `quarterly`, and `annual`.
+- Each line item has a stable line-item id, code, description, one
+  `chargeRule`, and one tax-category reference. Charge rules are `fixed`,
+  `per_unit`, or `percentage`. Fixed and per-unit rules require a
+  non-negative exact-decimal `amount` plus `currency`; percentage rules
+  require a non-negative exact-decimal `rate` from `0` through `100` and do
+  not carry a currency amount.
+- Payment methods are `bank_transfer`, `card`, `direct_debit`, `cash`, or
+  `other`. `termsDays` is an exact non-negative integer. An optional payment
+  reference remains opaque to Invoicing and is validated through the declared
+  reference port.
+- Applicability is either `all` or `dimensions`. Dimension keys and values
+  are canonical non-empty strings. Two dimension maps overlap when every
+  shared key has the same value; a missing key is broader than a present key,
+  and `all` overlaps every applicability. A template conflicts with another
+  current template only when scope, code, applicability, and inclusive
+  effective intervals overlap. Updating the same template id does not
+  conflict with its own current row.
+- Invoicing validates command structure, supported values, exact-decimal
+  syntax, line-item uniqueness, and effective-date rules. Tax-category and
+  payment references are validated through an owning-context port; Invoicing
+  does not read Tax, OMD, AR, GL, or any other module schema directly.
+
+The authoritative template read surface used by `INV-WS-01` and `INV-SCR-01`
+is:
+
+| Method | Path | Operation ID | Permission | Result data |
+|---|---|---|---|---|
+| GET | `/api/v1/invoicing/reference/invoice-templates` | `invListInvoiceTemplates` | `finance.inv.configure.invoice.templates` | `templates`, `page` |
+| GET | `/api/v1/invoicing/reference/invoice-templates/{invoiceTemplateId}` | `invGetInvoiceTemplate` | `finance.inv.configure.invoice.templates` | `template` |
+
+Both reads accept `X-Accounting-Scope-Id`, correlation, language, and the
+standard cursor parameters. They return only the safe current projection and
+retained revision metadata needed by the editor; no client fixture is an
+authoritative source. The existing common established-result and problem
+envelopes remain unchanged.
+
 ## 7. Exact operation endpoint catalog
 
 | Requirement | Method | Path | OpenAPI operationId | Permission | Provenance |

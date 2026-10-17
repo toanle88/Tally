@@ -790,6 +790,8 @@ func (*AuthenticationRequiredHeaders) invConfigureBillingSchedulesRes()         
 func (*AuthenticationRequiredHeaders) invConfigureInvoiceTemplatesRes()                     {}
 func (*AuthenticationRequiredHeaders) invFinalizeGeneratedInvoicesRes()                     {}
 func (*AuthenticationRequiredHeaders) invGenerateInvoicesRes()                              {}
+func (*AuthenticationRequiredHeaders) invGetInvoiceTemplateRes()                            {}
+func (*AuthenticationRequiredHeaders) invListInvoiceTemplatesRes()                          {}
 func (*AuthenticationRequiredHeaders) invRecalculateUnfinalizedInvoicesRes()                {}
 func (*AuthenticationRequiredHeaders) omdGetLegalEntityRes()                                {}
 func (*AuthenticationRequiredHeaders) omdListLegalEntitiesRes()                             {}
@@ -1383,6 +1385,8 @@ func (*EstablishedResult) invConfigureBillingSchedulesRes()                     
 func (*EstablishedResult) invConfigureInvoiceTemplatesRes()                     {}
 func (*EstablishedResult) invFinalizeGeneratedInvoicesRes()                     {}
 func (*EstablishedResult) invGenerateInvoicesRes()                              {}
+func (*EstablishedResult) invGetInvoiceTemplateRes()                            {}
+func (*EstablishedResult) invListInvoiceTemplatesRes()                          {}
 func (*EstablishedResult) invRecalculateUnfinalizedInvoicesRes()                {}
 func (*EstablishedResult) omdGetLegalEntityRes()                                {}
 func (*EstablishedResult) omdListLegalEntitiesRes()                             {}
@@ -1463,6 +1467,8 @@ func (s *EstablishedResultData) init() EstablishedResultData {
 	}
 	return m
 }
+
+type ExactDecimal string
 
 type FaApplyAssetDisposalApprovalDecisionBadRequest ProblemDetails
 
@@ -7685,6 +7691,278 @@ type InvConfigureInvoiceTemplatesBadRequest ProblemDetails
 
 func (*InvConfigureInvoiceTemplatesBadRequest) invConfigureInvoiceTemplatesRes() {}
 
+// Ref: #/components/schemas/InvConfigureInvoiceTemplatesCommandData
+type InvConfigureInvoiceTemplatesCommandData struct {
+	Action           InvConfigureInvoiceTemplatesCommandDataAction           `json:"action"`
+	TemplateId       OptUUID                                                 `json:"templateId"`
+	Code             string                                                  `json:"code"`
+	Name             string                                                  `json:"name"`
+	BillingFrequency InvConfigureInvoiceTemplatesCommandDataBillingFrequency `json:"billingFrequency"`
+	LineItems        []InvTemplateLineItem                                   `json:"lineItems"`
+	PaymentMethod    InvTemplatePaymentMethod                                `json:"paymentMethod"`
+	Applicability    InvTemplateApplicability                                `json:"applicability"`
+	EffectiveFrom    time.Time                                               `json:"effectiveFrom"`
+	EffectiveTo      OptDate                                                 `json:"effectiveTo"`
+}
+
+// GetAction returns the value of Action.
+func (s *InvConfigureInvoiceTemplatesCommandData) GetAction() InvConfigureInvoiceTemplatesCommandDataAction {
+	return s.Action
+}
+
+// GetTemplateId returns the value of TemplateId.
+func (s *InvConfigureInvoiceTemplatesCommandData) GetTemplateId() OptUUID {
+	return s.TemplateId
+}
+
+// GetCode returns the value of Code.
+func (s *InvConfigureInvoiceTemplatesCommandData) GetCode() string {
+	return s.Code
+}
+
+// GetName returns the value of Name.
+func (s *InvConfigureInvoiceTemplatesCommandData) GetName() string {
+	return s.Name
+}
+
+// GetBillingFrequency returns the value of BillingFrequency.
+func (s *InvConfigureInvoiceTemplatesCommandData) GetBillingFrequency() InvConfigureInvoiceTemplatesCommandDataBillingFrequency {
+	return s.BillingFrequency
+}
+
+// GetLineItems returns the value of LineItems.
+func (s *InvConfigureInvoiceTemplatesCommandData) GetLineItems() []InvTemplateLineItem {
+	return s.LineItems
+}
+
+// GetPaymentMethod returns the value of PaymentMethod.
+func (s *InvConfigureInvoiceTemplatesCommandData) GetPaymentMethod() InvTemplatePaymentMethod {
+	return s.PaymentMethod
+}
+
+// GetApplicability returns the value of Applicability.
+func (s *InvConfigureInvoiceTemplatesCommandData) GetApplicability() InvTemplateApplicability {
+	return s.Applicability
+}
+
+// GetEffectiveFrom returns the value of EffectiveFrom.
+func (s *InvConfigureInvoiceTemplatesCommandData) GetEffectiveFrom() time.Time {
+	return s.EffectiveFrom
+}
+
+// GetEffectiveTo returns the value of EffectiveTo.
+func (s *InvConfigureInvoiceTemplatesCommandData) GetEffectiveTo() OptDate {
+	return s.EffectiveTo
+}
+
+// SetAction sets the value of Action.
+func (s *InvConfigureInvoiceTemplatesCommandData) SetAction(val InvConfigureInvoiceTemplatesCommandDataAction) {
+	s.Action = val
+}
+
+// SetTemplateId sets the value of TemplateId.
+func (s *InvConfigureInvoiceTemplatesCommandData) SetTemplateId(val OptUUID) {
+	s.TemplateId = val
+}
+
+// SetCode sets the value of Code.
+func (s *InvConfigureInvoiceTemplatesCommandData) SetCode(val string) {
+	s.Code = val
+}
+
+// SetName sets the value of Name.
+func (s *InvConfigureInvoiceTemplatesCommandData) SetName(val string) {
+	s.Name = val
+}
+
+// SetBillingFrequency sets the value of BillingFrequency.
+func (s *InvConfigureInvoiceTemplatesCommandData) SetBillingFrequency(val InvConfigureInvoiceTemplatesCommandDataBillingFrequency) {
+	s.BillingFrequency = val
+}
+
+// SetLineItems sets the value of LineItems.
+func (s *InvConfigureInvoiceTemplatesCommandData) SetLineItems(val []InvTemplateLineItem) {
+	s.LineItems = val
+}
+
+// SetPaymentMethod sets the value of PaymentMethod.
+func (s *InvConfigureInvoiceTemplatesCommandData) SetPaymentMethod(val InvTemplatePaymentMethod) {
+	s.PaymentMethod = val
+}
+
+// SetApplicability sets the value of Applicability.
+func (s *InvConfigureInvoiceTemplatesCommandData) SetApplicability(val InvTemplateApplicability) {
+	s.Applicability = val
+}
+
+// SetEffectiveFrom sets the value of EffectiveFrom.
+func (s *InvConfigureInvoiceTemplatesCommandData) SetEffectiveFrom(val time.Time) {
+	s.EffectiveFrom = val
+}
+
+// SetEffectiveTo sets the value of EffectiveTo.
+func (s *InvConfigureInvoiceTemplatesCommandData) SetEffectiveTo(val OptDate) {
+	s.EffectiveTo = val
+}
+
+type InvConfigureInvoiceTemplatesCommandDataAction string
+
+const (
+	InvConfigureInvoiceTemplatesCommandDataActionCreate InvConfigureInvoiceTemplatesCommandDataAction = "create"
+	InvConfigureInvoiceTemplatesCommandDataActionUpdate InvConfigureInvoiceTemplatesCommandDataAction = "update"
+)
+
+// AllValues returns all InvConfigureInvoiceTemplatesCommandDataAction values.
+func (InvConfigureInvoiceTemplatesCommandDataAction) AllValues() []InvConfigureInvoiceTemplatesCommandDataAction {
+	return []InvConfigureInvoiceTemplatesCommandDataAction{
+		InvConfigureInvoiceTemplatesCommandDataActionCreate,
+		InvConfigureInvoiceTemplatesCommandDataActionUpdate,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s InvConfigureInvoiceTemplatesCommandDataAction) MarshalText() ([]byte, error) {
+	switch s {
+	case InvConfigureInvoiceTemplatesCommandDataActionCreate:
+		return []byte(s), nil
+	case InvConfigureInvoiceTemplatesCommandDataActionUpdate:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *InvConfigureInvoiceTemplatesCommandDataAction) UnmarshalText(data []byte) error {
+	switch InvConfigureInvoiceTemplatesCommandDataAction(data) {
+	case InvConfigureInvoiceTemplatesCommandDataActionCreate:
+		*s = InvConfigureInvoiceTemplatesCommandDataActionCreate
+		return nil
+	case InvConfigureInvoiceTemplatesCommandDataActionUpdate:
+		*s = InvConfigureInvoiceTemplatesCommandDataActionUpdate
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type InvConfigureInvoiceTemplatesCommandDataBillingFrequency string
+
+const (
+	InvConfigureInvoiceTemplatesCommandDataBillingFrequencyOneTime   InvConfigureInvoiceTemplatesCommandDataBillingFrequency = "one_time"
+	InvConfigureInvoiceTemplatesCommandDataBillingFrequencyDaily     InvConfigureInvoiceTemplatesCommandDataBillingFrequency = "daily"
+	InvConfigureInvoiceTemplatesCommandDataBillingFrequencyWeekly    InvConfigureInvoiceTemplatesCommandDataBillingFrequency = "weekly"
+	InvConfigureInvoiceTemplatesCommandDataBillingFrequencyMonthly   InvConfigureInvoiceTemplatesCommandDataBillingFrequency = "monthly"
+	InvConfigureInvoiceTemplatesCommandDataBillingFrequencyQuarterly InvConfigureInvoiceTemplatesCommandDataBillingFrequency = "quarterly"
+	InvConfigureInvoiceTemplatesCommandDataBillingFrequencyAnnual    InvConfigureInvoiceTemplatesCommandDataBillingFrequency = "annual"
+)
+
+// AllValues returns all InvConfigureInvoiceTemplatesCommandDataBillingFrequency values.
+func (InvConfigureInvoiceTemplatesCommandDataBillingFrequency) AllValues() []InvConfigureInvoiceTemplatesCommandDataBillingFrequency {
+	return []InvConfigureInvoiceTemplatesCommandDataBillingFrequency{
+		InvConfigureInvoiceTemplatesCommandDataBillingFrequencyOneTime,
+		InvConfigureInvoiceTemplatesCommandDataBillingFrequencyDaily,
+		InvConfigureInvoiceTemplatesCommandDataBillingFrequencyWeekly,
+		InvConfigureInvoiceTemplatesCommandDataBillingFrequencyMonthly,
+		InvConfigureInvoiceTemplatesCommandDataBillingFrequencyQuarterly,
+		InvConfigureInvoiceTemplatesCommandDataBillingFrequencyAnnual,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s InvConfigureInvoiceTemplatesCommandDataBillingFrequency) MarshalText() ([]byte, error) {
+	switch s {
+	case InvConfigureInvoiceTemplatesCommandDataBillingFrequencyOneTime:
+		return []byte(s), nil
+	case InvConfigureInvoiceTemplatesCommandDataBillingFrequencyDaily:
+		return []byte(s), nil
+	case InvConfigureInvoiceTemplatesCommandDataBillingFrequencyWeekly:
+		return []byte(s), nil
+	case InvConfigureInvoiceTemplatesCommandDataBillingFrequencyMonthly:
+		return []byte(s), nil
+	case InvConfigureInvoiceTemplatesCommandDataBillingFrequencyQuarterly:
+		return []byte(s), nil
+	case InvConfigureInvoiceTemplatesCommandDataBillingFrequencyAnnual:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *InvConfigureInvoiceTemplatesCommandDataBillingFrequency) UnmarshalText(data []byte) error {
+	switch InvConfigureInvoiceTemplatesCommandDataBillingFrequency(data) {
+	case InvConfigureInvoiceTemplatesCommandDataBillingFrequencyOneTime:
+		*s = InvConfigureInvoiceTemplatesCommandDataBillingFrequencyOneTime
+		return nil
+	case InvConfigureInvoiceTemplatesCommandDataBillingFrequencyDaily:
+		*s = InvConfigureInvoiceTemplatesCommandDataBillingFrequencyDaily
+		return nil
+	case InvConfigureInvoiceTemplatesCommandDataBillingFrequencyWeekly:
+		*s = InvConfigureInvoiceTemplatesCommandDataBillingFrequencyWeekly
+		return nil
+	case InvConfigureInvoiceTemplatesCommandDataBillingFrequencyMonthly:
+		*s = InvConfigureInvoiceTemplatesCommandDataBillingFrequencyMonthly
+		return nil
+	case InvConfigureInvoiceTemplatesCommandDataBillingFrequencyQuarterly:
+		*s = InvConfigureInvoiceTemplatesCommandDataBillingFrequencyQuarterly
+		return nil
+	case InvConfigureInvoiceTemplatesCommandDataBillingFrequencyAnnual:
+		*s = InvConfigureInvoiceTemplatesCommandDataBillingFrequencyAnnual
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/InvConfigureInvoiceTemplatesCommandRequest
+type InvConfigureInvoiceTemplatesCommandRequest struct {
+	CommandId         UUID                                    `json:"commandId"`
+	ExpectedVersion   OptInt                                  `json:"expectedVersion"`
+	AccountingScopeId UUID                                    `json:"accountingScopeId"`
+	Data              InvConfigureInvoiceTemplatesCommandData `json:"data"`
+}
+
+// GetCommandId returns the value of CommandId.
+func (s *InvConfigureInvoiceTemplatesCommandRequest) GetCommandId() UUID {
+	return s.CommandId
+}
+
+// GetExpectedVersion returns the value of ExpectedVersion.
+func (s *InvConfigureInvoiceTemplatesCommandRequest) GetExpectedVersion() OptInt {
+	return s.ExpectedVersion
+}
+
+// GetAccountingScopeId returns the value of AccountingScopeId.
+func (s *InvConfigureInvoiceTemplatesCommandRequest) GetAccountingScopeId() UUID {
+	return s.AccountingScopeId
+}
+
+// GetData returns the value of Data.
+func (s *InvConfigureInvoiceTemplatesCommandRequest) GetData() InvConfigureInvoiceTemplatesCommandData {
+	return s.Data
+}
+
+// SetCommandId sets the value of CommandId.
+func (s *InvConfigureInvoiceTemplatesCommandRequest) SetCommandId(val UUID) {
+	s.CommandId = val
+}
+
+// SetExpectedVersion sets the value of ExpectedVersion.
+func (s *InvConfigureInvoiceTemplatesCommandRequest) SetExpectedVersion(val OptInt) {
+	s.ExpectedVersion = val
+}
+
+// SetAccountingScopeId sets the value of AccountingScopeId.
+func (s *InvConfigureInvoiceTemplatesCommandRequest) SetAccountingScopeId(val UUID) {
+	s.AccountingScopeId = val
+}
+
+// SetData sets the value of Data.
+func (s *InvConfigureInvoiceTemplatesCommandRequest) SetData(val InvConfigureInvoiceTemplatesCommandData) {
+	s.Data = val
+}
+
 type InvConfigureInvoiceTemplatesConflict ProblemDetails
 
 func (*InvConfigureInvoiceTemplatesConflict) invConfigureInvoiceTemplatesRes() {}
@@ -7741,6 +8019,34 @@ type InvGenerateInvoicesUnprocessableEntity ProblemDetails
 
 func (*InvGenerateInvoicesUnprocessableEntity) invGenerateInvoicesRes() {}
 
+type InvGetInvoiceTemplateBadRequest ProblemDetails
+
+func (*InvGetInvoiceTemplateBadRequest) invGetInvoiceTemplateRes() {}
+
+type InvGetInvoiceTemplateForbidden ProblemDetails
+
+func (*InvGetInvoiceTemplateForbidden) invGetInvoiceTemplateRes() {}
+
+type InvGetInvoiceTemplateNotFound ProblemDetails
+
+func (*InvGetInvoiceTemplateNotFound) invGetInvoiceTemplateRes() {}
+
+type InvGetInvoiceTemplateServiceUnavailable ProblemDetails
+
+func (*InvGetInvoiceTemplateServiceUnavailable) invGetInvoiceTemplateRes() {}
+
+type InvListInvoiceTemplatesBadRequest ProblemDetails
+
+func (*InvListInvoiceTemplatesBadRequest) invListInvoiceTemplatesRes() {}
+
+type InvListInvoiceTemplatesForbidden ProblemDetails
+
+func (*InvListInvoiceTemplatesForbidden) invListInvoiceTemplatesRes() {}
+
+type InvListInvoiceTemplatesServiceUnavailable ProblemDetails
+
+func (*InvListInvoiceTemplatesServiceUnavailable) invListInvoiceTemplatesRes() {}
+
 type InvRecalculateUnfinalizedInvoicesBadRequest ProblemDetails
 
 func (*InvRecalculateUnfinalizedInvoicesBadRequest) invRecalculateUnfinalizedInvoicesRes() {}
@@ -7760,6 +8066,338 @@ func (*InvRecalculateUnfinalizedInvoicesServiceUnavailable) invRecalculateUnfina
 type InvRecalculateUnfinalizedInvoicesUnprocessableEntity ProblemDetails
 
 func (*InvRecalculateUnfinalizedInvoicesUnprocessableEntity) invRecalculateUnfinalizedInvoicesRes() {}
+
+// Ref: #/components/schemas/InvTemplateApplicability
+type InvTemplateApplicability struct {
+	Mode       InvTemplateApplicabilityMode          `json:"mode"`
+	Dimensions OptInvTemplateApplicabilityDimensions `json:"dimensions"`
+}
+
+// GetMode returns the value of Mode.
+func (s *InvTemplateApplicability) GetMode() InvTemplateApplicabilityMode {
+	return s.Mode
+}
+
+// GetDimensions returns the value of Dimensions.
+func (s *InvTemplateApplicability) GetDimensions() OptInvTemplateApplicabilityDimensions {
+	return s.Dimensions
+}
+
+// SetMode sets the value of Mode.
+func (s *InvTemplateApplicability) SetMode(val InvTemplateApplicabilityMode) {
+	s.Mode = val
+}
+
+// SetDimensions sets the value of Dimensions.
+func (s *InvTemplateApplicability) SetDimensions(val OptInvTemplateApplicabilityDimensions) {
+	s.Dimensions = val
+}
+
+type InvTemplateApplicabilityDimensions map[string]string
+
+func (s *InvTemplateApplicabilityDimensions) init() InvTemplateApplicabilityDimensions {
+	m := *s
+	if m == nil {
+		m = map[string]string{}
+		*s = m
+	}
+	return m
+}
+
+type InvTemplateApplicabilityMode string
+
+const (
+	InvTemplateApplicabilityModeAll        InvTemplateApplicabilityMode = "all"
+	InvTemplateApplicabilityModeDimensions InvTemplateApplicabilityMode = "dimensions"
+)
+
+// AllValues returns all InvTemplateApplicabilityMode values.
+func (InvTemplateApplicabilityMode) AllValues() []InvTemplateApplicabilityMode {
+	return []InvTemplateApplicabilityMode{
+		InvTemplateApplicabilityModeAll,
+		InvTemplateApplicabilityModeDimensions,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s InvTemplateApplicabilityMode) MarshalText() ([]byte, error) {
+	switch s {
+	case InvTemplateApplicabilityModeAll:
+		return []byte(s), nil
+	case InvTemplateApplicabilityModeDimensions:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *InvTemplateApplicabilityMode) UnmarshalText(data []byte) error {
+	switch InvTemplateApplicabilityMode(data) {
+	case InvTemplateApplicabilityModeAll:
+		*s = InvTemplateApplicabilityModeAll
+		return nil
+	case InvTemplateApplicabilityModeDimensions:
+		*s = InvTemplateApplicabilityModeDimensions
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/InvTemplateChargeRule
+type InvTemplateChargeRule struct {
+	Kind     InvTemplateChargeRuleKind `json:"kind"`
+	Amount   OptExactDecimal           `json:"amount"`
+	Currency OptCurrencyCode           `json:"currency"`
+	Rate     OptExactDecimal           `json:"rate"`
+}
+
+// GetKind returns the value of Kind.
+func (s *InvTemplateChargeRule) GetKind() InvTemplateChargeRuleKind {
+	return s.Kind
+}
+
+// GetAmount returns the value of Amount.
+func (s *InvTemplateChargeRule) GetAmount() OptExactDecimal {
+	return s.Amount
+}
+
+// GetCurrency returns the value of Currency.
+func (s *InvTemplateChargeRule) GetCurrency() OptCurrencyCode {
+	return s.Currency
+}
+
+// GetRate returns the value of Rate.
+func (s *InvTemplateChargeRule) GetRate() OptExactDecimal {
+	return s.Rate
+}
+
+// SetKind sets the value of Kind.
+func (s *InvTemplateChargeRule) SetKind(val InvTemplateChargeRuleKind) {
+	s.Kind = val
+}
+
+// SetAmount sets the value of Amount.
+func (s *InvTemplateChargeRule) SetAmount(val OptExactDecimal) {
+	s.Amount = val
+}
+
+// SetCurrency sets the value of Currency.
+func (s *InvTemplateChargeRule) SetCurrency(val OptCurrencyCode) {
+	s.Currency = val
+}
+
+// SetRate sets the value of Rate.
+func (s *InvTemplateChargeRule) SetRate(val OptExactDecimal) {
+	s.Rate = val
+}
+
+type InvTemplateChargeRuleKind string
+
+const (
+	InvTemplateChargeRuleKindFixed      InvTemplateChargeRuleKind = "fixed"
+	InvTemplateChargeRuleKindPerUnit    InvTemplateChargeRuleKind = "per_unit"
+	InvTemplateChargeRuleKindPercentage InvTemplateChargeRuleKind = "percentage"
+)
+
+// AllValues returns all InvTemplateChargeRuleKind values.
+func (InvTemplateChargeRuleKind) AllValues() []InvTemplateChargeRuleKind {
+	return []InvTemplateChargeRuleKind{
+		InvTemplateChargeRuleKindFixed,
+		InvTemplateChargeRuleKindPerUnit,
+		InvTemplateChargeRuleKindPercentage,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s InvTemplateChargeRuleKind) MarshalText() ([]byte, error) {
+	switch s {
+	case InvTemplateChargeRuleKindFixed:
+		return []byte(s), nil
+	case InvTemplateChargeRuleKindPerUnit:
+		return []byte(s), nil
+	case InvTemplateChargeRuleKindPercentage:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *InvTemplateChargeRuleKind) UnmarshalText(data []byte) error {
+	switch InvTemplateChargeRuleKind(data) {
+	case InvTemplateChargeRuleKindFixed:
+		*s = InvTemplateChargeRuleKindFixed
+		return nil
+	case InvTemplateChargeRuleKindPerUnit:
+		*s = InvTemplateChargeRuleKindPerUnit
+		return nil
+	case InvTemplateChargeRuleKindPercentage:
+		*s = InvTemplateChargeRuleKindPercentage
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/InvTemplateLineItem
+type InvTemplateLineItem struct {
+	ID          UUID                  `json:"id"`
+	Code        string                `json:"code"`
+	Description string                `json:"description"`
+	ChargeRule  InvTemplateChargeRule `json:"chargeRule"`
+	TaxCategory string                `json:"taxCategory"`
+}
+
+// GetID returns the value of ID.
+func (s *InvTemplateLineItem) GetID() UUID {
+	return s.ID
+}
+
+// GetCode returns the value of Code.
+func (s *InvTemplateLineItem) GetCode() string {
+	return s.Code
+}
+
+// GetDescription returns the value of Description.
+func (s *InvTemplateLineItem) GetDescription() string {
+	return s.Description
+}
+
+// GetChargeRule returns the value of ChargeRule.
+func (s *InvTemplateLineItem) GetChargeRule() InvTemplateChargeRule {
+	return s.ChargeRule
+}
+
+// GetTaxCategory returns the value of TaxCategory.
+func (s *InvTemplateLineItem) GetTaxCategory() string {
+	return s.TaxCategory
+}
+
+// SetID sets the value of ID.
+func (s *InvTemplateLineItem) SetID(val UUID) {
+	s.ID = val
+}
+
+// SetCode sets the value of Code.
+func (s *InvTemplateLineItem) SetCode(val string) {
+	s.Code = val
+}
+
+// SetDescription sets the value of Description.
+func (s *InvTemplateLineItem) SetDescription(val string) {
+	s.Description = val
+}
+
+// SetChargeRule sets the value of ChargeRule.
+func (s *InvTemplateLineItem) SetChargeRule(val InvTemplateChargeRule) {
+	s.ChargeRule = val
+}
+
+// SetTaxCategory sets the value of TaxCategory.
+func (s *InvTemplateLineItem) SetTaxCategory(val string) {
+	s.TaxCategory = val
+}
+
+// Ref: #/components/schemas/InvTemplatePaymentMethod
+type InvTemplatePaymentMethod struct {
+	Method           InvTemplatePaymentMethodMethod `json:"method"`
+	TermsDays        int                            `json:"termsDays"`
+	PaymentReference OptString                      `json:"paymentReference"`
+}
+
+// GetMethod returns the value of Method.
+func (s *InvTemplatePaymentMethod) GetMethod() InvTemplatePaymentMethodMethod {
+	return s.Method
+}
+
+// GetTermsDays returns the value of TermsDays.
+func (s *InvTemplatePaymentMethod) GetTermsDays() int {
+	return s.TermsDays
+}
+
+// GetPaymentReference returns the value of PaymentReference.
+func (s *InvTemplatePaymentMethod) GetPaymentReference() OptString {
+	return s.PaymentReference
+}
+
+// SetMethod sets the value of Method.
+func (s *InvTemplatePaymentMethod) SetMethod(val InvTemplatePaymentMethodMethod) {
+	s.Method = val
+}
+
+// SetTermsDays sets the value of TermsDays.
+func (s *InvTemplatePaymentMethod) SetTermsDays(val int) {
+	s.TermsDays = val
+}
+
+// SetPaymentReference sets the value of PaymentReference.
+func (s *InvTemplatePaymentMethod) SetPaymentReference(val OptString) {
+	s.PaymentReference = val
+}
+
+type InvTemplatePaymentMethodMethod string
+
+const (
+	InvTemplatePaymentMethodMethodBankTransfer InvTemplatePaymentMethodMethod = "bank_transfer"
+	InvTemplatePaymentMethodMethodCard         InvTemplatePaymentMethodMethod = "card"
+	InvTemplatePaymentMethodMethodDirectDebit  InvTemplatePaymentMethodMethod = "direct_debit"
+	InvTemplatePaymentMethodMethodCash         InvTemplatePaymentMethodMethod = "cash"
+	InvTemplatePaymentMethodMethodOther        InvTemplatePaymentMethodMethod = "other"
+)
+
+// AllValues returns all InvTemplatePaymentMethodMethod values.
+func (InvTemplatePaymentMethodMethod) AllValues() []InvTemplatePaymentMethodMethod {
+	return []InvTemplatePaymentMethodMethod{
+		InvTemplatePaymentMethodMethodBankTransfer,
+		InvTemplatePaymentMethodMethodCard,
+		InvTemplatePaymentMethodMethodDirectDebit,
+		InvTemplatePaymentMethodMethodCash,
+		InvTemplatePaymentMethodMethodOther,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s InvTemplatePaymentMethodMethod) MarshalText() ([]byte, error) {
+	switch s {
+	case InvTemplatePaymentMethodMethodBankTransfer:
+		return []byte(s), nil
+	case InvTemplatePaymentMethodMethodCard:
+		return []byte(s), nil
+	case InvTemplatePaymentMethodMethodDirectDebit:
+		return []byte(s), nil
+	case InvTemplatePaymentMethodMethodCash:
+		return []byte(s), nil
+	case InvTemplatePaymentMethodMethodOther:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *InvTemplatePaymentMethodMethod) UnmarshalText(data []byte) error {
+	switch InvTemplatePaymentMethodMethod(data) {
+	case InvTemplatePaymentMethodMethodBankTransfer:
+		*s = InvTemplatePaymentMethodMethodBankTransfer
+		return nil
+	case InvTemplatePaymentMethodMethodCard:
+		*s = InvTemplatePaymentMethodMethodCard
+		return nil
+	case InvTemplatePaymentMethodMethodDirectDebit:
+		*s = InvTemplatePaymentMethodMethodDirectDebit
+		return nil
+	case InvTemplatePaymentMethodMethodCash:
+		*s = InvTemplatePaymentMethodMethodCash
+		return nil
+	case InvTemplatePaymentMethodMethodOther:
+		*s = InvTemplatePaymentMethodMethodOther
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
 
 // Ref: #/components/schemas/Links
 type Links struct {
@@ -8123,6 +8761,52 @@ func (o OptDateTime) Or(d time.Time) time.Time {
 	return d
 }
 
+// NewOptExactDecimal returns new OptExactDecimal with value set to v.
+func NewOptExactDecimal(v ExactDecimal) OptExactDecimal {
+	return OptExactDecimal{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptExactDecimal is optional ExactDecimal.
+type OptExactDecimal struct {
+	Value ExactDecimal
+	Set   bool
+}
+
+// IsSet returns true if OptExactDecimal was set.
+func (o OptExactDecimal) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptExactDecimal) Reset() {
+	var v ExactDecimal
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptExactDecimal) SetTo(v ExactDecimal) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptExactDecimal) Get() (v ExactDecimal, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptExactDecimal) Or(d ExactDecimal) ExactDecimal {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptGlPostingAuthorizationScope returns new OptGlPostingAuthorizationScope with value set to v.
 func NewOptGlPostingAuthorizationScope(v GlPostingAuthorizationScope) OptGlPostingAuthorizationScope {
 	return OptGlPostingAuthorizationScope{
@@ -8393,6 +9077,52 @@ func (o OptInt) Get() (v int, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptInt) Or(d int) int {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptInvTemplateApplicabilityDimensions returns new OptInvTemplateApplicabilityDimensions with value set to v.
+func NewOptInvTemplateApplicabilityDimensions(v InvTemplateApplicabilityDimensions) OptInvTemplateApplicabilityDimensions {
+	return OptInvTemplateApplicabilityDimensions{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptInvTemplateApplicabilityDimensions is optional InvTemplateApplicabilityDimensions.
+type OptInvTemplateApplicabilityDimensions struct {
+	Value InvTemplateApplicabilityDimensions
+	Set   bool
+}
+
+// IsSet returns true if OptInvTemplateApplicabilityDimensions was set.
+func (o OptInvTemplateApplicabilityDimensions) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptInvTemplateApplicabilityDimensions) Reset() {
+	var v InvTemplateApplicabilityDimensions
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptInvTemplateApplicabilityDimensions) SetTo(v InvTemplateApplicabilityDimensions) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptInvTemplateApplicabilityDimensions) Get() (v InvTemplateApplicabilityDimensions, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptInvTemplateApplicabilityDimensions) Or(d InvTemplateApplicabilityDimensions) InvTemplateApplicabilityDimensions {
 	if v, ok := o.Get(); ok {
 		return v
 	}
