@@ -23,6 +23,59 @@ export type CommandRequest = {
     };
 };
 
+/**
+ * Non-negative exact-decimal value represented as a JSON string.
+ */
+export type ExactDecimal = string;
+
+export type InvConfigureInvoiceTemplatesCommandRequest = {
+    commandId: Uuid;
+    expectedVersion?: number;
+    accountingScopeId: Uuid;
+    data: InvConfigureInvoiceTemplatesCommandData;
+};
+
+export type InvConfigureInvoiceTemplatesCommandData = {
+    action: 'create' | 'update';
+    templateId?: Uuid;
+    code: string;
+    name: string;
+    billingFrequency: 'one_time' | 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual';
+    lineItems: Array<InvTemplateLineItem>;
+    paymentMethod: InvTemplatePaymentMethod;
+    applicability: InvTemplateApplicability;
+    effectiveFrom: string;
+    effectiveTo?: string;
+};
+
+export type InvTemplateLineItem = {
+    id: Uuid;
+    code: string;
+    description: string;
+    chargeRule: InvTemplateChargeRule;
+    taxCategory: string;
+};
+
+export type InvTemplateChargeRule = {
+    kind: 'fixed' | 'per_unit' | 'percentage';
+    amount?: ExactDecimal;
+    currency?: CurrencyCode;
+    rate?: ExactDecimal;
+};
+
+export type InvTemplatePaymentMethod = {
+    method: 'bank_transfer' | 'card' | 'direct_debit' | 'cash' | 'other';
+    termsDays: number;
+    paymentReference?: string;
+};
+
+export type InvTemplateApplicability = {
+    mode: 'all' | 'dimensions';
+    dimensions?: {
+        [key: string]: string;
+    };
+};
+
 export type WfaMaintainApprovalPoliciesCommandRequest = {
     commandId: Uuid;
     expectedVersion?: number;
@@ -3948,10 +4001,11 @@ export type PayrMaintainPayrollTaxFilingRecordsResponses = {
 export type PayrMaintainPayrollTaxFilingRecordsResponse = PayrMaintainPayrollTaxFilingRecordsResponses[keyof PayrMaintainPayrollTaxFilingRecordsResponses];
 
 export type InvConfigureInvoiceTemplatesData = {
-    body: CommandRequest;
+    body: InvConfigureInvoiceTemplatesCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
+        'X-Accounting-Scope-Id'?: Uuid;
         'Idempotency-Key': string;
         'If-Match'?: string;
     };
@@ -3997,6 +4051,99 @@ export type InvConfigureInvoiceTemplatesResponses = {
 };
 
 export type InvConfigureInvoiceTemplatesResponse = InvConfigureInvoiceTemplatesResponses[keyof InvConfigureInvoiceTemplatesResponses];
+
+export type InvListInvoiceTemplatesData = {
+    body?: never;
+    headers?: {
+        'X-Correlation-Id'?: Uuid;
+        'Accept-Language'?: string;
+        'X-Accounting-Scope-Id'?: Uuid;
+    };
+    path?: never;
+    query?: {
+        'page[size]'?: number;
+        'page[after]'?: string;
+    };
+    url: '/invoicing/reference/invoice-templates';
+};
+
+export type InvListInvoiceTemplatesErrors = {
+    /**
+     * RFC 9457-style problem details
+     */
+    400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    403: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    503: ProblemDetails;
+};
+
+export type InvListInvoiceTemplatesError = InvListInvoiceTemplatesErrors[keyof InvListInvoiceTemplatesErrors];
+
+export type InvListInvoiceTemplatesResponses = {
+    /**
+     * Established result
+     */
+    200: EstablishedResult;
+};
+
+export type InvListInvoiceTemplatesResponse = InvListInvoiceTemplatesResponses[keyof InvListInvoiceTemplatesResponses];
+
+export type InvGetInvoiceTemplateData = {
+    body?: never;
+    headers?: {
+        'X-Correlation-Id'?: Uuid;
+        'Accept-Language'?: string;
+        'X-Accounting-Scope-Id'?: Uuid;
+    };
+    path: {
+        invoiceTemplateId: Uuid;
+    };
+    query?: never;
+    url: '/invoicing/reference/invoice-templates/{invoiceTemplateId}';
+};
+
+export type InvGetInvoiceTemplateErrors = {
+    /**
+     * RFC 9457-style problem details
+     */
+    400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    403: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    404: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    503: ProblemDetails;
+};
+
+export type InvGetInvoiceTemplateError = InvGetInvoiceTemplateErrors[keyof InvGetInvoiceTemplateErrors];
+
+export type InvGetInvoiceTemplateResponses = {
+    /**
+     * Established result
+     */
+    200: EstablishedResult;
+};
+
+export type InvGetInvoiceTemplateResponse = InvGetInvoiceTemplateResponses[keyof InvGetInvoiceTemplateResponses];
 
 export type InvConfigureBillingSchedulesData = {
     body: CommandRequest;

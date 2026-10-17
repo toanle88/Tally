@@ -35,9 +35,12 @@ migration_dir_for_schema() {
 		fiscal_period)
 			printf '%s\n' "db/migrations/fiscal_period"
 			;;
+		invoicing)
+			printf '%s\n' "db/migrations/invoicing"
+			;;
 		*)
 			echo "Unknown migration schema: ${schema}" >&2
-			echo "Supported schemas: bootstrap, platform, identity, organization, coa, gl, workflow, fiscal_period" >&2
+			echo "Supported schemas: bootstrap, platform, identity, organization, coa, gl, workflow, fiscal_period, invoicing" >&2
 			exit 2
 			;;
 	esac
@@ -49,7 +52,7 @@ create_migration() {
 	local migration_dir
 
 	if [[ -z "${schema}" || -z "${name}" ]]; then
-		echo "Usage: $0 create <bootstrap|platform|identity|organization|coa|gl|workflow|fiscal_period> <migration_name>" >&2
+		echo "Usage: $0 create <bootstrap|platform|identity|organization|coa|gl|workflow|fiscal_period|invoicing> <migration_name>" >&2
 		exit 2
 	fi
 
@@ -129,6 +132,11 @@ validate_migrations() {
 	echo "Validating db/migrations/fiscal_period..."
 	go tool goose \
 		-dir db/migrations/fiscal_period \
+		validate
+
+	echo "Validating db/migrations/invoicing..."
+	go tool goose \
+		-dir db/migrations/invoicing \
 		validate
 	echo "Migration validation passed."
 }
@@ -238,6 +246,12 @@ run_for_all_migration_sets() {
 	run_goose \
 		"db/migrations/fiscal_period" \
 		"fiscal_period.goose_db_version" \
+		"${goose_command}"
+
+	echo "Running ${goose_command} for db/migrations/invoicing..."
+	run_goose \
+		"db/migrations/invoicing" \
+		"invoicing.goose_db_version" \
 		"${goose_command}"
 }
 

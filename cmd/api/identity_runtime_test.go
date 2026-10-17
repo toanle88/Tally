@@ -10,6 +10,8 @@ import (
 	"github.com/toanle88/Tally/internal/coa"
 	"github.com/toanle88/Tally/internal/gl"
 	"github.com/toanle88/Tally/internal/identity"
+	"github.com/toanle88/Tally/internal/invoicing"
+	"github.com/toanle88/Tally/internal/platform/aggregateversion"
 	"github.com/toanle88/Tally/internal/workflow"
 )
 
@@ -35,6 +37,27 @@ func TestPostgresCoaAuditWriterPreservesAggregateIdentityPrecedence(t *testing.T
 	}
 	if records[1].UserID != requestID {
 		t.Fatalf("change-request audit user ID = %s, want %s", records[1].UserID, requestID)
+	}
+}
+
+func TestPostgresInvoiceTemplateAuditWriterPreservesExpectedVersion(t *testing.T) {
+	var record identity.AuditRecord
+	writer := postgresInvoiceTemplateAuditWriter(func(_ context.Context, _ pgx.Tx, received identity.AuditRecord) (uuid.UUID, error) {
+		record = received
+		return uuid.New(), nil
+	})
+	expected := aggregateversion.AggregateVersion(4)
+	templateID := uuid.New()
+	actorID := uuid.New()
+	if _, err := writer(context.Background(), nil, invoicing.InvoiceTemplateAuditRecord{
+		TemplateID: templateID, ActorUserID: actorID, ActorSubjectReference: "subject",
+		AccountingScopeID: uuid.New(), Action: invoicing.InvoiceTemplateActionUpdate,
+		ExpectedVersion: &expected, RevisionNumber: 5,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if record.UserID != templateID || record.ActorUserID != actorID || record.ExpectedVersion == nil || *record.ExpectedVersion != 4 || record.RevisionVersion != 5 {
+		t.Fatalf("mapped audit record = %#v", record)
 	}
 }
 

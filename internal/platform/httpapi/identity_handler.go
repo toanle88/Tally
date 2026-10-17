@@ -16,6 +16,7 @@ import (
 	"github.com/toanle88/Tally/internal/fiscalperiod"
 	"github.com/toanle88/Tally/internal/gl"
 	"github.com/toanle88/Tally/internal/identity"
+	"github.com/toanle88/Tally/internal/invoicing"
 	"github.com/toanle88/Tally/internal/organization"
 	"github.com/toanle88/Tally/internal/platform/aggregateversion"
 	"github.com/toanle88/Tally/internal/platform/httpapi/generated"
@@ -47,6 +48,7 @@ type IdentityHandler struct {
 	PostingService                       *gl.PostingService
 	PostingApprovalDecisionService       *gl.PostingApprovalDecisionService
 	JournalReversalService               *gl.JournalReversalService
+	InvoiceTemplateService               *invoicing.InvoiceTemplateService
 	SoftCloseGateService                 *gl.SoftCloseGateService
 	FiscalPeriodService                  *fiscalperiod.Service
 	ApprovalPolicyService                *workflow.ApprovalPolicyService

@@ -139,6 +139,11 @@ verify_migration_set \
 	"db/migrations/fiscal_period" \
 	"fiscal_period.goose_db_version"
 
+verify_migration_set \
+	"invoicing" \
+	"db/migrations/invoicing" \
+	"invoicing.goose_db_version"
+
 verify_seed_manifest
 
 echo "Database migration and seed verification passed."

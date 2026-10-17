@@ -57,6 +57,13 @@ components:
     Money: { $ref: ./components/common.yaml#/schemas/Money }
     CurrencyCode: { $ref: ./components/common.yaml#/schemas/CurrencyCode }
     CommandRequest: { $ref: ./components/common.yaml#/schemas/CommandRequest }
+    ExactDecimal: { $ref: ./components/common.yaml#/schemas/ExactDecimal }
+    InvConfigureInvoiceTemplatesCommandRequest: { $ref: ./components/common.yaml#/schemas/InvConfigureInvoiceTemplatesCommandRequest }
+    InvConfigureInvoiceTemplatesCommandData: { $ref: ./components/common.yaml#/schemas/InvConfigureInvoiceTemplatesCommandData }
+    InvTemplateLineItem: { $ref: ./components/common.yaml#/schemas/InvTemplateLineItem }
+    InvTemplateChargeRule: { $ref: ./components/common.yaml#/schemas/InvTemplateChargeRule }
+    InvTemplatePaymentMethod: { $ref: ./components/common.yaml#/schemas/InvTemplatePaymentMethod }
+    InvTemplateApplicability: { $ref: ./components/common.yaml#/schemas/InvTemplateApplicability }
     WfaMaintainApprovalPoliciesCommandRequest: { $ref: ./components/common.yaml#/schemas/WfaMaintainApprovalPoliciesCommandRequest }
     WfaMaintainApprovalPoliciesCommandData: { $ref: ./components/common.yaml#/schemas/WfaMaintainApprovalPoliciesCommandData }
     WfaApprovalApplicability: { $ref: ./components/common.yaml#/schemas/WfaApprovalApplicability }

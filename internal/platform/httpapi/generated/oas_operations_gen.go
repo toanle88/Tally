@@ -127,6 +127,8 @@ const (
 	InvConfigureInvoiceTemplatesOperation                     OperationName = "InvConfigureInvoiceTemplates"
 	InvFinalizeGeneratedInvoicesOperation                     OperationName = "InvFinalizeGeneratedInvoices"
 	InvGenerateInvoicesOperation                              OperationName = "InvGenerateInvoices"
+	InvGetInvoiceTemplateOperation                            OperationName = "InvGetInvoiceTemplate"
+	InvListInvoiceTemplatesOperation                          OperationName = "InvListInvoiceTemplates"
 	InvRecalculateUnfinalizedInvoicesOperation                OperationName = "InvRecalculateUnfinalizedInvoices"
 	OmdGetLegalEntityOperation                                OperationName = "OmdGetLegalEntity"
 	OmdListLegalEntitiesOperation                             OperationName = "OmdListLegalEntities"

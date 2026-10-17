@@ -17806,6 +17806,10 @@ func (s *Server) handleInvConfigureInvoiceTemplatesRequest(args [0]string, argsE
 					In:   "header",
 				}: params.AcceptLanguage,
 				{
+					Name: "X-Accounting-Scope-Id",
+					In:   "header",
+				}: params.XAccountingScopeID,
+				{
 					Name: "Idempotency-Key",
 					In:   "header",
 				}: params.IdempotencyKey,
@@ -17818,7 +17822,7 @@ func (s *Server) handleInvConfigureInvoiceTemplatesRequest(args [0]string, argsE
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *InvConfigureInvoiceTemplatesCommandRequest
 			Params   = InvConfigureInvoiceTemplatesParams
 			Response = InvConfigureInvoiceTemplatesRes
 		)
@@ -18143,6 +18147,286 @@ func (s *Server) handleInvGenerateInvoicesRequest(args [0]string, argsEscaped bo
 	}
 
 	if err := encodeInvGenerateInvoicesResponse(response, w); err != nil {
+		defer recordError("EncodeResponse", err)
+		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
+			s.cfg.ErrorHandler(ctx, w, r, err)
+		}
+		return
+	}
+}
+
+// handleInvGetInvoiceTemplateRequest handles invGetInvoiceTemplate operation.
+//
+// GET /invoicing/reference/invoice-templates/{invoiceTemplateId}
+func (s *Server) handleInvGetInvoiceTemplateRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+	statusWriter := &codeRecorder{ResponseWriter: w}
+	w = statusWriter
+	ctx := r.Context()
+
+	var (
+		err          error
+		opErrContext = ogenerrors.OperationContext{
+			Name: InvGetInvoiceTemplateOperation,
+			ID:   "invGetInvoiceTemplate",
+		}
+	)
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			sctx, ok, err := s.securityBearerAuth(ctx, InvGetInvoiceTemplateOperation, r)
+			if err != nil {
+				err = &ogenerrors.SecurityError{
+					OperationContext: opErrContext,
+					Security:         "BearerAuth",
+					Err:              err,
+				}
+				defer recordError("Security:BearerAuth", err)
+				s.cfg.ErrorHandler(ctx, w, r, err)
+				return
+			}
+			if ok {
+				satisfied[0] |= 1 << 0
+				ctx = sctx
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			err = &ogenerrors.SecurityError{
+				OperationContext: opErrContext,
+				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
+			}
+			defer recordError("Security", err)
+			s.cfg.ErrorHandler(ctx, w, r, err)
+			return
+		}
+	}
+	params, err := decodeInvGetInvoiceTemplateParams(args, argsEscaped, r)
+	if err != nil {
+		err = &ogenerrors.DecodeParamsError{
+			OperationContext: opErrContext,
+			Err:              err,
+		}
+		defer recordError("DecodeParams", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	var rawBody []byte
+
+	var response InvGetInvoiceTemplateRes
+	if m := s.cfg.Middleware; m != nil {
+		mreq := middleware.Request{
+			Context:          ctx,
+			OperationName:    InvGetInvoiceTemplateOperation,
+			OperationSummary: "",
+			OperationID:      "invGetInvoiceTemplate",
+			Body:             nil,
+			RawBody:          rawBody,
+			Params: middleware.Parameters{
+				{
+					Name: "invoiceTemplateId",
+					In:   "path",
+				}: params.InvoiceTemplateId,
+				{
+					Name: "X-Correlation-Id",
+					In:   "header",
+				}: params.XCorrelationID,
+				{
+					Name: "Accept-Language",
+					In:   "header",
+				}: params.AcceptLanguage,
+				{
+					Name: "X-Accounting-Scope-Id",
+					In:   "header",
+				}: params.XAccountingScopeID,
+			},
+			Raw: r,
+		}
+
+		type (
+			Request  = struct{}
+			Params   = InvGetInvoiceTemplateParams
+			Response = InvGetInvoiceTemplateRes
+		)
+		response, err = middleware.HookMiddleware[
+			Request,
+			Params,
+			Response,
+		](
+			m,
+			mreq,
+			unpackInvGetInvoiceTemplateParams,
+			func(ctx context.Context, request Request, params Params) (response Response, err error) {
+				response, err = s.h.InvGetInvoiceTemplate(ctx, params)
+				return response, err
+			},
+		)
+	} else {
+		response, err = s.h.InvGetInvoiceTemplate(ctx, params)
+	}
+	if err != nil {
+		defer recordError("Internal", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	if err := encodeInvGetInvoiceTemplateResponse(response, w); err != nil {
+		defer recordError("EncodeResponse", err)
+		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
+			s.cfg.ErrorHandler(ctx, w, r, err)
+		}
+		return
+	}
+}
+
+// handleInvListInvoiceTemplatesRequest handles invListInvoiceTemplates operation.
+//
+// GET /invoicing/reference/invoice-templates
+func (s *Server) handleInvListInvoiceTemplatesRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+	statusWriter := &codeRecorder{ResponseWriter: w}
+	w = statusWriter
+	ctx := r.Context()
+
+	var (
+		err          error
+		opErrContext = ogenerrors.OperationContext{
+			Name: InvListInvoiceTemplatesOperation,
+			ID:   "invListInvoiceTemplates",
+		}
+	)
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			sctx, ok, err := s.securityBearerAuth(ctx, InvListInvoiceTemplatesOperation, r)
+			if err != nil {
+				err = &ogenerrors.SecurityError{
+					OperationContext: opErrContext,
+					Security:         "BearerAuth",
+					Err:              err,
+				}
+				defer recordError("Security:BearerAuth", err)
+				s.cfg.ErrorHandler(ctx, w, r, err)
+				return
+			}
+			if ok {
+				satisfied[0] |= 1 << 0
+				ctx = sctx
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			err = &ogenerrors.SecurityError{
+				OperationContext: opErrContext,
+				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
+			}
+			defer recordError("Security", err)
+			s.cfg.ErrorHandler(ctx, w, r, err)
+			return
+		}
+	}
+	params, err := decodeInvListInvoiceTemplatesParams(args, argsEscaped, r)
+	if err != nil {
+		err = &ogenerrors.DecodeParamsError{
+			OperationContext: opErrContext,
+			Err:              err,
+		}
+		defer recordError("DecodeParams", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	var rawBody []byte
+
+	var response InvListInvoiceTemplatesRes
+	if m := s.cfg.Middleware; m != nil {
+		mreq := middleware.Request{
+			Context:          ctx,
+			OperationName:    InvListInvoiceTemplatesOperation,
+			OperationSummary: "",
+			OperationID:      "invListInvoiceTemplates",
+			Body:             nil,
+			RawBody:          rawBody,
+			Params: middleware.Parameters{
+				{
+					Name: "X-Correlation-Id",
+					In:   "header",
+				}: params.XCorrelationID,
+				{
+					Name: "Accept-Language",
+					In:   "header",
+				}: params.AcceptLanguage,
+				{
+					Name: "X-Accounting-Scope-Id",
+					In:   "header",
+				}: params.XAccountingScopeID,
+				{
+					Name: "page[size]",
+					In:   "query",
+				}: params.PageSize,
+				{
+					Name: "page[after]",
+					In:   "query",
+				}: params.PageAfter,
+			},
+			Raw: r,
+		}
+
+		type (
+			Request  = struct{}
+			Params   = InvListInvoiceTemplatesParams
+			Response = InvListInvoiceTemplatesRes
+		)
+		response, err = middleware.HookMiddleware[
+			Request,
+			Params,
+			Response,
+		](
+			m,
+			mreq,
+			unpackInvListInvoiceTemplatesParams,
+			func(ctx context.Context, request Request, params Params) (response Response, err error) {
+				response, err = s.h.InvListInvoiceTemplates(ctx, params)
+				return response, err
+			},
+		)
+	} else {
+		response, err = s.h.InvListInvoiceTemplates(ctx, params)
+	}
+	if err != nil {
+		defer recordError("Internal", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	if err := encodeInvListInvoiceTemplatesResponse(response, w); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)

@@ -118,6 +118,10 @@
   $ref: ./payroll.yaml#/~1payroll~1configuration~1maintain-payroll-tax-filing-records
 /invoicing/configuration/configure-invoice-templates:
   $ref: ./invoicing.yaml#/~1invoicing~1configuration~1configure-invoice-templates
+/invoicing/reference/invoice-templates:
+  $ref: ./invoicing.yaml#/~1invoicing~1reference~1invoice-templates
+/invoicing/reference/invoice-templates/{invoiceTemplateId}:
+  $ref: ./invoicing.yaml#/~1invoicing~1reference~1invoice-templates~1{invoiceTemplateId}
 /invoicing/configuration/configure-billing-schedules:
   $ref: ./invoicing.yaml#/~1invoicing~1configuration~1configure-billing-schedules
 /invoicing/actions/generate-invoices:

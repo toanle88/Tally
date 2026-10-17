@@ -846,7 +846,7 @@ func (UnimplementedHandler) InvConfigureBillingSchedules(ctx context.Context, re
 // InvConfigureInvoiceTemplates implements invConfigureInvoiceTemplates operation.
 //
 // PUT /invoicing/configuration/configure-invoice-templates
-func (UnimplementedHandler) InvConfigureInvoiceTemplates(ctx context.Context, req *CommandRequest, params InvConfigureInvoiceTemplatesParams) (r InvConfigureInvoiceTemplatesRes, _ error) {
+func (UnimplementedHandler) InvConfigureInvoiceTemplates(ctx context.Context, req *InvConfigureInvoiceTemplatesCommandRequest, params InvConfigureInvoiceTemplatesParams) (r InvConfigureInvoiceTemplatesRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -861,6 +861,20 @@ func (UnimplementedHandler) InvFinalizeGeneratedInvoices(ctx context.Context, re
 //
 // POST /invoicing/actions/generate-invoices
 func (UnimplementedHandler) InvGenerateInvoices(ctx context.Context, req *CommandRequest, params InvGenerateInvoicesParams) (r InvGenerateInvoicesRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// InvGetInvoiceTemplate implements invGetInvoiceTemplate operation.
+//
+// GET /invoicing/reference/invoice-templates/{invoiceTemplateId}
+func (UnimplementedHandler) InvGetInvoiceTemplate(ctx context.Context, params InvGetInvoiceTemplateParams) (r InvGetInvoiceTemplateRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// InvListInvoiceTemplates implements invListInvoiceTemplates operation.
+//
+// GET /invoicing/reference/invoice-templates
+func (UnimplementedHandler) InvListInvoiceTemplates(ctx context.Context, params InvListInvoiceTemplatesParams) (r InvListInvoiceTemplatesRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

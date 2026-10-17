@@ -139,6 +139,7 @@ type AuditRecord struct {
 	PolicyReference               string
 	PolicyVersion                 string
 	DecisionReference             uuid.UUID
+	ExpectedVersion               *int64
 	ApprovalRequestID             uuid.UUID
 	ApprovalDecisionID            uuid.UUID
 	ApprovalEscalationID          uuid.UUID

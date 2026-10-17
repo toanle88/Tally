@@ -14,6 +14,7 @@ import (
 	"github.com/toanle88/Tally/internal/fiscalperiod"
 	"github.com/toanle88/Tally/internal/gl"
 	"github.com/toanle88/Tally/internal/identity"
+	"github.com/toanle88/Tally/internal/invoicing"
 	"github.com/toanle88/Tally/internal/organization"
 	"github.com/toanle88/Tally/internal/platform/httpapi"
 	"github.com/toanle88/Tally/internal/platform/httpapi/generated"
@@ -96,6 +97,10 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 		return identityUnavailableHandler("identity policy evaluator unavailable"), nil
 	}
 	authorizer := evaluatorIdentityAuthorizer{evaluator: policyEvaluator}
+	invoiceTemplateService, err := newPostgresInvoiceTemplateService(pool, auditWriter, policyEvaluator)
+	if err != nil {
+		return identityUnavailableHandler("invoicing template service unavailable"), nil
+	}
 	segregationRepository, err := identity.NewPostgresSegregationRuleRepositoryWithAudit(pool, postgresSegregationRuleAuditWriter(auditWriter))
 	if err != nil {
 		return identityUnavailableHandler("identity segregation-rule persistence unavailable"), nil
@@ -492,7 +497,7 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 		return identityUnavailableHandler("workflow approval-policy service unavailable"), nil
 	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, FiscalPeriodService: fiscalPeriodService, ApprovalPolicyService: workflowPolicyService, ApprovalRequestService: workflowApprovalWorkflow.Service, ApprovalRequestQueries: workflowRequestQueries, DelegationService: workflowDelegationService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, FiscalPeriodService: fiscalPeriodService, ApprovalPolicyService: workflowPolicyService, ApprovalRequestService: workflowApprovalWorkflow.Service, ApprovalRequestQueries: workflowRequestQueries, DelegationService: workflowDelegationService, InvoiceTemplateService: invoiceTemplateService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -826,6 +831,10 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	if err != nil {
 		return identityUnavailableHandler("identity policy evaluator unavailable"), nil
 	}
+	invoiceTemplateService, err := newMemoryInvoiceTemplateService(authorizer.evaluator)
+	if err != nil {
+		return identityUnavailableHandler("invoicing template service unavailable"), nil
+	}
 	segregationRepository, err := identity.NewMemorySegregationRuleRepository(identity.DefaultSegregationRules(time.Now())...)
 	if err != nil {
 		return identityUnavailableHandler("identity segregation-rule persistence unavailable"), nil
@@ -1108,7 +1117,7 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 		return identityUnavailableHandler("workflow approval-policy service unavailable"), nil
 	}
 	server, err := generated.NewServer(
-		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, FiscalPeriodService: fiscalPeriodService, ApprovalPolicyService: workflowPolicyService, ApprovalRequestService: workflowApprovalWorkflow.Service, ApprovalRequestQueries: workflowRequestQueries, DelegationService: workflowDelegationService, PostingService: postingService, PostingApprovalDecisionService: postingApprovalDecisionService, JournalReversalService: journalReversalService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
+		httpapi.IdentityHandler{SegmentDefinitionService: coaService, SegmentValueService: coaValueService, SegmentChangeRequestService: coaChangeRequestService, SegmentChangeApprovalDecisionService: coaChangeApprovalService, SegmentCombinationValidationService: coaValidationService, LedgerService: glLedgerService, AccountingBookService: glAccountingBookService, ChartOfAccountsService: glChartOfAccountsService, AccountService: glAccountService, SoftCloseGateService: glSoftCloseGateService, FiscalPeriodService: fiscalPeriodService, ApprovalPolicyService: workflowPolicyService, ApprovalRequestService: workflowApprovalWorkflow.Service, ApprovalRequestQueries: workflowRequestQueries, DelegationService: workflowDelegationService, InvoiceTemplateService: invoiceTemplateService, PostingService: postingService, PostingApprovalDecisionService: postingApprovalDecisionService, JournalReversalService: journalReversalService, Service: userService, RoleService: roleService, SegregationRuleService: segregationService, EmergencyAccessService: emergencyAccessService, OrganizationService: organizationService, PartyService: partyService, CustomerProfileService: customerProfileService, VendorProfileService: vendorProfileService, FiscalCalendarService: fiscalCalendarService, PublicationService: publicationService, Instrumentation: optionalInstrumentation(instrumentation...)},
 		apiBearerSecurityHandler{},
 	)
 	if err != nil {
@@ -1818,6 +1827,14 @@ func segregationDecisionObserver(instrumentation ...*telemetry.Instrumentation) 
 func newEnvironmentIdentityAuthorizer(getenv func(string) string, instrumentation ...*telemetry.Instrumentation) (evaluatorIdentityAuthorizer, error) {
 	now := time.Now().UTC().Add(-time.Minute)
 	policies := make([]identity.AccessPolicy, 0, 2)
+	if strings.EqualFold(strings.TrimSpace(getenv("TALLY_IAM_ALLOW_INVOICE_TEMPLATE_CONFIGURATION")), "true") {
+		policies = append(policies, identity.AccessPolicy{
+			ID: uuid.New(), Version: "environment-invoice-template-configuration-v1",
+			Status:      identity.AccessPolicyStatusActive,
+			Permissions: []string{invoicing.InvoiceTemplateManagementPermission}, EffectiveFrom: now,
+			Rules: []identity.AccessRule{{ScopeIDs: configuredScopes(getenv)}},
+		})
+	}
 	if strings.EqualFold(strings.TrimSpace(getenv("TALLY_IAM_ALLOW_USER_MANAGEMENT")), "true") {
 		policies = append(policies, identity.AccessPolicy{
 			ID:            uuid.New(),
