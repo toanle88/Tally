@@ -45,6 +45,18 @@ func (stub *fiscalPeriodHandlerGateStub) OpenOperationalReopenGate(context.Conte
 	return gl.SoftCloseGateResult{}, fiscalperiod.ErrReopenGateUnavailable
 }
 
+func (stub *fiscalPeriodHandlerGateStub) CloseScopedReopenGate(context.Context, gl.Actor, gl.CloseScopedReopenGateCommand) (gl.SoftCloseGateResult, error) {
+	return gl.SoftCloseGateResult{}, fiscalperiod.ErrReopenGateUnavailable
+}
+
+func (stub *fiscalPeriodHandlerGateStub) CloseOperationalReopenGate(context.Context, gl.Actor, gl.CloseOperationalReopenGateCommand) (gl.SoftCloseGateResult, error) {
+	return gl.SoftCloseGateResult{}, fiscalperiod.ErrReopenGateUnavailable
+}
+
+func (stub *fiscalPeriodHandlerGateStub) BeginRecloseGate(context.Context, gl.Actor, gl.BeginRecloseGateCommand) (gl.SoftCloseGateResult, error) {
+	return gl.SoftCloseGateResult{}, fiscalperiod.ErrReopenGateUnavailable
+}
+
 func (stub *fiscalPeriodHandlerGateStub) ReleasePostingBarrier(_ context.Context, _ gl.Actor, command gl.ReleasePostingBarrierCommand) (gl.SoftCloseGateResult, error) {
 	if stub.err != nil {
 		return gl.SoftCloseGateResult{}, stub.err
@@ -160,6 +172,35 @@ func TestFPMHardCloseHandlerRequiresApplicationActor(t *testing.T) {
 	}
 	if problem, ok := response.(*generated.FpmStartHardCloseForbidden); !ok || problem.Code != "AUTHORIZATION_DENIED" {
 		t.Fatalf("missing actor response = %#v", response)
+	}
+}
+
+func TestFPMStartRecloseHandlerValidatesReopenAndGateVersions(t *testing.T) {
+	service, err := fiscalperiod.NewService(fiscalperiod.NewMemoryRepository(), fiscalperiod.AllowAllAuthorizer{}, &fiscalPeriodHandlerGateStub{}, time.Now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	handler := IdentityHandler{FiscalPeriodService: service}
+	actor := identity.ApplicationActor{UserID: uuid.New(), Subject: identity.AuthenticationSubject{OID: "oid", TID: "tenant", Sub: "subject"}}
+	ctx, err := identity.WithActor(context.Background(), actor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	scopeID, periodID, requestID := uuid.New(), uuid.New(), uuid.New()
+	request := fpmHandlerRequest(scopeID, uuid.New(), 4, map[string]any{
+		"fiscalPeriodId":               periodID.String(),
+		"reopenRequestId":              requestID.String(),
+		"expectedPeriodVersion":        4,
+		"expectedReopenRequestVersion": 0,
+		"expectedGateVersion":          8,
+	})
+	response, err := handler.FpmStartReclose(ctx, request, generated.FpmStartRecloseParams{IdempotencyKey: "handler-start-reclose-invalid"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	problem, ok := response.(*generated.FpmStartRecloseBadRequest)
+	if !ok || problem.Code != "INVALID_REQUEST" {
+		t.Fatalf("invalid start-reclose response = %#v", response)
 	}
 }
 

@@ -26,6 +26,7 @@ const (
 	PermissionApplyCloseApproval          = "finance.fpm.apply.close.approval.decision"
 	PermissionRequestReopen               = "finance.fpm.request.reopen"
 	PermissionApplyReopenApprovalDecision = "finance.fpm.apply.reopen.approval.decision"
+	PermissionStartReclose                = "finance.fpm.start.reclose"
 	StartHardCloseOperation               = "start-hard-close"
 	ApplyPostingGateResultOperation       = "apply-posting-gate-result"
 	ResumeCloseRunOperation               = "resume-close-run"
@@ -34,6 +35,7 @@ const (
 	ApplyCloseApprovalOperation           = "apply-close-approval-decision"
 	RequestReopenOperation                = "request-reopen"
 	ApplyReopenApprovalDecisionOperation  = "apply-reopen-approval-decision"
+	StartRecloseOperation                 = "start-reclose"
 	ReconcileReopenExpiryOperation        = "reconcile-reopen-expiry"
 	StartHardCloseCommandIdentity         = "start-hard-close.v1"
 	ApplyPostingGateResultCommandIdentity = "apply-posting-gate-result.v1"
@@ -43,6 +45,7 @@ const (
 	ApplyCloseApprovalIdentity            = "apply-close-approval-decision.v1"
 	RequestReopenCommandIdentity          = "request-reopen.v1"
 	ApplyReopenApprovalDecisionIdentity   = "apply-reopen-approval-decision.v1"
+	StartRecloseCommandIdentity           = "start-reclose.v1"
 	ReconcileReopenExpiryCommandIdentity  = "reconcile-reopen-expiry.v1"
 
 	PeriodStateOpen       = "Open"
@@ -377,12 +380,24 @@ func (state ControlState) Validate() error {
 		}
 	}
 	if state.Period.State == PeriodStateReopening {
-		if state.ReopenRequest == nil || (state.ReopenRequest.Status != ReopenRequestActive && state.ReopenRequest.Status != ReopenRequestExpiredPendingClosure) {
+		if state.ReopenRequest == nil || (state.ReopenRequest.Status != ReopenRequestActive && state.ReopenRequest.Status != ReopenRequestExpiredPendingClosure && state.ReopenRequest.Status != ReopenRequestGateClosing && state.ReopenRequest.Status != ReopenRequestRecloseHandoff) {
 			return ErrFiscalPeriodStateConflict
 		}
 	}
 	if state.ReopenRequest != nil && (state.ReopenRequest.Status == ReopenRequestActive || state.ReopenRequest.Status == ReopenRequestExpiredPendingClosure) && state.Period.State != PeriodStateReopening {
 		return ErrFiscalPeriodStateConflict
+	}
+	if state.ReopenRequest != nil {
+		switch state.ReopenRequest.Status {
+		case ReopenRequestRecloseInProgress:
+			if state.Period.State != PeriodStateClosing || state.CloseRun == nil || state.CloseRun.CloseType != gl.CloseTypeReclose {
+				return ErrFiscalPeriodStateConflict
+			}
+		case ReopenRequestCompletedNoChange, ReopenRequestCompleted:
+			if state.Period.State != PeriodStateHardClosed {
+				return ErrFiscalPeriodStateConflict
+			}
+		}
 	}
 	return nil
 }
@@ -451,6 +466,7 @@ type DurableServiceConfig struct {
 	ApplyCloseApprovalOperationID          string
 	RequestReopenOperationID               string
 	ApplyReopenApprovalOperationID         string
+	StartRecloseOperationID                string
 }
 
 type PostingGateApplicationPort interface {
@@ -458,7 +474,10 @@ type PostingGateApplicationPort interface {
 	ReleasePostingBarrier(context.Context, gl.Actor, gl.ReleasePostingBarrierCommand) (gl.SoftCloseGateResult, error)
 	FinalizePostingGate(context.Context, gl.Actor, gl.FinalizePostingGateCommand) (gl.SoftCloseGateResult, error)
 	OpenScopedReopenGate(context.Context, gl.Actor, gl.OpenScopedReopenGateCommand) (gl.SoftCloseGateResult, error)
+	CloseScopedReopenGate(context.Context, gl.Actor, gl.CloseScopedReopenGateCommand) (gl.SoftCloseGateResult, error)
 	OpenOperationalReopenGate(context.Context, gl.Actor, gl.OpenOperationalReopenGateCommand) (gl.SoftCloseGateResult, error)
+	CloseOperationalReopenGate(context.Context, gl.Actor, gl.CloseOperationalReopenGateCommand) (gl.SoftCloseGateResult, error)
+	BeginRecloseGate(context.Context, gl.Actor, gl.BeginRecloseGateCommand) (gl.SoftCloseGateResult, error)
 	GetPostingGateStatus(context.Context, uuid.UUID, uuid.UUID) (gl.PostingGateStatus, error)
 }
 
@@ -496,19 +515,21 @@ func (command StartHardCloseCommand) Validate() error {
 }
 
 type ApplyPostingGateResultCommand struct {
-	CommandID              uuid.UUID
-	AccountingScopeID      uuid.UUID
-	FiscalPeriodID         uuid.UUID
-	SoftCloseRunID         uuid.UUID
-	CloseRunID             uuid.UUID
-	ExpectedPeriodVersion  int64
-	ExpectedGateVersion    int64
-	SoftCloseControlEpoch  int64
-	SoftClosePolicyVersion string
-	Result                 gl.SoftCloseGateResult
-	IdempotencyKey         string
-	CorrelationID          string
-	CausationID            string
+	CommandID                    uuid.UUID
+	AccountingScopeID            uuid.UUID
+	FiscalPeriodID               uuid.UUID
+	SoftCloseRunID               uuid.UUID
+	CloseRunID                   uuid.UUID
+	ExpectedPeriodVersion        int64
+	ExpectedGateVersion          int64
+	SoftCloseControlEpoch        int64
+	SoftClosePolicyVersion       string
+	ReopenRequestID              uuid.UUID
+	ExpectedReopenRequestVersion int64
+	Result                       gl.SoftCloseGateResult
+	IdempotencyKey               string
+	CorrelationID                string
+	CausationID                  string
 }
 
 func (command ApplyPostingGateResultCommand) canonical() ApplyPostingGateResultCommand {
@@ -521,10 +542,22 @@ func (command ApplyPostingGateResultCommand) canonical() ApplyPostingGateResultC
 
 func (command ApplyPostingGateResultCommand) Validate() error {
 	command = command.canonical()
-	if command.CommandID == uuid.Nil || command.AccountingScopeID == uuid.Nil || command.FiscalPeriodID == uuid.Nil || command.SoftCloseRunID == uuid.Nil || command.CloseRunID == uuid.Nil {
+	if command.CommandID == uuid.Nil || command.AccountingScopeID == uuid.Nil || command.FiscalPeriodID == uuid.Nil {
 		return ErrInvalidFiscalPeriodCommand
 	}
-	if command.ExpectedPeriodVersion < 1 || command.ExpectedGateVersion < 1 || command.SoftCloseControlEpoch < 1 || command.SoftClosePolicyVersion == "" || command.IdempotencyKey == "" || command.CorrelationID == "" || command.CausationID == "" {
+	if command.ExpectedPeriodVersion < 1 || command.ExpectedGateVersion < 1 || command.IdempotencyKey == "" || command.CorrelationID == "" || command.CausationID == "" {
+		return ErrInvalidFiscalPeriodCommand
+	}
+	switch command.Result.Operation {
+	case gl.PostingBarrierAcquireOperation:
+		if command.SoftCloseRunID == uuid.Nil || command.CloseRunID == uuid.Nil || command.SoftCloseControlEpoch < 1 || command.SoftClosePolicyVersion == "" {
+			return ErrInvalidFiscalPeriodCommand
+		}
+	case gl.ScopedReopenGateCloseOperation, gl.OperationalReopenGateCloseOperation:
+		if command.ReopenRequestID == uuid.Nil || command.ExpectedReopenRequestVersion < 1 {
+			return ErrInvalidFiscalPeriodCommand
+		}
+	default:
 		return ErrInvalidFiscalPeriodCommand
 	}
 	return nil
@@ -572,7 +605,7 @@ func NewServiceWithDependencies(repository Repository, authorizer Authorizer, po
 }
 
 func NewServiceWithDurableIdempotency(repository Repository, authorizer Authorizer, postingGate PostingGateApplicationPort, clock func() time.Time, durable DurableServiceConfig) (*Service, error) {
-	if durable.Database == nil || durable.Coordinator == nil || durable.Policy.RecordTTL <= 0 || durable.Policy.LeaseTTL <= 0 || durable.Policy.LeaseTTL >= durable.Policy.RecordTTL || strings.TrimSpace(durable.StartOperationID) == "" || strings.TrimSpace(durable.ApplyOperationID) == "" || strings.TrimSpace(durable.ResumeOperationID) == "" || strings.TrimSpace(durable.AbortOperationID) == "" || strings.TrimSpace(durable.ApplyCloseExceptionApprovalOperationID) == "" || strings.TrimSpace(durable.ApplyCloseApprovalOperationID) == "" || strings.TrimSpace(durable.RequestReopenOperationID) == "" || strings.TrimSpace(durable.ApplyReopenApprovalOperationID) == "" {
+	if durable.Database == nil || durable.Coordinator == nil || durable.Policy.RecordTTL <= 0 || durable.Policy.LeaseTTL <= 0 || durable.Policy.LeaseTTL >= durable.Policy.RecordTTL || strings.TrimSpace(durable.StartOperationID) == "" || strings.TrimSpace(durable.ApplyOperationID) == "" || strings.TrimSpace(durable.ResumeOperationID) == "" || strings.TrimSpace(durable.AbortOperationID) == "" || strings.TrimSpace(durable.ApplyCloseExceptionApprovalOperationID) == "" || strings.TrimSpace(durable.ApplyCloseApprovalOperationID) == "" || strings.TrimSpace(durable.RequestReopenOperationID) == "" || strings.TrimSpace(durable.ApplyReopenApprovalOperationID) == "" || strings.TrimSpace(durable.StartRecloseOperationID) == "" {
 		return nil, ErrInvalidFiscalPeriodService
 	}
 	return newService(repository, authorizer, postingGate, clock, &durable, CloseRunDependencies{})
@@ -658,6 +691,9 @@ func (service *Service) durableOperationID(operation string) string {
 	}
 	if operation == ApplyReopenApprovalDecisionOperation {
 		return service.durable.ApplyReopenApprovalOperationID
+	}
+	if operation == StartRecloseOperation {
+		return service.durable.StartRecloseOperationID
 	}
 	return operation
 }
@@ -1007,6 +1043,9 @@ func (service *Service) applyPostingGateResult(ctx context.Context, actor Actor,
 		service.finalizeDurableFailureIfNeeded(ctx, durable, err)
 		return CommandResult{}, err
 	}
+	if isReopenGateCloseOperation(command.Result.Operation) {
+		return service.applyReopenCloseGateResult(ctx, actor, decision, command, state, checkIdempotency, durable)
+	}
 	if state.CloseRun.Status == CloseRunBarrierAcquired && state.CloseRun.BarrierEvidence != nil {
 		if state.CloseRun.BarrierEvidence.CommandFingerprint != command.Result.Gate.LastFrozenAdmissionSummary.FrozenByCommandFingerprint {
 			service.finalizeDurableFailureIfNeeded(ctx, durable, ErrPostingBarrierResultConflict)
@@ -1150,6 +1189,9 @@ func validatePostingGateResult(command ApplyPostingGateResultCommand, state Cont
 	if state.Period.AccountingScopeID != command.AccountingScopeID || state.Period.ID != command.FiscalPeriodID {
 		return ErrFiscalPeriodScopeConflict
 	}
+	if isReopenGateCloseOperation(command.Result.Operation) {
+		return validateReopenCloseGateResult(command, state)
+	}
 	if state.Period.State != PeriodStateSoftClosed || state.SoftClose.Status != SoftCloseRunActive || state.ControlEpoch.Status != ControlEpochActive {
 		if state.CloseRun != nil && state.CloseRun.Status == CloseRunBarrierAcquired {
 			return validateAppliedPostingGateResult(command, state)
@@ -1230,18 +1272,20 @@ func startHardCloseFingerprint(command StartHardCloseCommand) string {
 
 func applyPostingGateResultFingerprint(command ApplyPostingGateResultCommand) string {
 	return fingerprint(struct {
-		Operation             string
-		AccountingScopeID     uuid.UUID
-		FiscalPeriodID        uuid.UUID
-		SoftCloseRunID        uuid.UUID
-		CloseRunID            uuid.UUID
-		ExpectedPeriodVersion int64
-		ExpectedGateVersion   int64
-		ControlEpoch          int64
-		PolicyVersion         string
-		GateVersion           int64
-		CommandFingerprint    string
-	}{ApplyPostingGateResultCommandIdentity, command.AccountingScopeID, command.FiscalPeriodID, command.SoftCloseRunID, command.CloseRunID, command.ExpectedPeriodVersion, command.ExpectedGateVersion, command.SoftCloseControlEpoch, command.SoftClosePolicyVersion, command.Result.Gate.GateVersion, frozenFingerprint(command.Result)})
+		Operation                    string
+		AccountingScopeID            uuid.UUID
+		FiscalPeriodID               uuid.UUID
+		SoftCloseRunID               uuid.UUID
+		CloseRunID                   uuid.UUID
+		ReopenRequestID              uuid.UUID
+		ExpectedPeriodVersion        int64
+		ExpectedGateVersion          int64
+		ExpectedReopenRequestVersion int64
+		ControlEpoch                 int64
+		PolicyVersion                string
+		GateVersion                  int64
+		CommandFingerprint           string
+	}{ApplyPostingGateResultCommandIdentity, command.AccountingScopeID, command.FiscalPeriodID, command.SoftCloseRunID, command.CloseRunID, command.ReopenRequestID, command.ExpectedPeriodVersion, command.ExpectedGateVersion, command.ExpectedReopenRequestVersion, command.SoftCloseControlEpoch, command.SoftClosePolicyVersion, command.Result.Gate.GateVersion, frozenFingerprint(command.Result)})
 }
 
 func postingGateResultFingerprint(result gl.SoftCloseGateResult) string {
@@ -1302,9 +1346,13 @@ func evidenceResult(evidence CloseRun) gl.SoftCloseGateResult {
 	if evidence.BarrierEvidence.AuthoritativeResult.Gate.ID != uuid.Nil {
 		return canonicalPostingGateResult(evidence.BarrierEvidence.AuthoritativeResult)
 	}
+	closeType := evidence.CloseType
+	if closeType == "" {
+		closeType = gl.CloseTypeInitialHardClose
+	}
 	return gl.SoftCloseGateResult{
 		Operation:         evidence.BarrierEvidence.Operation,
-		Gate:              gl.PeriodPostingGate{AccountingScopeID: evidence.AccountingScopeID, FiscalPeriodID: evidence.FiscalPeriodID, GateMode: evidence.BarrierEvidence.GateMode, GateVersion: evidence.BarrierEvidence.GateVersion, ActiveCloseRunID: cloneUUID(&evidence.ID), ActiveCloseType: gl.CloseTypeInitialHardClose, BarrierLedgerPosition: evidence.BarrierEvidence.BarrierLedgerPosition, PriorControlProcessID: cloneUUID(evidence.BarrierEvidence.PriorControlProcessID), PriorControlProcessType: evidence.BarrierEvidence.PriorControlProcessType, PriorControlEpoch: cloneInt64(evidence.BarrierEvidence.PriorControlEpoch), LastFrozenAdmissionSummary: cloneSummary(&evidence.BarrierEvidence.FrozenSummary)},
+		Gate:              gl.PeriodPostingGate{AccountingScopeID: evidence.AccountingScopeID, FiscalPeriodID: evidence.FiscalPeriodID, GateMode: evidence.BarrierEvidence.GateMode, GateVersion: evidence.BarrierEvidence.GateVersion, ActiveCloseRunID: cloneUUID(&evidence.ID), ActiveCloseType: closeType, BarrierLedgerPosition: evidence.BarrierEvidence.BarrierLedgerPosition, PriorControlProcessID: cloneUUID(evidence.BarrierEvidence.PriorControlProcessID), PriorControlProcessType: evidence.BarrierEvidence.PriorControlProcessType, PriorControlEpoch: cloneInt64(evidence.BarrierEvidence.PriorControlEpoch), PriorGateMode: evidence.BarrierEvidence.AuthoritativeResult.Gate.PriorGateMode, LastFrozenAdmissionSummary: cloneSummary(&evidence.BarrierEvidence.FrozenSummary)},
 		DecisionReference: evidence.BarrierEvidence.DecisionReference, PolicyReference: evidence.BarrierEvidence.PolicyReference, AuthorizationPolicyVersion: evidence.BarrierEvidence.AuthorizationPolicyVersion, AuditReference: evidence.BarrierEvidence.AuditReference, ValidationOutcome: evidence.BarrierEvidence.ValidationOutcome, NextAction: evidence.BarrierEvidence.NextAction,
 	}
 }

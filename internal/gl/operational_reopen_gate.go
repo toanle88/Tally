@@ -397,10 +397,19 @@ func (gate PeriodPostingGate) beginRecloseGate(command BeginRecloseGateCommand, 
 	if gate.ActiveReopenRequestID == nil || *gate.ActiveReopenRequestID != command.ReopenRequestID {
 		return PeriodPostingGate{}, ErrSoftCloseGateOwnerConflict
 	}
-	if gate.ActiveAdmissionCounters.ControlOwnerType != OperationalReopenGateOwnerType || gate.ActiveAdmissionCounters.ControlOwnerID != command.ReopenRequestID {
+	if (gate.ActiveAdmissionCounters.ControlOwnerType != ScopedReopenGateOwnerType && gate.ActiveAdmissionCounters.ControlOwnerType != OperationalReopenGateOwnerType) || gate.ActiveAdmissionCounters.ControlOwnerID != command.ReopenRequestID {
 		return PeriodPostingGate{}, ErrSoftCloseGateOwnerConflict
 	}
-	if gate.LastFrozenAdmissionSummary == nil || gate.LastFrozenAdmissionSummary.ControlOwnerType != OperationalReopenGateOwnerType || gate.LastFrozenAdmissionSummary.ControlOwnerID != command.ReopenRequestID || (gate.LastFrozenAdmissionSummary.AdmittedPostingCount == 0 && !gate.LastFrozenAdmissionSummary.ReopenPostingAdmitted) || gate.LastFrozenAdmissionSummary.FrozenByCommandType != OperationalReopenGateCloseCommandIdentity {
+	if gate.LastFrozenAdmissionSummary == nil || gate.LastFrozenAdmissionSummary.ControlOwnerType != gate.ActiveAdmissionCounters.ControlOwnerType || gate.LastFrozenAdmissionSummary.ControlOwnerID != command.ReopenRequestID || (gate.LastFrozenAdmissionSummary.AdmittedPostingCount == 0 && !gate.LastFrozenAdmissionSummary.ReopenPostingAdmitted) {
+		return PeriodPostingGate{}, ErrSoftCloseGateRecloseSummaryConflict
+	}
+	priorGateMode := ""
+	switch gate.LastFrozenAdmissionSummary.FrozenByCommandType {
+	case ScopedReopenGateCloseCommandIdentity:
+		priorGateMode = PostingGateScopedReopen
+	case OperationalReopenGateCloseCommandIdentity:
+		priorGateMode = PostingGateOperationalReopen
+	default:
 		return PeriodPostingGate{}, ErrSoftCloseGateRecloseSummaryConflict
 	}
 
@@ -410,9 +419,9 @@ func (gate PeriodPostingGate) beginRecloseGate(command BeginRecloseGateCommand, 
 	gate.GateVersion++
 	gate.AggregateVersion = gate.GateVersion
 	gate.PriorControlProcessID = &priorOwner
-	gate.PriorControlProcessType = OperationalReopenGateOwnerType
+	gate.PriorControlProcessType = gate.LastFrozenAdmissionSummary.ControlOwnerType
 	gate.PriorControlEpoch = priorEpoch
-	gate.PriorGateMode = PostingGateOperationalReopen
+	gate.PriorGateMode = priorGateMode
 	clearReopenAuthority(&gate)
 	gate.ActiveCloseRunID = &closeOwner
 	gate.ActiveCloseType = CloseTypeReclose

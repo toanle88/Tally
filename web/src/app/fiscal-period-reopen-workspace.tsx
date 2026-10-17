@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 
-import { fpmApplyReopenApprovalDecision, fpmRequestReopen } from '@/generated/api/sdk.gen'
+import { fpmApplyReopenApprovalDecision, fpmRequestReopen, fpmStartReclose } from '@/generated/api/sdk.gen'
 import type { EstablishedResult } from '@/generated/api/types.gen'
 import { Button, Field, Panel, Select, StatusBadge, type SemanticState } from '@/components/ui'
 import type { AccountingScopeFixture } from '@/lib/auth/auth-scope-adapter'
@@ -31,6 +31,7 @@ function semanticState(result: EstablishedResult | null, saving: boolean, blocke
   const periodState = resultValue<string>(result, 'periodState')
   if (status === 'Rejected') return 'error'
   if (status === 'Active' && periodState === 'Reopening') return 'success'
+  if (status === 'CompletedNoChange' || status === 'Completed') return 'success'
   if (status === 'PendingApproval' || status === 'Approved' || status === 'GateOpening') return 'pending'
   return 'restricted'
 }
@@ -229,6 +230,7 @@ function FiscalPeriodReopenScopeWorkspace({ currentScope }: { currentScope: Acco
       }
       setResult(response.data)
       setPeriodVersion(String(resultValue<number>(response.data, 'periodAggregateVersion') ?? Number(periodVersion)))
+      setGateVersion(String(resultValue<number>(response.data, 'gateVersion') ?? Number(gateVersion)))
       const reopenRequest = resultValue<Record<string, unknown>>(response.data, 'reopenRequest')
       setExpectedRequestVersion(String(Number(reopenRequest?.aggregateVersion ?? Number(expectedRequestVersion))))
       const status = resultValue<string>(response.data, 'reopenStatus') ?? 'Unknown'
@@ -241,12 +243,77 @@ function FiscalPeriodReopenScopeWorkspace({ currentScope }: { currentScope: Acco
     }
   }
 
+  const startReclose = async () => {
+    if (saving) return
+    setBlockedReason('')
+    setLastErrorCode('')
+    const requestID = resultValue<string>(result, 'reopenRequestId')
+    const reopenRequest = resultValue<Record<string, unknown>>(result, 'reopenRequest')
+    const expectedPeriod = Number(periodVersion)
+    const expectedRequest = Number(reopenRequest?.aggregateVersion ?? Number(expectedRequestVersion))
+    const expectedGate = Number(resultValue<number>(result, 'gateVersion') ?? Number(gateVersion))
+    if (!periodID || !requestID || expectedPeriod < 1 || expectedRequest < 1 || expectedGate < 1) {
+      setBlockedReason('The current period, approved reopen request, and authoritative versions are required before closure.')
+      return
+    }
+    const commandID = newIdentifier()
+    const correlationID = newIdentifier()
+    setSaving(true)
+    setNotice('Closing the approved reopen gate. FPM will use the authoritative GL admission summary to determine no-change completion or mandatory reclose…')
+    try {
+      const response = await fpmStartReclose({
+        body: {
+          commandId: commandID,
+          expectedVersion: expectedPeriod,
+          accountingScopeId: currentScope.id,
+          data: {
+            fiscalPeriodId: periodID,
+            reopenRequestId: requestID,
+            expectedPeriodVersion: expectedPeriod,
+            expectedReopenRequestVersion: expectedRequest,
+            expectedGateVersion: expectedGate,
+          },
+        },
+        headers: commandHeaders(currentScope.id, `fpm-start-reclose-${commandID}`, correlationID),
+      })
+      if (response.error) {
+        setLastErrorCode(errorCode(response.error))
+        setBlockedReason(errorCode(response.error) === 'DEPENDENCY_UNAVAILABLE' ? 'GL or another required dependency is unavailable. The current gate remains restrictive; reconcile authoritative state before retrying.' : 'The reopen closure was rejected or became stale. Refresh the current period and gate state before retrying.')
+        setNotice(errorDetail(response.error))
+        return
+      }
+      if (!response.data) {
+        setBlockedReason('No established closure result was returned. No local no-change or reclose outcome is assumed.')
+        return
+      }
+      setResult(response.data)
+      setPeriodVersion(String(resultValue<number>(response.data, 'periodAggregateVersion') ?? expectedPeriod))
+      setGateVersion(String(resultValue<number>(response.data, 'gateVersion') ?? expectedGate))
+      const updatedRequest = resultValue<Record<string, unknown>>(response.data, 'reopenRequest')
+      setExpectedRequestVersion(String(Number(updatedRequest?.aggregateVersion ?? expectedRequest)))
+      const status = resultValue<string>(response.data, 'reopenStatus') ?? 'Unknown'
+      if (status === 'CompletedNoChange') {
+        setNotice('GL authoritatively recorded zero admitted reopen postings. The request completed as no-change, the prior watermark and seal remain authoritative, and no reclose run was created.')
+      } else if (status === 'RecloseInProgress') {
+        setNotice('GL authoritatively recorded admitted reopen work. Reclose is mandatory; the period is Closing under a new non-releasable reclose run.')
+      } else {
+        setNotice(`The approved reopen closure is now ${status}.`)
+      }
+    } catch (error) {
+      setBlockedReason('The closure outcome could not be confirmed. The current gate remains restrictive until authoritative FPM and GL state are reconciled.')
+      setNotice(error instanceof Error ? error.message : 'The closure command could not reach the API. Retry with the same command identity.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const periodState = resultValue<string>(result, 'periodState') ?? 'HardClosed'
   const reopenStatus = resultValue<string>(result, 'reopenStatus') ?? 'Not requested'
   const gateMode = resultValue<string>(result, 'gateMode') ?? 'HardClosed'
   const expiry = resultValue<string>(result, 'authorizationExpiry') ?? authorizationExpiry
   const scopeEvidence = resultValue<unknown>(result, 'reopenScope')
   const state = semanticState(result, saving, Boolean(blockedReason))
+  const canStartReclose = reopenStatus === 'Active' || reopenStatus === 'ExpiredPendingClosure' || reopenStatus === 'GateClosing' || reopenStatus === 'RecloseHandoff'
 
   return <section aria-labelledby="fpm-reopen-title" className="space-y-6">
     <div><p className="text-sm font-semibold uppercase tracking-wide text-primary">FPM-SCR-03</p><h2 id="fpm-reopen-title" className="mt-1 text-2xl font-semibold">Request and authorize reopen</h2><p className="mt-2 max-w-4xl text-base-content/75">Request a bounded scoped correction or operational reopen. FPM records the approval-bearing request; Workflow owns the decision; GL owns the authoritative reopen gate and posting admission.</p></div>
@@ -268,6 +335,9 @@ function FiscalPeriodReopenScopeWorkspace({ currentScope }: { currentScope: Acco
     </Panel>
     {result ? <Panel title="Apply Workflow decision" description="Supply the immutable approval reference, current candidate fingerprint, subject/policy versions, and separation-of-duties evidence. FPM revalidates all evidence before asking GL to open the bounded gate.">
       <form onSubmit={(event) => void applyApproval(event)} className="space-y-4"><div className="grid gap-4 md:grid-cols-2"><Field id="fpm-reopen-request-id" label="Approval request ID" value={approvalRequestID} onChange={(event) => setApprovalRequestID(event.target.value)} required disabled={saving} /><Field id="fpm-reopen-decision-id" label="Decision ID" value={decisionID} onChange={(event) => setDecisionID(event.target.value)} required disabled={saving} /><Field id="fpm-reopen-decision-version" label="Decision version" type="number" min="1" value={decisionVersion} onChange={(event) => setDecisionVersion(event.target.value)} required disabled={saving} /><div className="form-control w-full gap-2"><label className="label" htmlFor="fpm-reopen-decision-outcome"><span className="font-medium">Decision outcome</span></label><Select id="fpm-reopen-decision-outcome" value={decisionOutcome} onChange={(event) => setDecisionOutcome(event.target.value as typeof decisionOutcome)} disabled={saving}><option value="approved">Approved</option><option value="rejected">Rejected</option></Select></div><Field id="fpm-reopen-decision-reason" label="Decision reason" value={decisionReason} onChange={(event) => setDecisionReason(event.target.value)} required disabled={saving} /><Field id="fpm-reopen-policy-version" label="Policy version" value={policyVersion} onChange={(event) => setPolicyVersion(event.target.value)} required disabled={saving} /><Field id="fpm-reopen-subject-version" label="Subject version" type="number" min="1" value={subjectVersion} onChange={(event) => setSubjectVersion(event.target.value)} required disabled={saving} /><Field id="fpm-reopen-candidate-fingerprint" label="Candidate fingerprint" value={candidateFingerprint} onChange={(event) => setCandidateFingerprint(event.target.value)} required disabled={saving} /><Field id="fpm-reopen-decision-reference" label="Decision reference" value={decisionReference} onChange={(event) => setDecisionReference(event.target.value)} required disabled={saving} /><Field id="fpm-reopen-approver-user-id" label="Approver user ID" value={approverUserID} onChange={(event) => setApproverUserID(event.target.value)} required disabled={saving} /><Field id="fpm-reopen-sod-reference" label="Separation-of-duties reference" value={separationReference} onChange={(event) => setSeparationReference(event.target.value)} required disabled={saving} /><Field id="fpm-reopen-recorded-at" label="Recorded at" type="datetime-local" value={recordedAt} onChange={(event) => setRecordedAt(event.target.value)} required disabled={saving} /><Field id="fpm-reopen-expected-request-version" label="Expected reopen-request version" type="number" min="1" value={expectedRequestVersion} onChange={(event) => setExpectedRequestVersion(event.target.value)} required disabled={saving} /></div><div className="flex flex-wrap items-center gap-3"><Button type="submit" loading={saving}>Apply approval decision</Button><span className="text-sm text-base-content/70">A rejected or stale decision leaves the period HardClosed.</span></div></form>
+    </Panel> : null}
+    {canStartReclose ? <Panel title="Close approved reopen" description="FPM closes the approved GL gate and evaluates the authoritative admission summary. The controller cannot choose no-change versus reclose: zero admitted postings complete as no-change; any admitted correction requires mandatory reclose.">
+      <div className="space-y-4"><p className="text-sm text-base-content/75">The gate remains restrictive while this outcome is established. A successful no-change result retains the prior watermark and seal; a positive result creates a new non-releasable reclose run.</p><Button type="button" loading={saving} onClick={() => void startReclose()}>Close reopen and determine outcome</Button></div>
     </Panel> : null}
   </section>
 }
