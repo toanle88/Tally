@@ -2,9 +2,9 @@
 
 A modern double-entry accounting application built as a Go modular monolith
 with a React frontend. The repository currently contains platform,
-identity/access, organization/master-data, COA, General Ledger, and workflow
-approval implementation slices; later finance capabilities and full release
-qualification remain planned.
+identity/access, organization/master-data, COA, General Ledger, workflow
+approval, and focused fiscal-period implementation slices; later finance
+capabilities and full release qualification remain planned.
 
 ## Current Status
 
@@ -32,6 +32,16 @@ Implemented repository slices include:
   WFA-SCR-02/WFA-SCR-04 workflow workspaces. Downstream decision application
   acknowledgement, notifications, production worker composition, and full
   qualification remain open.
+- Focused fiscal-period management slices for hard close, close-run execution,
+  reopen/reclose, and period-control recovery under `internal/fiscalperiod/`.
+  The parent epic is locally marked complete by explicit status override; child
+  delivery items and full FPM qualification remain open.
+- Local Invoicing US1/US2 slices for invoice-template and customer
+  billing-schedule configuration under `internal/invoicing/`, with generated
+  OpenAPI contracts, scoped authorization, audit/revision evidence, durable
+  command idempotency, and React workspaces. Cross-context reference ports,
+  PostgreSQL/browser/accessibility integration qualification, and the remaining
+  invoicing stories remain open.
 - A generated, authenticated API boundary under `/api/v1` for the implemented
   identity, organization, COA, General Ledger, and workflow policy, request,
   decision, delegation, and escalation operations, plus anonymous
@@ -40,12 +50,12 @@ Implemented repository slices include:
   fixture-backed identity/access, master-data, COA, General Ledger, and
   workflow workspaces, including the WFA-SCR-02 decision view.
 
-`ROADMAP.md` marks the `EP-GL-001` and `EP-WFA-001` parents locally complete by
-explicit status override, while their child delivery items and PostgreSQL,
-browser, accessibility, cross-context, notification, recovery, and release
-qualification remain open. The current branch contains WFA User Stories 1–5
-implementation slices without claiming downstream application acknowledgement,
-production worker composition, or full workflow qualification.
+`ROADMAP.md` marks the `EP-GL-001`, `EP-WFA-001`, and `EP-FPM-001` parents
+locally complete by explicit status override, while their child delivery items
+and PostgreSQL, browser, accessibility, cross-context, notification, recovery,
+and release qualification remain open. The repository contains focused FPM
+implementation slices for US2–US6 without claiming US1 delivery, production
+worker composition, or full FPM qualification.
 
 For the business, technology, and architecture learning guide, see the
 [TALLY docs site](./docs-site/learning-notes.md).

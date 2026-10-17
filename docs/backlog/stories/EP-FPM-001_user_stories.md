@@ -5,16 +5,16 @@
 | Epic | EP-FPM-001 |
 | Capability | Fiscal period management |
 | Milestone | M3 in the roadmap and delivery plan; the delivery plan also identifies an M2 open-period slice |
-| Status | In progress — US2 and US3 implementation slices are present on their story branches; the remaining FPM stories and epic quality gates remain open |
+| Status | Parent marked done by explicit user-requested status override on 2026-10-17; focused local evidence exists for US2–US6, while child delivery items and epic quality gates remain open |
 | Owning module | internal/fiscalperiod |
 | Owning schema | fiscal_period |
 | Primary users | Finance Manager, Controller, Close Coordinator |
 | Dependencies | EP-GL-001 and EP-WFA-001 |
 | Source of truth | finance_domain_model_ddd.md, PRD, UX workflow specification, NFR, system design, technical specifications, finance delivery plan, ROADMAP.md |
 
-This document is a planning and delivery-traceability artifact. It decomposes EP-FPM-001 into implementable user stories and records the evidence delivered for US2 and US3. It does not claim that the epic, remaining stories, integrations, UI qualification, persistence integration, or quality gates are complete.
+This document is a planning and delivery-traceability artifact. It decomposes EP-FPM-001 into implementable user stories and records focused implementation evidence for US2–US6. The parent status override is a planning/status decision; it does not claim that the child delivery items, US1 coverage, integrations, UI qualification, persistence integration, or quality gates are complete.
 
-The current repository contains the approved fiscal-period action contracts and generated client artifacts, GL posting-gate implementation owned by the GL module, and the US2/US3 FPM runtime/persistence/API/UI slices. US1 and later FPM lifecycle behavior remain outside this delivery. Existing user changes in the worktree are preserved.
+The current repository contains the approved fiscal-period action contracts and generated client artifacts, GL posting-gate implementation owned by the GL module, and focused US2–US6 FPM runtime/persistence/API/UI slices. US1 delivery and the remaining FPM qualification evidence remain open. Existing user changes in the worktree are preserved.
 
 ## 1. Outcome
 
@@ -67,7 +67,7 @@ The stories do not authorize:
 - new command names, event names, routes, schemas, or architecture decisions not present in the approved specifications;
 - direct access to another module's tables, repositories, or adapters;
 - treating an unavailable dependency as a successful approval, open period, released gate, or completed close;
-- changing the roadmap or marking EP-FPM-001 or any child delivery item complete;
+- marking any child delivery item or quality gate complete; parent epic status is controlled separately by an explicit roadmap/status decision;
 - production, release, performance, or qualification claims without command/test evidence.
 
 ## 5. Ownership and domain rules
@@ -427,6 +427,8 @@ Current local evidence: [DLV-FR-FPM-012/013 US6 verification record](../../verif
 
 ## 8. Cross-story definition of done
 
+The explicit parent-status override does not change this evidence-based delivery definition of done.
+
 The epic is ready for delivery review only when all of the following are evidenced:
 
 - [ ] All 13 direct FR-FPM delivery items are implemented and linked to tests, API behavior, persistence, and user-visible outcomes.
@@ -452,7 +454,7 @@ The epic is ready for delivery review only when all of the following are evidenc
 7. Implement US6: authority epoch/takeover, exception extension, cutoff/expiry handling, status reconciliation, operator guidance, and recovery/observability tests.
 8. For each slice, wire only the approved HTTP route, command topic, event, permission, audit action, and generated contract needed by that slice. Generate artifacts with the repository's existing tooling; do not hand-edit generated output.
 9. Run focused package/API/UI tests and the repository fast check. Record exact commands and results. Defer opt-in slow, persistence-integration, and API release checks unless explicitly requested.
-10. Update the delivery traceability and relevant documentation from verified repository evidence. Leave roadmap and delivery status unchanged until the corresponding implementation and qualification evidence exists.
+10. Update the delivery traceability and relevant documentation from verified repository evidence. Leave child delivery and qualification status unchanged until the corresponding implementation and qualification evidence exists; parent status is updated separately by an explicit status decision.
 
 Likely implementation areas are internal/fiscalperiod, db/migrations/fiscal_period, existing API/worker wiring, the approved OpenAPI path and generated-client locations, web FPM screens, outbox/inbox infrastructure, audit/authorization ports, and runbook/observability documentation. Exact filenames and generated paths should be confirmed during implementation rather than invented in this planning artifact.
 
@@ -487,6 +489,11 @@ Definition of Ready for each story is the delivery-plan definition: exact source
 - [x] Included scope, exclusions, ownership, invariants, dependencies, API/integration/auth/UI/observability surfaces, acceptance criteria, tests, risks, and quality-gate expectations.
 - [x] Kept GL gate/journal ownership, Workflow decisions, and future context implementations outside FPM scope.
 - [x] Recorded source ambiguities instead of silently inventing a resolution.
-- [ ] No implementation, generated artifact change, migration, branch creation, or completion claim has been made by this planning artifact.
+- [ ] No implementation, generated artifact change, migration, branch creation, child completion claim, or qualification claim has been made by this planning artifact.
+- [x] The parent-status override is recorded separately from child delivery and quality-gate completion.
 - [ ] Before implementation, create a feature branch from the current main branch. Suggested starting branch: feat/dlv-fr-fpm-001-us1-start-soft-close.
+
+## 13. Parent status closure
+
+EP-FPM-001 is marked done in `ROADMAP.md` by explicit user-requested parent-status override on 2026-10-17. The child delivery items and the cross-story definition of done remain evidence-based and open; the status override does not waive implementation, integration, authorization, audit, persistence, accessibility, recovery, production, or release qualification requirements.
 

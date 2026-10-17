@@ -261,6 +261,17 @@
 | FR-AUD-004 | EscalateIntegrityIncident | 01, 02, 03, 05, 06, 09 | `audEscalateIntegrityIncident` / `/api/v1/audit-integrity/actions/escalate-integrity-incident` | finance.aud.escalate.integrity.incident |
 | FR-AUD-005 | VerifyProof | 01, 02, 03, 05, 06, 09 | `audVerifyProof` / `/api/v1/audit-integrity/reference/verify-proof` | finance.aud.verify.proof |
 
+### 4.1 Invoicing US2 implementation traceability
+
+| Concern | Evidence | Qualification boundary |
+|---|---|---|
+| Command | `invConfigureBillingSchedules` / `PUT /api/v1/invoicing/configuration/configure-billing-schedules` | Typed OpenAPI request, explicit scope, `If-Match`, and idempotency headers are implemented and generated. |
+| Reads | `invListBillingSchedules` and `invGetBillingSchedule` under `/api/v1/invoicing/reference/billing-schedules` | Safe current projection and retained revision metadata are returned; richer server-side worklist filters remain open. |
+| Domain | `internal/invoicing/billing_schedule.go` | Exact-decimal strings, IANA time zones, effective-date bounds, immutable revisions, authorization, references, audit, idempotency, and optimistic concurrency are covered by focused tests. |
+| Persistence | `db/migrations/invoicing/00002_create_billing_schedule_schema.sql` and `internal/invoicing/postgres_billing_schedule_repository.go` | PostgreSQL integration/persistence qualification is still pending. |
+| UI | `web/src/app/billing-schedule-workspace.tsx`, `INV-WS-01`, `INV-SCR-02` | Vitest covers authoritative loading, validation, canonical decimal submission, scope metadata, and version-conflict recovery; browser/accessibility release evidence remains open. |
+| References | `BillingScheduleReferenceValidator` boundary | Current production wiring is explicit dependency-unavailable until approved owning-context Customer, Contract, InvoiceTemplate, and calendar ports are available. |
+
 ## 5. Workflow traceability
 
 | Workflow | Title | Technical documents | Verification |
@@ -721,6 +732,6 @@ All solution controls `ARC-ACC-001, ARC-API-001, ARC-AUD-001, ARC-CAP-001, ARC-C
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `5fb74ed01e7081a7b440537593968bd3fb7110b970f35d776723a7185a9ecfb2` |
+| Verified body SHA-256 | `67b4abc1bae31b2b12608e2d36c9219a633083eba4508384803cbe688a5ac4a4` |
 | Review status | Passed — targeted source-manifest and pnpm consistency review |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; run the full suite for API, database, event, security, deployment, recovery, or technology-baseline changes. |

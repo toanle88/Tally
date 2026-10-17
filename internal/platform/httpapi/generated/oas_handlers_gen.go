@@ -17653,6 +17653,10 @@ func (s *Server) handleInvConfigureBillingSchedulesRequest(args [0]string, argsE
 					In:   "header",
 				}: params.AcceptLanguage,
 				{
+					Name: "X-Accounting-Scope-Id",
+					In:   "header",
+				}: params.XAccountingScopeID,
+				{
 					Name: "Idempotency-Key",
 					In:   "header",
 				}: params.IdempotencyKey,
@@ -17665,7 +17669,7 @@ func (s *Server) handleInvConfigureBillingSchedulesRequest(args [0]string, argsE
 		}
 
 		type (
-			Request  = *CommandRequest
+			Request  = *InvConfigureBillingSchedulesCommandRequest
 			Params   = InvConfigureBillingSchedulesParams
 			Response = InvConfigureBillingSchedulesRes
 		)
@@ -18155,6 +18159,144 @@ func (s *Server) handleInvGenerateInvoicesRequest(args [0]string, argsEscaped bo
 	}
 }
 
+// handleInvGetBillingScheduleRequest handles invGetBillingSchedule operation.
+//
+// GET /invoicing/reference/billing-schedules/{billingScheduleId}
+func (s *Server) handleInvGetBillingScheduleRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+	statusWriter := &codeRecorder{ResponseWriter: w}
+	w = statusWriter
+	ctx := r.Context()
+
+	var (
+		err          error
+		opErrContext = ogenerrors.OperationContext{
+			Name: InvGetBillingScheduleOperation,
+			ID:   "invGetBillingSchedule",
+		}
+	)
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			sctx, ok, err := s.securityBearerAuth(ctx, InvGetBillingScheduleOperation, r)
+			if err != nil {
+				err = &ogenerrors.SecurityError{
+					OperationContext: opErrContext,
+					Security:         "BearerAuth",
+					Err:              err,
+				}
+				defer recordError("Security:BearerAuth", err)
+				s.cfg.ErrorHandler(ctx, w, r, err)
+				return
+			}
+			if ok {
+				satisfied[0] |= 1 << 0
+				ctx = sctx
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			err = &ogenerrors.SecurityError{
+				OperationContext: opErrContext,
+				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
+			}
+			defer recordError("Security", err)
+			s.cfg.ErrorHandler(ctx, w, r, err)
+			return
+		}
+	}
+	params, err := decodeInvGetBillingScheduleParams(args, argsEscaped, r)
+	if err != nil {
+		err = &ogenerrors.DecodeParamsError{
+			OperationContext: opErrContext,
+			Err:              err,
+		}
+		defer recordError("DecodeParams", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	var rawBody []byte
+
+	var response InvGetBillingScheduleRes
+	if m := s.cfg.Middleware; m != nil {
+		mreq := middleware.Request{
+			Context:          ctx,
+			OperationName:    InvGetBillingScheduleOperation,
+			OperationSummary: "",
+			OperationID:      "invGetBillingSchedule",
+			Body:             nil,
+			RawBody:          rawBody,
+			Params: middleware.Parameters{
+				{
+					Name: "billingScheduleId",
+					In:   "path",
+				}: params.BillingScheduleId,
+				{
+					Name: "X-Correlation-Id",
+					In:   "header",
+				}: params.XCorrelationID,
+				{
+					Name: "Accept-Language",
+					In:   "header",
+				}: params.AcceptLanguage,
+				{
+					Name: "X-Accounting-Scope-Id",
+					In:   "header",
+				}: params.XAccountingScopeID,
+			},
+			Raw: r,
+		}
+
+		type (
+			Request  = struct{}
+			Params   = InvGetBillingScheduleParams
+			Response = InvGetBillingScheduleRes
+		)
+		response, err = middleware.HookMiddleware[
+			Request,
+			Params,
+			Response,
+		](
+			m,
+			mreq,
+			unpackInvGetBillingScheduleParams,
+			func(ctx context.Context, request Request, params Params) (response Response, err error) {
+				response, err = s.h.InvGetBillingSchedule(ctx, params)
+				return response, err
+			},
+		)
+	} else {
+		response, err = s.h.InvGetBillingSchedule(ctx, params)
+	}
+	if err != nil {
+		defer recordError("Internal", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	if err := encodeInvGetBillingScheduleResponse(response, w); err != nil {
+		defer recordError("EncodeResponse", err)
+		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
+			s.cfg.ErrorHandler(ctx, w, r, err)
+		}
+		return
+	}
+}
+
 // handleInvGetInvoiceTemplateRequest handles invGetInvoiceTemplate operation.
 //
 // GET /invoicing/reference/invoice-templates/{invoiceTemplateId}
@@ -18285,6 +18427,148 @@ func (s *Server) handleInvGetInvoiceTemplateRequest(args [1]string, argsEscaped 
 	}
 
 	if err := encodeInvGetInvoiceTemplateResponse(response, w); err != nil {
+		defer recordError("EncodeResponse", err)
+		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
+			s.cfg.ErrorHandler(ctx, w, r, err)
+		}
+		return
+	}
+}
+
+// handleInvListBillingSchedulesRequest handles invListBillingSchedules operation.
+//
+// GET /invoicing/reference/billing-schedules
+func (s *Server) handleInvListBillingSchedulesRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+	statusWriter := &codeRecorder{ResponseWriter: w}
+	w = statusWriter
+	ctx := r.Context()
+
+	var (
+		err          error
+		opErrContext = ogenerrors.OperationContext{
+			Name: InvListBillingSchedulesOperation,
+			ID:   "invListBillingSchedules",
+		}
+	)
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			sctx, ok, err := s.securityBearerAuth(ctx, InvListBillingSchedulesOperation, r)
+			if err != nil {
+				err = &ogenerrors.SecurityError{
+					OperationContext: opErrContext,
+					Security:         "BearerAuth",
+					Err:              err,
+				}
+				defer recordError("Security:BearerAuth", err)
+				s.cfg.ErrorHandler(ctx, w, r, err)
+				return
+			}
+			if ok {
+				satisfied[0] |= 1 << 0
+				ctx = sctx
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			err = &ogenerrors.SecurityError{
+				OperationContext: opErrContext,
+				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
+			}
+			defer recordError("Security", err)
+			s.cfg.ErrorHandler(ctx, w, r, err)
+			return
+		}
+	}
+	params, err := decodeInvListBillingSchedulesParams(args, argsEscaped, r)
+	if err != nil {
+		err = &ogenerrors.DecodeParamsError{
+			OperationContext: opErrContext,
+			Err:              err,
+		}
+		defer recordError("DecodeParams", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	var rawBody []byte
+
+	var response InvListBillingSchedulesRes
+	if m := s.cfg.Middleware; m != nil {
+		mreq := middleware.Request{
+			Context:          ctx,
+			OperationName:    InvListBillingSchedulesOperation,
+			OperationSummary: "",
+			OperationID:      "invListBillingSchedules",
+			Body:             nil,
+			RawBody:          rawBody,
+			Params: middleware.Parameters{
+				{
+					Name: "X-Correlation-Id",
+					In:   "header",
+				}: params.XCorrelationID,
+				{
+					Name: "Accept-Language",
+					In:   "header",
+				}: params.AcceptLanguage,
+				{
+					Name: "X-Accounting-Scope-Id",
+					In:   "header",
+				}: params.XAccountingScopeID,
+				{
+					Name: "page[size]",
+					In:   "query",
+				}: params.PageSize,
+				{
+					Name: "page[after]",
+					In:   "query",
+				}: params.PageAfter,
+			},
+			Raw: r,
+		}
+
+		type (
+			Request  = struct{}
+			Params   = InvListBillingSchedulesParams
+			Response = InvListBillingSchedulesRes
+		)
+		response, err = middleware.HookMiddleware[
+			Request,
+			Params,
+			Response,
+		](
+			m,
+			mreq,
+			unpackInvListBillingSchedulesParams,
+			func(ctx context.Context, request Request, params Params) (response Response, err error) {
+				response, err = s.h.InvListBillingSchedules(ctx, params)
+				return response, err
+			},
+		)
+	} else {
+		response, err = s.h.InvListBillingSchedules(ctx, params)
+	}
+	if err != nil {
+		defer recordError("Internal", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	if err := encodeInvListBillingSchedulesResponse(response, w); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)
