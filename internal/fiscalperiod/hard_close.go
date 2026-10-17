@@ -20,21 +20,47 @@ import (
 const (
 	PermissionStartHardClose              = "finance.fpm.start.hard.close"
 	PermissionApplyPostingGateResult      = "finance.fpm.apply.posting.gate.result"
+	PermissionResumeCloseRun              = "finance.fpm.resume.close.run"
+	PermissionAbortCloseRun               = "finance.fpm.abort.close.run"
+	PermissionApplyCloseExceptionApproval = "finance.fpm.apply.close.exception.approval.decision"
+	PermissionApplyCloseApproval          = "finance.fpm.apply.close.approval.decision"
 	StartHardCloseOperation               = "start-hard-close"
 	ApplyPostingGateResultOperation       = "apply-posting-gate-result"
+	ResumeCloseRunOperation               = "resume-close-run"
+	AbortCloseRunOperation                = "abort-close-run"
+	ApplyCloseExceptionApprovalOperation  = "apply-close-exception-approval-decision"
+	ApplyCloseApprovalOperation           = "apply-close-approval-decision"
 	StartHardCloseCommandIdentity         = "start-hard-close.v1"
 	ApplyPostingGateResultCommandIdentity = "apply-posting-gate-result.v1"
+	ResumeCloseRunCommandIdentity         = "resume-close-run.v1"
+	AbortCloseRunCommandIdentity          = "abort-close-run.v1"
+	ApplyCloseExceptionApprovalIdentity   = "apply-close-exception-approval-decision.v1"
+	ApplyCloseApprovalIdentity            = "apply-close-approval-decision.v1"
 
 	PeriodStateOpen       = "Open"
 	PeriodStateSoftClosed = "SoftClosed"
 	PeriodStateClosing    = "Closing"
+	PeriodStateHardClosed = "HardClosed"
 
 	SoftCloseRunActive         = "Active"
 	SoftCloseRunHandoffPending = "HandoffPending"
+	SoftCloseRunCompleted      = "Completed"
+	SoftCloseRunSuperseded     = "Superseded"
 
-	CloseRunInitiating      = "Initiating"
-	CloseRunBarrierAcquired = "BarrierAcquired"
-	CloseRunFailed          = "Failed"
+	CloseRunInitiating       = "Initiating"
+	CloseRunBarrierAcquired  = "BarrierAcquired"
+	CloseRunInProgress       = "InProgress"
+	CloseRunAwaitingApproval = "AwaitingApproval"
+	CloseRunFinalizing       = "Finalizing"
+	CloseRunCompleted        = "Completed"
+	CloseRunFailed           = "Failed"
+	CloseRunAborting         = "Aborting"
+	CloseRunAborted          = "Aborted"
+
+	CloseRunSealNotRequested = "NotRequested"
+	CloseRunSealPending      = "SealPending"
+	CloseRunSealSealed       = "Sealed"
+	CloseRunSealFailed       = "SealFailed"
 
 	ControlEpochActive         = "Active"
 	ControlEpochHandoffPending = "HandoffPending"
@@ -59,6 +85,13 @@ var (
 	ErrPostingBarrierResultConflict         = errors.New("posting barrier result conflict")
 	ErrPostingBarrierUnavailable            = errors.New("posting barrier dependency unavailable")
 	ErrPostingBarrierRejected               = errors.New("posting barrier request rejected")
+	ErrCloseTaskUnavailable                 = errors.New("close task dependency unavailable")
+	ErrCloseTaskFailed                      = errors.New("close task failed")
+	ErrCloseDecisionUnavailable             = errors.New("close approval decision dependency unavailable")
+	ErrCloseDecisionRejected                = errors.New("close approval decision rejected")
+	ErrCloseSealUnavailable                 = errors.New("audit seal dependency unavailable")
+	ErrCloseSealFailed                      = errors.New("audit seal failed")
+	ErrCloseFinalizationPending             = errors.New("close finalization is pending")
 	ErrInvalidFiscalPeriodCommand           = errors.New("invalid fiscal-period command")
 )
 
@@ -118,7 +151,7 @@ func (period FiscalPeriod) Validate() error {
 	if period.ID == uuid.Nil || period.AccountingScopeID == uuid.Nil {
 		return ErrFiscalPeriodNotFound
 	}
-	if period.State != PeriodStateOpen && period.State != PeriodStateSoftClosed && period.State != PeriodStateClosing {
+	if period.State != PeriodStateOpen && period.State != PeriodStateSoftClosed && period.State != PeriodStateClosing && period.State != PeriodStateHardClosed {
 		return fmt.Errorf("%w: unsupported period state %q", ErrFiscalPeriodStateConflict, period.State)
 	}
 	if period.StateVersion < 1 || period.AggregateVersion < 1 {
@@ -144,7 +177,7 @@ func (run SoftCloseRun) Validate() error {
 	if run.ID == uuid.Nil || run.AccountingScopeID == uuid.Nil || run.FiscalPeriodID == uuid.Nil {
 		return ErrFiscalPeriodNotFound
 	}
-	if run.Status != SoftCloseRunActive && run.Status != SoftCloseRunHandoffPending {
+	if run.Status != SoftCloseRunActive && run.Status != SoftCloseRunHandoffPending && run.Status != SoftCloseRunCompleted && run.Status != SoftCloseRunSuperseded {
 		return fmt.Errorf("%w: unsupported soft-close status %q", ErrFiscalPeriodStateConflict, run.Status)
 	}
 	if run.ControlEpoch < 1 || run.OpenedGateVersion < 1 || run.AggregateVersion < 1 || strings.TrimSpace(run.PolicyVersion) == "" {
@@ -202,34 +235,93 @@ type BarrierEvidence struct {
 }
 
 type CloseRun struct {
-	ID                    uuid.UUID        `json:"id"`
-	AccountingScopeID     uuid.UUID        `json:"accountingScopeId"`
-	FiscalPeriodID        uuid.UUID        `json:"fiscalPeriodId"`
-	CloseType             string           `json:"closeType"`
-	Status                string           `json:"status"`
-	AggregateVersion      int64            `json:"aggregateVersion"`
-	CommandFingerprint    string           `json:"commandFingerprint"`
-	BarrierCommandID      uuid.UUID        `json:"barrierCommandId"`
-	BarrierIdempotencyKey string           `json:"barrierIdempotencyKey"`
-	BarrierEvidence       *BarrierEvidence `json:"barrierEvidence,omitempty"`
-	LastFailureCode       string           `json:"lastFailureCode,omitempty"`
-	LastFailureDetail     string           `json:"lastFailureDetail,omitempty"`
-	CreatedAt             time.Time        `json:"createdAt"`
-	UpdatedAt             time.Time        `json:"updatedAt"`
+	ID                     uuid.UUID               `json:"id"`
+	AccountingScopeID      uuid.UUID               `json:"accountingScopeId"`
+	FiscalPeriodID         uuid.UUID               `json:"fiscalPeriodId"`
+	CloseType              string                  `json:"closeType"`
+	Status                 string                  `json:"status"`
+	AggregateVersion       int64                   `json:"aggregateVersion"`
+	CommandFingerprint     string                  `json:"commandFingerprint"`
+	BarrierCommandID       uuid.UUID               `json:"barrierCommandId"`
+	BarrierIdempotencyKey  string                  `json:"barrierIdempotencyKey"`
+	BarrierEvidence        *BarrierEvidence        `json:"barrierEvidence,omitempty"`
+	Steps                  []CloseStep             `json:"steps,omitempty"`
+	Exceptions             []CloseException        `json:"exceptions,omitempty"`
+	ApprovalRequestIDs     []uuid.UUID             `json:"approvalRequestIds,omitempty"`
+	ApprovalDecisions      []CloseApprovalDecision `json:"approvalDecisions,omitempty"`
+	FinalApproval          *CloseApprovalDecision  `json:"finalApproval,omitempty"`
+	ApprovalPolicyVersion  string                  `json:"approvalPolicyVersion,omitempty"`
+	FinalLedgerWatermark   *int64                  `json:"finalLedgerWatermark,omitempty"`
+	SealStatus             string                  `json:"sealStatus"`
+	SealRequestID          uuid.UUID               `json:"sealRequestId,omitempty"`
+	SealProofReference     string                  `json:"sealProofReference,omitempty"`
+	SealFailureCode        string                  `json:"sealFailureCode,omitempty"`
+	SealFailureDetail      string                  `json:"sealFailureDetail,omitempty"`
+	FinalizationGateResult *gl.SoftCloseGateResult `json:"finalizationGateResult,omitempty"`
+	ReleaseGateResult      *gl.SoftCloseGateResult `json:"releaseGateResult,omitempty"`
+	LastFailureCode        string                  `json:"lastFailureCode,omitempty"`
+	LastFailureDetail      string                  `json:"lastFailureDetail,omitempty"`
+	CreatedAt              time.Time               `json:"createdAt"`
+	UpdatedAt              time.Time               `json:"updatedAt"`
 }
 
 func (run CloseRun) Validate() error {
 	if run.ID == uuid.Nil || run.AccountingScopeID == uuid.Nil || run.FiscalPeriodID == uuid.Nil {
 		return ErrFiscalPeriodNotFound
 	}
-	if run.CloseType != gl.CloseTypeInitialHardClose {
+	if run.CloseType != gl.CloseTypeInitialHardClose && run.CloseType != gl.CloseTypeReclose {
 		return ErrFiscalPeriodPolicyConflict
 	}
-	if run.Status != CloseRunInitiating && run.Status != CloseRunBarrierAcquired && run.Status != CloseRunFailed {
+	if run.Status != CloseRunInitiating && run.Status != CloseRunBarrierAcquired && run.Status != CloseRunInProgress && run.Status != CloseRunAwaitingApproval && run.Status != CloseRunFinalizing && run.Status != CloseRunCompleted && run.Status != CloseRunFailed && run.Status != CloseRunAborting && run.Status != CloseRunAborted {
 		return fmt.Errorf("%w: unsupported close-run status %q", ErrFiscalPeriodStateConflict, run.Status)
 	}
-	if run.AggregateVersion < 1 || run.BarrierCommandID == uuid.Nil || strings.TrimSpace(run.BarrierIdempotencyKey) == "" {
+	if run.AggregateVersion < 1 || strings.TrimSpace(run.CommandFingerprint) == "" || run.BarrierCommandID == uuid.Nil || strings.TrimSpace(run.BarrierIdempotencyKey) == "" {
 		return ErrFiscalPeriodVersionConflict
+	}
+	if run.SealStatus != "" && run.SealStatus != CloseRunSealNotRequested && run.SealStatus != CloseRunSealPending && run.SealStatus != CloseRunSealSealed && run.SealStatus != CloseRunSealFailed {
+		return ErrFiscalPeriodStateConflict
+	}
+	if run.FinalLedgerWatermark != nil && *run.FinalLedgerWatermark < 1 {
+		return ErrFiscalPeriodVersionConflict
+	}
+	if run.Status == CloseRunCompleted && (run.FinalizationGateResult == nil || run.FinalLedgerWatermark == nil) {
+		return ErrFiscalPeriodStateConflict
+	}
+	if run.Status == CloseRunAborted && run.ReleaseGateResult == nil {
+		return ErrFiscalPeriodStateConflict
+	}
+	stepIDs := make(map[string]struct{}, len(run.Steps))
+	for _, step := range run.Steps {
+		if _, exists := stepIDs[step.ID]; exists {
+			return ErrFiscalPeriodPolicyConflict
+		}
+		stepIDs[step.ID] = struct{}{}
+		if err := step.Validate(); err != nil {
+			return err
+		}
+	}
+	exceptionIDs := make(map[uuid.UUID]struct{}, len(run.Exceptions))
+	for _, exception := range run.Exceptions {
+		if _, exists := exceptionIDs[exception.ID]; exists {
+			return ErrFiscalPeriodPolicyConflict
+		}
+		if exception.CloseRunID != run.ID {
+			return ErrFiscalPeriodScopeConflict
+		}
+		exceptionIDs[exception.ID] = struct{}{}
+		if err := exception.Validate(); err != nil {
+			return err
+		}
+	}
+	for _, approval := range run.ApprovalDecisions {
+		if err := approval.Validate(); err != nil {
+			return err
+		}
+	}
+	if run.FinalApproval != nil {
+		if err := run.FinalApproval.Validate(); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -318,15 +410,21 @@ type DurableMutationCommit struct {
 }
 
 type DurableServiceConfig struct {
-	Database         platformidempotency.TxBeginner
-	Coordinator      platformidempotency.DurableCoordinator
-	Policy           platformidempotency.IdempotencyPolicy
-	StartOperationID string
-	ApplyOperationID string
+	Database                               platformidempotency.TxBeginner
+	Coordinator                            platformidempotency.DurableCoordinator
+	Policy                                 platformidempotency.IdempotencyPolicy
+	StartOperationID                       string
+	ApplyOperationID                       string
+	ResumeOperationID                      string
+	AbortOperationID                       string
+	ApplyCloseExceptionApprovalOperationID string
+	ApplyCloseApprovalOperationID          string
 }
 
 type PostingGateApplicationPort interface {
 	AcquirePostingBarrier(context.Context, gl.Actor, gl.AcquirePostingBarrierCommand) (gl.SoftCloseGateResult, error)
+	ReleasePostingBarrier(context.Context, gl.Actor, gl.ReleasePostingBarrierCommand) (gl.SoftCloseGateResult, error)
+	FinalizePostingGate(context.Context, gl.Actor, gl.FinalizePostingGateCommand) (gl.SoftCloseGateResult, error)
 	GetPostingGateStatus(context.Context, uuid.UUID, uuid.UUID) (gl.PostingGateStatus, error)
 }
 
@@ -420,6 +518,9 @@ type Service struct {
 	repository  Repository
 	authorizer  Authorizer
 	postingGate PostingGateApplicationPort
+	closeTasks  CloseTaskPort
+	workflow    CloseDecisionPort
+	seal        AuditSealPort
 	clock       func() time.Time
 	durable     *DurableServiceConfig
 
@@ -428,21 +529,26 @@ type Service struct {
 }
 
 func NewService(repository Repository, authorizer Authorizer, postingGate PostingGateApplicationPort, clock func() time.Time) (*Service, error) {
-	return newService(repository, authorizer, postingGate, clock, nil)
+	return newService(repository, authorizer, postingGate, clock, nil, CloseRunDependencies{})
+}
+
+func NewServiceWithDependencies(repository Repository, authorizer Authorizer, postingGate PostingGateApplicationPort, dependencies CloseRunDependencies, clock func() time.Time) (*Service, error) {
+	return newService(repository, authorizer, postingGate, clock, nil, dependencies)
 }
 
 func NewServiceWithDurableIdempotency(repository Repository, authorizer Authorizer, postingGate PostingGateApplicationPort, clock func() time.Time, durable DurableServiceConfig) (*Service, error) {
-	if durable.Database == nil || durable.Coordinator == nil || durable.Policy.RecordTTL <= 0 || durable.Policy.LeaseTTL <= 0 || durable.Policy.LeaseTTL >= durable.Policy.RecordTTL || strings.TrimSpace(durable.StartOperationID) == "" || strings.TrimSpace(durable.ApplyOperationID) == "" {
+	if durable.Database == nil || durable.Coordinator == nil || durable.Policy.RecordTTL <= 0 || durable.Policy.LeaseTTL <= 0 || durable.Policy.LeaseTTL >= durable.Policy.RecordTTL || strings.TrimSpace(durable.StartOperationID) == "" || strings.TrimSpace(durable.ApplyOperationID) == "" || strings.TrimSpace(durable.ResumeOperationID) == "" || strings.TrimSpace(durable.AbortOperationID) == "" || strings.TrimSpace(durable.ApplyCloseExceptionApprovalOperationID) == "" || strings.TrimSpace(durable.ApplyCloseApprovalOperationID) == "" {
 		return nil, ErrInvalidFiscalPeriodService
 	}
-	return newService(repository, authorizer, postingGate, clock, &durable)
+	return newService(repository, authorizer, postingGate, clock, &durable, CloseRunDependencies{})
 }
 
-func newService(repository Repository, authorizer Authorizer, postingGate PostingGateApplicationPort, clock func() time.Time, durable *DurableServiceConfig) (*Service, error) {
+func newService(repository Repository, authorizer Authorizer, postingGate PostingGateApplicationPort, clock func() time.Time, durable *DurableServiceConfig, dependencies CloseRunDependencies) (*Service, error) {
 	if repository == nil || authorizer == nil || postingGate == nil || clock == nil {
 		return nil, ErrInvalidFiscalPeriodService
 	}
-	return &Service{repository: repository, authorizer: authorizer, postingGate: postingGate, clock: clock, durable: durable, idempotency: make(map[string]storedResult)}, nil
+	dependencies = dependencies.withDefaults()
+	return &Service{repository: repository, authorizer: authorizer, postingGate: postingGate, closeTasks: dependencies.CloseTasks, workflow: dependencies.Workflow, seal: dependencies.Seal, clock: clock, durable: durable, idempotency: make(map[string]storedResult)}, nil
 }
 
 func (service *Service) acquireDurableCommand(ctx context.Context, actor Actor, scopeID uuid.UUID, key, commandFingerprint, operation string) (durableCommand, *CommandResult, error) {
@@ -487,6 +593,18 @@ func (service *Service) durableOperationID(operation string) string {
 	}
 	if operation == ApplyPostingGateResultOperation {
 		return service.durable.ApplyOperationID
+	}
+	if operation == ResumeCloseRunOperation {
+		return service.durable.ResumeOperationID
+	}
+	if operation == AbortCloseRunOperation {
+		return service.durable.AbortOperationID
+	}
+	if operation == ApplyCloseExceptionApprovalOperation {
+		return service.durable.ApplyCloseExceptionApprovalOperationID
+	}
+	if operation == ApplyCloseApprovalOperation {
+		return service.durable.ApplyCloseApprovalOperationID
 	}
 	return operation
 }
@@ -592,7 +710,7 @@ func (service *Service) finalizeDurableFailureIfNeeded(ctx context.Context, comm
 }
 
 func shouldLeaveFiscalPeriodCommandInProgress(err error) bool {
-	return errors.Is(err, ErrPostingBarrierUnavailable) || errors.Is(err, ErrPostingBarrierRejected) || errors.Is(err, ErrFiscalPeriodAuditUnavailable) || errors.Is(err, ErrFiscalPeriodOutboxUnavailable) || errors.Is(err, ErrFiscalPeriodVersionConflict)
+	return errors.Is(err, ErrPostingBarrierUnavailable) || errors.Is(err, ErrPostingBarrierRejected) || errors.Is(err, ErrCloseTaskUnavailable) || errors.Is(err, ErrCloseDecisionUnavailable) || errors.Is(err, ErrCloseSealUnavailable) || errors.Is(err, ErrFiscalPeriodAuditUnavailable) || errors.Is(err, ErrFiscalPeriodOutboxUnavailable) || errors.Is(err, ErrFiscalPeriodVersionConflict)
 }
 
 func fiscalPeriodFailureCode(err error) string {
@@ -605,6 +723,12 @@ func fiscalPeriodFailureCode(err error) string {
 		return "POSTING_BARRIER_RESULT_CONFLICT"
 	case errors.Is(err, ErrFiscalPeriodOwnerConflict):
 		return "OWNER_CONFLICT"
+	case errors.Is(err, ErrCloseTaskFailed):
+		return "CLOSE_TASK_FAILED"
+	case errors.Is(err, ErrCloseDecisionRejected):
+		return "CLOSE_APPROVAL_REJECTED"
+	case errors.Is(err, ErrCloseSealFailed):
+		return "AUDIT_SEAL_FAILED"
 	default:
 		return "FISCAL_PERIOD_COMMAND_FAILED"
 	}
@@ -686,7 +810,7 @@ func (service *Service) StartHardClose(ctx context.Context, actor Actor, command
 	now := service.clock().UTC()
 	working := cloneControlState(state)
 	closeRun := working.CloseRun
-	if closeRun == nil {
+	if closeRun == nil || closeRun.Status == CloseRunAborted {
 		closeRunID := uuid.New()
 		barrierCommandID := uuid.New()
 		closeRun = &CloseRun{
@@ -694,13 +818,15 @@ func (service *Service) StartHardClose(ctx context.Context, actor Actor, command
 			CloseType: gl.CloseTypeInitialHardClose, Status: CloseRunInitiating, AggregateVersion: 1,
 			CommandFingerprint: fingerprint, BarrierCommandID: barrierCommandID,
 			BarrierIdempotencyKey: command.IdempotencyKey + ":posting-barrier",
-			CreatedAt:             now, UpdatedAt: now,
+			Steps:                 defaultCloseSteps(), SealStatus: CloseRunSealNotRequested,
+			CreatedAt: now, UpdatedAt: now,
 		}
 		working.CloseRun = closeRun
 		if err := service.repository.Commit(ctx, Mutation{
 			Before: state, After: working, Operation: StartHardCloseOperation, CommandFingerprint: fingerprint,
 			Audit: service.auditRecord(actor, decision, command.AccountingScopeID, closeRun.ID, StartHardCloseOperation, fingerprint, fingerprint, command.CorrelationID, command.CausationID),
 		}); err != nil {
+			service.finalizeDurableFailureIfNeeded(ctx, durable, err)
 			return CommandResult{}, err
 		}
 		state = working
@@ -731,8 +857,13 @@ func (service *Service) StartHardClose(ctx context.Context, actor Actor, command
 		failureState.CloseRun.LastFailureDetail = err.Error()
 		failureState.CloseRun.AggregateVersion++
 		failureState.CloseRun.UpdatedAt = service.clock().UTC()
-		_ = service.repository.Commit(ctx, Mutation{Before: state, After: failureState, Operation: StartHardCloseOperation, CommandFingerprint: fingerprint, Audit: service.auditRecord(actor, decision, command.AccountingScopeID, closeRun.ID, StartHardCloseOperation, fingerprint, fingerprint, command.CorrelationID, command.CausationID)})
-		return CommandResult{}, classifyPostingBarrierError(err)
+		if commitErr := service.repository.Commit(ctx, Mutation{Before: state, After: failureState, Operation: StartHardCloseOperation, CommandFingerprint: fingerprint, Audit: service.auditRecord(actor, decision, command.AccountingScopeID, closeRun.ID, StartHardCloseOperation, fingerprint, fingerprint, command.CorrelationID, command.CausationID)}); commitErr != nil {
+			service.finalizeDurableFailureIfNeeded(ctx, durable, commitErr)
+			return CommandResult{}, commitErr
+		}
+		classified := classifyPostingBarrierError(err)
+		service.finalizeDurableFailureIfNeeded(ctx, durable, classified)
+		return CommandResult{}, classified
 	}
 
 	applyCommand := ApplyPostingGateResultCommand{
@@ -821,6 +952,7 @@ func (service *Service) applyPostingGateResult(ctx context.Context, actor Actor,
 	}
 	if state.CloseRun.Status == CloseRunBarrierAcquired && state.CloseRun.BarrierEvidence != nil {
 		if state.CloseRun.BarrierEvidence.CommandFingerprint != command.Result.Gate.LastFrozenAdmissionSummary.FrozenByCommandFingerprint {
+			service.finalizeDurableFailureIfNeeded(ctx, durable, ErrPostingBarrierResultConflict)
 			return CommandResult{}, ErrPostingBarrierResultConflict
 		}
 		result := CommandResult{State: state, GateResult: command.Result, Decision: decision, Replayed: true}
@@ -938,8 +1070,21 @@ func validateStartPreconditions(state ControlState, command StartHardCloseComman
 	if state.SoftClose.PolicyVersion != command.SoftClosePolicyVersion || state.ControlEpoch.PolicyVersion != command.SoftClosePolicyVersion {
 		return ErrFiscalPeriodPolicyConflict
 	}
-	if state.CloseRun != nil && state.CloseRun.Status != CloseRunFailed && state.CloseRun.Status != CloseRunInitiating {
-		return ErrFiscalPeriodOwnerConflict
+	if state.CloseRun != nil {
+		switch state.CloseRun.Status {
+		case CloseRunFailed, CloseRunInitiating:
+			// A non-terminal or failed initial attempt may be retried with its
+			// existing process identity.
+		case CloseRunAborted:
+			// An authorized initial abort opens a new soft-close epoch. A later
+			// hard-close attempt must receive a new CloseRun identity while the
+			// aborted run remains immutable history.
+			if state.Period.State != PeriodStateSoftClosed || state.Period.ActiveCloseRunID != nil || state.SoftClose.Status != SoftCloseRunActive || state.ControlEpoch.Status != ControlEpochActive {
+				return ErrFiscalPeriodOwnerConflict
+			}
+		default:
+			return ErrFiscalPeriodOwnerConflict
+		}
 	}
 	return nil
 }
@@ -1087,7 +1232,7 @@ func barrierErrorCode(err error) string {
 }
 
 func classifyPostingBarrierError(err error) error {
-	if errors.Is(err, gl.ErrSoftCloseGateVersionConflict) || errors.Is(err, gl.ErrSoftCloseGateScopeConflict) || errors.Is(err, gl.ErrSoftCloseGateModeConflict) || errors.Is(err, gl.ErrSoftCloseGateOwnerConflict) || errors.Is(err, gl.ErrSoftCloseGateEpochConflict) || errors.Is(err, gl.ErrSoftCloseGatePolicyConflict) || errors.Is(err, gl.ErrSoftCloseGatePolicyRejected) || errors.Is(err, gl.ErrSoftCloseGateAuthorizationDenied) {
+	if errors.Is(err, gl.ErrSoftCloseGateVersionConflict) || errors.Is(err, gl.ErrSoftCloseGateScopeConflict) || errors.Is(err, gl.ErrSoftCloseGateModeConflict) || errors.Is(err, gl.ErrSoftCloseGateOwnerConflict) || errors.Is(err, gl.ErrSoftCloseGateEpochConflict) || errors.Is(err, gl.ErrSoftCloseGatePolicyConflict) || errors.Is(err, gl.ErrSoftCloseGatePolicyRejected) || errors.Is(err, gl.ErrSoftCloseGateAuthorizationDenied) || errors.Is(err, gl.ErrPostingBarrierNotReleasable) || errors.Is(err, gl.ErrPostingBarrierAdmissionConflict) || errors.Is(err, gl.ErrPostingBarrierWatermarkConflict) || errors.Is(err, gl.ErrPostingBarrierFinalized) {
 		return fmt.Errorf("%w: %v", ErrPostingBarrierRejected, err)
 	}
 	return fmt.Errorf("%w: %v", ErrPostingBarrierUnavailable, err)

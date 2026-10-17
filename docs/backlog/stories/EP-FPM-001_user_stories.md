@@ -5,16 +5,16 @@
 | Epic | EP-FPM-001 |
 | Capability | Fiscal period management |
 | Milestone | M3 in the roadmap and delivery plan; the delivery plan also identifies an M2 open-period slice |
-| Status | In progress — US2 implementation is present on the story branch; the remaining FPM stories and epic quality gates remain open |
+| Status | In progress — US2 and US3 implementation slices are present on their story branches; the remaining FPM stories and epic quality gates remain open |
 | Owning module | internal/fiscalperiod |
 | Owning schema | fiscal_period |
 | Primary users | Finance Manager, Controller, Close Coordinator |
 | Dependencies | EP-GL-001 and EP-WFA-001 |
 | Source of truth | finance_domain_model_ddd.md, PRD, UX workflow specification, NFR, system design, technical specifications, finance delivery plan, ROADMAP.md |
 
-This document is a planning and delivery-traceability artifact. It decomposes EP-FPM-001 into implementable user stories and records the evidence delivered for US2. It does not claim that the epic, remaining stories, integrations, UI qualification, persistence integration, or quality gates are complete.
+This document is a planning and delivery-traceability artifact. It decomposes EP-FPM-001 into implementable user stories and records the evidence delivered for US2 and US3. It does not claim that the epic, remaining stories, integrations, UI qualification, persistence integration, or quality gates are complete.
 
-The current repository contains the approved fiscal-period action contracts and generated client artifacts, GL posting-gate implementation owned by the GL module, and the US2 FPM runtime/persistence/API/UI slice. US1 and later FPM lifecycle behavior remain outside this delivery. Existing user changes in the worktree are preserved.
+The current repository contains the approved fiscal-period action contracts and generated client artifacts, GL posting-gate implementation owned by the GL module, and the US2/US3 FPM runtime/persistence/API/UI slices. US1 and later FPM lifecycle behavior remain outside this delivery. Existing user changes in the worktree are preserved.
 
 ## 1. Outcome
 
@@ -266,6 +266,16 @@ Expected implementation evidence:
 - Contract tests for all close-task and GL ports, including dependency rejection versus unavailability.
 - Concurrency/idempotency tests for simultaneous approval, resume, abort, and finalization.
 - API, UI accessibility, audit, and observability tests for blocked and recovery states.
+
+US3 implementation evidence delivered on branch `feat/dlv-fr-fpm-001-us3-close-run`:
+
+- `internal/fiscalperiod/close_run.go` implements task execution/progress, current Workflow decision application, final approval and SoD checks, GL finalization, initial-barrier abort, authoritative release/finalization recovery, and separate audit-seal state.
+- Close-run persistence retains task/exception/approval/finalization/release/seal evidence. PostgreSQL preserves an aborted run row when a later initial hard-close attempt creates a new close-run identity and selects active/retryable runs for recovery.
+- `internal/platform/httpapi/fiscal_period_handler.go` exposes `ResumeCloseRun`, `AbortCloseRun`, `ApplyCloseExceptionApprovalDecision`, and `ApplyCloseApprovalDecision` through the approved routes with typed conflict, authorization, dependency, and approval errors.
+- `web/src/app/fiscal-period-hard-close-workspace.tsx` exposes execution progress, exception and approval evidence, abort/resume actions, finalization-pending state, and seal-pending/failed state without presenting a failed seal as an open period.
+- Focused domain tests cover barrier retry identity, task failure/retry, immutable approval evidence, finalization recovery, initial abort/release recovery, new identity after abort, and stable seal retry identity. The verification record is `docs/verification/DLV-FR-FPM-004-005-007-008-us3-close-run.md`.
+
+The documented US3 local verification commands have passed. PostgreSQL/Testcontainers runtime, browser/accessibility qualification, slow/release checks, US4/US5, and epic completion remain explicitly deferred.
 
 ### US4 — Request and authorize a scoped or operational reopen
 
