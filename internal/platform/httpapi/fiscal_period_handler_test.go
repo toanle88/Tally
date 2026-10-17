@@ -37,6 +37,14 @@ func (stub *fiscalPeriodHandlerGateStub) GetPostingGateStatus(_ context.Context,
 	return stub.result.Gate, stub.err
 }
 
+func (stub *fiscalPeriodHandlerGateStub) OpenScopedReopenGate(context.Context, gl.Actor, gl.OpenScopedReopenGateCommand) (gl.SoftCloseGateResult, error) {
+	return gl.SoftCloseGateResult{}, fiscalperiod.ErrReopenGateUnavailable
+}
+
+func (stub *fiscalPeriodHandlerGateStub) OpenOperationalReopenGate(context.Context, gl.Actor, gl.OpenOperationalReopenGateCommand) (gl.SoftCloseGateResult, error) {
+	return gl.SoftCloseGateResult{}, fiscalperiod.ErrReopenGateUnavailable
+}
+
 func (stub *fiscalPeriodHandlerGateStub) ReleasePostingBarrier(_ context.Context, _ gl.Actor, command gl.ReleasePostingBarrierCommand) (gl.SoftCloseGateResult, error) {
 	if stub.err != nil {
 		return gl.SoftCloseGateResult{}, stub.err

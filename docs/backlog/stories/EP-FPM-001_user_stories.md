@@ -302,6 +302,41 @@ Expected implementation evidence:
 - Workflow and GL port contract tests proving no gate opens before an approved current-state decision.
 - Persistence, idempotency, concurrency, authorization/SoD, audit, API, and UI tests.
 
+US4 implementation evidence delivered on branch `feat/dlv-fr-fpm-009-010-us4-reopen`:
+
+- `internal/fiscalperiod/reopen.go` owns the immutable reopen request package,
+  canonical scoped/operational constraints, pending approval, current Workflow
+  decision revalidation, SoD checks, authoritative GL gate opening, active
+  `Reopening` state, and the internal expiry reconciliation seam that records
+  `ExpiredPendingClosure` without releasing the GL owner.
+- `internal/fiscalperiod/postgres_repository.go` and
+  `db/migrations/fiscal_period/00003_add_reopen_request_lifecycle.sql` retain
+  the request, correction/impact evidence, approval evidence, gate result,
+  expiry, control epoch, close lineage, optimistic versions, audit, and
+  transactional outbox boundary inside the FPM module.
+- `cmd/api/fiscal_period_reopen_workflow.go` is the composition-root adapter to
+  Workflow's query service. FPM receives only the narrow validation port and
+  does not read Workflow storage or tables directly.
+- `internal/platform/httpapi/fiscal_period_reopen_handler.go` maps the
+  approved generic command envelope to `fpmRequestReopen` and
+  `fpmApplyReopenApprovalDecision`; `fiscal_period_handler.go` exposes the
+  established request, approval, scope, expiry, gate, and next-action evidence.
+- `web/src/app/fiscal-period-reopen-workspace.tsx` and the `fpmReopen` route
+  implement `FPM-SCR-03`, keeping pending/rejected/stale/unavailable evidence
+  visibly restrictive and showing the exact approved scope and expiry before
+  active work.
+- Focused domain, API-handler, route, and component tests cover pending/no-gate,
+  rejection, scoped versus operational gate selection, Workflow/SoD and
+  changed-idempotency rejection, expiry ownership retention, and visible UI
+  state. The verification record is
+  `docs/verification/DLV-FR-FPM-009-010-us4-reopen.md`.
+
+Focused local verification passed. The repository fast gate's migration checks
+and changed packages passed, while unrelated listener-based authentication and
+database tests could not bind local TCP sockets in the restricted sandbox.
+PostgreSQL/Testcontainers runtime, browser/accessibility qualification, US5
+closure/reclose, and epic completion remain explicitly deferred.
+
 ### US5 — Close an approved reopen and reclose safely
 
 As a Controller, I want the approved reopen to close deterministically and start a mandatory reclose when a correction was admitted so that a hard-closed period cannot remain partially controlled.
