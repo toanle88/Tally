@@ -66,14 +66,21 @@ func (step CloseStep) Validate() error {
 }
 
 type CloseException struct {
-	ID                uuid.UUID              `json:"id"`
-	CloseRunID        uuid.UUID              `json:"closeRunId"`
-	Code              string                 `json:"code"`
-	Status            string                 `json:"status"`
-	ApprovalRequestID uuid.UUID              `json:"approvalRequestId"`
-	ApprovalDecision  *CloseApprovalDecision `json:"approvalDecision,omitempty"`
-	Blocker           string                 `json:"blocker,omitempty"`
-	ExpiresAt         *time.Time             `json:"expiresAt,omitempty"`
+	ID                uuid.UUID                 `json:"id"`
+	CloseRunID        uuid.UUID                 `json:"closeRunId"`
+	Code              string                    `json:"code"`
+	Status            string                    `json:"status"`
+	Owner             Actor                     `json:"owner,omitempty"`
+	Impact            json.RawMessage           `json:"impact,omitempty"`
+	DueAt             *time.Time                `json:"dueAt,omitempty"`
+	Justification     string                    `json:"justification,omitempty"`
+	ApprovalRequestID uuid.UUID                 `json:"approvalRequestId"`
+	ApprovalDecision  *CloseApprovalDecision    `json:"approvalDecision,omitempty"`
+	Blocker           string                    `json:"blocker,omitempty"`
+	ExpiresAt         *time.Time                `json:"expiresAt,omitempty"`
+	CreatedAt         time.Time                 `json:"createdAt,omitempty"`
+	UpdatedAt         time.Time                 `json:"updatedAt,omitempty"`
+	ExtensionHistory  []CloseExceptionExtension `json:"extensionHistory,omitempty"`
 }
 
 func (exception CloseException) Validate() error {
@@ -82,6 +89,20 @@ func (exception CloseException) Validate() error {
 	}
 	if exception.Status != CloseExceptionUnresolved && exception.Status != CloseExceptionApproved && exception.Status != CloseExceptionRejected && exception.Status != CloseExceptionExpired {
 		return ErrFiscalPeriodStateConflict
+	}
+	if exception.Owner.UserID != uuid.Nil {
+		if err := exception.Owner.Validate(); err != nil {
+			return err
+		}
+	}
+	if len(exception.Impact) > 0 {
+		var object map[string]any
+		if err := json.Unmarshal(exception.Impact, &object); err != nil || object == nil {
+			return ErrFiscalPeriodPolicyConflict
+		}
+	}
+	if exception.DueAt != nil && exception.ExpiresAt != nil && exception.DueAt.After(*exception.ExpiresAt) {
+		return ErrFiscalPeriodPolicyConflict
 	}
 	if exception.ApprovalDecision != nil {
 		if err := exception.ApprovalDecision.Validate(); err != nil {
@@ -92,6 +113,14 @@ func (exception CloseException) Validate() error {
 		}
 	} else if exception.Status == CloseExceptionApproved || exception.Status == CloseExceptionRejected {
 		return ErrFiscalPeriodStateConflict
+	}
+	for _, extension := range exception.ExtensionHistory {
+		if extension.ExceptionID != exception.ID || extension.CloseRunID != exception.CloseRunID {
+			return ErrFiscalPeriodScopeConflict
+		}
+		if err := extension.Validate(); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -155,6 +184,14 @@ type CloseDecisionPort interface {
 // request and candidate fingerprint.
 type ReopenDecisionPort interface {
 	Validate(context.Context, Actor, ReopenRequest, ReopenApprovalDecision) error
+}
+
+// ControlRecoveryDecisionPort is the narrow FPM/Workflow boundary for the
+// dedicated US6 approval evidence used by takeover and exception extension.
+// Workflow owns request creation and decision lifecycle; FPM only validates
+// immutable evidence before applying it.
+type ControlRecoveryDecisionPort interface {
+	Validate(context.Context, Actor, ControlRecoveryApprovalDecision) error
 }
 
 type AuditSealResult struct {
@@ -1565,7 +1602,8 @@ func marshalCloseRunDetails(run *CloseRun) ([]byte, error) {
 		SealFailureDetail      string                  `json:"sealFailureDetail,omitempty"`
 		FinalizationGateResult *gl.SoftCloseGateResult `json:"finalizationGateResult,omitempty"`
 		ReleaseGateResult      *gl.SoftCloseGateResult `json:"releaseGateResult,omitempty"`
-	}{run.Steps, run.Exceptions, run.ApprovalRequestIDs, run.ApprovalDecisions, run.FinalApproval, run.ApprovalPolicyVersion, run.FinalLedgerWatermark, run.SealStatus, run.SealRequestID, run.SealProofReference, run.SealFailureCode, run.SealFailureDetail, run.FinalizationGateResult, run.ReleaseGateResult})
+		ControlAuthority       *ControlAuthority       `json:"controlAuthority,omitempty"`
+	}{run.Steps, run.Exceptions, run.ApprovalRequestIDs, run.ApprovalDecisions, run.FinalApproval, run.ApprovalPolicyVersion, run.FinalLedgerWatermark, run.SealStatus, run.SealRequestID, run.SealProofReference, run.SealFailureCode, run.SealFailureDetail, run.FinalizationGateResult, run.ReleaseGateResult, run.ControlAuthority})
 }
 
 func unmarshalCloseRunDetails(run *CloseRun, data []byte) error {
@@ -1587,6 +1625,7 @@ func unmarshalCloseRunDetails(run *CloseRun, data []byte) error {
 		SealFailureDetail      string                  `json:"sealFailureDetail,omitempty"`
 		FinalizationGateResult *gl.SoftCloseGateResult `json:"finalizationGateResult,omitempty"`
 		ReleaseGateResult      *gl.SoftCloseGateResult `json:"releaseGateResult,omitempty"`
+		ControlAuthority       *ControlAuthority       `json:"controlAuthority,omitempty"`
 	}
 	if err := json.Unmarshal(data, &details); err != nil {
 		return err
@@ -1605,6 +1644,7 @@ func unmarshalCloseRunDetails(run *CloseRun, data []byte) error {
 	run.SealFailureDetail = details.SealFailureDetail
 	run.FinalizationGateResult = details.FinalizationGateResult
 	run.ReleaseGateResult = details.ReleaseGateResult
+	run.ControlAuthority = details.ControlAuthority
 	return nil
 }
 

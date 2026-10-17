@@ -148,6 +148,13 @@ describe('application router', () => {
     expect(screen.getByText(/immutable Workflow decision references/)).toBeInTheDocument()
   })
 
+  it('supports direct entry to the FPM period-control recovery workspace', async () => {
+    renderRoute('/fiscal-periods/fpm-scr-04')
+    expect(await screen.findByRole('heading', { name: 'Recover period control' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Take over period control' })).toBeEnabled()
+    expect(screen.getByText(/GL is never opened, released, or weakened/)).toBeInTheDocument()
+  })
+
   it('supports direct entry to the FPM reopen request and approval workspace', async () => {
     renderRoute('/fiscal-periods/fpm-scr-03')
     expect(await screen.findByRole('heading', { name: 'Request and authorize reopen' })).toBeInTheDocument()

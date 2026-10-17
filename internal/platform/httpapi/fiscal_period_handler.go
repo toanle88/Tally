@@ -420,6 +420,12 @@ func establishedFPMResult(result fiscalperiod.CommandResult, correlationID uuid.
 	if result.State.ReopenRequest != nil {
 		reopenRequest = result.State.ReopenRequest
 	}
+	var authority *fiscalperiod.ControlAuthority
+	if result.State.CloseRun != nil {
+		authority = closeRun.ControlAuthority
+	} else {
+		authority = result.State.SoftClose.ControlAuthority
+	}
 	if nextAction == "" {
 		if reopenRequest != nil {
 			switch reopenRequest.Status {
@@ -468,6 +474,16 @@ func establishedFPMResult(result fiscalperiod.CommandResult, correlationID uuid.
 		"validationOutcome": mustRaw(gate.ValidationOutcome), "decisionReference": mustRaw(gate.DecisionReference.String()),
 		"policyReference": mustRaw(gate.PolicyReference), "auditReference": mustRaw(gate.AuditReference.String()),
 		"nextAction": mustRaw(nextAction), "replayed": mustRaw(result.Replayed), "steps": mustRaw(closeRun.Steps), "exceptions": mustRaw(closeRun.Exceptions), "approvalRequestIds": mustRaw(closeRun.ApprovalRequestIDs), "approvalDecisions": mustRaw(closeRun.ApprovalDecisions), "approvalPolicyVersion": mustRaw(closeRun.ApprovalPolicyVersion), "finalApproval": mustRaw(closeRun.FinalApproval), "finalLedgerWatermark": mustRaw(closeRun.FinalLedgerWatermark), "finalizationGateResult": mustRaw(closeRun.FinalizationGateResult), "releaseGateResult": mustRaw(closeRun.ReleaseGateResult), "sealStatus": mustRaw(closeRun.SealStatus), "sealRequestId": mustRaw(closeRun.SealRequestID), "sealProofReference": mustRaw(closeRun.SealProofReference), "sealFailureCode": mustRaw(closeRun.SealFailureCode), "sealFailureDetail": mustRaw(closeRun.SealFailureDetail), "lastFailureCode": mustRaw(closeRun.LastFailureCode), "lastFailureDetail": mustRaw(closeRun.LastFailureDetail),
+		"controlAuthority": mustRaw(authority), "authoritativeGateStatus": mustRaw(gate.Gate), "pendingReconciliation": mustRaw(false), "replayStatus": mustRaw(map[bool]string{true: "replayed", false: "established"}[result.Replayed]), "exceptionExtensionHistory": mustRaw(exceptionExtensionHistory(closeRun.Exceptions)),
+	}
+	if authority != nil {
+		data["ownerId"] = mustRaw(authority.CurrentOwner.UserID.String())
+		data["ownerSubjectReference"] = mustRaw(authority.CurrentOwner.SubjectReference)
+		data["authorityEpoch"] = mustRaw(authority.AuthorityEpoch)
+		data["authorityVersion"] = mustRaw(authority.Version)
+		data["authorityExpiresAt"] = mustRaw(authority.ExpiresAt)
+		data["controlCutoffAt"] = mustRaw(authority.CutoffAt)
+		data["ownershipHistory"] = mustRaw(authority.OwnershipHistory)
 	}
 	if reopenRequest != nil {
 		data["reopenRequestId"] = mustRaw(reopenRequest.ID.String())
@@ -492,10 +508,21 @@ func establishedFPMResult(result fiscalperiod.CommandResult, correlationID uuid.
 		data["frozenAdmissionSummary"] = mustRaw(closeRun.BarrierEvidence.FrozenSummary)
 	}
 	processID := closeRun.ID
+	if processID == uuid.Nil {
+		processID = result.State.SoftClose.ID
+	}
 	if processID == uuid.Nil && reopenRequest != nil {
 		processID = reopenRequest.ID
 	}
 	return &generated.EstablishedResult{Status: "established", AggregateId: generated.UUID(period.ID), AggregateVersion: int(period.AggregateVersion), ProcessId: generated.NewOptNilUUID(generated.UUID(processID)), CorrelationId: generated.UUID(correlationID), Links: generated.Links{Self: self}, Data: data}
+}
+
+func exceptionExtensionHistory(exceptions []fiscalperiod.CloseException) []fiscalperiod.CloseExceptionExtension {
+	var history []fiscalperiod.CloseExceptionExtension
+	for _, exception := range exceptions {
+		history = append(history, exception.ExtensionHistory...)
+	}
+	return history
 }
 
 func fiscalperiodGateEvidenceResult(run fiscalperiod.CloseRun) gl.SoftCloseGateResult {
@@ -600,12 +627,18 @@ func mapFPMError[T any](err error, correlationID uuid.UUID, problem fpmProblemFa
 		status, code, detail = http.StatusConflict, "CLOSE_TASK_FAILED", "A mandatory close task failed. Resolve the task and resume the existing close run."
 	case errors.Is(err, fiscalperiod.ErrCloseDecisionRejected):
 		status, code, detail = http.StatusConflict, "APPROVAL_INVALIDATED", "The approval decision is stale, mismatched, rejected, or violates the current close-run evidence."
+	case errors.Is(err, fiscalperiod.ErrControlRecoveryDecisionRejected):
+		status, code, detail = http.StatusConflict, "APPROVAL_INVALIDATED", "The recovery approval decision is stale, mismatched, rejected, or violates the current recovery candidate evidence."
+	case errors.Is(err, fiscalperiod.ErrFiscalPeriodControlAuthorityMissing), errors.Is(err, fiscalperiod.ErrFiscalPeriodRecoveryNotEligible):
+		status, code, detail = http.StatusConflict, "RECOVERY_NOT_ELIGIBLE", "The process has no eligible control authority or is not in an interrupted recoverable state."
+	case errors.Is(err, fiscalperiod.ErrCloseExceptionExtensionRejected):
+		status, code, detail = http.StatusConflict, "EXCEPTION_EXTENSION_REJECTED", "The close exception or close run cannot be extended in its current state."
 	case errors.Is(err, fiscalperiod.ErrReopenDecisionRejected):
 		status, code, detail = http.StatusConflict, "APPROVAL_INVALIDATED", "The reopen approval decision is stale, mismatched, rejected, or violates the current reopen evidence."
 	case errors.Is(err, fiscalperiod.ErrReopenGateRejected):
 		status, code, detail = http.StatusUnprocessableEntity, "REOPEN_GATE_REJECTED", "GL rejected the reopen gate request. The period remains restrictive."
-	case errors.Is(err, fiscalperiod.ErrReopenDecisionUnavailable), errors.Is(err, fiscalperiod.ErrReopenGateUnavailable):
-		code, detail = "DEPENDENCY_UNAVAILABLE", "A required reopen dependency is unavailable. The period remains restrictive and the request is retryable."
+	case errors.Is(err, fiscalperiod.ErrReopenDecisionUnavailable), errors.Is(err, fiscalperiod.ErrReopenGateUnavailable), errors.Is(err, fiscalperiod.ErrControlRecoveryDecisionUnavailable):
+		code, detail = "DEPENDENCY_UNAVAILABLE", "A required period-control dependency is unavailable. The period remains restrictive and the request is retryable."
 	case errors.Is(err, fiscalperiod.ErrCloseFinalizationPending):
 		status, code, detail = http.StatusConflict, "FINALIZATION_PENDING", "The authoritative finalization result is not yet confirmed. Resume the existing close run."
 	case errors.Is(err, fiscalperiod.ErrFiscalPeriodAuditUnavailable), errors.Is(err, fiscalperiod.ErrFiscalPeriodOutboxUnavailable):

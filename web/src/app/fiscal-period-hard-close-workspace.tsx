@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react'
 
-import { fpmAbortCloseRun, fpmApplyCloseApprovalDecision, fpmApplyCloseExceptionApprovalDecision, fpmResumeCloseRun, fpmStartHardClose } from '@/generated/api/sdk.gen'
+import { fpmAbortCloseRun, fpmApplyCloseApprovalDecision, fpmApplyCloseExceptionApprovalDecision, fpmExtendCloseException, fpmResumeCloseRun, fpmStartHardClose } from '@/generated/api/sdk.gen'
 import type { EstablishedResult } from '@/generated/api/types.gen'
 import { ProcessProgressPanel } from '@/components/process-progress-panel'
 import type { ProcessState, ProcessStepStatus } from '@/components/operational-context'
@@ -33,6 +33,16 @@ function newIdentifier() {
   return globalThis.crypto?.randomUUID?.() ?? `ui-${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
+function localDateTimeValue(date: Date) {
+  const offset = date.getTimezoneOffset() * 60_000
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16)
+}
+
+function rfc3339(value: string) {
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? '' : parsed.toISOString()
+}
+
 function resultValue<T>(result: EstablishedResult, key: string): T | undefined {
   return result.data[key] as T | undefined
 }
@@ -41,6 +51,29 @@ function displayValue(value: unknown) {
   if (value === undefined || value === null || value === '') return '—'
   if (typeof value === 'object') return JSON.stringify(value)
   return String(value)
+}
+
+function exceptionOwner(row: Record<string, unknown>) {
+  if (typeof row.ownerId === 'string' && row.ownerId.trim() !== '') return row.ownerId
+  const owner = row.owner
+  if (owner && typeof owner === 'object' && !Array.isArray(owner)) {
+    const ownerRecord = owner as Record<string, unknown>
+    if (typeof ownerRecord.userId === 'string' && ownerRecord.userId.trim() !== '') return ownerRecord.userId
+    if (typeof ownerRecord.subjectReference === 'string' && ownerRecord.subjectReference.trim() !== '') return ownerRecord.subjectReference
+  }
+  return '—'
+}
+
+function exceptionAge(row: Record<string, unknown>) {
+  const reported = row.blockerAge ?? row.age
+  if (reported !== undefined && reported !== null && reported !== '') return reported
+  if (typeof row.createdAt !== 'string') return 'Not reported'
+  const createdAt = Date.parse(row.createdAt)
+  if (!Number.isFinite(createdAt)) return 'Not reported'
+  const elapsed = Math.max(0, Date.now() - createdAt)
+  if (elapsed < 60 * 60 * 1000) return 'Under 1 hour'
+  if (elapsed < 24 * 60 * 60 * 1000) return `${Math.floor(elapsed / (60 * 60 * 1000))} hours`
+  return `${Math.floor(elapsed / (24 * 60 * 60 * 1000))} days`
 }
 
 function errorCode(error: unknown) {
@@ -196,6 +229,11 @@ function FiscalPeriodHardCloseScopeWorkspace({ currentScope, screen }: { current
   const [decisionReason, setDecisionReason] = useState('Close evidence reviewed by the independent approver.')
   const [decisionOutcome, setDecisionOutcome] = useState<'approved' | 'rejected'>('approved')
   const [finalLedgerWatermark, setFinalLedgerWatermark] = useState('')
+  const [extensionJustification, setExtensionJustification] = useState('The owning capability needs additional time to resolve the recorded blocker.')
+  const [extensionDueAt, setExtensionDueAt] = useState(() => localDateTimeValue(new Date(Date.now() + 2 * 60 * 60 * 1000)))
+  const [extensionExpiresAt, setExtensionExpiresAt] = useState(() => localDateTimeValue(new Date(Date.now() + 4 * 60 * 60 * 1000)))
+  const [extensionEvidenceReference, setExtensionEvidenceReference] = useState('')
+  const [extensionCandidateFingerprint, setExtensionCandidateFingerprint] = useState('')
   const commandIdentity = useRef<CommandIdentity | null>(null)
   const closeActionIdentities = useRef<Record<string, CommandIdentity>>({})
 
@@ -326,6 +364,11 @@ function FiscalPeriodHardCloseScopeWorkspace({ currentScope, screen }: { current
   const approvalReady = Boolean(result && effectiveApprovalRequestId && decisionId && decisionReference && approverUserId && separationOfDutiesReference && effectiveCandidateFingerprint && effectiveSubjectVersion && effectivePolicyVersion && decisionReason)
   const exceptionApprovalReady = Boolean(approvalReady && effectiveExceptionId)
   const finalApprovalReady = Boolean(approvalReady && (decisionOutcome === 'rejected' || Number(effectiveFinalWatermark) >= 1))
+  const extensionDue = new Date(extensionDueAt)
+  const extensionExpires = new Date(extensionExpiresAt)
+  const extensionWindowReady = Number.isFinite(extensionDue.getTime()) && Number.isFinite(extensionExpires.getTime()) && extensionDue.getTime() > Date.now() && extensionExpires.getTime() > Date.now() && extensionDue.getTime() <= extensionExpires.getTime()
+  const extensionApprovalReady = Boolean(screen === 'FPM-SCR-05' && result && effectiveExceptionId && effectiveApprovalRequestId && decisionId && decisionReference && approverUserId && separationOfDutiesReference && extensionCandidateFingerprint && effectiveSubjectVersion && effectivePolicyVersion && decisionReason && extensionJustification.trim() && extensionEvidenceReference.trim() && rfc3339(extensionDueAt) && rfc3339(extensionExpiresAt) && extensionWindowReady)
+  const safeNextAction = result ? resultValue<string>(result, 'nextAction') : undefined
   const title = screen === 'FPM-SCR-05' ? 'Review close exceptions and approvals' : screen === 'FPM-SCR-02' ? 'Start hard close' : 'Execute and recover hard close'
 
   const commandFor = (identity: CommandIdentity, data: Record<string, unknown>, expectedPeriodVersion: number) => ({ body: { commandId: identity.commandId, expectedVersion: expectedPeriodVersion, accountingScopeId: currentScope.id, data }, headers: { 'Idempotency-Key': identity.idempotencyKey, 'X-Accounting-Scope-Id': currentScope.id, 'X-Correlation-Id': identity.correlationId } })
@@ -374,6 +417,7 @@ function FiscalPeriodHardCloseScopeWorkspace({ currentScope, screen }: { current
     <Panel title="Exception and final approval evidence" description="Supply immutable Workflow decision references against the current close-run fingerprint and aggregate version. The final action also requires independent SoD evidence and a ledger watermark.">
       <div className="grid gap-4 md:grid-cols-2"><Field id="fpm-close-exception-id" label="Close exception ID" value={exceptionId || effectiveExceptionId} onChange={(event) => setExceptionId(event.target.value)} disabled={!result || saving} description="Defaults to the first returned exception." /><Field id="fpm-close-approval-request-id" label="Approval request ID" value={approvalRequestId || effectiveApprovalRequestId} onChange={(event) => setApprovalRequestId(event.target.value)} disabled={!result || saving} /><Field id="fpm-close-decision-id" label="Decision ID" value={decisionId} onChange={(event) => setDecisionId(event.target.value)} disabled={!result || saving} /><Field id="fpm-close-decision-reference" label="Decision reference" value={decisionReference} onChange={(event) => setDecisionReference(event.target.value)} disabled={!result || saving} /><Field id="fpm-close-approver-user-id" label="Approver user ID" value={approverUserId} onChange={(event) => setApproverUserId(event.target.value)} disabled={!result || saving} /><Field id="fpm-close-sod-reference" label="Separation-of-duties reference" value={separationOfDutiesReference} onChange={(event) => setSeparationOfDutiesReference(event.target.value)} disabled={!result || saving} /><Field id="fpm-close-candidate-fingerprint" label="Candidate command fingerprint" value={candidateFingerprint || effectiveCandidateFingerprint} onChange={(event) => setCandidateFingerprint(event.target.value)} disabled={!result || saving} /><Field id="fpm-close-subject-version" label="Close-run subject version" type="number" min="1" value={subjectVersion || effectiveSubjectVersion} onChange={(event) => setSubjectVersion(event.target.value)} disabled={!result || saving} /><Field id="fpm-close-approval-policy-version" label="Approval policy version" value={approvalPolicyVersion || effectivePolicyVersion} onChange={(event) => setApprovalPolicyVersion(event.target.value)} disabled={!result || saving} /><Field id="fpm-close-decision-reason" label="Decision reason" value={decisionReason} onChange={(event) => setDecisionReason(event.target.value)} disabled={!result || saving} /><Field id="fpm-close-ledger-watermark" label="Final ledger watermark" type="number" min="1" value={finalLedgerWatermark || effectiveFinalWatermark} onChange={(event) => setFinalLedgerWatermark(event.target.value)} disabled={!result || saving} /><div><label className="label cursor-pointer justify-start gap-2" htmlFor="fpm-close-decision-outcome"><span className="font-medium text-base-content">Decision outcome</span></label><Select id="fpm-close-decision-outcome" value={decisionOutcome} onChange={(event) => setDecisionOutcome(event.target.value as 'approved' | 'rejected')} disabled={!result || saving}><option value="approved">Approved</option><option value="rejected">Rejected</option></Select></div></div>
       <div className="mt-5 flex flex-wrap gap-3"><Button disabled={!exceptionApprovalReady || saving} onClick={() => { if (!result || !evidence || !exceptionApprovalReady) return; const data = { ...startCloseData, exceptionId: effectiveExceptionId, approvalRequestId: effectiveApprovalRequestId, decisionId, decisionVersion: 1, outcome: decisionOutcome, decisionReason, approvalPolicyVersion: effectivePolicyVersion, subjectVersion: Number(effectiveSubjectVersion), candidateFingerprint: effectiveCandidateFingerprint, decisionReference, approverUserId, separationOfDutiesReference, recordedAt: new Date().toISOString() }; void executeCloseAction('exception-approval', 'Apply close-exception approval decision', data, evidence.expectedPeriodVersion, (identity) => fpmApplyCloseExceptionApprovalDecision(commandFor(identity, data, evidence.expectedPeriodVersion))) }}>Apply close-exception approval decision</Button><Button disabled={!finalApprovalReady || saving} onClick={() => { if (!result || !evidence || !finalApprovalReady) return; const data = { ...startCloseData, approvalRequestId: effectiveApprovalRequestId, decisionId, decisionVersion: 1, outcome: decisionOutcome, decisionReason, approvalPolicyVersion: effectivePolicyVersion, subjectVersion: Number(effectiveSubjectVersion), candidateFingerprint: effectiveCandidateFingerprint, decisionReference, approverUserId, separationOfDutiesReference, finalLedgerWatermark: Number(effectiveFinalWatermark), recordedAt: new Date().toISOString() }; void executeCloseAction('final-approval', 'Apply final close approval decision', data, evidence.expectedPeriodVersion, (identity) => fpmApplyCloseApprovalDecision(commandFor(identity, data, evidence.expectedPeriodVersion))) }}>Apply final close approval decision</Button></div>
+      {screen === 'FPM-SCR-05' ? <div className="mt-6 rounded-box border border-base-300 p-4"><h3 className="font-semibold">Exception extension review</h3><p className="mt-1 text-sm text-base-content/70">An extension preserves the current exception as unresolved and stores a separate approval decision. It cannot finalize the close or weaken the GL gate.</p>{firstException ? <dl className="mt-4 grid gap-3 sm:grid-cols-2"><div><dt className="text-sm text-base-content/65">Owner</dt><dd>{exceptionOwner(firstException)}</dd></div><div><dt className="text-sm text-base-content/65">Impact</dt><dd>{displayValue(firstException.impact)}</dd></div><div><dt className="text-sm text-base-content/65">Current due time</dt><dd>{displayValue(firstException.dueAt)}</dd></div><div><dt className="text-sm text-base-content/65">Blocker age</dt><dd>{displayValue(exceptionAge(firstException))}</dd></div><div className="sm:col-span-2"><dt className="text-sm text-base-content/65">Justification</dt><dd>{displayValue(firstException.justification ?? firstException.blocker)}</dd></div><div className="sm:col-span-2"><dt className="text-sm text-base-content/65">Extension approval evidence/history</dt><dd>{displayValue(firstException.extensionHistory)}</dd></div></dl> : <p role="note" className="mt-4 text-sm text-base-content/70">Load a current close-run result before extending an exception.</p>}<p role="note" className="mt-4 text-sm text-base-content/75">Safe next action: {displayValue(safeNextAction ?? 'Resolve the blocker or obtain an independent extension approval; keep the restrictive gate unchanged.')}</p><div className="mt-4 grid gap-4 md:grid-cols-2"><Field id="fpm-close-extension-justification" label="Extension justification" value={extensionJustification} onChange={(event) => setExtensionJustification(event.target.value)} disabled={!result || saving} /><Field id="fpm-close-extension-evidence" label="Extension evidence reference" value={extensionEvidenceReference} onChange={(event) => setExtensionEvidenceReference(event.target.value)} disabled={!result || saving} /><Field id="fpm-close-extension-due-at" label="New due time" type="datetime-local" value={extensionDueAt} onChange={(event) => setExtensionDueAt(event.target.value)} disabled={!result || saving} /><Field id="fpm-close-extension-expires-at" label="New approval expiry" type="datetime-local" value={extensionExpiresAt} onChange={(event) => setExtensionExpiresAt(event.target.value)} disabled={!result || saving} /><Field id="fpm-close-extension-candidate" label="Extension candidate fingerprint" value={extensionCandidateFingerprint} onChange={(event) => setExtensionCandidateFingerprint(event.target.value)} disabled={!result || saving} description="This fingerprint is independent from the original close approval candidate." /></div><div className="mt-4 flex flex-wrap gap-3"><Button disabled={!extensionApprovalReady || saving} onClick={() => { if (!result || !evidence || !extensionApprovalReady) return; const dueAt = rfc3339(extensionDueAt); const expiresAt = rfc3339(extensionExpiresAt); const data = { fiscalPeriodId: periodId, closeRunId: resultValue<string>(result, 'closeRunId') ?? '', exceptionId: effectiveExceptionId, expectedCloseRunVersion: resultNumber(result, 'closeRunAggregateVersion', evidence.expectedPeriodVersion), expectedGateVersion: resultNumber(result, 'gateVersion', Number(expectedGateVersion)), expectedControlAuthorityVersion: resultNumber(result, 'authorityVersion', 1), expectedControlAuthorityEpoch: resultNumber(result, 'authorityEpoch', Number(controlEpoch)), justification: extensionJustification.trim(), newDueAt: dueAt, newExpiresAt: expiresAt, evidenceReference: extensionEvidenceReference.trim(), approvalRequestId: effectiveApprovalRequestId, decisionId, decisionVersion: 1, outcome: decisionOutcome, decisionReason, approvalPolicyVersion: effectivePolicyVersion, subjectVersion: Number(effectiveSubjectVersion), candidateFingerprint: extensionCandidateFingerprint.trim(), decisionReference, approverUserId, separationOfDutiesReference, recordedAt: new Date().toISOString() }; void executeCloseAction('exception-extension', 'Extend close exception', data, evidence.expectedPeriodVersion, (identity) => fpmExtendCloseException(commandFor(identity, data, evidence.expectedPeriodVersion))) }}>Extend current close exception</Button></div>{result && !extensionApprovalReady ? <p role="note" className="mt-3 text-sm text-base-content/70">Extension requires a current exception, future due/expiry values in order, a separate candidate fingerprint, and independent Workflow evidence.</p> : null}</div> : null}
       {result && !approvalReady ? <p role="note" className="mt-4 rounded-box border border-warning/40 bg-warning/5 p-3 text-sm">Workflow evidence is incomplete. Current exception/approval identifiers, decision references, the close-run fingerprint and subject version, independent approver, SoD reference, and reason are required before an approval action is enabled.</p> : null}
       {result && steps.length === 0 && exceptions.length === 0 ? <p role="note" className="mt-4 text-sm text-base-content/70">No close exceptions or task evidence have been returned yet. Resume the run to obtain the owning capability progress projection.</p> : null}
     </Panel>

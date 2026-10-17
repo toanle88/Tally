@@ -59,6 +59,9 @@ func (repository *PostgresRepository) commitMutation(ctx context.Context, mutati
 	if err := mutation.After.Validate(); err != nil {
 		return err
 	}
+	if err := validateControlAuthorityMutation(mutation.Before, mutation.After); err != nil {
+		return err
+	}
 	tx, err := repository.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -146,11 +149,15 @@ func (repository *PostgresRepository) Seed(ctx context.Context, state ControlSta
 		state.Period.ID, state.Period.AccountingScopeID, state.Period.State, state.Period.StateVersion, state.Period.AggregateVersion, state.Period.ActiveSoftCloseRunID, state.Period.ActiveCloseRunID, state.Period.CreatedAt, state.Period.UpdatedAt); err != nil {
 		return mapFiscalPeriodPostgresError(err)
 	}
+	controlAuthority, err := nullableJSON(state.SoftClose.ControlAuthority)
+	if err != nil {
+		return err
+	}
 	if _, err := tx.Exec(ctx, `
-		INSERT INTO fiscal_period.soft_close_run (soft_close_run_id, accounting_scope_id, fiscal_period_id, status, control_epoch, opened_gate_version, policy_version, aggregate_version, created_at, updated_at)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-		ON CONFLICT (soft_close_run_id) DO UPDATE SET status=EXCLUDED.status, control_epoch=EXCLUDED.control_epoch, opened_gate_version=EXCLUDED.opened_gate_version, policy_version=EXCLUDED.policy_version, aggregate_version=EXCLUDED.aggregate_version, updated_at=EXCLUDED.updated_at`,
-		state.SoftClose.ID, state.SoftClose.AccountingScopeID, state.SoftClose.FiscalPeriodID, state.SoftClose.Status, state.SoftClose.ControlEpoch, state.SoftClose.OpenedGateVersion, state.SoftClose.PolicyVersion, state.SoftClose.AggregateVersion, state.SoftClose.CreatedAt, state.SoftClose.UpdatedAt); err != nil {
+		INSERT INTO fiscal_period.soft_close_run (soft_close_run_id, accounting_scope_id, fiscal_period_id, status, control_epoch, opened_gate_version, policy_version, aggregate_version, control_authority, created_at, updated_at)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+		ON CONFLICT (soft_close_run_id) DO UPDATE SET status=EXCLUDED.status, control_epoch=EXCLUDED.control_epoch, opened_gate_version=EXCLUDED.opened_gate_version, policy_version=EXCLUDED.policy_version, aggregate_version=EXCLUDED.aggregate_version, control_authority=EXCLUDED.control_authority, updated_at=EXCLUDED.updated_at`,
+		state.SoftClose.ID, state.SoftClose.AccountingScopeID, state.SoftClose.FiscalPeriodID, state.SoftClose.Status, state.SoftClose.ControlEpoch, state.SoftClose.OpenedGateVersion, state.SoftClose.PolicyVersion, state.SoftClose.AggregateVersion, controlAuthority, state.SoftClose.CreatedAt, state.SoftClose.UpdatedAt); err != nil {
 		return mapFiscalPeriodPostgresError(err)
 	}
 	if err := upsertControlEpoch(ctx, tx, state.ControlEpoch); err != nil {
@@ -195,7 +202,8 @@ func readControlState(ctx context.Context, queryer fiscalPeriodQueryer, scopeID,
 	period.ActiveCloseRunID = activeCloseRunID
 
 	var run SoftCloseRun
-	softCloseQuery := `SELECT soft_close_run_id, accounting_scope_id, fiscal_period_id, status, control_epoch, opened_gate_version, policy_version, aggregate_version, created_at, updated_at FROM fiscal_period.soft_close_run WHERE accounting_scope_id=$1 AND fiscal_period_id=$2`
+	var controlAuthorityJSON []byte
+	softCloseQuery := `SELECT soft_close_run_id, accounting_scope_id, fiscal_period_id, status, control_epoch, opened_gate_version, policy_version, aggregate_version, control_authority, created_at, updated_at FROM fiscal_period.soft_close_run WHERE accounting_scope_id=$1 AND fiscal_period_id=$2`
 	softCloseArgs := []any{scopeID, periodID}
 	if activeSoftCloseRunID != nil {
 		softCloseQuery += ` AND soft_close_run_id=$3`
@@ -203,12 +211,19 @@ func readControlState(ctx context.Context, queryer fiscalPeriodQueryer, scopeID,
 	} else {
 		softCloseQuery += ` ORDER BY updated_at DESC, soft_close_run_id DESC LIMIT 1`
 	}
-	err = queryer.QueryRow(ctx, softCloseQuery+lock, softCloseArgs...).Scan(&run.ID, &run.AccountingScopeID, &run.FiscalPeriodID, &run.Status, &run.ControlEpoch, &run.OpenedGateVersion, &run.PolicyVersion, &run.AggregateVersion, &run.CreatedAt, &run.UpdatedAt)
+	err = queryer.QueryRow(ctx, softCloseQuery+lock, softCloseArgs...).Scan(&run.ID, &run.AccountingScopeID, &run.FiscalPeriodID, &run.Status, &run.ControlEpoch, &run.OpenedGateVersion, &run.PolicyVersion, &run.AggregateVersion, &controlAuthorityJSON, &run.CreatedAt, &run.UpdatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return ControlState{}, ErrFiscalPeriodNotFound
 	}
 	if err != nil {
 		return ControlState{}, mapFiscalPeriodPostgresError(err)
+	}
+	if len(controlAuthorityJSON) > 0 && string(controlAuthorityJSON) != "null" {
+		var authority ControlAuthority
+		if err := json.Unmarshal(controlAuthorityJSON, &authority); err != nil {
+			return ControlState{}, err
+		}
+		run.ControlAuthority = &authority
 	}
 
 	var epoch SoftCloseControlEpoch
@@ -314,10 +329,14 @@ func updatePeriod(ctx context.Context, tx pgx.Tx, before, after FiscalPeriod) er
 }
 
 func updateSoftCloseRun(ctx context.Context, tx pgx.Tx, before, after SoftCloseRun) error {
-	if before == after {
+	if softCloseRunEqual(before, after) {
 		return nil
 	}
-	tag, err := tx.Exec(ctx, `UPDATE fiscal_period.soft_close_run SET status=$1, control_epoch=$2, opened_gate_version=$3, policy_version=$4, aggregate_version=$5, updated_at=$6 WHERE soft_close_run_id=$7 AND aggregate_version=$8`, after.Status, after.ControlEpoch, after.OpenedGateVersion, after.PolicyVersion, after.AggregateVersion, after.UpdatedAt, after.ID, before.AggregateVersion)
+	authority, err := nullableJSON(after.ControlAuthority)
+	if err != nil {
+		return err
+	}
+	tag, err := tx.Exec(ctx, `UPDATE fiscal_period.soft_close_run SET status=$1, control_epoch=$2, opened_gate_version=$3, policy_version=$4, aggregate_version=$5, control_authority=$6, updated_at=$7 WHERE soft_close_run_id=$8 AND aggregate_version=$9`, after.Status, after.ControlEpoch, after.OpenedGateVersion, after.PolicyVersion, after.AggregateVersion, authority, after.UpdatedAt, after.ID, before.AggregateVersion)
 	if err != nil {
 		return mapFiscalPeriodPostgresError(err)
 	}
@@ -335,6 +354,12 @@ func updateControlEpoch(ctx context.Context, tx pgx.Tx, before, after SoftCloseC
 }
 
 func controlEpochEqual(left, right SoftCloseControlEpoch) bool {
+	leftData, leftErr := json.Marshal(left)
+	rightData, rightErr := json.Marshal(right)
+	return leftErr == nil && rightErr == nil && string(leftData) == string(rightData)
+}
+
+func softCloseRunEqual(left, right SoftCloseRun) bool {
 	leftData, leftErr := json.Marshal(left)
 	rightData, rightErr := json.Marshal(right)
 	return leftErr == nil && rightErr == nil && string(leftData) == string(rightData)

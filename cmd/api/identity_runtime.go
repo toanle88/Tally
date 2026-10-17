@@ -58,6 +58,8 @@ const (
 	fpmRequestReopenOperationID               = "fiscal-period.request-reopen.v1"
 	fpmApplyReopenApprovalOperationID         = "fiscal-period.apply-reopen-approval-decision.v1"
 	fpmStartRecloseOperationID                = "fiscal-period.start-reclose.v1"
+	fpmTakeOverPeriodControlOperationID       = "fiscal-period.take-over-period-control.v1"
+	fpmExtendCloseExceptionOperationID        = "fiscal-period.extend-close-exception.v1"
 )
 
 func newIdentityAPIServerWithPostgres(getenv func(string) string, pool *pgxpool.Pool, auditWriter identity.PostgresAuditWriter, instrumentation ...*telemetry.Instrumentation) (http.Handler, *organization.LegalEntityService) {
@@ -422,6 +424,8 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 			RequestReopenOperationID:               fpmRequestReopenOperationID,
 			ApplyReopenApprovalOperationID:         fpmApplyReopenApprovalOperationID,
 			StartRecloseOperationID:                fpmStartRecloseOperationID,
+			TakeOverPeriodControlOperationID:       fpmTakeOverPeriodControlOperationID,
+			ExtendCloseExceptionOperationID:        fpmExtendCloseExceptionOperationID,
 		},
 	)
 	if err != nil {
@@ -472,6 +476,9 @@ func newIdentityAPIServerWithPostgresRepository(getenv func(string) string, pool
 	}
 	if err := fiscalPeriodService.BindReopenDecisionPort(fiscalPeriodReopenWorkflowValidator{queries: workflowRequestQueries}); err != nil {
 		return identityUnavailableHandler("fiscal-period reopen workflow boundary unavailable"), nil
+	}
+	if err := fiscalPeriodService.BindControlRecoveryDecisionPort(fiscalPeriodRecoveryWorkflowValidator{queries: workflowRequestQueries}); err != nil {
+		return identityUnavailableHandler("fiscal-period control-recovery workflow boundary unavailable"), nil
 	}
 	workflowPolicyService, err := workflow.NewApprovalPolicyServiceWithDurableIdempotency(
 		workflowPolicyRepository,
@@ -1086,6 +1093,9 @@ func newIdentityAPIServerWithRepository(getenv func(string) string, repository i
 	}
 	if err := fiscalPeriodService.BindReopenDecisionPort(fiscalPeriodReopenWorkflowValidator{queries: workflowRequestQueries}); err != nil {
 		return identityUnavailableHandler("fiscal-period reopen workflow boundary unavailable"), nil
+	}
+	if err := fiscalPeriodService.BindControlRecoveryDecisionPort(fiscalPeriodRecoveryWorkflowValidator{queries: workflowRequestQueries}); err != nil {
+		return identityUnavailableHandler("fiscal-period control-recovery workflow boundary unavailable"), nil
 	}
 	workflowPolicyService, err := workflow.NewApprovalPolicyService(
 		workflowPolicyRepository,
