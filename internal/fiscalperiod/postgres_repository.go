@@ -223,8 +223,8 @@ func readControlState(ctx context.Context, queryer fiscalPeriodQueryer, scopeID,
 	}
 
 	var closeRun CloseRun
-	var barrierEvidenceJSON []byte
-	err = queryer.QueryRow(ctx, `SELECT close_run_id, accounting_scope_id, fiscal_period_id, close_type, status, aggregate_version, command_fingerprint, barrier_command_id, barrier_idempotency_key, barrier_evidence, last_failure_code, last_failure_detail, created_at, updated_at FROM fiscal_period.close_run WHERE accounting_scope_id=$1 AND fiscal_period_id=$2 ORDER BY updated_at DESC, close_run_id DESC LIMIT 1`+lock, scopeID, periodID).Scan(&closeRun.ID, &closeRun.AccountingScopeID, &closeRun.FiscalPeriodID, &closeRun.CloseType, &closeRun.Status, &closeRun.AggregateVersion, &closeRun.CommandFingerprint, &closeRun.BarrierCommandID, &closeRun.BarrierIdempotencyKey, &barrierEvidenceJSON, &closeRun.LastFailureCode, &closeRun.LastFailureDetail, &closeRun.CreatedAt, &closeRun.UpdatedAt)
+	var barrierEvidenceJSON, closeRunDetailsJSON []byte
+	err = queryer.QueryRow(ctx, `SELECT close_run_id, accounting_scope_id, fiscal_period_id, close_type, status, aggregate_version, command_fingerprint, barrier_command_id, barrier_idempotency_key, barrier_evidence, close_run_details, last_failure_code, last_failure_detail, created_at, updated_at FROM fiscal_period.close_run WHERE accounting_scope_id=$1 AND fiscal_period_id=$2 ORDER BY CASE WHEN status IN ('Initiating', 'BarrierAcquired', 'InProgress', 'AwaitingApproval', 'Finalizing', 'Failed', 'Aborting') THEN 0 ELSE 1 END, updated_at DESC, close_run_id DESC LIMIT 1`+lock, scopeID, periodID).Scan(&closeRun.ID, &closeRun.AccountingScopeID, &closeRun.FiscalPeriodID, &closeRun.CloseType, &closeRun.Status, &closeRun.AggregateVersion, &closeRun.CommandFingerprint, &closeRun.BarrierCommandID, &closeRun.BarrierIdempotencyKey, &barrierEvidenceJSON, &closeRunDetailsJSON, &closeRun.LastFailureCode, &closeRun.LastFailureDetail, &closeRun.CreatedAt, &closeRun.UpdatedAt)
 	var closeRunPtr *CloseRun
 	if errors.Is(err, pgx.ErrNoRows) {
 		closeRunPtr = nil
@@ -237,6 +237,9 @@ func readControlState(ctx context.Context, queryer fiscalPeriodQueryer, scopeID,
 				return ControlState{}, err
 			}
 			closeRun.BarrierEvidence = &evidence
+		}
+		if err := unmarshalCloseRunDetails(&closeRun, closeRunDetailsJSON); err != nil {
+			return ControlState{}, err
 		}
 		closeRunPtr = &closeRun
 	}
@@ -321,21 +324,26 @@ func updateCloseRun(ctx context.Context, tx pgx.Tx, before, after *CloseRun) err
 		return nil
 	}
 	if before == nil {
-		evidence, err := nullableJSON(after.BarrierEvidence)
-		if err != nil {
-			return err
-		}
-		_, err = tx.Exec(ctx, `INSERT INTO fiscal_period.close_run (close_run_id, accounting_scope_id, fiscal_period_id, close_type, status, aggregate_version, command_fingerprint, barrier_command_id, barrier_idempotency_key, barrier_evidence, last_failure_code, last_failure_detail, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`, after.ID, after.AccountingScopeID, after.FiscalPeriodID, after.CloseType, after.Status, after.AggregateVersion, after.CommandFingerprint, after.BarrierCommandID, after.BarrierIdempotencyKey, evidence, nullableText(after.LastFailureCode), nullableText(after.LastFailureDetail), after.CreatedAt, after.UpdatedAt)
-		return mapFiscalPeriodPostgresError(err)
+		return insertCloseRun(ctx, tx, after)
 	}
 	if after == nil {
 		return nil
+	}
+	if before.ID != after.ID {
+		// A released initial close remains immutable history. The next hard-close
+		// attempt inserts a new process identity instead of overwriting the
+		// aborted run row.
+		return insertCloseRun(ctx, tx, after)
 	}
 	evidence, err := nullableJSON(after.BarrierEvidence)
 	if err != nil {
 		return err
 	}
-	tag, err := tx.Exec(ctx, `UPDATE fiscal_period.close_run SET status=$1, aggregate_version=$2, barrier_evidence=$3, last_failure_code=$4, last_failure_detail=$5, updated_at=$6 WHERE close_run_id=$7 AND aggregate_version=$8`, after.Status, after.AggregateVersion, evidence, nullableText(after.LastFailureCode), nullableText(after.LastFailureDetail), after.UpdatedAt, after.ID, before.AggregateVersion)
+	details, err := marshalCloseRunDetails(after)
+	if err != nil {
+		return err
+	}
+	tag, err := tx.Exec(ctx, `UPDATE fiscal_period.close_run SET status=$1, aggregate_version=$2, barrier_evidence=$3, close_run_details=$4, last_failure_code=$5, last_failure_detail=$6, updated_at=$7 WHERE close_run_id=$8 AND aggregate_version=$9`, after.Status, after.AggregateVersion, evidence, details, nullableText(after.LastFailureCode), nullableText(after.LastFailureDetail), after.UpdatedAt, after.ID, before.AggregateVersion)
 	if err != nil {
 		return mapFiscalPeriodPostgresError(err)
 	}
@@ -343,6 +351,19 @@ func updateCloseRun(ctx context.Context, tx pgx.Tx, before, after *CloseRun) err
 		return ErrFiscalPeriodVersionConflict
 	}
 	return nil
+}
+
+func insertCloseRun(ctx context.Context, tx pgx.Tx, after *CloseRun) error {
+	evidence, err := nullableJSON(after.BarrierEvidence)
+	if err != nil {
+		return err
+	}
+	details, err := marshalCloseRunDetails(after)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(ctx, `INSERT INTO fiscal_period.close_run (close_run_id, accounting_scope_id, fiscal_period_id, close_type, status, aggregate_version, command_fingerprint, barrier_command_id, barrier_idempotency_key, barrier_evidence, close_run_details, last_failure_code, last_failure_detail, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`, after.ID, after.AccountingScopeID, after.FiscalPeriodID, after.CloseType, after.Status, after.AggregateVersion, after.CommandFingerprint, after.BarrierCommandID, after.BarrierIdempotencyKey, evidence, details, nullableText(after.LastFailureCode), nullableText(after.LastFailureDetail), after.CreatedAt, after.UpdatedAt)
+	return mapFiscalPeriodPostgresError(err)
 }
 
 func writeEvents(ctx context.Context, tx pgx.Tx, eventList []Event) error {

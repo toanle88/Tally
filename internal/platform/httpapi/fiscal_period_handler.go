@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/toanle88/Tally/internal/fiscalperiod"
@@ -38,6 +39,31 @@ type fpmApplyPostingGateResultCommandData struct {
 	ValidationOutcome          string                `json:"validationOutcome"`
 	AuditReference             uuid.UUID             `json:"auditReference"`
 	NextAction                 string                `json:"nextAction"`
+}
+
+type fpmCloseRunCommandData struct {
+	FiscalPeriodID              string    `json:"fiscalPeriodId"`
+	SoftCloseRunID              string    `json:"softCloseRunId"`
+	CloseRunID                  string    `json:"closeRunId"`
+	SoftCloseControlEpoch       int64     `json:"softCloseControlEpoch"`
+	PolicyVersion               string    `json:"policyVersion"`
+	ApprovalPolicyVersion       string    `json:"approvalPolicyVersion"`
+	ExpectedGateVersion         int64     `json:"expectedGateVersion"`
+	ExpectedCloseRunVersion     int64     `json:"expectedCloseRunVersion"`
+	ExceptionID                 string    `json:"exceptionId"`
+	ApprovalRequestID           string    `json:"approvalRequestId"`
+	DecisionID                  string    `json:"decisionId"`
+	DecisionVersion             int64     `json:"decisionVersion"`
+	Outcome                     string    `json:"outcome"`
+	DecisionReason              string    `json:"decisionReason"`
+	DecisionReference           string    `json:"decisionReference"`
+	ApproverUserID              string    `json:"approverUserId"`
+	SeparationOfDutiesReference string    `json:"separationOfDutiesReference"`
+	CandidateFingerprint        string    `json:"candidateFingerprint"`
+	SubjectVersion              int64     `json:"subjectVersion"`
+	FinalLedgerWatermark        int64     `json:"finalLedgerWatermark"`
+	RecordedAt                  time.Time `json:"recordedAt"`
+	Reason                      string    `json:"reason"`
 }
 
 func (handler IdentityHandler) FpmStartHardClose(ctx context.Context, request *generated.CommandRequest, params generated.FpmStartHardCloseParams) (generated.FpmStartHardCloseRes, error) {
@@ -130,6 +156,162 @@ func (handler IdentityHandler) FpmApplyPostingGateResult(ctx context.Context, re
 	return establishedFPMResult(resultValue, correlationID, "/api/v1/fiscal-periods/actions/apply-posting-gate-result"), nil
 }
 
+func (handler IdentityHandler) FpmResumeCloseRun(ctx context.Context, request *generated.CommandRequest, params generated.FpmResumeCloseRunParams) (generated.FpmResumeCloseRunRes, error) {
+	correlationID := fpmCloseCorrelation(params.XCorrelationID)
+	if handler.FiscalPeriodService == nil {
+		return fpmResumeCloseRunProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The fiscal-period service is unavailable.", correlationID), nil
+	}
+	actor, ok := identity.ActorFromContext(ctx)
+	if !ok {
+		return fpmResumeCloseRunProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The close-run actor is not authorized.", correlationID), nil
+	}
+	payload, base, err := decodeFPMCloseRunCommand(request, params.IdempotencyKey, correlationID)
+	if err != nil {
+		return fpmResumeCloseRunProblem(http.StatusBadRequest, "INVALID_REQUEST", "The resume close-run command is invalid.", correlationID), nil
+	}
+	result, err := handler.FiscalPeriodService.ResumeCloseRun(ctx, fiscalperiod.Actor{UserID: actor.UserID, SubjectReference: glActorSubject(actor)}, base)
+	if err != nil {
+		if errors.Is(err, fiscalperiod.ErrCloseTaskFailed) && result.State.CloseRun != nil {
+			return establishedFPMResult(result, correlationID, "/api/v1/fiscal-periods/actions/resume-close-run"), nil
+		}
+		return mapFPMResumeCloseRunError(err, correlationID), nil
+	}
+	_ = payload
+	return establishedFPMResult(result, correlationID, "/api/v1/fiscal-periods/actions/resume-close-run"), nil
+}
+
+func (handler IdentityHandler) FpmAbortCloseRun(ctx context.Context, request *generated.CommandRequest, params generated.FpmAbortCloseRunParams) (generated.FpmAbortCloseRunRes, error) {
+	correlationID := fpmCloseCorrelation(params.XCorrelationID)
+	if handler.FiscalPeriodService == nil {
+		return fpmAbortCloseRunProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The fiscal-period service is unavailable.", correlationID), nil
+	}
+	actor, ok := identity.ActorFromContext(ctx)
+	if !ok {
+		return fpmAbortCloseRunProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The close-run actor is not authorized.", correlationID), nil
+	}
+	payload, base, err := decodeFPMCloseRunCommand(request, params.IdempotencyKey, correlationID)
+	if err != nil || strings.TrimSpace(payload.Reason) == "" {
+		return fpmAbortCloseRunProblem(http.StatusBadRequest, "INVALID_REQUEST", "The abort close-run command requires a reason and current run evidence.", correlationID), nil
+	}
+	result, err := handler.FiscalPeriodService.AbortCloseRun(ctx, fiscalperiod.Actor{UserID: actor.UserID, SubjectReference: glActorSubject(actor)}, fiscalperiod.AbortCloseRunCommand{ResumeCloseRunCommand: base, Reason: payload.Reason})
+	if err != nil {
+		return mapFPMAbortCloseRunError(err, correlationID), nil
+	}
+	return establishedFPMResult(result, correlationID, "/api/v1/fiscal-periods/actions/abort-close-run"), nil
+}
+
+func (handler IdentityHandler) FpmApplyCloseExceptionApprovalDecision(ctx context.Context, request *generated.CommandRequest, params generated.FpmApplyCloseExceptionApprovalDecisionParams) (generated.FpmApplyCloseExceptionApprovalDecisionRes, error) {
+	correlationID := fpmCloseCorrelation(params.XCorrelationID)
+	if handler.FiscalPeriodService == nil {
+		return fpmApplyCloseExceptionApprovalDecisionProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The fiscal-period service is unavailable.", correlationID), nil
+	}
+	actor, ok := identity.ActorFromContext(ctx)
+	if !ok {
+		return fpmApplyCloseExceptionApprovalDecisionProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The close-approval actor is not authorized.", correlationID), nil
+	}
+	payload, base, err := decodeFPMCloseRunCommand(request, params.IdempotencyKey, correlationID)
+	if err != nil {
+		return fpmApplyCloseExceptionApprovalDecisionProblem(http.StatusBadRequest, "INVALID_REQUEST", "The close-exception approval decision is invalid.", correlationID), nil
+	}
+	exceptionID, err := parseFPMUUID(payload.ExceptionID)
+	if err != nil {
+		return fpmApplyCloseExceptionApprovalDecisionProblem(http.StatusBadRequest, "INVALID_REQUEST", "The close exception identifier is invalid.", correlationID), nil
+	}
+	decision, err := fpmCloseApprovalFields(payload)
+	if err != nil {
+		return fpmApplyCloseExceptionApprovalDecisionProblem(http.StatusBadRequest, "INVALID_REQUEST", "The immutable Workflow decision evidence is incomplete.", correlationID), nil
+	}
+	command := fiscalperiod.ApplyCloseExceptionApprovalDecisionCommand{ResumeCloseRunCommand: base, ExceptionID: exceptionID, ApprovalRequestID: decision.RequestID, DecisionID: decision.DecisionID, DecisionVersion: decision.DecisionVersion, Outcome: decision.Outcome, DecisionReason: decision.Reason, PolicyVersion: decision.PolicyVersion, SubjectVersion: decision.SubjectVersion, CandidateFingerprint: decision.CandidateFingerprint, DecisionReference: decision.DecisionReference, ApproverUserID: decision.ApproverUserID, SeparationOfDutiesReference: decision.SeparationOfDutiesReference, RecordedAt: decision.RecordedAt}
+	result, err := handler.FiscalPeriodService.ApplyCloseExceptionApprovalDecision(ctx, fiscalperiod.Actor{UserID: actor.UserID, SubjectReference: glActorSubject(actor)}, command)
+	if err != nil {
+		return mapFPMApplyCloseExceptionApprovalDecisionError(err, correlationID), nil
+	}
+	return establishedFPMResult(result, correlationID, "/api/v1/fiscal-periods/actions/apply-close-exception-approval-decision"), nil
+}
+
+func (handler IdentityHandler) FpmApplyCloseApprovalDecision(ctx context.Context, request *generated.CommandRequest, params generated.FpmApplyCloseApprovalDecisionParams) (generated.FpmApplyCloseApprovalDecisionRes, error) {
+	correlationID := fpmCloseCorrelation(params.XCorrelationID)
+	if handler.FiscalPeriodService == nil {
+		return fpmApplyCloseApprovalDecisionProblem(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", "The fiscal-period service is unavailable.", correlationID), nil
+	}
+	actor, ok := identity.ActorFromContext(ctx)
+	if !ok {
+		return fpmApplyCloseApprovalDecisionProblem(http.StatusForbidden, "AUTHORIZATION_DENIED", "The close-approval actor is not authorized.", correlationID), nil
+	}
+	payload, base, err := decodeFPMCloseRunCommand(request, params.IdempotencyKey, correlationID)
+	if err != nil {
+		return fpmApplyCloseApprovalDecisionProblem(http.StatusBadRequest, "INVALID_REQUEST", "The close approval decision is invalid.", correlationID), nil
+	}
+	decision, err := fpmCloseApprovalFields(payload)
+	if err != nil || payload.FinalLedgerWatermark < 0 || (decision.Outcome == fiscalperiod.CloseApprovalApproved && payload.FinalLedgerWatermark < 1) {
+		return fpmApplyCloseApprovalDecisionProblem(http.StatusBadRequest, "INVALID_REQUEST", "The final approval and ledger watermark evidence are incomplete.", correlationID), nil
+	}
+	command := fiscalperiod.ApplyCloseApprovalDecisionCommand{ResumeCloseRunCommand: base, ApprovalRequestID: decision.RequestID, DecisionID: decision.DecisionID, DecisionVersion: decision.DecisionVersion, Outcome: decision.Outcome, DecisionReason: decision.Reason, PolicyVersion: decision.PolicyVersion, SubjectVersion: decision.SubjectVersion, CandidateFingerprint: decision.CandidateFingerprint, DecisionReference: decision.DecisionReference, ApproverUserID: decision.ApproverUserID, SeparationOfDutiesReference: decision.SeparationOfDutiesReference, FinalLedgerWatermark: payload.FinalLedgerWatermark, RecordedAt: decision.RecordedAt}
+	result, err := handler.FiscalPeriodService.ApplyCloseApprovalDecision(ctx, fiscalperiod.Actor{UserID: actor.UserID, SubjectReference: glActorSubject(actor)}, command)
+	if err != nil {
+		return mapFPMApplyCloseApprovalDecisionError(err, correlationID), nil
+	}
+	return establishedFPMResult(result, correlationID, "/api/v1/fiscal-periods/actions/apply-close-approval-decision"), nil
+}
+
+func decodeFPMCloseRunCommand(request *generated.CommandRequest, idempotencyKey string, correlationID uuid.UUID) (fpmCloseRunCommandData, fiscalperiod.ResumeCloseRunCommand, error) {
+	if request == nil || uuid.UUID(request.CommandId) == uuid.Nil || !request.AccountingScopeId.Set || uuid.UUID(request.AccountingScopeId.Value) == uuid.Nil || !request.ExpectedVersion.Set {
+		return fpmCloseRunCommandData{}, fiscalperiod.ResumeCloseRunCommand{}, errors.New("command, scope, and expected period version are required")
+	}
+	var payload fpmCloseRunCommandData
+	if err := decodeFPMCommandData(request, &payload); err != nil {
+		return fpmCloseRunCommandData{}, fiscalperiod.ResumeCloseRunCommand{}, err
+	}
+	periodID, err := parseFPMUUID(payload.FiscalPeriodID)
+	if err != nil {
+		return fpmCloseRunCommandData{}, fiscalperiod.ResumeCloseRunCommand{}, err
+	}
+	softCloseRunID, err := parseFPMUUID(payload.SoftCloseRunID)
+	if err != nil {
+		return fpmCloseRunCommandData{}, fiscalperiod.ResumeCloseRunCommand{}, err
+	}
+	closeRunID, err := parseFPMUUID(payload.CloseRunID)
+	if err != nil {
+		return fpmCloseRunCommandData{}, fiscalperiod.ResumeCloseRunCommand{}, err
+	}
+	policyVersion := strings.TrimSpace(payload.PolicyVersion)
+	closeRunVersion := payload.ExpectedCloseRunVersion
+	if closeRunVersion < 1 {
+		closeRunVersion = int64(request.ExpectedVersion.Value)
+	}
+	if payload.ExpectedGateVersion < 1 || payload.SoftCloseControlEpoch < 1 || policyVersion == "" || closeRunVersion < 1 {
+		return fpmCloseRunCommandData{}, fiscalperiod.ResumeCloseRunCommand{}, errors.New("current gate, close-run version, epoch, and policy are required")
+	}
+	return payload, fiscalperiod.ResumeCloseRunCommand{CommandID: uuid.UUID(request.CommandId), AccountingScopeID: uuid.UUID(request.AccountingScopeId.Value), FiscalPeriodID: periodID, SoftCloseRunID: softCloseRunID, CloseRunID: closeRunID, ExpectedPeriodVersion: int64(request.ExpectedVersion.Value), ExpectedCloseRunVersion: closeRunVersion, ExpectedGateVersion: payload.ExpectedGateVersion, SoftCloseControlEpoch: payload.SoftCloseControlEpoch, SoftClosePolicyVersion: policyVersion, IdempotencyKey: idempotencyKey, CorrelationID: correlationID.String(), CausationID: uuid.UUID(request.CommandId).String()}, nil
+}
+
+func fpmCloseApprovalFields(payload fpmCloseRunCommandData) (fiscalperiod.CloseApprovalDecision, error) {
+	requestID, err := parseFPMUUID(payload.ApprovalRequestID)
+	if err != nil {
+		return fiscalperiod.CloseApprovalDecision{}, err
+	}
+	decisionID, err := parseFPMUUID(payload.DecisionID)
+	if err != nil {
+		return fiscalperiod.CloseApprovalDecision{}, err
+	}
+	decisionReference, err := parseFPMUUID(payload.DecisionReference)
+	if err != nil {
+		return fiscalperiod.CloseApprovalDecision{}, err
+	}
+	approverID, err := parseFPMUUID(payload.ApproverUserID)
+	if err != nil {
+		return fiscalperiod.CloseApprovalDecision{}, err
+	}
+	policyVersion := strings.TrimSpace(payload.ApprovalPolicyVersion)
+	if policyVersion == "" {
+		policyVersion = strings.TrimSpace(payload.PolicyVersion)
+	}
+	if policyVersion == "" || payload.SubjectVersion < 1 || payload.RecordedAt.IsZero() {
+		return fiscalperiod.CloseApprovalDecision{}, errors.New("policy version, subject version, and recorded-at evidence are required")
+	}
+	return fiscalperiod.CloseApprovalDecision{RequestID: requestID, DecisionID: decisionID, DecisionVersion: payload.DecisionVersion, Outcome: strings.TrimSpace(payload.Outcome), Reason: strings.TrimSpace(payload.DecisionReason), PolicyVersion: policyVersion, SubjectVersion: payload.SubjectVersion, CandidateFingerprint: strings.TrimSpace(payload.CandidateFingerprint), ApproverUserID: approverID, DecisionReference: decisionReference, SeparationOfDutiesReference: strings.TrimSpace(payload.SeparationOfDutiesReference), RecordedAt: payload.RecordedAt}, nil
+}
+
 func decodeFPMCommandData(request *generated.CommandRequest, target any) error {
 	if request == nil {
 		return errors.New("request is required")
@@ -157,24 +339,60 @@ func fpmPostingGateResult(payload fpmApplyPostingGateResultCommandData) (gl.Soft
 
 func establishedFPMResult(result fiscalperiod.CommandResult, correlationID uuid.UUID, self string) *generated.EstablishedResult {
 	period := result.State.Period
+	var closeRun fiscalperiod.CloseRun
+	if result.State.CloseRun != nil {
+		closeRun = *result.State.CloseRun
+	}
+	gate := result.GateResult
+	if gate.Gate.ID == uuid.Nil && closeRun.FinalizationGateResult != nil {
+		gate = *closeRun.FinalizationGateResult
+	}
+	if gate.Gate.ID == uuid.Nil && closeRun.ReleaseGateResult != nil {
+		gate = *closeRun.ReleaseGateResult
+	}
+	if gate.Gate.ID == uuid.Nil && closeRun.BarrierEvidence != nil {
+		gate = fiscalperiodGateEvidenceResult(closeRun)
+	}
+	nextAction := gate.NextAction
+	if nextAction == "" {
+		switch {
+		case closeRun.SealStatus == fiscalperiod.CloseRunSealPending:
+			nextAction = "await-audit-seal"
+		case closeRun.SealStatus == fiscalperiod.CloseRunSealFailed:
+			nextAction = "retry-audit-seal"
+		case closeRun.Status == fiscalperiod.CloseRunAwaitingApproval:
+			nextAction = "apply-close-approval"
+		case closeRun.Status == fiscalperiod.CloseRunCompleted:
+			nextAction = "await-audit-seal"
+		default:
+			nextAction = "resume-close-run"
+		}
+	}
 	data := generated.EstablishedResultData{
 		"periodId": mustRaw(period.ID.String()), "accountingScopeId": mustRaw(period.AccountingScopeID.String()), "periodState": mustRaw(period.State),
 		"periodStateVersion": mustRaw(period.StateVersion), "periodAggregateVersion": mustRaw(period.AggregateVersion),
 		"softCloseRunId": mustRaw(result.State.SoftClose.ID.String()), "softCloseStatus": mustRaw(result.State.SoftClose.Status),
 		"controlEpoch": mustRaw(result.State.ControlEpoch.Number), "controlEpochStatus": mustRaw(result.State.ControlEpoch.Status),
-		"closeRunId": mustRaw(result.State.CloseRun.ID.String()), "closeRunStatus": mustRaw(result.State.CloseRun.Status),
-		"gateMode": mustRaw(result.GateResult.Gate.GateMode), "gateVersion": mustRaw(result.GateResult.Gate.GateVersion),
-		"barrierLedgerPosition": mustRaw(result.GateResult.Gate.BarrierLedgerPosition), "frozenAdmissionSummary": mustRaw(result.State.CloseRun.BarrierEvidence),
-		"validationOutcome": mustRaw(result.GateResult.ValidationOutcome), "decisionReference": mustRaw(result.GateResult.DecisionReference.String()),
-		"policyReference": mustRaw(result.GateResult.PolicyReference), "auditReference": mustRaw(result.GateResult.AuditReference.String()),
-		"nextAction": mustRaw(result.GateResult.NextAction), "replayed": mustRaw(result.Replayed),
+		"closeRunId": mustRaw(closeRun.ID.String()), "closeRunStatus": mustRaw(closeRun.Status), "closeRunAggregateVersion": mustRaw(closeRun.AggregateVersion), "closeRunCommandFingerprint": mustRaw(closeRun.CommandFingerprint),
+		"gateMode": mustRaw(gate.Gate.GateMode), "gateVersion": mustRaw(gate.Gate.GateVersion),
+		"barrierLedgerPosition": mustRaw(gate.Gate.BarrierLedgerPosition), "frozenAdmissionSummary": mustRaw(closeRun.BarrierEvidence),
+		"validationOutcome": mustRaw(gate.ValidationOutcome), "decisionReference": mustRaw(gate.DecisionReference.String()),
+		"policyReference": mustRaw(gate.PolicyReference), "auditReference": mustRaw(gate.AuditReference.String()),
+		"nextAction": mustRaw(nextAction), "replayed": mustRaw(result.Replayed), "steps": mustRaw(closeRun.Steps), "exceptions": mustRaw(closeRun.Exceptions), "approvalRequestIds": mustRaw(closeRun.ApprovalRequestIDs), "approvalDecisions": mustRaw(closeRun.ApprovalDecisions), "approvalPolicyVersion": mustRaw(closeRun.ApprovalPolicyVersion), "finalApproval": mustRaw(closeRun.FinalApproval), "finalLedgerWatermark": mustRaw(closeRun.FinalLedgerWatermark), "finalizationGateResult": mustRaw(closeRun.FinalizationGateResult), "releaseGateResult": mustRaw(closeRun.ReleaseGateResult), "sealStatus": mustRaw(closeRun.SealStatus), "sealRequestId": mustRaw(closeRun.SealRequestID), "sealProofReference": mustRaw(closeRun.SealProofReference), "sealFailureCode": mustRaw(closeRun.SealFailureCode), "sealFailureDetail": mustRaw(closeRun.SealFailureDetail), "lastFailureCode": mustRaw(closeRun.LastFailureCode), "lastFailureDetail": mustRaw(closeRun.LastFailureDetail),
 	}
-	if result.State.CloseRun.BarrierEvidence != nil {
-		data["priorControlProcessId"] = mustRaw(result.State.CloseRun.BarrierEvidence.PriorControlProcessID)
-		data["priorControlEpoch"] = mustRaw(result.State.CloseRun.BarrierEvidence.PriorControlEpoch)
-		data["frozenAdmissionSummary"] = mustRaw(result.State.CloseRun.BarrierEvidence.FrozenSummary)
+	if closeRun.BarrierEvidence != nil {
+		data["priorControlProcessId"] = mustRaw(closeRun.BarrierEvidence.PriorControlProcessID)
+		data["priorControlEpoch"] = mustRaw(closeRun.BarrierEvidence.PriorControlEpoch)
+		data["frozenAdmissionSummary"] = mustRaw(closeRun.BarrierEvidence.FrozenSummary)
 	}
-	return &generated.EstablishedResult{Status: "established", AggregateId: generated.UUID(period.ID), AggregateVersion: int(period.AggregateVersion), ProcessId: generated.NewOptNilUUID(generated.UUID(result.State.CloseRun.ID)), CorrelationId: generated.UUID(correlationID), Links: generated.Links{Self: self}, Data: data}
+	return &generated.EstablishedResult{Status: "established", AggregateId: generated.UUID(period.ID), AggregateVersion: int(period.AggregateVersion), ProcessId: generated.NewOptNilUUID(generated.UUID(closeRun.ID)), CorrelationId: generated.UUID(correlationID), Links: generated.Links{Self: self}, Data: data}
+}
+
+func fiscalperiodGateEvidenceResult(run fiscalperiod.CloseRun) gl.SoftCloseGateResult {
+	if run.BarrierEvidence == nil {
+		return gl.SoftCloseGateResult{}
+	}
+	return gl.SoftCloseGateResult{Operation: run.BarrierEvidence.Operation, Gate: run.BarrierEvidence.AuthoritativeResult.Gate, DecisionReference: run.BarrierEvidence.DecisionReference, PolicyReference: run.BarrierEvidence.PolicyReference, AuthorizationPolicyVersion: run.BarrierEvidence.AuthorizationPolicyVersion, AuditReference: run.BarrierEvidence.AuditReference, ValidationOutcome: run.BarrierEvidence.ValidationOutcome, NextAction: run.BarrierEvidence.NextAction}
 }
 
 func fpmStartHardCloseCorrelation(params generated.FpmStartHardCloseParams) uuid.UUID {
@@ -187,6 +405,13 @@ func fpmStartHardCloseCorrelation(params generated.FpmStartHardCloseParams) uuid
 func fpmApplyPostingGateResultCorrelation(params generated.FpmApplyPostingGateResultParams) uuid.UUID {
 	if params.XCorrelationID.Set && uuid.UUID(params.XCorrelationID.Value) != uuid.Nil {
 		return uuid.UUID(params.XCorrelationID.Value)
+	}
+	return uuid.New()
+}
+
+func fpmCloseCorrelation(value generated.OptUUID) uuid.UUID {
+	if value.Set && uuid.UUID(value.Value) != uuid.Nil {
+		return uuid.UUID(value.Value)
 	}
 	return uuid.New()
 }
@@ -205,6 +430,22 @@ func mapFPMStartHardCloseError(err error, correlationID uuid.UUID) generated.Fpm
 
 func mapFPMApplyPostingGateResultError(err error, correlationID uuid.UUID) generated.FpmApplyPostingGateResultRes {
 	return mapFPMError(err, correlationID, fpmApplyPostingGateResultProblem)
+}
+
+func mapFPMResumeCloseRunError(err error, correlationID uuid.UUID) generated.FpmResumeCloseRunRes {
+	return mapFPMError(err, correlationID, fpmResumeCloseRunProblem)
+}
+
+func mapFPMAbortCloseRunError(err error, correlationID uuid.UUID) generated.FpmAbortCloseRunRes {
+	return mapFPMError(err, correlationID, fpmAbortCloseRunProblem)
+}
+
+func mapFPMApplyCloseExceptionApprovalDecisionError(err error, correlationID uuid.UUID) generated.FpmApplyCloseExceptionApprovalDecisionRes {
+	return mapFPMError(err, correlationID, fpmApplyCloseExceptionApprovalDecisionProblem)
+}
+
+func mapFPMApplyCloseApprovalDecisionError(err error, correlationID uuid.UUID) generated.FpmApplyCloseApprovalDecisionRes {
+	return mapFPMError(err, correlationID, fpmApplyCloseApprovalDecisionProblem)
 }
 
 type fpmProblemFactory[T any] func(int, string, string, uuid.UUID) T
@@ -232,6 +473,14 @@ func mapFPMError[T any](err error, correlationID uuid.UUID, problem fpmProblemFa
 		status, code, detail = http.StatusUnprocessableEntity, "POSTING_BARRIER_REJECTED", "GL rejected the barrier request. The current owner remains visible and restrictive."
 	case errors.Is(err, fiscalperiod.ErrPostingBarrierUnavailable):
 		code, detail = "DEPENDENCY_UNAVAILABLE", "The authoritative posting barrier could not be reached. The current owner remains visible and restrictive."
+	case errors.Is(err, fiscalperiod.ErrCloseTaskUnavailable), errors.Is(err, fiscalperiod.ErrCloseDecisionUnavailable):
+		code, detail = "DEPENDENCY_UNAVAILABLE", "A required close dependency is unavailable. The close run remains restrictive and retryable."
+	case errors.Is(err, fiscalperiod.ErrCloseTaskFailed):
+		status, code, detail = http.StatusConflict, "CLOSE_TASK_FAILED", "A mandatory close task failed. Resolve the task and resume the existing close run."
+	case errors.Is(err, fiscalperiod.ErrCloseDecisionRejected):
+		status, code, detail = http.StatusConflict, "APPROVAL_INVALIDATED", "The approval decision is stale, mismatched, rejected, or violates the current close-run evidence."
+	case errors.Is(err, fiscalperiod.ErrCloseFinalizationPending):
+		status, code, detail = http.StatusConflict, "FINALIZATION_PENDING", "The authoritative finalization result is not yet confirmed. Resume the existing close run."
 	case errors.Is(err, fiscalperiod.ErrFiscalPeriodAuditUnavailable), errors.Is(err, fiscalperiod.ErrFiscalPeriodOutboxUnavailable):
 		code, detail = "SERVICE_UNAVAILABLE", "The fiscal-period evidence could not be durably recorded. Retry safely."
 	}
@@ -276,6 +525,90 @@ func fpmApplyPostingGateResultProblem(status int, code, detail string, correlati
 		return &value
 	default:
 		value := generated.FpmApplyPostingGateResultServiceUnavailable(problem)
+		return &value
+	}
+}
+
+func fpmResumeCloseRunProblem(status int, code, detail string, correlationID uuid.UUID) generated.FpmResumeCloseRunRes {
+	problem := generated.ProblemDetails{Type: "https://tally.local/problems/" + strings.ToLower(code), Title: http.StatusText(status), Status: status, Code: code, Detail: detail, CorrelationId: generated.UUID(correlationID)}
+	switch status {
+	case http.StatusBadRequest:
+		value := generated.FpmResumeCloseRunBadRequest(problem)
+		return &value
+	case http.StatusForbidden:
+		value := generated.FpmResumeCloseRunForbidden(problem)
+		return &value
+	case http.StatusConflict:
+		value := generated.FpmResumeCloseRunConflict(problem)
+		return &value
+	case http.StatusUnprocessableEntity:
+		value := generated.FpmResumeCloseRunUnprocessableEntity(problem)
+		return &value
+	default:
+		value := generated.FpmResumeCloseRunServiceUnavailable(problem)
+		return &value
+	}
+}
+
+func fpmAbortCloseRunProblem(status int, code, detail string, correlationID uuid.UUID) generated.FpmAbortCloseRunRes {
+	problem := generated.ProblemDetails{Type: "https://tally.local/problems/" + strings.ToLower(code), Title: http.StatusText(status), Status: status, Code: code, Detail: detail, CorrelationId: generated.UUID(correlationID)}
+	switch status {
+	case http.StatusBadRequest:
+		value := generated.FpmAbortCloseRunBadRequest(problem)
+		return &value
+	case http.StatusForbidden:
+		value := generated.FpmAbortCloseRunForbidden(problem)
+		return &value
+	case http.StatusConflict:
+		value := generated.FpmAbortCloseRunConflict(problem)
+		return &value
+	case http.StatusUnprocessableEntity:
+		value := generated.FpmAbortCloseRunUnprocessableEntity(problem)
+		return &value
+	default:
+		value := generated.FpmAbortCloseRunServiceUnavailable(problem)
+		return &value
+	}
+}
+
+func fpmApplyCloseExceptionApprovalDecisionProblem(status int, code, detail string, correlationID uuid.UUID) generated.FpmApplyCloseExceptionApprovalDecisionRes {
+	problem := generated.ProblemDetails{Type: "https://tally.local/problems/" + strings.ToLower(code), Title: http.StatusText(status), Status: status, Code: code, Detail: detail, CorrelationId: generated.UUID(correlationID)}
+	switch status {
+	case http.StatusBadRequest:
+		value := generated.FpmApplyCloseExceptionApprovalDecisionBadRequest(problem)
+		return &value
+	case http.StatusForbidden:
+		value := generated.FpmApplyCloseExceptionApprovalDecisionForbidden(problem)
+		return &value
+	case http.StatusConflict:
+		value := generated.FpmApplyCloseExceptionApprovalDecisionConflict(problem)
+		return &value
+	case http.StatusUnprocessableEntity:
+		value := generated.FpmApplyCloseExceptionApprovalDecisionUnprocessableEntity(problem)
+		return &value
+	default:
+		value := generated.FpmApplyCloseExceptionApprovalDecisionServiceUnavailable(problem)
+		return &value
+	}
+}
+
+func fpmApplyCloseApprovalDecisionProblem(status int, code, detail string, correlationID uuid.UUID) generated.FpmApplyCloseApprovalDecisionRes {
+	problem := generated.ProblemDetails{Type: "https://tally.local/problems/" + strings.ToLower(code), Title: http.StatusText(status), Status: status, Code: code, Detail: detail, CorrelationId: generated.UUID(correlationID)}
+	switch status {
+	case http.StatusBadRequest:
+		value := generated.FpmApplyCloseApprovalDecisionBadRequest(problem)
+		return &value
+	case http.StatusForbidden:
+		value := generated.FpmApplyCloseApprovalDecisionForbidden(problem)
+		return &value
+	case http.StatusConflict:
+		value := generated.FpmApplyCloseApprovalDecisionConflict(problem)
+		return &value
+	case http.StatusUnprocessableEntity:
+		value := generated.FpmApplyCloseApprovalDecisionUnprocessableEntity(problem)
+		return &value
+	default:
+		value := generated.FpmApplyCloseApprovalDecisionServiceUnavailable(problem)
 		return &value
 	}
 }

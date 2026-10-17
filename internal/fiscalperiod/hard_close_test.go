@@ -11,9 +11,11 @@ import (
 )
 
 type hardCloseGateStub struct {
-	result gl.SoftCloseGateResult
-	err    error
-	calls  []gl.AcquirePostingBarrierCommand
+	result        gl.SoftCloseGateResult
+	err           error
+	calls         []gl.AcquirePostingBarrierCommand
+	releaseCalls  int
+	finalizeCalls int
 }
 
 type fiscalPeriodAuthorizerStub struct {
@@ -34,6 +36,23 @@ func (stub *hardCloseGateStub) AcquirePostingBarrier(_ context.Context, _ gl.Act
 	closeRunID := command.CloseRunID
 	softCloseRunID := command.SoftCloseRunID
 	epoch := command.SoftCloseControlEpoch
+	if result.Gate.GateMode == gl.PostingGateSoftClosePolicy {
+		result.Gate.GateVersion = command.ExpectedGateVersion + 1
+		result.Gate.AggregateVersion = result.Gate.GateVersion
+		result.Gate.GateMode = gl.PostingGateCloseOnly
+		result.Gate.ActiveSoftCloseRunID = nil
+		result.Gate.ActiveSoftCloseControlEpoch = 0
+		result.Gate.ActiveCloseType = gl.CloseTypeInitialHardClose
+		result.Gate.PriorControlProcessType = gl.SoftCloseGateOwnerType
+		result.Gate.PriorControlEpoch = &epoch
+		result.Gate.PriorGateMode = gl.PostingGateSoftClosePolicy
+		result.Gate.BarrierLedgerPosition = result.Gate.NextLedgerPosition - 1
+		result.Gate.ActiveAdmissionCounters.ControlOwnerType = gl.PostingBarrierOwnerType
+		if result.Gate.LastFrozenAdmissionSummary != nil {
+			result.Gate.LastFrozenAdmissionSummary.FrozenAtGateVersion = result.Gate.GateVersion
+			result.Gate.LastFrozenAdmissionSummary.FrozenByCommandType = gl.PostingBarrierAcquireCommandIdentity
+		}
+	}
 	result.Gate.ActiveCloseRunID = &closeRunID
 	result.Gate.PriorControlProcessID = &softCloseRunID
 	result.Gate.PriorControlEpoch = &epoch
@@ -42,6 +61,60 @@ func (stub *hardCloseGateStub) AcquirePostingBarrier(_ context.Context, _ gl.Act
 		result.Gate.LastFrozenAdmissionSummary.ControlOwnerEpoch = &epoch
 	}
 	result.Gate.ActiveAdmissionCounters.ControlOwnerID = command.CloseRunID
+	stub.result = result
+	return result, nil
+}
+
+func (stub *hardCloseGateStub) ReleasePostingBarrier(_ context.Context, _ gl.Actor, command gl.ReleasePostingBarrierCommand) (gl.SoftCloseGateResult, error) {
+	stub.releaseCalls++
+	if stub.err != nil {
+		return gl.SoftCloseGateResult{}, stub.err
+	}
+	result := stub.result
+	result.Operation = gl.PostingBarrierReleaseOperation
+	result.Gate.GateVersion = command.ExpectedGateVersion + 1
+	result.Gate.GateMode = gl.PostingGateSoftClosePolicy
+	result.Gate.ActiveCloseRunID = nil
+	result.Gate.ActiveCloseType = ""
+	owner := command.CloseRunID
+	if result.Gate.PriorControlProcessID != nil {
+		owner = *result.Gate.PriorControlProcessID
+	}
+	result.Gate.ActiveSoftCloseRunID = &owner
+	epoch := int64(1)
+	if result.Gate.PriorControlEpoch != nil {
+		epoch = *result.Gate.PriorControlEpoch + 1
+	}
+	closeOwner := command.CloseRunID
+	summary := gl.FrozenGateAdmissionSummary{ControlOwnerType: gl.PostingBarrierOwnerType, ControlOwnerID: closeOwner, FrozenAtGateVersion: result.Gate.GateVersion, FrozenByCommandFingerprint: "sha256:stub-release", FrozenByCommandType: gl.PostingBarrierReleaseCommandIdentity}
+	result.Gate.LastFrozenAdmissionSummary = &summary
+	result.Gate.ActiveSoftCloseControlEpoch = epoch
+	result.Gate.ActiveAdmissionCounters = gl.ActiveGateAdmissionCounters{ControlOwnerType: gl.SoftCloseGateOwnerType, ControlOwnerID: owner, ControlOwnerEpoch: &epoch}
+	stub.result = result
+	return result, nil
+}
+
+func (stub *hardCloseGateStub) FinalizePostingGate(_ context.Context, _ gl.Actor, command gl.FinalizePostingGateCommand) (gl.SoftCloseGateResult, error) {
+	stub.finalizeCalls++
+	if stub.err != nil {
+		return gl.SoftCloseGateResult{}, stub.err
+	}
+	result := stub.result
+	result.Operation = gl.PostingBarrierFinalizeOperation
+	result.Gate.GateVersion = command.ExpectedGateVersion + 1
+	result.Gate.GateMode = gl.PostingGateHardClosed
+	owner := command.CloseRunID
+	result.Gate.FinalizedCloseRunID = &owner
+	result.Gate.ActiveCloseRunID = nil
+	result.Gate.ActiveCloseType = ""
+	result.Gate.ActiveSoftCloseRunID = nil
+	result.Gate.ActiveAdmissionCounters = gl.ActiveGateAdmissionCounters{}
+	watermark := command.FinalLedgerWatermark
+	result.Gate.FinalLedgerWatermark = &watermark
+	summary := gl.FrozenGateAdmissionSummary{ControlOwnerType: gl.PostingBarrierOwnerType, ControlOwnerID: command.CloseRunID, FrozenAtGateVersion: result.Gate.GateVersion, FrozenByCommandFingerprint: "sha256:stub-finalize", FrozenByCommandType: gl.PostingBarrierFinalizeCommandIdentity}
+	result.Gate.LastFrozenAdmissionSummary = &summary
+	result.Gate.FinalizationCommandFingerprint = "sha256:stub-finalize"
+	stub.result = result
 	return result, nil
 }
 

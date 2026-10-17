@@ -141,6 +141,13 @@ describe('application router', () => {
     expect(screen.getByText(/candidate close run is not a posting-gate owner/)).toBeInTheDocument()
   })
 
+  it('supports direct entry to the FPM close exception review workspace', async () => {
+    renderRoute('/fiscal-periods/fpm-scr-05')
+    expect(await screen.findByRole('heading', { name: 'Review close exceptions and approvals' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Resume close run' })).toBeDisabled()
+    expect(screen.getByText(/immutable Workflow decision references/)).toBeInTheDocument()
+  })
+
   it('updates active navigation and supports back navigation', async () => {
     const router = renderRoute('/')
     fireEvent.click(screen.getByRole('link', { name: 'Exceptions' }))

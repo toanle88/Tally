@@ -37,6 +37,41 @@ func (stub *fiscalPeriodHandlerGateStub) GetPostingGateStatus(_ context.Context,
 	return stub.result.Gate, stub.err
 }
 
+func (stub *fiscalPeriodHandlerGateStub) ReleasePostingBarrier(_ context.Context, _ gl.Actor, command gl.ReleasePostingBarrierCommand) (gl.SoftCloseGateResult, error) {
+	if stub.err != nil {
+		return gl.SoftCloseGateResult{}, stub.err
+	}
+	result := stub.result
+	result.Operation = gl.PostingBarrierReleaseOperation
+	result.Gate.GateVersion = command.ExpectedGateVersion + 1
+	result.Gate.GateMode = gl.PostingGateSoftClosePolicy
+	result.Gate.ActiveCloseRunID = nil
+	result.Gate.ActiveCloseType = ""
+	owner := command.CloseRunID
+	result.Gate.ActiveSoftCloseRunID = &owner
+	epoch := int64(1)
+	result.Gate.ActiveSoftCloseControlEpoch = epoch
+	return result, nil
+}
+
+func (stub *fiscalPeriodHandlerGateStub) FinalizePostingGate(_ context.Context, _ gl.Actor, command gl.FinalizePostingGateCommand) (gl.SoftCloseGateResult, error) {
+	if stub.err != nil {
+		return gl.SoftCloseGateResult{}, stub.err
+	}
+	result := stub.result
+	result.Operation = gl.PostingBarrierFinalizeOperation
+	result.Gate.GateVersion = command.ExpectedGateVersion + 1
+	result.Gate.GateMode = gl.PostingGateHardClosed
+	owner := command.CloseRunID
+	result.Gate.FinalizedCloseRunID = &owner
+	result.Gate.ActiveCloseRunID = nil
+	result.Gate.ActiveCloseType = ""
+	result.Gate.ActiveSoftCloseRunID = nil
+	watermark := command.FinalLedgerWatermark
+	result.Gate.FinalLedgerWatermark = &watermark
+	return result, nil
+}
+
 func TestFPMHardCloseHandlersStartAndApplyAuthoritativeResult(t *testing.T) {
 	scopeID, periodID, softCloseRunID := uuid.New(), uuid.New(), uuid.New()
 	now := time.Date(2026, 10, 16, 8, 0, 0, 0, time.UTC)
