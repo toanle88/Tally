@@ -483,7 +483,7 @@ type Handler interface {
 	// InvConfigureBillingSchedules implements invConfigureBillingSchedules operation.
 	//
 	// PUT /invoicing/configuration/configure-billing-schedules
-	InvConfigureBillingSchedules(ctx context.Context, req *CommandRequest, params InvConfigureBillingSchedulesParams) (InvConfigureBillingSchedulesRes, error)
+	InvConfigureBillingSchedules(ctx context.Context, req *InvConfigureBillingSchedulesCommandRequest, params InvConfigureBillingSchedulesParams) (InvConfigureBillingSchedulesRes, error)
 	// InvConfigureInvoiceTemplates implements invConfigureInvoiceTemplates operation.
 	//
 	// PUT /invoicing/configuration/configure-invoice-templates
@@ -496,10 +496,18 @@ type Handler interface {
 	//
 	// POST /invoicing/actions/generate-invoices
 	InvGenerateInvoices(ctx context.Context, req *CommandRequest, params InvGenerateInvoicesParams) (InvGenerateInvoicesRes, error)
+	// InvGetBillingSchedule implements invGetBillingSchedule operation.
+	//
+	// GET /invoicing/reference/billing-schedules/{billingScheduleId}
+	InvGetBillingSchedule(ctx context.Context, params InvGetBillingScheduleParams) (InvGetBillingScheduleRes, error)
 	// InvGetInvoiceTemplate implements invGetInvoiceTemplate operation.
 	//
 	// GET /invoicing/reference/invoice-templates/{invoiceTemplateId}
 	InvGetInvoiceTemplate(ctx context.Context, params InvGetInvoiceTemplateParams) (InvGetInvoiceTemplateRes, error)
+	// InvListBillingSchedules implements invListBillingSchedules operation.
+	//
+	// GET /invoicing/reference/billing-schedules
+	InvListBillingSchedules(ctx context.Context, params InvListBillingSchedulesParams) (InvListBillingSchedulesRes, error)
 	// InvListInvoiceTemplates implements invListInvoiceTemplates operation.
 	//
 	// GET /invoicing/reference/invoice-templates

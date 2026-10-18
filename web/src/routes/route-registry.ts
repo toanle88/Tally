@@ -8,7 +8,7 @@ export type NavigationArea =
   | 'Administration'
   | 'Audit'
 
-export type ScreenId = 'XCT-WS-01' | 'XCT-SCR-01' | 'CON-SCR-01' | 'IAM-WS-01' | 'IAM-SCR-01' | 'IAM-SCR-04' | 'OMD-WS-01' | 'OMD-SCR-01' | 'OMD-SCR-02' | 'OMD-SCR-03' | 'OMD-SCR-04' | 'OMD-SCR-05' | 'COA-WS-01' | 'COA-SCR-01' | 'COA-SCR-02' | 'COA-SCR-03' | 'COA-SCR-04' | 'GL-WS-01' | 'GL-SCR-01' | 'GL-SCR-02' | 'GL-SCR-03' | 'GL-SCR-04' | 'GL-SCR-05' | 'FPM-WS-01' | 'FPM-SCR-02' | 'FPM-SCR-03' | 'FPM-SCR-04' | 'FPM-SCR-05' | 'WFA-WS-01' | 'WFA-SCR-01' | 'WFA-SCR-02' | 'WFA-SCR-03' | 'WFA-SCR-04' | 'INV-WS-01' | 'INV-SCR-01'
+export type ScreenId = 'XCT-WS-01' | 'XCT-SCR-01' | 'CON-SCR-01' | 'IAM-WS-01' | 'IAM-SCR-01' | 'IAM-SCR-04' | 'OMD-WS-01' | 'OMD-SCR-01' | 'OMD-SCR-02' | 'OMD-SCR-03' | 'OMD-SCR-04' | 'OMD-SCR-05' | 'COA-WS-01' | 'COA-SCR-01' | 'COA-SCR-02' | 'COA-SCR-03' | 'COA-SCR-04' | 'GL-WS-01' | 'GL-SCR-01' | 'GL-SCR-02' | 'GL-SCR-03' | 'GL-SCR-04' | 'GL-SCR-05' | 'FPM-WS-01' | 'FPM-SCR-02' | 'FPM-SCR-03' | 'FPM-SCR-04' | 'FPM-SCR-05' | 'WFA-WS-01' | 'WFA-SCR-01' | 'WFA-SCR-02' | 'WFA-SCR-03' | 'WFA-SCR-04' | 'INV-WS-01' | 'INV-SCR-01' | 'INV-SCR-02'
 
 export type RouteId =
   | 'home'
@@ -49,6 +49,7 @@ export type RouteId =
   | 'fpmExceptionReview'
   | 'invoicingWorklist'
   | 'invoicingEditor'
+  | 'invoicingScheduleEditor'
   | 'audit'
   | 'xctWorklist'
   | 'xctDetail'
@@ -102,8 +103,9 @@ export const routeRegistry = [
   { id: 'fpmReopen', path: '/fiscal-periods/fpm-scr-03', title: 'Request and authorize reopen', kind: 'operational', navigationArea: 'Records', screenId: 'FPM-SCR-03', requiresScope: true },
   { id: 'fpmRecovery', path: '/fiscal-periods/fpm-scr-04', title: 'Recover period control', kind: 'operational', navigationArea: 'Records', screenId: 'FPM-SCR-04', requiresScope: true },
   { id: 'fpmExceptionReview', path: '/fiscal-periods/fpm-scr-05', title: 'Close exception review', kind: 'operational', navigationArea: 'Records', screenId: 'FPM-SCR-05', requiresScope: true },
-  { id: 'invoicingWorklist', path: '/invoicing/inv-ws-01', title: 'Invoice-template worklist', kind: 'operational', navigationArea: 'Records', screenId: 'INV-WS-01', requiresScope: true },
+  { id: 'invoicingWorklist', path: '/invoicing/inv-ws-01', title: 'Billing operations worklist', kind: 'operational', navigationArea: 'Records', screenId: 'INV-WS-01', requiresScope: true },
   { id: 'invoicingEditor', path: '/invoicing/inv-scr-01', title: 'Invoice-template editor', kind: 'operational', navigationArea: 'Records', screenId: 'INV-SCR-01', requiresScope: true },
+  { id: 'invoicingScheduleEditor', path: '/invoicing/inv-scr-02', title: 'Billing-schedule editor', kind: 'operational', navigationArea: 'Records', screenId: 'INV-SCR-02', requiresScope: true },
   { id: 'audit', path: '/audit', title: 'Audit', kind: 'area', navigationArea: 'Audit', requiresScope: true },
   { id: 'xctWorklist', path: '/operations/xct-ws-01', title: 'Cross-context event exception worklist', kind: 'operational', navigationArea: 'Exceptions', screenId: 'XCT-WS-01', requiresScope: true },
   { id: 'xctDetail', path: '/operations/xct-scr-01', title: 'Cross-context event outcome detail', kind: 'operational', navigationArea: 'Exceptions', screenId: 'XCT-SCR-01', requiresScope: true },

@@ -790,7 +790,9 @@ func (*AuthenticationRequiredHeaders) invConfigureBillingSchedulesRes()         
 func (*AuthenticationRequiredHeaders) invConfigureInvoiceTemplatesRes()                     {}
 func (*AuthenticationRequiredHeaders) invFinalizeGeneratedInvoicesRes()                     {}
 func (*AuthenticationRequiredHeaders) invGenerateInvoicesRes()                              {}
+func (*AuthenticationRequiredHeaders) invGetBillingScheduleRes()                            {}
 func (*AuthenticationRequiredHeaders) invGetInvoiceTemplateRes()                            {}
+func (*AuthenticationRequiredHeaders) invListBillingSchedulesRes()                          {}
 func (*AuthenticationRequiredHeaders) invListInvoiceTemplatesRes()                          {}
 func (*AuthenticationRequiredHeaders) invRecalculateUnfinalizedInvoicesRes()                {}
 func (*AuthenticationRequiredHeaders) omdGetLegalEntityRes()                                {}
@@ -1385,7 +1387,9 @@ func (*EstablishedResult) invConfigureBillingSchedulesRes()                     
 func (*EstablishedResult) invConfigureInvoiceTemplatesRes()                     {}
 func (*EstablishedResult) invFinalizeGeneratedInvoicesRes()                     {}
 func (*EstablishedResult) invGenerateInvoicesRes()                              {}
+func (*EstablishedResult) invGetBillingScheduleRes()                            {}
 func (*EstablishedResult) invGetInvoiceTemplateRes()                            {}
+func (*EstablishedResult) invListBillingSchedulesRes()                          {}
 func (*EstablishedResult) invListInvoiceTemplatesRes()                          {}
 func (*EstablishedResult) invRecalculateUnfinalizedInvoicesRes()                {}
 func (*EstablishedResult) omdGetLegalEntityRes()                                {}
@@ -7671,6 +7675,243 @@ type InvConfigureBillingSchedulesBadRequest ProblemDetails
 
 func (*InvConfigureBillingSchedulesBadRequest) invConfigureBillingSchedulesRes() {}
 
+// Ref: #/components/schemas/InvConfigureBillingSchedulesCommandData
+type InvConfigureBillingSchedulesCommandData struct {
+	Action            InvConfigureBillingSchedulesCommandDataAction `json:"action"`
+	BillingScheduleId OptUUID                                       `json:"billingScheduleId"`
+	CustomerId        UUID                                          `json:"customerId"`
+	ContractReference string                                        `json:"contractReference"`
+	Charges           []InvScheduledCharge                          `json:"charges"`
+	NextBillingDate   time.Time                                     `json:"nextBillingDate"`
+	TimeZone          string                                        `json:"timeZone"`
+	Status            InvConfigureBillingSchedulesCommandDataStatus `json:"status"`
+	EffectiveFrom     time.Time                                     `json:"effectiveFrom"`
+	EffectiveTo       OptDate                                       `json:"effectiveTo"`
+}
+
+// GetAction returns the value of Action.
+func (s *InvConfigureBillingSchedulesCommandData) GetAction() InvConfigureBillingSchedulesCommandDataAction {
+	return s.Action
+}
+
+// GetBillingScheduleId returns the value of BillingScheduleId.
+func (s *InvConfigureBillingSchedulesCommandData) GetBillingScheduleId() OptUUID {
+	return s.BillingScheduleId
+}
+
+// GetCustomerId returns the value of CustomerId.
+func (s *InvConfigureBillingSchedulesCommandData) GetCustomerId() UUID {
+	return s.CustomerId
+}
+
+// GetContractReference returns the value of ContractReference.
+func (s *InvConfigureBillingSchedulesCommandData) GetContractReference() string {
+	return s.ContractReference
+}
+
+// GetCharges returns the value of Charges.
+func (s *InvConfigureBillingSchedulesCommandData) GetCharges() []InvScheduledCharge {
+	return s.Charges
+}
+
+// GetNextBillingDate returns the value of NextBillingDate.
+func (s *InvConfigureBillingSchedulesCommandData) GetNextBillingDate() time.Time {
+	return s.NextBillingDate
+}
+
+// GetTimeZone returns the value of TimeZone.
+func (s *InvConfigureBillingSchedulesCommandData) GetTimeZone() string {
+	return s.TimeZone
+}
+
+// GetStatus returns the value of Status.
+func (s *InvConfigureBillingSchedulesCommandData) GetStatus() InvConfigureBillingSchedulesCommandDataStatus {
+	return s.Status
+}
+
+// GetEffectiveFrom returns the value of EffectiveFrom.
+func (s *InvConfigureBillingSchedulesCommandData) GetEffectiveFrom() time.Time {
+	return s.EffectiveFrom
+}
+
+// GetEffectiveTo returns the value of EffectiveTo.
+func (s *InvConfigureBillingSchedulesCommandData) GetEffectiveTo() OptDate {
+	return s.EffectiveTo
+}
+
+// SetAction sets the value of Action.
+func (s *InvConfigureBillingSchedulesCommandData) SetAction(val InvConfigureBillingSchedulesCommandDataAction) {
+	s.Action = val
+}
+
+// SetBillingScheduleId sets the value of BillingScheduleId.
+func (s *InvConfigureBillingSchedulesCommandData) SetBillingScheduleId(val OptUUID) {
+	s.BillingScheduleId = val
+}
+
+// SetCustomerId sets the value of CustomerId.
+func (s *InvConfigureBillingSchedulesCommandData) SetCustomerId(val UUID) {
+	s.CustomerId = val
+}
+
+// SetContractReference sets the value of ContractReference.
+func (s *InvConfigureBillingSchedulesCommandData) SetContractReference(val string) {
+	s.ContractReference = val
+}
+
+// SetCharges sets the value of Charges.
+func (s *InvConfigureBillingSchedulesCommandData) SetCharges(val []InvScheduledCharge) {
+	s.Charges = val
+}
+
+// SetNextBillingDate sets the value of NextBillingDate.
+func (s *InvConfigureBillingSchedulesCommandData) SetNextBillingDate(val time.Time) {
+	s.NextBillingDate = val
+}
+
+// SetTimeZone sets the value of TimeZone.
+func (s *InvConfigureBillingSchedulesCommandData) SetTimeZone(val string) {
+	s.TimeZone = val
+}
+
+// SetStatus sets the value of Status.
+func (s *InvConfigureBillingSchedulesCommandData) SetStatus(val InvConfigureBillingSchedulesCommandDataStatus) {
+	s.Status = val
+}
+
+// SetEffectiveFrom sets the value of EffectiveFrom.
+func (s *InvConfigureBillingSchedulesCommandData) SetEffectiveFrom(val time.Time) {
+	s.EffectiveFrom = val
+}
+
+// SetEffectiveTo sets the value of EffectiveTo.
+func (s *InvConfigureBillingSchedulesCommandData) SetEffectiveTo(val OptDate) {
+	s.EffectiveTo = val
+}
+
+type InvConfigureBillingSchedulesCommandDataAction string
+
+const (
+	InvConfigureBillingSchedulesCommandDataActionCreate InvConfigureBillingSchedulesCommandDataAction = "create"
+	InvConfigureBillingSchedulesCommandDataActionUpdate InvConfigureBillingSchedulesCommandDataAction = "update"
+)
+
+// AllValues returns all InvConfigureBillingSchedulesCommandDataAction values.
+func (InvConfigureBillingSchedulesCommandDataAction) AllValues() []InvConfigureBillingSchedulesCommandDataAction {
+	return []InvConfigureBillingSchedulesCommandDataAction{
+		InvConfigureBillingSchedulesCommandDataActionCreate,
+		InvConfigureBillingSchedulesCommandDataActionUpdate,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s InvConfigureBillingSchedulesCommandDataAction) MarshalText() ([]byte, error) {
+	switch s {
+	case InvConfigureBillingSchedulesCommandDataActionCreate:
+		return []byte(s), nil
+	case InvConfigureBillingSchedulesCommandDataActionUpdate:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *InvConfigureBillingSchedulesCommandDataAction) UnmarshalText(data []byte) error {
+	switch InvConfigureBillingSchedulesCommandDataAction(data) {
+	case InvConfigureBillingSchedulesCommandDataActionCreate:
+		*s = InvConfigureBillingSchedulesCommandDataActionCreate
+		return nil
+	case InvConfigureBillingSchedulesCommandDataActionUpdate:
+		*s = InvConfigureBillingSchedulesCommandDataActionUpdate
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type InvConfigureBillingSchedulesCommandDataStatus string
+
+const (
+	InvConfigureBillingSchedulesCommandDataStatusConfigured InvConfigureBillingSchedulesCommandDataStatus = "configured"
+)
+
+// AllValues returns all InvConfigureBillingSchedulesCommandDataStatus values.
+func (InvConfigureBillingSchedulesCommandDataStatus) AllValues() []InvConfigureBillingSchedulesCommandDataStatus {
+	return []InvConfigureBillingSchedulesCommandDataStatus{
+		InvConfigureBillingSchedulesCommandDataStatusConfigured,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s InvConfigureBillingSchedulesCommandDataStatus) MarshalText() ([]byte, error) {
+	switch s {
+	case InvConfigureBillingSchedulesCommandDataStatusConfigured:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *InvConfigureBillingSchedulesCommandDataStatus) UnmarshalText(data []byte) error {
+	switch InvConfigureBillingSchedulesCommandDataStatus(data) {
+	case InvConfigureBillingSchedulesCommandDataStatusConfigured:
+		*s = InvConfigureBillingSchedulesCommandDataStatusConfigured
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/InvConfigureBillingSchedulesCommandRequest
+type InvConfigureBillingSchedulesCommandRequest struct {
+	CommandId         UUID                                    `json:"commandId"`
+	ExpectedVersion   OptInt                                  `json:"expectedVersion"`
+	AccountingScopeId UUID                                    `json:"accountingScopeId"`
+	Data              InvConfigureBillingSchedulesCommandData `json:"data"`
+}
+
+// GetCommandId returns the value of CommandId.
+func (s *InvConfigureBillingSchedulesCommandRequest) GetCommandId() UUID {
+	return s.CommandId
+}
+
+// GetExpectedVersion returns the value of ExpectedVersion.
+func (s *InvConfigureBillingSchedulesCommandRequest) GetExpectedVersion() OptInt {
+	return s.ExpectedVersion
+}
+
+// GetAccountingScopeId returns the value of AccountingScopeId.
+func (s *InvConfigureBillingSchedulesCommandRequest) GetAccountingScopeId() UUID {
+	return s.AccountingScopeId
+}
+
+// GetData returns the value of Data.
+func (s *InvConfigureBillingSchedulesCommandRequest) GetData() InvConfigureBillingSchedulesCommandData {
+	return s.Data
+}
+
+// SetCommandId sets the value of CommandId.
+func (s *InvConfigureBillingSchedulesCommandRequest) SetCommandId(val UUID) {
+	s.CommandId = val
+}
+
+// SetExpectedVersion sets the value of ExpectedVersion.
+func (s *InvConfigureBillingSchedulesCommandRequest) SetExpectedVersion(val OptInt) {
+	s.ExpectedVersion = val
+}
+
+// SetAccountingScopeId sets the value of AccountingScopeId.
+func (s *InvConfigureBillingSchedulesCommandRequest) SetAccountingScopeId(val UUID) {
+	s.AccountingScopeId = val
+}
+
+// SetData sets the value of Data.
+func (s *InvConfigureBillingSchedulesCommandRequest) SetData(val InvConfigureBillingSchedulesCommandData) {
+	s.Data = val
+}
+
 type InvConfigureBillingSchedulesConflict ProblemDetails
 
 func (*InvConfigureBillingSchedulesConflict) invConfigureBillingSchedulesRes() {}
@@ -8019,6 +8260,22 @@ type InvGenerateInvoicesUnprocessableEntity ProblemDetails
 
 func (*InvGenerateInvoicesUnprocessableEntity) invGenerateInvoicesRes() {}
 
+type InvGetBillingScheduleBadRequest ProblemDetails
+
+func (*InvGetBillingScheduleBadRequest) invGetBillingScheduleRes() {}
+
+type InvGetBillingScheduleForbidden ProblemDetails
+
+func (*InvGetBillingScheduleForbidden) invGetBillingScheduleRes() {}
+
+type InvGetBillingScheduleNotFound ProblemDetails
+
+func (*InvGetBillingScheduleNotFound) invGetBillingScheduleRes() {}
+
+type InvGetBillingScheduleServiceUnavailable ProblemDetails
+
+func (*InvGetBillingScheduleServiceUnavailable) invGetBillingScheduleRes() {}
+
 type InvGetInvoiceTemplateBadRequest ProblemDetails
 
 func (*InvGetInvoiceTemplateBadRequest) invGetInvoiceTemplateRes() {}
@@ -8034,6 +8291,18 @@ func (*InvGetInvoiceTemplateNotFound) invGetInvoiceTemplateRes() {}
 type InvGetInvoiceTemplateServiceUnavailable ProblemDetails
 
 func (*InvGetInvoiceTemplateServiceUnavailable) invGetInvoiceTemplateRes() {}
+
+type InvListBillingSchedulesBadRequest ProblemDetails
+
+func (*InvListBillingSchedulesBadRequest) invListBillingSchedulesRes() {}
+
+type InvListBillingSchedulesForbidden ProblemDetails
+
+func (*InvListBillingSchedulesForbidden) invListBillingSchedulesRes() {}
+
+type InvListBillingSchedulesServiceUnavailable ProblemDetails
+
+func (*InvListBillingSchedulesServiceUnavailable) invListBillingSchedulesRes() {}
 
 type InvListInvoiceTemplatesBadRequest ProblemDetails
 
@@ -8066,6 +8335,87 @@ func (*InvRecalculateUnfinalizedInvoicesServiceUnavailable) invRecalculateUnfina
 type InvRecalculateUnfinalizedInvoicesUnprocessableEntity ProblemDetails
 
 func (*InvRecalculateUnfinalizedInvoicesUnprocessableEntity) invRecalculateUnfinalizedInvoicesRes() {}
+
+// Ref: #/components/schemas/InvScheduledCharge
+type InvScheduledCharge struct {
+	ID                 UUID         `json:"id"`
+	TemplateId         UUID         `json:"templateId"`
+	TemplateVersion    int          `json:"templateVersion"`
+	TemplateLineItemId UUID         `json:"templateLineItemId"`
+	Quantity           ExactDecimal `json:"quantity"`
+	Amount             ExactDecimal `json:"amount"`
+	Currency           CurrencyCode `json:"currency"`
+}
+
+// GetID returns the value of ID.
+func (s *InvScheduledCharge) GetID() UUID {
+	return s.ID
+}
+
+// GetTemplateId returns the value of TemplateId.
+func (s *InvScheduledCharge) GetTemplateId() UUID {
+	return s.TemplateId
+}
+
+// GetTemplateVersion returns the value of TemplateVersion.
+func (s *InvScheduledCharge) GetTemplateVersion() int {
+	return s.TemplateVersion
+}
+
+// GetTemplateLineItemId returns the value of TemplateLineItemId.
+func (s *InvScheduledCharge) GetTemplateLineItemId() UUID {
+	return s.TemplateLineItemId
+}
+
+// GetQuantity returns the value of Quantity.
+func (s *InvScheduledCharge) GetQuantity() ExactDecimal {
+	return s.Quantity
+}
+
+// GetAmount returns the value of Amount.
+func (s *InvScheduledCharge) GetAmount() ExactDecimal {
+	return s.Amount
+}
+
+// GetCurrency returns the value of Currency.
+func (s *InvScheduledCharge) GetCurrency() CurrencyCode {
+	return s.Currency
+}
+
+// SetID sets the value of ID.
+func (s *InvScheduledCharge) SetID(val UUID) {
+	s.ID = val
+}
+
+// SetTemplateId sets the value of TemplateId.
+func (s *InvScheduledCharge) SetTemplateId(val UUID) {
+	s.TemplateId = val
+}
+
+// SetTemplateVersion sets the value of TemplateVersion.
+func (s *InvScheduledCharge) SetTemplateVersion(val int) {
+	s.TemplateVersion = val
+}
+
+// SetTemplateLineItemId sets the value of TemplateLineItemId.
+func (s *InvScheduledCharge) SetTemplateLineItemId(val UUID) {
+	s.TemplateLineItemId = val
+}
+
+// SetQuantity sets the value of Quantity.
+func (s *InvScheduledCharge) SetQuantity(val ExactDecimal) {
+	s.Quantity = val
+}
+
+// SetAmount sets the value of Amount.
+func (s *InvScheduledCharge) SetAmount(val ExactDecimal) {
+	s.Amount = val
+}
+
+// SetCurrency sets the value of Currency.
+func (s *InvScheduledCharge) SetCurrency(val CurrencyCode) {
+	s.Currency = val
+}
 
 // Ref: #/components/schemas/InvTemplateApplicability
 type InvTemplateApplicability struct {

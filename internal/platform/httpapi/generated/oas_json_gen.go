@@ -32632,6 +32632,479 @@ func (s *InvConfigureBillingSchedulesBadRequest) UnmarshalJSON(data []byte) erro
 	return s.Decode(d)
 }
 
+// Encode implements json.Marshaler.
+func (s *InvConfigureBillingSchedulesCommandData) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *InvConfigureBillingSchedulesCommandData) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("action")
+		s.Action.Encode(e)
+	}
+	{
+		if s.BillingScheduleId.Set {
+			e.FieldStart("billingScheduleId")
+			s.BillingScheduleId.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("customerId")
+		s.CustomerId.Encode(e)
+	}
+	{
+		e.FieldStart("contractReference")
+		e.Str(s.ContractReference)
+	}
+	{
+		e.FieldStart("charges")
+		e.ArrStart()
+		for _, elem := range s.Charges {
+			elem.Encode(e)
+		}
+		e.ArrEnd()
+	}
+	{
+		e.FieldStart("nextBillingDate")
+		json.EncodeDate(e, s.NextBillingDate)
+	}
+	{
+		e.FieldStart("timeZone")
+		e.Str(s.TimeZone)
+	}
+	{
+		e.FieldStart("status")
+		s.Status.Encode(e)
+	}
+	{
+		e.FieldStart("effectiveFrom")
+		json.EncodeDate(e, s.EffectiveFrom)
+	}
+	{
+		if s.EffectiveTo.Set {
+			e.FieldStart("effectiveTo")
+			s.EffectiveTo.Encode(e, json.EncodeDate)
+		}
+	}
+}
+
+var jsonFieldsNameOfInvConfigureBillingSchedulesCommandData = [10]string{
+	0: "action",
+	1: "billingScheduleId",
+	2: "customerId",
+	3: "contractReference",
+	4: "charges",
+	5: "nextBillingDate",
+	6: "timeZone",
+	7: "status",
+	8: "effectiveFrom",
+	9: "effectiveTo",
+}
+
+// Decode decodes InvConfigureBillingSchedulesCommandData from json.
+func (s *InvConfigureBillingSchedulesCommandData) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode InvConfigureBillingSchedulesCommandData to nil")
+	}
+	var requiredBitSet [2]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "action":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Action.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"action\"")
+			}
+		case "billingScheduleId":
+			if err := func() error {
+				s.BillingScheduleId.Reset()
+				if err := s.BillingScheduleId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"billingScheduleId\"")
+			}
+		case "customerId":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.CustomerId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"customerId\"")
+			}
+		case "contractReference":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				v, err := d.Str()
+				s.ContractReference = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"contractReference\"")
+			}
+		case "charges":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				s.Charges = make([]InvScheduledCharge, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem InvScheduledCharge
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Charges = append(s.Charges, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"charges\"")
+			}
+		case "nextBillingDate":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				v, err := json.DecodeDate(d)
+				s.NextBillingDate = v
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"nextBillingDate\"")
+			}
+		case "timeZone":
+			requiredBitSet[0] |= 1 << 6
+			if err := func() error {
+				v, err := d.Str()
+				s.TimeZone = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"timeZone\"")
+			}
+		case "status":
+			requiredBitSet[0] |= 1 << 7
+			if err := func() error {
+				if err := s.Status.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"status\"")
+			}
+		case "effectiveFrom":
+			requiredBitSet[1] |= 1 << 0
+			if err := func() error {
+				v, err := json.DecodeDate(d)
+				s.EffectiveFrom = v
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"effectiveFrom\"")
+			}
+		case "effectiveTo":
+			if err := func() error {
+				s.EffectiveTo.Reset()
+				if err := s.EffectiveTo.Decode(d, json.DecodeDate); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"effectiveTo\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode InvConfigureBillingSchedulesCommandData")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [2]uint8{
+		0b11111101,
+		0b00000001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfInvConfigureBillingSchedulesCommandData) {
+					name = jsonFieldsNameOfInvConfigureBillingSchedulesCommandData[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *InvConfigureBillingSchedulesCommandData) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *InvConfigureBillingSchedulesCommandData) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes InvConfigureBillingSchedulesCommandDataAction as json.
+func (s InvConfigureBillingSchedulesCommandDataAction) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes InvConfigureBillingSchedulesCommandDataAction from json.
+func (s *InvConfigureBillingSchedulesCommandDataAction) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode InvConfigureBillingSchedulesCommandDataAction to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch InvConfigureBillingSchedulesCommandDataAction(v) {
+	case InvConfigureBillingSchedulesCommandDataActionCreate:
+		*s = InvConfigureBillingSchedulesCommandDataActionCreate
+	case InvConfigureBillingSchedulesCommandDataActionUpdate:
+		*s = InvConfigureBillingSchedulesCommandDataActionUpdate
+	default:
+		*s = InvConfigureBillingSchedulesCommandDataAction(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s InvConfigureBillingSchedulesCommandDataAction) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *InvConfigureBillingSchedulesCommandDataAction) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes InvConfigureBillingSchedulesCommandDataStatus as json.
+func (s InvConfigureBillingSchedulesCommandDataStatus) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes InvConfigureBillingSchedulesCommandDataStatus from json.
+func (s *InvConfigureBillingSchedulesCommandDataStatus) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode InvConfigureBillingSchedulesCommandDataStatus to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch InvConfigureBillingSchedulesCommandDataStatus(v) {
+	case InvConfigureBillingSchedulesCommandDataStatusConfigured:
+		*s = InvConfigureBillingSchedulesCommandDataStatusConfigured
+	default:
+		*s = InvConfigureBillingSchedulesCommandDataStatus(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s InvConfigureBillingSchedulesCommandDataStatus) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *InvConfigureBillingSchedulesCommandDataStatus) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *InvConfigureBillingSchedulesCommandRequest) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *InvConfigureBillingSchedulesCommandRequest) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("commandId")
+		s.CommandId.Encode(e)
+	}
+	{
+		if s.ExpectedVersion.Set {
+			e.FieldStart("expectedVersion")
+			s.ExpectedVersion.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("accountingScopeId")
+		s.AccountingScopeId.Encode(e)
+	}
+	{
+		e.FieldStart("data")
+		s.Data.Encode(e)
+	}
+}
+
+var jsonFieldsNameOfInvConfigureBillingSchedulesCommandRequest = [4]string{
+	0: "commandId",
+	1: "expectedVersion",
+	2: "accountingScopeId",
+	3: "data",
+}
+
+// Decode decodes InvConfigureBillingSchedulesCommandRequest from json.
+func (s *InvConfigureBillingSchedulesCommandRequest) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode InvConfigureBillingSchedulesCommandRequest to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "commandId":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.CommandId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"commandId\"")
+			}
+		case "expectedVersion":
+			if err := func() error {
+				s.ExpectedVersion.Reset()
+				if err := s.ExpectedVersion.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"expectedVersion\"")
+			}
+		case "accountingScopeId":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.AccountingScopeId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"accountingScopeId\"")
+			}
+		case "data":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				if err := s.Data.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"data\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode InvConfigureBillingSchedulesCommandRequest")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00001101,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfInvConfigureBillingSchedulesCommandRequest) {
+					name = jsonFieldsNameOfInvConfigureBillingSchedulesCommandRequest[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *InvConfigureBillingSchedulesCommandRequest) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *InvConfigureBillingSchedulesCommandRequest) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes InvConfigureBillingSchedulesConflict as json.
 func (s *InvConfigureBillingSchedulesConflict) Encode(e *jx.Encoder) {
 	unwrapped := (*ProblemDetails)(s)
@@ -33835,6 +34308,158 @@ func (s *InvGenerateInvoicesUnprocessableEntity) UnmarshalJSON(data []byte) erro
 	return s.Decode(d)
 }
 
+// Encode encodes InvGetBillingScheduleBadRequest as json.
+func (s *InvGetBillingScheduleBadRequest) Encode(e *jx.Encoder) {
+	unwrapped := (*ProblemDetails)(s)
+
+	unwrapped.Encode(e)
+}
+
+// Decode decodes InvGetBillingScheduleBadRequest from json.
+func (s *InvGetBillingScheduleBadRequest) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode InvGetBillingScheduleBadRequest to nil")
+	}
+	var unwrapped ProblemDetails
+	if err := func() error {
+		if err := unwrapped.Decode(d); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = InvGetBillingScheduleBadRequest(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *InvGetBillingScheduleBadRequest) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *InvGetBillingScheduleBadRequest) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes InvGetBillingScheduleForbidden as json.
+func (s *InvGetBillingScheduleForbidden) Encode(e *jx.Encoder) {
+	unwrapped := (*ProblemDetails)(s)
+
+	unwrapped.Encode(e)
+}
+
+// Decode decodes InvGetBillingScheduleForbidden from json.
+func (s *InvGetBillingScheduleForbidden) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode InvGetBillingScheduleForbidden to nil")
+	}
+	var unwrapped ProblemDetails
+	if err := func() error {
+		if err := unwrapped.Decode(d); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = InvGetBillingScheduleForbidden(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *InvGetBillingScheduleForbidden) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *InvGetBillingScheduleForbidden) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes InvGetBillingScheduleNotFound as json.
+func (s *InvGetBillingScheduleNotFound) Encode(e *jx.Encoder) {
+	unwrapped := (*ProblemDetails)(s)
+
+	unwrapped.Encode(e)
+}
+
+// Decode decodes InvGetBillingScheduleNotFound from json.
+func (s *InvGetBillingScheduleNotFound) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode InvGetBillingScheduleNotFound to nil")
+	}
+	var unwrapped ProblemDetails
+	if err := func() error {
+		if err := unwrapped.Decode(d); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = InvGetBillingScheduleNotFound(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *InvGetBillingScheduleNotFound) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *InvGetBillingScheduleNotFound) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes InvGetBillingScheduleServiceUnavailable as json.
+func (s *InvGetBillingScheduleServiceUnavailable) Encode(e *jx.Encoder) {
+	unwrapped := (*ProblemDetails)(s)
+
+	unwrapped.Encode(e)
+}
+
+// Decode decodes InvGetBillingScheduleServiceUnavailable from json.
+func (s *InvGetBillingScheduleServiceUnavailable) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode InvGetBillingScheduleServiceUnavailable to nil")
+	}
+	var unwrapped ProblemDetails
+	if err := func() error {
+		if err := unwrapped.Decode(d); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = InvGetBillingScheduleServiceUnavailable(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *InvGetBillingScheduleServiceUnavailable) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *InvGetBillingScheduleServiceUnavailable) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes InvGetInvoiceTemplateBadRequest as json.
 func (s *InvGetInvoiceTemplateBadRequest) Encode(e *jx.Encoder) {
 	unwrapped := (*ProblemDetails)(s)
@@ -33983,6 +34608,120 @@ func (s *InvGetInvoiceTemplateServiceUnavailable) MarshalJSON() ([]byte, error) 
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *InvGetInvoiceTemplateServiceUnavailable) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes InvListBillingSchedulesBadRequest as json.
+func (s *InvListBillingSchedulesBadRequest) Encode(e *jx.Encoder) {
+	unwrapped := (*ProblemDetails)(s)
+
+	unwrapped.Encode(e)
+}
+
+// Decode decodes InvListBillingSchedulesBadRequest from json.
+func (s *InvListBillingSchedulesBadRequest) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode InvListBillingSchedulesBadRequest to nil")
+	}
+	var unwrapped ProblemDetails
+	if err := func() error {
+		if err := unwrapped.Decode(d); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = InvListBillingSchedulesBadRequest(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *InvListBillingSchedulesBadRequest) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *InvListBillingSchedulesBadRequest) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes InvListBillingSchedulesForbidden as json.
+func (s *InvListBillingSchedulesForbidden) Encode(e *jx.Encoder) {
+	unwrapped := (*ProblemDetails)(s)
+
+	unwrapped.Encode(e)
+}
+
+// Decode decodes InvListBillingSchedulesForbidden from json.
+func (s *InvListBillingSchedulesForbidden) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode InvListBillingSchedulesForbidden to nil")
+	}
+	var unwrapped ProblemDetails
+	if err := func() error {
+		if err := unwrapped.Decode(d); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = InvListBillingSchedulesForbidden(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *InvListBillingSchedulesForbidden) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *InvListBillingSchedulesForbidden) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes InvListBillingSchedulesServiceUnavailable as json.
+func (s *InvListBillingSchedulesServiceUnavailable) Encode(e *jx.Encoder) {
+	unwrapped := (*ProblemDetails)(s)
+
+	unwrapped.Encode(e)
+}
+
+// Decode decodes InvListBillingSchedulesServiceUnavailable from json.
+func (s *InvListBillingSchedulesServiceUnavailable) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode InvListBillingSchedulesServiceUnavailable to nil")
+	}
+	var unwrapped ProblemDetails
+	if err := func() error {
+		if err := unwrapped.Decode(d); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = InvListBillingSchedulesServiceUnavailable(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *InvListBillingSchedulesServiceUnavailable) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *InvListBillingSchedulesServiceUnavailable) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -34287,6 +35026,192 @@ func (s *InvRecalculateUnfinalizedInvoicesUnprocessableEntity) MarshalJSON() ([]
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *InvRecalculateUnfinalizedInvoicesUnprocessableEntity) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *InvScheduledCharge) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *InvScheduledCharge) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("id")
+		s.ID.Encode(e)
+	}
+	{
+		e.FieldStart("templateId")
+		s.TemplateId.Encode(e)
+	}
+	{
+		e.FieldStart("templateVersion")
+		e.Int(s.TemplateVersion)
+	}
+	{
+		e.FieldStart("templateLineItemId")
+		s.TemplateLineItemId.Encode(e)
+	}
+	{
+		e.FieldStart("quantity")
+		s.Quantity.Encode(e)
+	}
+	{
+		e.FieldStart("amount")
+		s.Amount.Encode(e)
+	}
+	{
+		e.FieldStart("currency")
+		s.Currency.Encode(e)
+	}
+}
+
+var jsonFieldsNameOfInvScheduledCharge = [7]string{
+	0: "id",
+	1: "templateId",
+	2: "templateVersion",
+	3: "templateLineItemId",
+	4: "quantity",
+	5: "amount",
+	6: "currency",
+}
+
+// Decode decodes InvScheduledCharge from json.
+func (s *InvScheduledCharge) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode InvScheduledCharge to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "id":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.ID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"id\"")
+			}
+		case "templateId":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.TemplateId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"templateId\"")
+			}
+		case "templateVersion":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Int()
+				s.TemplateVersion = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"templateVersion\"")
+			}
+		case "templateLineItemId":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				if err := s.TemplateLineItemId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"templateLineItemId\"")
+			}
+		case "quantity":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				if err := s.Quantity.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"quantity\"")
+			}
+		case "amount":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				if err := s.Amount.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"amount\"")
+			}
+		case "currency":
+			requiredBitSet[0] |= 1 << 6
+			if err := func() error {
+				if err := s.Currency.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"currency\"")
+			}
+		default:
+			return errors.Errorf("unexpected field %q", k)
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode InvScheduledCharge")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b01111111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfInvScheduledCharge) {
+					name = jsonFieldsNameOfInvScheduledCharge[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *InvScheduledCharge) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *InvScheduledCharge) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

@@ -9100,7 +9100,7 @@ func (s *Server) decodeInvCancelUnfinalizedInvoicesRequest(r *http.Request) (
 }
 
 func (s *Server) decodeInvConfigureBillingSchedulesRequest(r *http.Request) (
-	req *CommandRequest,
+	req *InvConfigureBillingSchedulesCommandRequest,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -9147,7 +9147,7 @@ func (s *Server) decodeInvConfigureBillingSchedulesRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request CommandRequest
+		var request InvConfigureBillingSchedulesCommandRequest
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err

@@ -139,6 +139,45 @@ retained revision metadata needed by the editor; no client fixture is an
 authoritative source. The existing common established-result and problem
 envelopes remain unchanged.
 
+### 6.2 Invoicing billing-schedule configuration and reference query contract
+
+US2 uses a complete replacement command for one effective-dated
+`BillingSchedule` revision:
+
+- `action` is `create` or `update`; create receives a server-owned UUID v7
+  identity and version `1`, while update requires `billingScheduleId` and
+  `expectedVersion`.
+- `accountingScopeId` and `X-Accounting-Scope-Id` are both explicit when the
+  header is supplied, and the handler rejects a mismatch. The scope is never
+  inferred from the browser route.
+- `customerId` and `contractReference` remain opaque references owned by their
+  source contexts. Each scheduled charge retains `templateId`,
+  `templateVersion`, and `templateLineItemId` so later template maintenance
+  cannot rewrite the source evidence used by invoice generation.
+- `quantity` and `amount` are exact-decimal strings. `currency` is a three-letter
+  currency code, `quantity` is positive, and the configured schedule status is
+  currently the contract value `configured`.
+- `nextBillingDate`, `effectiveFrom`, and `effectiveTo` are date-only values;
+  the next billing date must be within the inclusive effective interval.
+  `timeZone` is an explicit IANA time-zone identifier.
+- The command requires `Idempotency-Key`, and updates require `If-Match` with
+  the same quoted aggregate version as `expectedVersion`. Established results
+  expose schedule identity, version, revision, validation outcome, and safe
+  retained-revision metadata.
+
+The authoritative schedule read surface used by `INV-WS-01` and `INV-SCR-02`
+is:
+
+| Method | Path | Operation ID | Permission | Result data |
+|---|---|---|---|---|
+| GET | `/api/v1/invoicing/reference/billing-schedules` | `invListBillingSchedules` | `finance.inv.configure.billing.schedules` | `billingSchedules`, `page` |
+| GET | `/api/v1/invoicing/reference/billing-schedules/{billingScheduleId}` | `invGetBillingSchedule` | `finance.inv.configure.billing.schedules` | `billingSchedule` |
+
+Both reads require the explicit scope header for scoped access and return the
+safe current projection with immutable revision metadata. Reference validation
+is an owning-context boundary; the Invoicing handler does not read Customer,
+Contract, InvoiceTemplate, calendar, or another module's tables directly.
+
 ## 7. Exact operation endpoint catalog
 
 | Requirement | Method | Path | OpenAPI operationId | Permission | Provenance |
@@ -396,6 +435,6 @@ CI shall lint and bundle OpenAPI, reject duplicate `operationId` values, generat
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `9ee7272934fd3961c73273fcd1b4bbe20c4c486e657cf6c754066c37722fa797` |
+| Verified body SHA-256 | `4a2ce3d5e28231289f8fbc12a4b099d3442dbab3ccbee9d2f3303aa454ca81ef` |
 | Review status | Passed |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; run the full suite for API, database, event, security, deployment, recovery, or technology-baseline changes. |

@@ -49,6 +49,7 @@ type IdentityHandler struct {
 	PostingApprovalDecisionService       *gl.PostingApprovalDecisionService
 	JournalReversalService               *gl.JournalReversalService
 	InvoiceTemplateService               *invoicing.InvoiceTemplateService
+	BillingScheduleService               *invoicing.BillingScheduleService
 	SoftCloseGateService                 *gl.SoftCloseGateService
 	FiscalPeriodService                  *fiscalperiod.Service
 	ApprovalPolicyService                *workflow.ApprovalPolicyService

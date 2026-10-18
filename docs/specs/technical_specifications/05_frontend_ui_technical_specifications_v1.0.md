@@ -189,6 +189,14 @@ Application components wrap daisyUI classes and expose typed props. Feature code
 | AUD-SCR-04 | Integrity incident | `/audit-integrity/aud-scr-04` | Show affected range, evidence, severity, owner, containment, recovery, corrective seals, and closure. |
 | AUD-SCR-05 | Verification-credential rotation | `/audit-integrity/aud-scr-05` | Show current/previous credential intervals, reason, approvals, impact, and replacement-seal requirements. |
 
+The US2 implementation uses the generated OpenAPI client for the authoritative
+schedule list, detail, and configuration command. `INV-SCR-02` keeps exact
+decimal values as strings, retains the same idempotency key across a safe
+retry, sends explicit scope and `If-Match` metadata, and opens the shared
+version-conflict dialog without overwriting the reviewed form. The worklist
+shows only server-returned schedule projections; an unavailable or denied
+query does not fall back to fixture data.
+
 ## 5. Route protection
 
 1. Resolve Entra authentication before protected routes render.
@@ -270,6 +278,6 @@ Semantic tokens define `success`, `warning`, `error`, `info`, `pending`, `reconc
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `4e71b822cd952e0cc2ee3fd4e6c33ae5ffe81cb660978fd75755737ea09ff068` |
+| Verified body SHA-256 | `b2b5dcda9784d26c0eb819c6200fcd19d26804f3bf9ba8d8fcd995c39c172274` |
 | Review status | Passed |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; run the full suite for API, database, event, security, deployment, recovery, or technology-baseline changes. |

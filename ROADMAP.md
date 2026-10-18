@@ -186,9 +186,16 @@ qualification complete.
 - [ ] `DLV-FR-WFA-004` — FR-WFA-004 — `EscalateApproval`
 - [ ] `DLV-FR-WFA-005` — FR-WFA-005 — `Maintain approval policies`
 
-## [ ] EP-FPM-001 — Fiscal period management (M3)
+## [x] EP-FPM-001 — Fiscal period management (M3)
 
 Soft close, hard close, reopen, reclose, posting-gate recovery, and period control evidence.
+
+User-story plan: [EP-FPM-001 user stories](docs/backlog/stories/EP-FPM-001_user_stories.md)
+
+Status comment — 2026-10-17: EP-FPM-001 is marked done by explicit
+user-requested parent-status override. This parent status does not mark its
+child delivery items, workflow demonstrations, or PostgreSQL, cross-context,
+browser/accessibility, recovery, production, and release qualification complete.
 
 - [ ] `DLV-FR-FPM-001` — FR-FPM-001 — `StartSoftClose`
 - [ ] `DLV-FR-FPM-002` — FR-FPM-002 — `EndSoftClose`
@@ -210,6 +217,12 @@ Soft close, hard close, reopen, reclose, posting-gate recovery, and period contr
 ## [ ] EP-INV-001 — Invoicing (M4)
 
 Invoice templates, billing schedules, generated invoices, finalization, and AR handoff.
+
+User-story plan: [EP-INV-001 user stories](docs/backlog/stories/EP-INV-001_user_stories.md)
+
+US1 and US2 have local implementation slices and focused evidence. Their
+delivery items remain open pending approved cross-context reference ports,
+PostgreSQL/browser/accessibility integration, and release qualification.
 
 - [ ] `DLV-FR-INV-001` — FR-INV-001 — `Configure invoice templates`
 - [ ] `DLV-FR-INV-002` — FR-INV-002 — `Configure billing schedules`

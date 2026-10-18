@@ -158,6 +158,45 @@ schemas:
       dimensions:
         type: object
         additionalProperties: { type: string, minLength: 1, maxLength: 160 }
+  InvConfigureBillingSchedulesCommandRequest:
+    type: object
+    additionalProperties: false
+    required: [commandId, accountingScopeId, data]
+    properties:
+      commandId: { $ref: '#/schemas/Uuid' }
+      expectedVersion: { type: integer, minimum: 1 }
+      accountingScopeId: { $ref: '#/schemas/Uuid' }
+      data: { $ref: '#/schemas/InvConfigureBillingSchedulesCommandData' }
+  InvConfigureBillingSchedulesCommandData:
+    type: object
+    additionalProperties: false
+    required: [action, customerId, contractReference, charges, nextBillingDate, timeZone, status, effectiveFrom]
+    properties:
+      action: { type: string, enum: [create, update] }
+      billingScheduleId: { $ref: '#/schemas/Uuid' }
+      customerId: { $ref: '#/schemas/Uuid' }
+      contractReference: { type: string, minLength: 1, maxLength: 240 }
+      charges:
+        type: array
+        minItems: 1
+        items: { $ref: '#/schemas/InvScheduledCharge' }
+      nextBillingDate: { type: string, format: date }
+      timeZone: { type: string, minLength: 1, maxLength: 64 }
+      status: { type: string, enum: [configured] }
+      effectiveFrom: { type: string, format: date }
+      effectiveTo: { type: string, format: date }
+  InvScheduledCharge:
+    type: object
+    additionalProperties: false
+    required: [id, templateId, templateVersion, templateLineItemId, quantity, amount, currency]
+    properties:
+      id: { $ref: '#/schemas/Uuid' }
+      templateId: { $ref: '#/schemas/Uuid' }
+      templateVersion: { type: integer, minimum: 1 }
+      templateLineItemId: { $ref: '#/schemas/Uuid' }
+      quantity: { $ref: '#/schemas/ExactDecimal' }
+      amount: { $ref: '#/schemas/ExactDecimal' }
+      currency: { $ref: '#/schemas/CurrencyCode' }
   WfaMaintainApprovalPoliciesCommandRequest:
     type: object
     additionalProperties: false

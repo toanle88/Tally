@@ -22549,10 +22549,11 @@ func decodeInvCancelUnfinalizedInvoicesParams(args [0]string, argsEscaped bool, 
 
 // InvConfigureBillingSchedulesParams is parameters of invConfigureBillingSchedules operation.
 type InvConfigureBillingSchedulesParams struct {
-	XCorrelationID OptUUID   `json:",omitempty,omitzero"`
-	AcceptLanguage OptString `json:",omitempty,omitzero"`
-	IdempotencyKey string
-	IfMatch        OptString `json:",omitempty,omitzero"`
+	XCorrelationID     OptUUID   `json:",omitempty,omitzero"`
+	AcceptLanguage     OptString `json:",omitempty,omitzero"`
+	XAccountingScopeID OptUUID   `json:",omitempty,omitzero"`
+	IdempotencyKey     string
+	IfMatch            OptString `json:",omitempty,omitzero"`
 }
 
 func unpackInvConfigureBillingSchedulesParams(packed middleware.Parameters) (params InvConfigureBillingSchedulesParams) {
@@ -22572,6 +22573,15 @@ func unpackInvConfigureBillingSchedulesParams(packed middleware.Parameters) (par
 		}
 		if v, ok := packed[key]; ok {
 			params.AcceptLanguage = v.(OptString)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Accounting-Scope-Id",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XAccountingScopeID = v.(OptUUID)
 		}
 	}
 	{
@@ -22676,6 +22686,52 @@ func decodeInvConfigureBillingSchedulesParams(args [0]string, argsEscaped bool, 
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "Accept-Language",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	// Decode header: X-Accounting-Scope-Id.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Accounting-Scope-Id",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXAccountingScopeIDVal UUID
+				if err := func() error {
+					var paramsDotXAccountingScopeIDValVal uuid.UUID
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToUUID(val)
+						if err != nil {
+							return err
+						}
+
+						paramsDotXAccountingScopeIDValVal = c
+						return nil
+					}(); err != nil {
+						return err
+					}
+					paramsDotXAccountingScopeIDVal = UUID(paramsDotXAccountingScopeIDValVal)
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XAccountingScopeID.SetTo(paramsDotXAccountingScopeIDVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Accounting-Scope-Id",
 			In:   "header",
 			Err:  err,
 		}
@@ -23421,6 +23477,240 @@ func decodeInvGenerateInvoicesParams(args [0]string, argsEscaped bool, r *http.R
 	return params, nil
 }
 
+// InvGetBillingScheduleParams is parameters of invGetBillingSchedule operation.
+type InvGetBillingScheduleParams struct {
+	BillingScheduleId  UUID
+	XCorrelationID     OptUUID   `json:",omitempty,omitzero"`
+	AcceptLanguage     OptString `json:",omitempty,omitzero"`
+	XAccountingScopeID OptUUID   `json:",omitempty,omitzero"`
+}
+
+func unpackInvGetBillingScheduleParams(packed middleware.Parameters) (params InvGetBillingScheduleParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "billingScheduleId",
+			In:   "path",
+		}
+		params.BillingScheduleId = packed[key].(UUID)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Correlation-Id",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XCorrelationID = v.(OptUUID)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "Accept-Language",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.AcceptLanguage = v.(OptString)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Accounting-Scope-Id",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XAccountingScopeID = v.(OptUUID)
+		}
+	}
+	return params
+}
+
+func decodeInvGetBillingScheduleParams(args [1]string, argsEscaped bool, r *http.Request) (params InvGetBillingScheduleParams, _ error) {
+	h := uri.NewHeaderDecoder(r.Header)
+	// Decode path: billingScheduleId.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "billingScheduleId",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				var paramsDotBillingScheduleIdVal uuid.UUID
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToUUID(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotBillingScheduleIdVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.BillingScheduleId = UUID(paramsDotBillingScheduleIdVal)
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "billingScheduleId",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode header: X-Correlation-Id.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Correlation-Id",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXCorrelationIDVal UUID
+				if err := func() error {
+					var paramsDotXCorrelationIDValVal uuid.UUID
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToUUID(val)
+						if err != nil {
+							return err
+						}
+
+						paramsDotXCorrelationIDValVal = c
+						return nil
+					}(); err != nil {
+						return err
+					}
+					paramsDotXCorrelationIDVal = UUID(paramsDotXCorrelationIDValVal)
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XCorrelationID.SetTo(paramsDotXCorrelationIDVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Correlation-Id",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	// Decode header: Accept-Language.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "Accept-Language",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotAcceptLanguageVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotAcceptLanguageVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.AcceptLanguage.SetTo(paramsDotAcceptLanguageVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "Accept-Language",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	// Decode header: X-Accounting-Scope-Id.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Accounting-Scope-Id",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXAccountingScopeIDVal UUID
+				if err := func() error {
+					var paramsDotXAccountingScopeIDValVal uuid.UUID
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToUUID(val)
+						if err != nil {
+							return err
+						}
+
+						paramsDotXAccountingScopeIDValVal = c
+						return nil
+					}(); err != nil {
+						return err
+					}
+					paramsDotXAccountingScopeIDVal = UUID(paramsDotXAccountingScopeIDValVal)
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XAccountingScopeID.SetTo(paramsDotXAccountingScopeIDVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Accounting-Scope-Id",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // InvGetInvoiceTemplateParams is parameters of invGetInvoiceTemplate operation.
 type InvGetInvoiceTemplateParams struct {
 	InvoiceTemplateId  UUID
@@ -23649,6 +23939,313 @@ func decodeInvGetInvoiceTemplateParams(args [1]string, argsEscaped bool, r *http
 		return params, &ogenerrors.DecodeParamError{
 			Name: "X-Accounting-Scope-Id",
 			In:   "header",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// InvListBillingSchedulesParams is parameters of invListBillingSchedules operation.
+type InvListBillingSchedulesParams struct {
+	XCorrelationID     OptUUID   `json:",omitempty,omitzero"`
+	AcceptLanguage     OptString `json:",omitempty,omitzero"`
+	XAccountingScopeID OptUUID   `json:",omitempty,omitzero"`
+	PageSize           OptInt    `json:",omitempty,omitzero"`
+	PageAfter          OptString `json:",omitempty,omitzero"`
+}
+
+func unpackInvListBillingSchedulesParams(packed middleware.Parameters) (params InvListBillingSchedulesParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Correlation-Id",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XCorrelationID = v.(OptUUID)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "Accept-Language",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.AcceptLanguage = v.(OptString)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Accounting-Scope-Id",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XAccountingScopeID = v.(OptUUID)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "page[size]",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.PageSize = v.(OptInt)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "page[after]",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.PageAfter = v.(OptString)
+		}
+	}
+	return params
+}
+
+func decodeInvListBillingSchedulesParams(args [0]string, argsEscaped bool, r *http.Request) (params InvListBillingSchedulesParams, _ error) {
+	q := uri.NewQueryDecoder(r.URL.Query())
+	h := uri.NewHeaderDecoder(r.Header)
+	// Decode header: X-Correlation-Id.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Correlation-Id",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXCorrelationIDVal UUID
+				if err := func() error {
+					var paramsDotXCorrelationIDValVal uuid.UUID
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToUUID(val)
+						if err != nil {
+							return err
+						}
+
+						paramsDotXCorrelationIDValVal = c
+						return nil
+					}(); err != nil {
+						return err
+					}
+					paramsDotXCorrelationIDVal = UUID(paramsDotXCorrelationIDValVal)
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XCorrelationID.SetTo(paramsDotXCorrelationIDVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Correlation-Id",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	// Decode header: Accept-Language.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "Accept-Language",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotAcceptLanguageVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotAcceptLanguageVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.AcceptLanguage.SetTo(paramsDotAcceptLanguageVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "Accept-Language",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	// Decode header: X-Accounting-Scope-Id.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Accounting-Scope-Id",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXAccountingScopeIDVal UUID
+				if err := func() error {
+					var paramsDotXAccountingScopeIDValVal uuid.UUID
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToUUID(val)
+						if err != nil {
+							return err
+						}
+
+						paramsDotXAccountingScopeIDValVal = c
+						return nil
+					}(); err != nil {
+						return err
+					}
+					paramsDotXAccountingScopeIDVal = UUID(paramsDotXAccountingScopeIDValVal)
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XAccountingScopeID.SetTo(paramsDotXAccountingScopeIDVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Accounting-Scope-Id",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	// Set default value for query: page[size].
+	{
+		val := int(50)
+		params.PageSize.SetTo(val)
+	}
+	// Decode query: page[size].
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "page[size]",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotPageSizeVal int
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotPageSizeVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.PageSize.SetTo(paramsDotPageSizeVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				if value, ok := params.PageSize.Get(); ok {
+					if err := func() error {
+						if err := (validate.Int{
+							MinSet:        true,
+							Min:           1,
+							MaxSet:        true,
+							Max:           200,
+							MinExclusive:  false,
+							MaxExclusive:  false,
+							MultipleOfSet: false,
+							MultipleOf:    0,
+							Pattern:       nil,
+						}).Validate(int64(value)); err != nil {
+							return errors.Wrap(err, "int")
+						}
+						return nil
+					}(); err != nil {
+						return err
+					}
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "page[size]",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode query: page[after].
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "page[after]",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotPageAfterVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotPageAfterVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.PageAfter.SetTo(paramsDotPageAfterVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "page[after]",
+			In:   "query",
 			Err:  err,
 		}
 	}

@@ -124,6 +124,10 @@
   $ref: ./invoicing.yaml#/~1invoicing~1reference~1invoice-templates~1{invoiceTemplateId}
 /invoicing/configuration/configure-billing-schedules:
   $ref: ./invoicing.yaml#/~1invoicing~1configuration~1configure-billing-schedules
+/invoicing/reference/billing-schedules:
+  $ref: ./invoicing.yaml#/~1invoicing~1reference~1billing-schedules
+/invoicing/reference/billing-schedules/{billingScheduleId}:
+  $ref: ./invoicing.yaml#/~1invoicing~1reference~1billing-schedules~1{billingScheduleId}
 /invoicing/actions/generate-invoices:
   $ref: ./invoicing.yaml#/~1invoicing~1actions~1generate-invoices
 /invoicing/actions/finalize-generated-invoices:

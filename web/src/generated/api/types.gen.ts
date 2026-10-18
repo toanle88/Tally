@@ -785,6 +785,36 @@ export type GlMaintainAccountsAndReportingMappingsEstablishedResult = {
     data: GlMaintainAccountsAndReportingMappingsResultData;
 };
 
+export type InvScheduledCharge = {
+    id: Uuid;
+    templateId: Uuid;
+    templateVersion: number;
+    templateLineItemId: Uuid;
+    quantity: ExactDecimal;
+    amount: ExactDecimal;
+    currency: CurrencyCode;
+};
+
+export type InvConfigureBillingSchedulesCommandData = {
+    action: 'create' | 'update';
+    billingScheduleId?: Uuid;
+    customerId: Uuid;
+    contractReference: string;
+    charges: Array<InvScheduledCharge>;
+    nextBillingDate: string;
+    timeZone: string;
+    status: 'configured';
+    effectiveFrom: string;
+    effectiveTo?: string;
+};
+
+export type InvConfigureBillingSchedulesCommandRequest = {
+    commandId: Uuid;
+    expectedVersion?: number;
+    accountingScopeId: Uuid;
+    data: InvConfigureBillingSchedulesCommandData;
+};
+
 export type WfaDelegationProjection = {
     id: Uuid;
     delegatorUserId: Uuid;
@@ -4146,10 +4176,11 @@ export type InvGetInvoiceTemplateResponses = {
 export type InvGetInvoiceTemplateResponse = InvGetInvoiceTemplateResponses[keyof InvGetInvoiceTemplateResponses];
 
 export type InvConfigureBillingSchedulesData = {
-    body: CommandRequest;
+    body: InvConfigureBillingSchedulesCommandRequest;
     headers: {
         'X-Correlation-Id'?: Uuid;
         'Accept-Language'?: string;
+        'X-Accounting-Scope-Id'?: Uuid;
         'Idempotency-Key': string;
         'If-Match'?: string;
     };
@@ -4195,6 +4226,99 @@ export type InvConfigureBillingSchedulesResponses = {
 };
 
 export type InvConfigureBillingSchedulesResponse = InvConfigureBillingSchedulesResponses[keyof InvConfigureBillingSchedulesResponses];
+
+export type InvListBillingSchedulesData = {
+    body?: never;
+    headers?: {
+        'X-Correlation-Id'?: Uuid;
+        'Accept-Language'?: string;
+        'X-Accounting-Scope-Id'?: Uuid;
+    };
+    path?: never;
+    query?: {
+        'page[size]'?: number;
+        'page[after]'?: string;
+    };
+    url: '/invoicing/reference/billing-schedules';
+};
+
+export type InvListBillingSchedulesErrors = {
+    /**
+     * RFC 9457-style problem details
+     */
+    400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    403: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    503: ProblemDetails;
+};
+
+export type InvListBillingSchedulesError = InvListBillingSchedulesErrors[keyof InvListBillingSchedulesErrors];
+
+export type InvListBillingSchedulesResponses = {
+    /**
+     * Established result
+     */
+    200: EstablishedResult;
+};
+
+export type InvListBillingSchedulesResponse = InvListBillingSchedulesResponses[keyof InvListBillingSchedulesResponses];
+
+export type InvGetBillingScheduleData = {
+    body?: never;
+    headers?: {
+        'X-Correlation-Id'?: Uuid;
+        'Accept-Language'?: string;
+        'X-Accounting-Scope-Id'?: Uuid;
+    };
+    path: {
+        billingScheduleId: Uuid;
+    };
+    query?: never;
+    url: '/invoicing/reference/billing-schedules/{billingScheduleId}';
+};
+
+export type InvGetBillingScheduleErrors = {
+    /**
+     * RFC 9457-style problem details
+     */
+    400: ProblemDetails;
+    /**
+     * Authentication is required or the supplied bearer token is invalid.
+     */
+    401: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    403: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    404: ProblemDetails;
+    /**
+     * RFC 9457-style problem details
+     */
+    503: ProblemDetails;
+};
+
+export type InvGetBillingScheduleError = InvGetBillingScheduleErrors[keyof InvGetBillingScheduleErrors];
+
+export type InvGetBillingScheduleResponses = {
+    /**
+     * Established result
+     */
+    200: EstablishedResult;
+};
+
+export type InvGetBillingScheduleResponse = InvGetBillingScheduleResponses[keyof InvGetBillingScheduleResponses];
 
 export type InvGenerateInvoicesData = {
     body: CommandRequest;

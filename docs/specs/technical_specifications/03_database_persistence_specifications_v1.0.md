@@ -286,6 +286,34 @@ Posting additionally validates balanced transaction and functional totals inside
 
 `gl.period_posting_gate` is unique by `(accounting_scope_id, fiscal_period_id)`. Gate transition, version increment, active admission counters and frozen summary history commit with the admission decision. Finalized command results are immutable and keyed by command fingerprint.
 
+### 7.5 Invoicing billing schedule
+
+The `invoicing.billing_schedule` root stores the current configured schedule
+projection. Its `charges` column is `jsonb` because each scheduled charge is a
+versioned source reference (`template_id`, `template_version`, and
+`template_line_item_id`) plus exact-decimal quantity, amount, and currency; no
+binary floating-point representation is used. The root is constrained by
+accounting scope, customer, contract reference, effective interval, next
+billing date, explicit IANA time zone, configured status, aggregate version,
+and revision number.
+
+Each established revision is inserted into
+`invoicing.billing_schedule_revision` with an immutable JSON snapshot,
+aggregate version, effective interval, capture time, and SHA-256 snapshot
+fingerprint. The repository locks the accounting-scope overlap key, rejects
+overlapping customer/contract intervals, checks the expected aggregate version,
+writes the revision and audit reference, and commits them together. The
+Postgres command path also finalizes the platform idempotency record in that
+same transaction; a failed command is finalized separately as a durable failed
+result without establishing schedule state.
+
+The migration is
+`db/migrations/invoicing/00002_create_billing_schedule_schema.sql`. No
+cross-context foreign key or direct adapter/table dependency is introduced.
+Customer, contract, template, and calendar reference validation remains an
+application port owned by the relevant bounded context; the current runtime
+uses an explicit unavailable validator until those approved ports are wired.
+
 ## 9. Index baseline
 
 | Workload | Required index pattern |
@@ -321,6 +349,6 @@ Every added index requires the target query, expected cardinality and `EXPLAIN (
 
 | Field | Value |
 |---|---|
-| Verified body SHA-256 | `5759924a22822c7139a6792f26c2979fdd681e3b8548ab10774d5f64ee37fa08` |
+| Verified body SHA-256 | `d1d8444fe0382a9a1e2c7f592bf8405b9d62e7e3704b4c10e703a9e1ba890937` |
 | Review status | Passed |
 | Reuse rule | Re-run targeted checks when this hash or a source hash changes; run the full suite for API, database, event, security, deployment, recovery, or technology-baseline changes. |
